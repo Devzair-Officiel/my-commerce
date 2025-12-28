@@ -2,6 +2,7 @@
 
 *.conf text eol=lf
 *.html text eol=lf
+*.css  text eol=lf
 *.ini text eol=lf
 *.js text eol=lf
 *.json text eol=lf
@@ -15,3 +16,14 @@ composer.lock text eol=lf merge=ours
 
 *.ico binary
 *.png binary
+*.svg  text eol=lf
+
+# Binaires (pas de conversion)
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.eot binary

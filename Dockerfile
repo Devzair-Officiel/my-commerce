@@ -20,6 +20,7 @@ VOLUME /app/var/
 RUN apt-get update && apt-get install -y --no-install-recommends \
 	file \
 	git \
+	curl \
 	&& rm -rf /var/lib/apt/lists/*
 
 RUN set -eux; \
@@ -29,17 +30,19 @@ RUN set -eux; \
 		intl \
 		opcache \
 		zip \
+		xml \
+		pdo_pgsql \
 	;
 
 # https://getcomposer.org/doc/03-cli.md#composer-allow-superuser
 ENV COMPOSER_ALLOW_SUPERUSER=1
 
-# Transport to use by Mercure (default to Bolt)
-ENV MERCURE_TRANSPORT_URL=bolt:///data/mercure.db
-
 ENV PHP_INI_SCAN_DIR=":$PHP_INI_DIR/app.conf.d"
 
 ###> recipes ###
+###> doctrine/doctrine-bundle ###
+RUN install-php-extensions pdo_pgsql
+###< doctrine/doctrine-bundle ###
 ###< recipes ###
 
 COPY --link frankenphp/conf.d/10-app.ini $PHP_INI_DIR/app.conf.d/
