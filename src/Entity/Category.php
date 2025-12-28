@@ -8,6 +8,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
+#[ORM\HasLifecycleCallbacks]
 #[ORM\Entity(repositoryClass: CategoryRepository::class)]
 class Category
 {
@@ -27,8 +28,8 @@ class Category
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $description = null;
 
-    #[ORM\Column(nullable: true)]
-    private ?array $imageUrls = null;
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $imageUrl = null;
 
     #[ORM\Column(nullable: true)]
     private ?bool $isMega = null;
@@ -85,14 +86,14 @@ class Category
         return $this;
     }
 
-    public function getImageUrls(): ?array
+    public function getimageUrl(): ?string
     {
-        return $this->imageUrls;
+        return $this->imageUrl;
     }
 
-    public function setImageUrls(?array $imageUrls): static
+    public function setimageUrl(?string $imageUrl): static
     {
-        $this->imageUrls = $imageUrls;
+        $this->imageUrl = $imageUrl;
 
         return $this;
     }
