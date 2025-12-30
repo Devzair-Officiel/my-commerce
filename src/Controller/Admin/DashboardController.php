@@ -6,6 +6,7 @@ use App\Entity\User;
 use App\Entity\Product;
 use App\Entity\Category;
 use Symfony\Component\HttpFoundation\Response;
+use EasyCorp\Bundle\EasyAdminBundle\Config\Assets;
 use EasyCorp\Bundle\EasyAdminBundle\Config\MenuItem;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Dashboard;
 use EasyCorp\Bundle\EasyAdminBundle\Attribute\AdminDashboard;
@@ -37,6 +38,11 @@ class DashboardController extends AbstractDashboardController
         // (tip: it's easier if your template extends from @EasyAdmin/page/content.html.twig)
         //
         // return $this->render('some/path/my-dashboard.html.twig');
+    }
+
+    public function configureAssets(): Assets
+    {
+        return Assets::new()->addCssFile('assets/css/admin.css');
     }
 
     public function configureDashboard(): Dashboard

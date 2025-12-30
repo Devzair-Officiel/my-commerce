@@ -11,6 +11,7 @@ use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use EasyCorp\Bundle\EasyAdminBundle\Field\IdField;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
 use Symfony\Component\Validator\Constraints\Length;
+use EasyCorp\Bundle\EasyAdminBundle\Field\FormField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\EmailField;
 use Symfony\Component\Validator\Constraints\NotBlank;
@@ -45,6 +46,8 @@ class UserCrudController extends AbstractCrudController
     public function configureFields(string $pageName): iterable
     {
         return [
+            FormField::addColumn(6),
+            FormField::addFieldset(),
             IdField::new('id')->hideOnForm(),
             EmailField::new('email'),
             ChoiceField::new('civility')
@@ -52,6 +55,8 @@ class UserCrudController extends AbstractCrudController
                     $acc[$c->label()] = $c;
                     return $acc;
                 }, [])),
+            FormField::addColumn(4),
+            FormField::addFieldset( propertySuffix: 'password'),
             Field::new('plainPassword', 'Mot de passe')
                 ->setFormType(RepeatedType::class)
                 ->setFormTypeOptions([

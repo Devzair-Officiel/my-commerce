@@ -28,9 +28,6 @@ class Category
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $description = null;
 
-    #[ORM\Column(length: 255, nullable: true)]
-    private ?string $imageUrl = null;
-
     #[ORM\Column(nullable: true)]
     private ?bool $isMega = null;
 
@@ -39,6 +36,9 @@ class Category
      */
     #[ORM\ManyToMany(targetEntity: Product::class, mappedBy: 'categories')]
     private Collection $products;
+
+    #[ORM\OneToOne(mappedBy: 'category', cascade: ['persist', 'remove'])]
+    private ?Media $media = null;
 
     public function __construct()
     {
@@ -86,18 +86,6 @@ class Category
         return $this;
     }
 
-    public function getimageUrl(): ?string
-    {
-        return $this->imageUrl;
-    }
-
-    public function setimageUrl(?string $imageUrl): static
-    {
-        $this->imageUrl = $imageUrl;
-
-        return $this;
-    }
-
     public function isMega(): ?bool
     {
         return $this->isMega;
@@ -133,6 +121,33 @@ class Category
         if ($this->products->removeElement($product)) {
             $product->removeCategory($this);
         }
+
+        return $this;
+    }
+
+    public function __toString()
+    {
+        return $this->title;
+    }
+
+    public function getMedia(): ?Media
+    {
+        return $this->media;
+    }
+
+    public function setMedia(?Media $media): static
+    {
+        // unset the owning side of the relation if necessary
+        if ($media === null && $this->media !== null) {
+            $this->media->setCategory(null);
+        }
+
+        // set the owning side of the relation if necessary
+        if ($media !== null && $media->getCategory() !== $this) {
+            $media->setCategory($this);
+        }
+
+        $this->media = $media;
 
         return $this;
     }

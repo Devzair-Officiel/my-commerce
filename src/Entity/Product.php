@@ -9,6 +9,7 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
+#[ORM\HasLifecycleCallbacks]
 #[ORM\Entity(repositoryClass: ProductRepository::class)]
 class Product
 {
@@ -49,9 +50,6 @@ class Product
     #[ORM\ManyToMany(targetEntity: Category::class, inversedBy: 'products')]
     private Collection $categories;
 
-    #[ORM\Column]
-    private array $imageUrls = [];
-
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $brand = null;
 
@@ -70,9 +68,17 @@ class Product
     #[ORM\Column(nullable: true)]
     private ?bool $isSpecialOffer = null;
 
+    /**
+     * @var Collection<int, Media>
+     */
+    #[ORM\OneToMany(mappedBy: 'product', targetEntity: Media::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
+    #[ORM\OrderBy(['position' => 'ASC', 'id' => 'ASC'])]
+    private Collection $medias;
+
     public function __construct()
     {
         $this->categories = new ArrayCollection();
+        $this->medias = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -200,18 +206,6 @@ class Product
         return $this;
     }
 
-    public function getImageUrls(): array
-    {
-        return $this->imageUrls;
-    }
-
-    public function setImageUrls(array $imageUrls): static
-    {
-        $this->imageUrls = $imageUrls;
-
-        return $this;
-    }
-
     public function getBrand(): ?string
     {
         return $this->brand;
@@ -282,5 +276,47 @@ class Product
         $this->isSpecialOffer = $isSpecialOffer;
 
         return $this;
+    }
+
+    /**
+     * @return Collection<int, Media>
+     */
+    public function getMedias(): Collection
+    {
+        return $this->medias;
+    }
+
+    public function addMedia(Media $media): static
+    {
+        if (!$this->medias->contains($media)) {
+            $this->medias->add($media);
+            $media->setProduct($this);
+        }
+
+        return $this;
+    }
+
+    public function removeMedia(Media $media): static
+    {
+        if ($this->medias->removeElement($media)) {
+            // set the owning side to null (unless already changed)
+            if ($media->getProduct() === $this) {
+                $media->setProduct(null);
+            }
+        }
+
+        return $this;
+    }
+
+
+    public function getMediaFilenames(): ?array
+    {
+        $names = [];
+        foreach ($this->medias as $m) {
+            if ($m->getFilename()) {
+                $names[] = $m->getFilename();
+            }
+        }
+        return $names;
     }
 }

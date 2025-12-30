@@ -1,0 +1,237 @@
+/* =========================================================
+   EASYADMIN – THEME "TECH ELECTRIC" (DARK)
+   Objectif : moderne, épuré, violet/bleu électrique
+   Stratégie : override VARIABLES + quelques styles ciblés
+   ========================================================= */
+
+/* (Optionnel) petits réglages globaux */
+:root {
+    --border-radius: 10px;
+    --border-radius-lg: 14px;
+    --border-radius-sm: 8px;
+
+    /* espace menu */
+    --sidebar-menu-items-padding-left: 10px;
+    --sidebar-menu-items-padding-right: 10px;
+}
+
+body:not(.ea-content-width-full) .content-wrapper {
+    max-inline-size: none;
+}
+
+/* ------------------------------
+   Dark scheme : override variables
+   ------------------------------ */
+.ea-dark-scheme {
+    /* Palette "surfaces" (dark bleu/indigo) */
+    --body-bg: hsl(230 40% 6%);
+    /* fond principal */
+    --content-bg: hsl(230 34% 9%);
+    /* surface contenu */
+    --sidebar-bg: hsl(232 42% 8%);
+    /* sidebar */
+    --responsive-header-bg: hsl(232 42% 8%);
+
+    /* Bordures fines (plus “premium”) */
+    --sidebar-border-color: hsl(230 26% 18%);
+    --content-top-border-color: hsl(230 26% 18%);
+    --content-section-border-color: hsl(230 26% 18%);
+    --form-input-border-color: hsl(230 20% 22%);
+    --table-cell-border-color: hsl(230 20% 18%);
+    --dropdown-border-color: hsl(230 20% 20%);
+    --popover-border-color: hsl(230 20% 20%);
+    --modal-border-color: hsl(230 20% 22%);
+
+    /* Texte */
+    --text-color: hsl(220 15% 85%);
+    --text-color-rgb: 217, 221, 232;
+    --text-muted: hsl(220 10% 60%);
+    --form-label-color: hsl(220 12% 78%);
+    --table-thead-color: hsl(220 18% 88%);
+    --table-cell-color: hsl(220 10% 74%);
+
+    /* Accent "électrique" (violet/bleu) */
+    --color-primary: hsl(260 96% 70%);
+    /* violet électrique */
+    --link-color: hsl(240 100% 78%);
+    --link-hover-color: hsl(260 100% 80%);
+
+    /* Badges / switches / pagination */
+    --pagination-active-bg: var(--color-primary);
+    --form-switch-checked-bg: var(--color-primary);
+    --form-type-check-input-checked-bg: var(--color-primary);
+
+    /* Inputs (fonds) */
+    --form-control-bg: hsl(230 30% 10%);
+    --form-input-text-color: hsl(220 15% 86%);
+    --form-input-hover-border-color: hsl(260 90% 70%);
+
+    /* Dropdown / popover / modal */
+    --dropdown-bg: hsl(232 35% 10%);
+    --dropdown-toggle-bg: hsl(232 35% 10%);
+    --popover-bg: hsl(232 35% 10%);
+    --modal-bg: hsl(232 35% 10%);
+    --modal-header-bg: hsl(232 35% 9%);
+    --modal-footer-bg: hsl(232 35% 9%);
+
+    /* Tables */
+    --table-hover-cell-bg: hsla(260 96% 70% / 0.08);
+    --table-selected-cell-bg: hsla(260 96% 70% / 0.14);
+    --table-thead-sorted-color: hsl(260 96% 78%);
+    --table-thead-sorted-marker-color: hsl(260 96% 78%);
+
+    /* Sidebar menu */
+    --sidebar-menu-color: hsl(220 14% 80%);
+    --sidebar-menu-icon-color: hsl(220 10% 65%);
+    --sidebar-menu-submenu-color: hsl(220 10% 68%);
+
+    /* Item actif (cohérent avec ton style “pill”) */
+    --sidebar-menu-active-item-bg: hsla(260 96% 70% / 0.18);
+    --sidebar-menu-active-item-color: hsl(0 0% 100%);
+
+    /* Ombres plus “soft” */
+    --shadow-md: 0 10px 25px rgba(0, 0, 0, .35);
+    --shadow-lg: 0 18px 40px rgba(0, 0, 0, .45);
+    --shadow-xl: 0 28px 60px rgba(0, 0, 0, .55);
+
+    /* Boutons primaire (sans casser EA) */
+    --button-primary-bg: linear-gradient(135deg, hsl(260 96% 70%), hsl(230 100% 65%));
+    --button-primary-hover-bg: linear-gradient(135deg, hsl(260 96% 74%), hsl(230 100% 70%));
+    --button-primary-border-color: rgba(255, 255, 255, .12);
+    --button-focus-outline-color: hsla(260 96% 70% / .55);
+
+    /* Secondaires */
+    --button-secondary-bg: hsl(232 28% 14%);
+    --button-secondary-hover-bg: hsl(232 28% 17%);
+    --button-secondary-border-color: rgba(255, 255, 255, .10);
+
+    /* Tabs */
+    --form-tabs-border-color: hsl(230 26% 18%);
+}
+
+
+/* ------------------------------
+   Panneaux / cards : effet “glass”
+   ------------------------------ */
+.ea-dark-scheme .content-panel,
+.ea-dark-scheme .card,
+.ea-dark-scheme .content-body,
+.ea-dark-scheme .datagrid,
+.ea-dark-scheme .ea-detail,
+.ea-dark-scheme .ea-new .content-panel,
+.ea-dark-scheme .ea-edit .content-panel {
+    background: linear-gradient(180deg, rgba(255, 255, 255, .04), rgba(255, 255, 255, .02));
+    border: 1px solid rgba(255, 255, 255, .06);
+    border-radius: var(--border-radius-lg);
+    box-shadow: var(--shadow-md);
+    padding: 10px;
+}
+
+/* ------------------------------
+   Header/topbar plus clean
+   ------------------------------ */
+.ea-dark-scheme .content-top {
+    background: linear-gradient(180deg, rgba(255, 255, 255, .02), transparent);
+    border-bottom: 1px solid var(--content-top-border-color);
+}
+
+/* ------------------------------
+   Inputs : focus “électrique” propre
+   ------------------------------ */
+.ea-dark-scheme .form-control,
+.ea-dark-scheme .form-select,
+.ea-dark-scheme .trix-content,
+.ea-dark-scheme .form-widget textarea {
+    border-radius: var(--border-radius);
+    background-color: var(--form-control-bg);
+    border-color: var(--form-input-border-color);
+}
+
+.ea-dark-scheme .form-control:focus,
+.ea-dark-scheme .form-select:focus,
+.ea-dark-scheme .trix-content:focus,
+.ea-dark-scheme .form-widget textarea:focus {
+    border-color: hsla(260 96% 70% / .85);
+    box-shadow: 0 0 0 4px hsla(260 96% 70% / .18);
+    outline: none;
+}
+
+/* ------------------------------
+   Sidebar : spacing + hover + active
+   ------------------------------ */
+.ea-dark-scheme #main-menu .menu {
+    padding-top: 10px;
+}
+
+.ea-dark-scheme #main-menu .menu .menu-item {
+    border-radius: var(--border-radius);
+    margin: 6px 8px;
+    /* <- “padding” entre items (visuellement) */
+    transition:
+        transform .18s cubic-bezier(.4, 0, .2, 1),
+        background-color .18s cubic-bezier(.4, 0, .2, 1),
+        box-shadow .18s cubic-bezier(.4, 0, .2, 1);
+}
+
+/* Hover */
+.ea-dark-scheme #main-menu .menu .menu-item:hover {
+    background: hsla(260 96% 70% / 0.10) !important;
+    transform: translateX(6px);
+}
+
+/* Actif */
+.ea-dark-scheme #main-menu .menu .menu-item.active {
+    background: hsla(260 96% 70% / 0.18) !important;
+    transform: translateX(6px);
+    box-shadow: 0 0 0 1px hsla(260 96% 70% / .22) inset;
+}
+
+/* Lien : couleurs cohérentes */
+.ea-dark-scheme #main-menu .menu .menu-item a,
+.ea-dark-scheme #main-menu .menu .menu-item a * {
+    color: var(--sidebar-menu-color);
+}
+
+.ea-dark-scheme #main-menu .menu .menu-item.active a,
+.ea-dark-scheme #main-menu .menu .menu-item.active a * {
+    color: white !important;
+}
+
+/* ------------------------------
+   Tables : plus “dashboard”
+   ------------------------------ */
+.ea-dark-scheme .table {
+    border-color: var(--table-cell-border-color);
+}
+
+.ea-dark-scheme .table thead th {
+    border-bottom-color: var(--table-cell-border-color);
+}
+
+.ea-dark-scheme .table tbody tr:hover>* {
+    background-color: var(--table-hover-cell-bg) !important;
+}
+
+/* ------------------------------
+   Boutons : un peu plus “premium”
+   ------------------------------ */
+.ea-dark-scheme .btn {
+    border-radius: var(--border-radius);
+}
+
+.ea-dark-scheme .btn-primary {
+    box-shadow: 0 10px 25px rgba(124, 58, 237, .18);
+}
+
+.ea-dark-scheme .btn-primary:hover {
+    box-shadow: 0 14px 32px rgba(124, 58, 237, .22);
+}
+
+/* ------------------------------
+   Petits détails “polish”
+   ------------------------------ */
+.ea-dark-scheme .dropdown-menu,
+.ea-dark-scheme .popover,
+.ea-dark-scheme .modal-content {
+    border-radius: var(--border-radius-lg);
+}

@@ -2,7 +2,10 @@
 
 namespace App\Controller\Admin;
 
+use App\Entity\Media;
 use App\Entity\Category;
+use Doctrine\ORM\EntityManagerInterface;
+use FOS\CKEditorBundle\Form\Type\CKEditorType;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use EasyCorp\Bundle\EasyAdminBundle\Field\IdField;
@@ -12,6 +15,7 @@ use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\ImageField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\BooleanField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextEditorField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\AssociationField;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
 
 class CategoryCrudController extends AbstractCrudController
@@ -29,29 +33,49 @@ class CategoryCrudController extends AbstractCrudController
             ->add(Crud::PAGE_EDIT, Action::DETAIL);
     }
 
+
     public function configureFields(string $pageName): iterable
     {
         return [
             IdField::new('id')->hideOnForm(),
             TextField::new('title'),
             SlugField::new('slug')->setTargetFieldName('title'),
-            // TextEditorField::new('description')
-            //     ->setFormType(CKEditorType::class)
-            //     ->setFormTypeOptions([
-            //         'config' => [
-            //             'height' => '200px',
-            //         ],
-            //     ]),
+            TextEditorField::new('description'),
             BooleanField::new('isMega'),
-            ImageField::new('imageUrl')
-                ->setBasePath("/assets/images/categories")
-                ->setUploadDir("/public/assets/images/categories")
-                ->setUploadedFileNamePattern('[randomhash].[extension]')
+            // AssociationField::new('media')->renderAsEmbeddedForm()
+            // Upload sur Media.filename
+            ImageField::new('media.filename', 'Image')
+                ->setBasePath('/assets/images/categories')
+                ->setUploadDir('public/assets/images/categories')
+                ->setUploadedFileNamePattern('[slug].[extension]')
+                ->setRequired(false),
         ];
     }
 
-    // public function configureCrud(Crud $crud): Crud
-    // {
-    //     return $crud->addFormTheme('@FOSCKEditor/Form/ckeditor_widget.html.twig');
-    // }
+
+    public function createEntity(string $entityFqcn)
+    {
+        /** @var Category $category */
+        $category = new Category();
+
+        // Important: créer le Media tout de suite pour éviter les null
+        $media = new Media();
+        $category->setMedia($media);
+
+        return $category;
+    }
+
+    public function persistEntity(EntityManagerInterface $entityManager, $entityInstance): void
+    {
+        /** @var Category $category */
+        $category = $entityInstance;
+
+        // Sécurité: si jamais media est null, on le recrée
+        if ($category->getMedia() === null) {
+            $category->setMedia(new Media());
+        }
+
+        parent::persistEntity($entityManager, $entityInstance);
+    }
+
 }
