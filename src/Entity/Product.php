@@ -319,4 +319,9 @@ class Product
         }
         return $names;
     }
+
+    public function __toString()
+    {
+        return $this->title;
+    }
 }

@@ -1,43 +1,65 @@
 ---
 # Development environment override
 services:
+  init-perms:
+    image: ${IMAGES_PREFIX:-}app-php
+    user: "0:0"
+    environment:
+      UID: "${UID:-1000}"
+      GID: "${GID:-1000}"
+    command:
+      - sh
+      - -lc
+      - |
+        set -eux
+        mkdir -p /app/var /data /config
+        chown -R "${UID}:${GID}" /app/var /data /config
+    volumes:
+      - app_var:/app/var
+      - caddy_data:/data
+      - caddy_config:/config
+    restart: "no"
   php:
+    user: "${UID:-1000}:${GID:-1000}"
+    cap_add:
+      - NET_BIND_SERVICE
     build:
       context: .
       target: frankenphp_dev
     volumes:
+      # indispensables pour FrankenPHP/Caddy (sinon unhealthy/restart)
+      - caddy_data:/data
+      - caddy_config:/config
+
+      # code + var isolé
       - ./:/app
+      - app_var:/app/var
+
+      # conf dev
       - ./frankenphp/Caddyfile:/etc/frankenphp/Caddyfile:ro
       - ./frankenphp/conf.d/20-app.dev.ini:/usr/local/etc/php/app.conf.d/20-app.dev.ini:ro
-      # If you develop on Mac or Windows you can remove the vendor/ directory
-      #  from the bind-mount for better performance by enabling the next line:
-      #- /app/vendor
+      # - /app/vendor
     environment:
       FRANKENPHP_WORKER_CONFIG: watch
       MERCURE_EXTRA_DIRECTIVES: demo
-      # See https://xdebug.org/docs/all_settings#mode
       XDEBUG_MODE: "${XDEBUG_MODE:-off}"
       APP_ENV: "${APP_ENV:-dev}"
     extra_hosts:
-      # Ensure that host.docker.internal is correctly defined on Linux
       - host.docker.internal:host-gateway
     tty: true
-###> symfony/mercure-bundle ###
-###< symfony/mercure-bundle ###
 
-###> doctrine/doctrine-bundle ###
   database:
     ports:
       - "5432:5432"
-###< doctrine/doctrine-bundle ###
 
-###> symfony/mailer ###
   mailer:
     image: axllent/mailpit
     ports:
-      - "1025"
-      - "8025"
+      - "1025:1025"
+      - "8025:8025"
     environment:
-      MP_SMTP_AUTH_ACCEPT_ANY: 1
-      MP_SMTP_AUTH_ALLOW_INSECURE: 1
-###< symfony/mailer ###
+      MP_SMTP_AUTH_ACCEPT_ANY: "1"
+      MP_SMTP_AUTH_ALLOW_INSECURE: "1"
+
+volumes:
+  app_var:

@@ -42,6 +42,9 @@ class Setting
     private ?string $phone = null;
 
     #[ORM\Column(length: 255, nullable: true)]
+    private ?string $email = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
     private ?string $facebookLink = null;
 
     #[ORM\Column(length: 255, nullable: true)]
@@ -169,6 +172,18 @@ class Setting
         return $this;
     }
 
+    public function getEmail(): ?string
+    {
+        return $this->email;
+    }
+
+    public function setEmail(?string $email): static
+    {
+        $this->email = $email;
+
+        return $this;
+    }
+
     public function getFacebookLink(): ?string
     {
         return $this->facebookLink;
@@ -232,4 +247,5 @@ class Setting
 
         return $this;
     }
+
 }

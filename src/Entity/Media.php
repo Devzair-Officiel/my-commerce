@@ -37,6 +37,9 @@ class Media
     #[ORM\OneToOne(inversedBy: 'logoMedia')]
     private ?Setting $setting = null;
 
+    #[ORM\OneToOne(inversedBy: 'mediaSlider', cascade: ['persist', 'remove'])]
+    private ?Sliders $sliders = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -138,5 +141,17 @@ class Media
     public function __toString()
     {
         return $this->filename;
+    }
+
+    public function getSliders(): ?Sliders
+    {
+        return $this->sliders;
+    }
+
+    public function setSliders(?Sliders $sliders): static
+    {
+        $this->sliders = $sliders;
+
+        return $this;
     }
 }
