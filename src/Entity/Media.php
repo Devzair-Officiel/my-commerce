@@ -34,6 +34,9 @@ class Media
     #[ORM\OneToOne(inversedBy: 'media', cascade: ['persist', 'remove'])]
     private ?Category $category = null;
 
+    #[ORM\OneToOne(inversedBy: 'logoMedia')]
+    private ?Setting $setting = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -119,5 +122,21 @@ class Media
 
         return $this;
     }
-    
+
+    public function getSetting(): ?Setting
+    {
+        return $this->setting;
+    }
+
+    public function setSetting(?Setting $setting): static
+    {
+        $this->setting = $setting;
+
+        return $this;
+    }
+
+    public function __toString()
+    {
+        return $this->filename;
+    }
 }

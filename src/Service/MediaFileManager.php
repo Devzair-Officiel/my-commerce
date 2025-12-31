@@ -5,45 +5,66 @@ namespace App\Service;
 use App\Entity\Media;
 use App\Entity\Product;
 use Symfony\Component\Filesystem\Filesystem;
-use Symfony\Component\String\Slugger\SluggerInterface;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
+use Symfony\Component\String\Slugger\SluggerInterface;
 
-final class MediaFileManager 
+/**
+ * Service responsable de la gestion physique des fichiers médias.
+ *
+ * - storeProductFile() :
+ *   Génère un nom de fichier unique et stocke l'image sur le disque.
+ *
+ * - removeFile() :
+ *   Supprime le fichier du disque, même si l'entité Media
+ *   n'a plus de relation (cas orphanRemoval Doctrine).
+ *
+ * Objectif : isoler toute la logique filesystem hors des contrôleurs
+ * et des entités (SRP / Clean Architecture).
+ */
+final class MediaFileManager
 {
     public function __construct(
         private Filesystem $fs,
         private string $uploadDirProducts,
         private string $uploadDirCategories,
+        private string $uploadDirSettings,
         private SluggerInterface $slugger,
-    )
-    {}
+    ) {}
 
     public function removeFile(Media $media): void
     {
-        $path = $this->resolvePath($media);
-        if($path === null) {
+        $filename = (string) $media->getFilename();
+        if ($filename === '') {
             return;
         }
 
-        if($this->fs->exists($path)) {
-            $this->fs->remove($path);
-        }
-    }
+        $paths = [];
 
-    public function resolvePath(Media $media): ?string
-    {
-        $filename = $media->getFilename();
-
-        if($media->getProduct() !== null) {
-            return $this->uploadDirProducts . '/' . $filename;
+        // cas normal : on sait si c'est un média produit, setting, catégorie
+        if ($media->getProduct() !== null) {
+            $paths[] = rtrim($this->uploadDirProducts, '/') . '/' . $filename;
         }
 
         if ($media->getCategory() !== null) {
-            return $this->uploadDirCategories . '/' . $filename;
+            $paths[] = rtrim($this->uploadDirCategories, '/') . '/' . $filename;
         }
 
-        return null;
+        if ($media->getSetting() !== null) {
+            $paths[] = rtrim($this->uploadDirSettings, '/') . '/' . $filename;
+        }
 
+        // cas orphanRemoval : relation null au moment du postRemove
+        if ($paths === []) {
+            $paths[] = rtrim($this->uploadDirProducts, '/') . '/' . $filename;
+            $paths[] = rtrim($this->uploadDirCategories, '/') . '/' . $filename;
+            $paths[] = rtrim($this->uploadDirSettings, '/') . '/' . $filename;
+        }
+
+        foreach (array_unique($paths) as $path) {
+            if ($this->fs->exists($path)) {
+                $this->fs->remove($path);
+            }
+        }
     }
 
     public function storeProductFile(UploadedFile $file, Product $product): string
@@ -52,19 +73,14 @@ final class MediaFileManager
         $slug = $this->slugger->slug($baseName)->lower();
 
         $extension = $file->guessExtension()
-            ?? $file->getClientOriginalExtension()
-            ?? 'bin';
+            ?: $file->getClientOriginalExtension()
+            ?: 'bin';
 
-        // ⚠️ IMPORTANT : produit = multi-images → éviter les collisions
-        $filename = sprintf(
-            '%s-%s.%s',
-            $slug,
-            uniqid(),
-            $extension
-        );
+        $filename = sprintf('%s-%s.%s', $slug, bin2hex(random_bytes(8)), $extension);
 
-        $file->move($this->uploadDirProducts, $filename);
+        $file->move(rtrim($this->uploadDirProducts, '/'), $filename);
 
         return $filename;
     }
+    
 }

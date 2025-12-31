@@ -10,6 +10,7 @@ parameters:
     upload_dir_products: '%kernel.project_dir%/public/assets/images/products'
     upload_dir_articles: '%kernel.project_dir%/public/assets/images/articles'
     upload_dir_categories: '%kernel.project_dir%/public/assets/images/categories'
+    upload_dir_settings: '%kernel.project_dir%/public/assets/images/settings'
 
 services:
     # default configuration for services in *this* file
@@ -20,6 +21,7 @@ services:
             string $uploadDirProducts: '%upload_dir_products%'
             # string $uploadDirArticles: '%upload_dir_articles%'
             string $uploadDirCategories: '%upload_dir_categories%'
+            string $uploadDirSettings: '%upload_dir_settings%'
 
     # makes classes in src/ available to be used as services
     # this creates a service per class whose id is the fully-qualified class name

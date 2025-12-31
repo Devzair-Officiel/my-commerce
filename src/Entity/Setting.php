@@ -2,8 +2,9 @@
 
 namespace App\Entity;
 
-use App\Repository\SettingRepository;
+use App\Entity\Media;
 use Doctrine\ORM\Mapping as ORM;
+use App\Repository\SettingRepository;
 
 #[ORM\Entity(repositoryClass: SettingRepository::class)]
 class Setting
@@ -24,9 +25,6 @@ class Setting
 
     #[ORM\Column(nullable: true)]
     private ?int $taxe_rate = null;
-
-    #[ORM\Column(length: 255)]
-    private ?string $logo = null;
 
     #[ORM\Column(length: 255)]
     private ?string $street = null;
@@ -54,6 +52,9 @@ class Setting
 
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $copyright = null;
+
+    #[ORM\OneToOne(mappedBy: 'setting', cascade: ['persist', 'remove'], orphanRemoval: true)]
+    private ?Media $logoMedia = null;
 
     public function getId(): ?int
     {
@@ -104,18 +105,6 @@ class Setting
     public function setTaxeRate(?int $taxe_rate): static
     {
         $this->taxe_rate = $taxe_rate;
-
-        return $this;
-    }
-
-    public function getLogo(): ?string
-    {
-        return $this->logo;
-    }
-
-    public function setLogo(string $logo): static
-    {
-        $this->logo = $logo;
 
         return $this;
     }
@@ -224,6 +213,22 @@ class Setting
     public function setCopyright(?string $copyright): static
     {
         $this->copyright = $copyright;
+
+        return $this;
+    }
+
+    public function getLogoMedia(): ?Media
+    {
+        return $this->logoMedia;
+    }
+
+    public function setLogoMedia(?Media $media): static
+    {
+        $this->logoMedia = $media;
+
+        if ($media !== null && $media->getSetting() !== $this) {
+            $media->setSetting($this);
+        }
 
         return $this;
     }

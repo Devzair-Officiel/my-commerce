@@ -2,19 +2,22 @@
 
 namespace App\Controller\Admin;
 
+use App\Entity\Media;
 use App\Entity\Setting;
+use Doctrine\ORM\EntityManagerInterface;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
-use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
-use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
-use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
 use EasyCorp\Bundle\EasyAdminBundle\Field\Field;
-use EasyCorp\Bundle\EasyAdminBundle\Field\FormField;
+use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use EasyCorp\Bundle\EasyAdminBundle\Field\IdField;
+use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
+use EasyCorp\Bundle\EasyAdminBundle\Field\FormField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\ImageField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\IntegerField;
-use EasyCorp\Bundle\EasyAdminBundle\Field\TelephoneField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextareaField;
-use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\TelephoneField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\AssociationField;
+use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
 
 final class SettingCrudController extends AbstractCrudController
 {
@@ -70,12 +73,12 @@ final class SettingCrudController extends AbstractCrudController
             ->setColumns(3)
             ->setHelp('Ex: © 2020 - 2025 Agence web Hypedesign - Mentions Légales - CGV');
 
-        $logo = ImageField::new('logo', 'Logo')
+
+        $logo = ImageField::new('logoMedia.filename', 'Image')
             ->setBasePath('/assets/images/setting')
             ->setUploadDir('public/assets/images/setting')
-            ->setUploadedFileNamePattern('[slug].[extension]')
-            ->setRequired($pageName === Crud::PAGE_NEW)
-            ->setColumns(12);
+            ->setUploadedFileNamePattern('[slug].[timestamp].[extension]')
+            ->setRequired(false);
 
         // --- Adresse
         $street = TextField::new('street', 'Rue')
@@ -175,4 +178,30 @@ final class SettingCrudController extends AbstractCrudController
             $youtube,
         ];
     }
+
+    public function createEntity(string $entityFqcn)
+    {
+        /** @var Setting $setting */
+        $setting = new Setting();
+
+        // Important: créer le Media tout de suite pour éviter les null
+        $media = new Media();
+        $setting->setlogoMedia($media);
+
+        return $setting;
+    }
+
+    public function persistEntity(EntityManagerInterface $entityManager, $entityInstance): void
+    {
+        /** @var Setting $setting */
+        $setting = $entityInstance;
+
+        // Sécurité: si jamais media est null, on le recrée
+        if ($setting->getlogoMedia() === null) {
+            $setting->setlogoMedia(new Media());
+        }
+
+        parent::persistEntity($entityManager, $entityInstance);
+    }
+    
 }

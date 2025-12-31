@@ -4,7 +4,6 @@ namespace App\Controller\Admin;
 
 use App\Entity\Media;
 use App\Entity\Product;
-use App\Form\MediaType;
 use App\Service\MediaFileManager;
 use Doctrine\ORM\EntityManagerInterface;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
@@ -19,8 +18,6 @@ use EasyCorp\Bundle\EasyAdminBundle\Field\MoneyField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\BooleanField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\IntegerField;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
-use EasyCorp\Bundle\EasyAdminBundle\Field\TextareaField;
-use EasyCorp\Bundle\EasyAdminBundle\Context\AdminContext;
 use EasyCorp\Bundle\EasyAdminBundle\Field\CollectionField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextEditorField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\AssociationField;
@@ -135,11 +132,15 @@ class ProductCrudController extends AbstractCrudController
         // Uploads en CollectionType uniquement sur forms
         yield CollectionField::new('medias')
             ->setLabel('Ajouter / modifier des médias')
-            ->setEntryType(MediaType::class)
+            ->setEntryType(\App\Form\MediaType::class)
             ->onlyOnForms()
             ->setFormTypeOptions([
                 'by_reference' => false,
-            ]);
+            ])
+            ->allowAdd()
+            ->allowDelete()
+            ->setEntryIsComplex(true)
+            ->renderExpanded(true);
 
         yield FormField::addTab('Visibilité');
         yield FormField::addFieldset('Badges')->collapsible();
