@@ -6,13 +6,10 @@
 					<div class="widget">
 						<div class="footer_logo">
 							<a href="#">
-								<h2>Jstore</h2>
+								<h2>{{ app.session.get("setting").websiteName }}</h2>
 							</a>
 						</div>
-						<p>
-							Retrouvez tous les accessoires et habits pour femmes, jeunes
-														                            filles etc...
-						</p>
+						<p>{{ app.session.get("setting").description }}</p>
 					</div>
 					<div class="widget">
 						<ul class="social_icons social_white">
