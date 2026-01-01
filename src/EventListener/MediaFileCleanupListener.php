@@ -59,6 +59,8 @@ final class MediaFileCleanupListener
         $tmp->setFilename($oldFilename);
         $tmp->setProduct($entity->getProduct());
         $tmp->setCategory($entity->getCategory());
+        $tmp->setSliders($entity->getSliders());
+        $tmp->setSetting($entity->getSetting());
 
         $this->files->removeFile($tmp);
     }

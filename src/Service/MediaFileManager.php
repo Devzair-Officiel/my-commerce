@@ -27,6 +27,7 @@ final class MediaFileManager
         private Filesystem $fs,
         private string $uploadDirProducts,
         private string $uploadDirCategories,
+        private string $uploadDirSliders,
         private string $uploadDirSettings,
         private SluggerInterface $slugger,
     ) {}
@@ -49,6 +50,10 @@ final class MediaFileManager
             $paths[] = rtrim($this->uploadDirCategories, '/') . '/' . $filename;
         }
 
+        if ($media->getSliders() !== null) {
+            $paths[] = rtrim($this->uploadDirSliders, '/') . '/' . $filename;
+        }
+
         if ($media->getSetting() !== null) {
             $paths[] = rtrim($this->uploadDirSettings, '/') . '/' . $filename;
         }
@@ -57,6 +62,7 @@ final class MediaFileManager
         if ($paths === []) {
             $paths[] = rtrim($this->uploadDirProducts, '/') . '/' . $filename;
             $paths[] = rtrim($this->uploadDirCategories, '/') . '/' . $filename;
+            $paths[] = rtrim($this->uploadDirSliders, '/') . '/' . $filename;
             $paths[] = rtrim($this->uploadDirSettings, '/') . '/' . $filename;
         }
 

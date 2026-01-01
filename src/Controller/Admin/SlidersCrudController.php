@@ -67,30 +67,30 @@ final class SlidersCrudController extends AbstractCrudController
         yield ImageField::new('mediaSlider.filename', 'Image')
             ->setBasePath('/assets/images/sliders')
             ->setUploadDir('public/assets/images/sliders')
-            ->setUploadedFileNamePattern('[title].[timestamp].[extension]')
+            ->setUploadedFileNamePattern('[slug].[timestamp].[extension]')
             ->setRequired(false);
     }
 
     public function createEntity(string $entityFqcn)
     {
-        /** @var Sliders $category */
-        $category = new Sliders();
+        /** @var Sliders $slider */
+        $slider = new Sliders();
 
         // Important: créer le Media tout de suite pour éviter les null
         $media = new Media();
-        $category->setMediaSlider($media);
+        $slider->setMediaSlider($media);
 
-        return $category;
+        return $slider;
     }
 
     public function persistEntity(EntityManagerInterface $entityManager, $entityInstance): void
     {
-        /** @var Sliders $category */
-        $category = $entityInstance;
+        /** @var Sliders $slider */
+        $slider = $entityInstance;
 
         // Sécurité: si jamais media est null, on le recrée
-        if ($category->getMediaSlider() === null) {
-            $category->setMediaSlider(new Media());
+        if ($slider->getMediaSlider() === null) {
+            $slider->setMediaSlider(new Media());
         }
 
         parent::persistEntity($entityManager, $entityInstance);

@@ -2,18 +2,25 @@
 
 namespace App\Entity;
 
-use App\Repository\ProductRepository;
 use App\Trait\DateTrait;
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use App\Repository\ProductRepository;
+use Doctrine\Common\Collections\Collection;
+use Doctrine\Common\Collections\ArrayCollection;
+use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
 #[ORM\HasLifecycleCallbacks]
 #[ORM\Entity(repositoryClass: ProductRepository::class)]
+#[Assert\Callback('validatePricing')]
 class Product
 {
     use DateTrait;
+
+    // ---------------------------------------------------------------------
+    // Doctrine fields / relations
+    // ---------------------------------------------------------------------
 
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -21,27 +28,54 @@ class Product
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank(message: 'Le titre est obligatoire.')]
+    #[Assert\Length(
+        min: 2,
+        max: 255,
+        minMessage: 'Le titre doit contenir au moins {{ limit }} caractères.',
+        maxMessage: 'Le titre ne doit pas dépasser {{ limit }} caractères.'
+    )]
     private ?string $title = null;
 
     #[ORM\Column(length: 255)]
     private ?string $slug = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank(message: 'La description est obligatoire.')]
+    #[Assert\Length(
+        min: 10,
+        max: 255,
+        minMessage: 'La description doit contenir au moins {{ limit }} caractères.',
+        maxMessage: 'La description ne doit pas dépasser {{ limit }} caractères.'
+    )]
     private ?string $description = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
+    #[Assert\Length(
+        max: 5000,
+        maxMessage: 'La description détaillée ne doit pas dépasser {{ limit }} caractères.'
+    )]
     private ?string $more_description = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
+    #[Assert\Length(
+        max: 5000,
+        maxMessage: 'Les infos additionnelles ne doivent pas dépasser {{ limit }} caractères.'
+    )]
     private ?string $additional_infos = null;
 
     #[ORM\Column(nullable: true)]
+    #[Assert\PositiveOrZero(message: 'Le stock ne peut pas être négatif.')]
+    // Stock nullable = “non géré / illimité” (selon ta logique). Si tu veux “obligatoire”, remplace par NotNull.
     private ?int $stock = null;
 
     #[ORM\Column(nullable: true)]
+    #[Assert\Positive(message: 'Le prix soldé doit être strictement positif.')]
     private ?int $solde_price = null;
 
     #[ORM\Column]
+    #[Assert\NotNull(message: 'Le prix régulier est obligatoire.')]
+    #[Assert\Positive(message: 'Le prix régulier doit être strictement positif.')]
     private ?int $regular_price = null;
 
     /**
@@ -80,6 +114,38 @@ class Product
         $this->categories = new ArrayCollection();
         $this->medias = new ArrayCollection();
     }
+
+    // ---------------------------------------------------------------------
+    // Validation métier (cohérence promo/prix)
+    // ---------------------------------------------------------------------
+
+    public function validatePricing(ExecutionContextInterface $context): void
+    {
+        // regular_price obligatoire (déjà couvert), mais on évite toute division par 0/valeurs incohérentes
+        if ($this->regular_price === null) {
+            return;
+        }
+
+        // Si prix soldé renseigné : doit être < regular_price
+        if ($this->solde_price !== null) {
+            if ($this->solde_price <= 0) {
+                $context->buildViolation('Le prix soldé doit être strictement positif.')
+                    ->atPath('solde_price')
+                    ->addViolation();
+                return;
+            }
+
+            if ($this->solde_price >= $this->regular_price) {
+                $context->buildViolation('Le prix soldé doit être inférieur au prix régulier.')
+                    ->atPath('solde_price')
+                    ->addViolation();
+            }
+        }
+    }
+
+    // ---------------------------------------------------------------------
+    // Getters / Setters (state access)
+    // ---------------------------------------------------------------------
 
     public function getId(): ?int
     {
@@ -182,30 +248,6 @@ class Product
         return $this;
     }
 
-    /**
-     * @return Collection<int, Category>
-     */
-    public function getCategories(): Collection
-    {
-        return $this->categories;
-    }
-
-    public function addCategory(Category $category): static
-    {
-        if (!$this->categories->contains($category)) {
-            $this->categories->add($category);
-        }
-
-        return $this;
-    }
-
-    public function removeCategory(Category $category): static
-    {
-        $this->categories->removeElement($category);
-
-        return $this;
-    }
-
     public function getBrand(): ?string
     {
         return $this->brand;
@@ -278,6 +320,34 @@ class Product
         return $this;
     }
 
+    // ---------------------------------------------------------------------
+    // Relations helpers (collections)
+    // ---------------------------------------------------------------------
+
+    /**
+     * @return Collection<int, Category>
+     */
+    public function getCategories(): Collection
+    {
+        return $this->categories;
+    }
+
+    public function addCategory(Category $category): static
+    {
+        if (!$this->categories->contains($category)) {
+            $this->categories->add($category);
+        }
+
+        return $this;
+    }
+
+    public function removeCategory(Category $category): static
+    {
+        $this->categories->removeElement($category);
+
+        return $this;
+    }
+
     /**
      * @return Collection<int, Media>
      */
@@ -299,7 +369,6 @@ class Product
     public function removeMedia(Media $media): static
     {
         if ($this->medias->removeElement($media)) {
-            // set the owning side to null (unless already changed)
             if ($media->getProduct() === $this) {
                 $media->setProduct(null);
             }
@@ -308,20 +377,60 @@ class Product
         return $this;
     }
 
+    // ---------------------------------------------------------------------
+    // Domain helpers (display / pricing business rules)
+    // ---------------------------------------------------------------------
 
-    public function getMediaFilenames(): ?array
+    /**
+     * True si le produit a un prix soldé valide (ex: soldePrice non null, > 0 et < regularPrice).
+     * Permet d’éviter d’afficher une promo quand il n’y en a pas.
+     */
+    public function isOnSale(): bool
+    {
+        return $this->solde_price !== null
+            && $this->solde_price > 0
+            && $this->regular_price !== null
+            && $this->solde_price < $this->regular_price;
+    }
+
+    /**
+     * Pourcentage de remise (entier) si le produit est soldé, sinon null.
+     * Exemple : 1990 -> 1490 = 25 (%), arrondi au plus proche.
+     */
+    public function getDiscountPercentage(): ?int
+    {
+        if (!$this->isOnSale()) {
+            return null;
+        }
+
+        return (int) round(
+            (($this->regular_price - $this->solde_price) * 100) / $this->regular_price
+        );
+    }
+
+    /**
+     * Liste des noms de fichiers médias (utile Twig / front).
+     */
+    public function getMediaFilenames(): array
     {
         $names = [];
+
         foreach ($this->medias as $m) {
-            if ($m->getFilename()) {
-                $names[] = $m->getFilename();
+            $filename = $m->getFilename();
+            if ($filename) {
+                $names[] = $filename;
             }
         }
+
         return $names;
     }
 
-    public function __toString()
+    // ---------------------------------------------------------------------
+    // Misc
+    // ---------------------------------------------------------------------
+
+    public function __toString(): string
     {
-        return $this->title;
+        return (string) $this->title;
     }
 }

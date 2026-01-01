@@ -1,0 +1,19 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}NideMiel | A propos
+	{{page.title}}
+{% endblock %}
+
+{% block body %}
+	{% include "page_head/index.html.twig" with {'page_name': "A propos " ~ page.title} %}
+
+	<div class="main_content">
+		<div class="section">
+			<div class="container">
+				{{ page.content | raw }}
+			</div>
+		</div>
+	</div>
+
+{% endblock %}
+

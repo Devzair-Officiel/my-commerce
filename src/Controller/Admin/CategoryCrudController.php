@@ -2,27 +2,38 @@
 
 namespace App\Controller\Admin;
 
-use App\Entity\Media;
 use App\Entity\Category;
+use App\Entity\Media;
 use Doctrine\ORM\EntityManagerInterface;
-use FOS\CKEditorBundle\Form\Type\CKEditorType;
-use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
-use EasyCorp\Bundle\EasyAdminBundle\Field\IdField;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
-use EasyCorp\Bundle\EasyAdminBundle\Field\SlugField;
-use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
-use EasyCorp\Bundle\EasyAdminBundle\Field\ImageField;
-use EasyCorp\Bundle\EasyAdminBundle\Field\BooleanField;
-use EasyCorp\Bundle\EasyAdminBundle\Field\TextEditorField;
-use EasyCorp\Bundle\EasyAdminBundle\Field\AssociationField;
+use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
+use EasyCorp\Bundle\EasyAdminBundle\Field\BooleanField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\IdField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\ImageField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\SlugField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\TextEditorField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
 
-class CategoryCrudController extends AbstractCrudController
+final class CategoryCrudController extends AbstractCrudController
 {
+    private const UPLOAD_DIR = 'public/assets/images/categories';
+    private const BASE_PATH  = '/assets/images/categories';
+
     public static function getEntityFqcn(): string
     {
         return Category::class;
+    }
+
+    public function configureCrud(Crud $crud): Crud
+    {
+        return $crud
+            ->setEntityLabelInSingular('Catégorie')
+            ->setEntityLabelInPlural('Catégories')
+            ->setDefaultSort(['id' => 'DESC'])
+            ->setSearchFields(['id', 'title', 'slug', 'description'])
+            ->showEntityActionsInlined();
     }
 
     public function configureActions(Actions $actions): Actions
@@ -33,25 +44,27 @@ class CategoryCrudController extends AbstractCrudController
             ->add(Crud::PAGE_EDIT, Action::DETAIL);
     }
 
-
     public function configureFields(string $pageName): iterable
     {
-        return [
-            IdField::new('id')->hideOnForm(),
-            TextField::new('title'),
-            SlugField::new('slug')->setTargetFieldName('title'),
-            TextEditorField::new('description'),
-            BooleanField::new('isMega'),
-            // AssociationField::new('media')->renderAsEmbeddedForm()
-            // Upload sur Media.filename
-            ImageField::new('media.filename', 'Image')
-                ->setBasePath('/assets/images/categories')
-                ->setUploadDir('public/assets/images/categories')
-                ->setUploadedFileNamePattern('[slug].[extension]')
-                ->setRequired(false),
-        ];
-    }
+        yield IdField::new('id')->hideOnForm();
 
+        yield TextField::new('title', 'Titre')
+            ->setRequired(true);
+
+        yield SlugField::new('slug', 'Slug')
+            ->setTargetFieldName('title')
+            ->hideOnIndex();
+
+        yield TextEditorField::new('description', 'Description');
+
+        yield BooleanField::new('isMega', 'Mega menu');
+
+        yield ImageField::new('media.filename', 'Image')
+            ->setBasePath(self::BASE_PATH)
+            ->setUploadDir(self::UPLOAD_DIR)
+            ->setUploadedFileNamePattern('[slug].[extension]')
+            ->setRequired(false);
+    }
 
     public function createEntity(string $entityFqcn)
     {
