@@ -13,6 +13,7 @@
         "doctrine/doctrine-migrations-bundle": "^4.0",
         "doctrine/orm": "^3.6",
         "easycorp/easyadmin-bundle": "^4.27",
+        "symfony/cache": "8.0.*",
         "symfony/config": "8.0.*",
         "symfony/console": "8.0.*",
         "symfony/dotenv": "8.0.*",
@@ -84,6 +85,8 @@
         }
     },
     "require-dev": {
-        "symfony/maker-bundle": "^1.65"
+        "symfony/maker-bundle": "^1.65",
+        "symfony/stopwatch": "8.0.*",
+        "symfony/web-profiler-bundle": "8.0.*"
     }
 }

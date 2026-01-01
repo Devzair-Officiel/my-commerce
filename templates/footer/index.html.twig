@@ -6,27 +6,27 @@
 					<div class="widget">
 						<div class="footer_logo">
 							<a href="#">
-								<h2>{{ app.session.get("setting").websiteName }}</h2>
+								<h2>{{ globalSetting.website_name }}</h2>
 							</a>
 						</div>
-						<p>{{ app.session.get("setting").description }}</p>
+						<p>{{ globalSetting.description }}</p>
 					</div>
 					<div class="widget">
 						<ul class="social_icons social_white">
 							<li>
-								<a target="_blank" href="{{ app.session.get("setting").facebookLink}}">
+								<a target="_blank" href="{{ globalSetting.facebookLink}}">
 									<i class="ion-social-facebook"></i>
 								</a>
 							</li>
 							<li></li>
 							<li></li>
 							<li>
-								<a target="_blank" href="{{ app.session.get("setting").youtubeLink}}">
+								<a target="_blank" href="{{ globalSetting.youtubeLink}}">
 									<i class="ion-social-youtube-outline"></i>
 								</a>
 							</li>
 							<li>
-								<a target="_blank" href="{{ app.session.get("setting").instaLink}}">
+								<a target="_blank" href="{{ globalSetting.instaLink}}">
 									<i class="ion-social-instagram-outline"></i>
 								</a>
 							</li>
@@ -37,7 +37,7 @@
 					<div class="widget">
 						<h6 class="widget_title">Useful Links</h6>
 						<ul class="widget_links">
-							{% for page in app.session.get("footerPages") %}
+							{% for page in globalFooterPages %}
 							<li>
 								<a href="/page/{{page.slug}}"> {{page.title}} </a>
 							</li>

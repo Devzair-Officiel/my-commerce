@@ -16,28 +16,19 @@ class CategoryRepository extends ServiceEntityRepository
         parent::__construct($registry, Category::class);
     }
 
-    //    /**
-    //     * @return Category[] Returns an array of Category objects
-    //     */
-    //    public function findByExampleField($value): array
-    //    {
-    //        return $this->createQueryBuilder('c')
-    //            ->andWhere('c.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->orderBy('c.id', 'ASC')
-    //            ->setMaxResults(10)
-    //            ->getQuery()
-    //            ->getResult()
-    //        ;
-    //    }
-
-    //    public function findOneBySomeField($value): ?Category
-    //    {
-    //        return $this->createQueryBuilder('c')
-    //            ->andWhere('c.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->getQuery()
-    //            ->getOneOrNullResult()
-    //        ;
-    //    }
+    /**
+     * Catégories mega menu (scalaires uniquement)
+     * Adapte les champs selon ton entité Category (ici id/title/slug).
+     *
+     * @return array<int, array{id:int,title:string,slug:string}>
+     */
+    public function findMegaCategoriesForLayout(): array
+    {
+        return $this->createQueryBuilder('c')
+            ->select('c.title AS title, c.slug AS slug, c.description AS description')
+            ->andWhere('c.isMega = true')
+            ->orderBy('c.id', 'ASC')
+            ->getQuery()
+            ->getArrayResult();
+    }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Repository\CategoryRepository;
 use App\Repository\PageRepository;
 use App\Repository\ProductRepository;
 use App\Repository\SettingRepository;
@@ -16,19 +17,9 @@ final class HomeController extends AbstractController
     public function __construct(private ProductRepository $product) 
     {}
     #[Route('/', name: 'app_home')]
-    public function index(SettingRepository $setting, SlidersRepository $slider, PageRepository $page, Request $request): Response
+    public function index(SettingRepository $setting, CategoryRepository $category, SlidersRepository $slider, PageRepository $page, Request $request): Response
     {
-        $session = $request->getSession();
-        $setting = $setting->findAll();
         $sliders = $slider->findAll();
-
-        $session->set('setting', $setting[0]);
-
-        $headerPages = $page->findBy(['isHead' => true]);
-        $footerPages = $page->findBy(['isFoot' => true]);
-
-        $session->set("headerPages", $headerPages);
-        $session->set("footerPages", $footerPages);
 
         return $this->render('home/index.html.twig', [
             'controller_name' => 'HomeController',

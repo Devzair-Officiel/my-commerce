@@ -16,28 +16,40 @@ class SettingRepository extends ServiceEntityRepository
         parent::__construct($registry, Setting::class);
     }
 
-//    /**
-//     * @return Setting[] Returns an array of Setting objects
-//     */
-//    public function findByExampleField($value): array
-//    {
-//        return $this->createQueryBuilder('s')
-//            ->andWhere('s.exampleField = :val')
-//            ->setParameter('val', $value)
-//            ->orderBy('s.id', 'ASC')
-//            ->setMaxResults(10)
-//            ->getQuery()
-//            ->getResult()
-//        ;
-//    }
+    /**
+     * Setting "layout-safe" (scalaires uniquement) + logo filename/alt si dispo.
+     *
+     * @return array<string, mixed>|null
+     */
+    public function findOneForLayout(): ?array
+    {
+        $qb = $this->createQueryBuilder('s')
+            ->leftJoin('s.logoMedia', 'lm')
+            ->select([
+                's.id AS id',
+                's.website_name AS website_name',
+                's.description AS description',
+                's.currency AS currency',
+                's.taxe_rate AS taxe_rate',
+                's.street AS street',
+                's.city AS city',
+                's.code_postal AS code_postal',
+                's.state AS state',
+                's.phone AS phone',
+                's.email AS email',
+                's.facebookLink AS facebookLink',
+                's.instaLink AS instaLink',
+                's.youtubeLink AS youtubeLink',
+                's.copyright AS copyright',
+                'lm.filename AS logo_filename',
+                'lm.alt AS logo_alt',
+            ])
+            ->orderBy('s.id', 'ASC')
+            ->setMaxResults(1);
 
-//    public function findOneBySomeField($value): ?Setting
-//    {
-//        return $this->createQueryBuilder('s')
-//            ->andWhere('s.exampleField = :val')
-//            ->setParameter('val', $value)
-//            ->getQuery()
-//            ->getOneOrNullResult()
-//        ;
-//    }
+        /** @var array<string, mixed>|null $row */
+        $row = $qb->getQuery()->getOneOrNullResult();
+
+        return $row ?: null;
+    }
 }
