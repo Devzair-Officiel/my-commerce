@@ -1,53 +1,74 @@
 <?php
 
-namespace App\Doctrine\Listener;
+namespace App\EventListener;
 
+use App\Entity\Category;
 use App\Entity\Page;
 use App\Entity\Setting;
-use App\Entity\Category;
-use Doctrine\ORM\Events;
 use App\Storefront\StorefrontGlobalsProvider;
-use Doctrine\Persistence\Event\LifecycleEventArgs;
 use Doctrine\Bundle\DoctrineBundle\Attribute\AsDoctrineListener;
+use Doctrine\ORM\Event\OnFlushEventArgs;
+use Doctrine\ORM\Event\PostFlushEventArgs;
+use Doctrine\ORM\Events;
 
-#[AsDoctrineListener(event: Events::postPersist)]
-#[AsDoctrineListener(event: Events::postUpdate)]
-#[AsDoctrineListener(event: Events::postRemove)]
+#[AsDoctrineListener(event: Events::onFlush)]
+#[AsDoctrineListener(event: Events::postFlush)]
 final class StorefrontGlobalsCacheInvalidationListener
 {
+    private bool $invalidateSetting = false;
+    private bool $invalidatePages = false;
+    private bool $invalidateCategories = false;
+
     public function __construct(
         private readonly StorefrontGlobalsProvider $globalsProvider
     ) {}
 
-    public function postPersist(LifecycleEventArgs $args): void
+    public function onFlush(OnFlushEventArgs $args): void
     {
-        $this->invalidateIfSupported($args->getObject());
+        $uow = $args->getObjectManager()->getUnitOfWork();
+
+        foreach ($uow->getScheduledEntityInsertions() as $entity) {
+            $this->markIfSupported($entity);
+        }
+        foreach ($uow->getScheduledEntityUpdates() as $entity) {
+            $this->markIfSupported($entity);
+        }
+        foreach ($uow->getScheduledEntityDeletions() as $entity) {
+            $this->markIfSupported($entity);
+        }
     }
 
-    public function postUpdate(LifecycleEventArgs $args): void
+    public function postFlush(PostFlushEventArgs $args): void
     {
-        $this->invalidateIfSupported($args->getObject());
+        // Invalider une seule fois, après le flush complet (fiable en admin)
+        if ($this->invalidateSetting) {
+            $this->globalsProvider->invalidateSetting();
+        }
+        if ($this->invalidatePages) {
+            $this->globalsProvider->invalidatePages();
+        }
+        if ($this->invalidateCategories) {
+            $this->globalsProvider->invalidateCategories();
+        }
+
+        // reset flags
+        $this->invalidateSetting = false;
+        $this->invalidatePages = false;
+        $this->invalidateCategories = false;
     }
 
-    public function postRemove(LifecycleEventArgs $args): void
-    {
-        $this->invalidateIfSupported($args->getObject());
-    }
-
-    private function invalidateIfSupported(object $entity): void
+    private function markIfSupported(object $entity): void
     {
         if ($entity instanceof Setting) {
-            $this->globalsProvider->invalidateSetting();
+            $this->invalidateSetting = true;
             return;
         }
-
         if ($entity instanceof Page) {
-            $this->globalsProvider->invalidatePages();
+            $this->invalidatePages = true;
             return;
         }
-
         if ($entity instanceof Category) {
-            $this->globalsProvider->invalidateCategories();
+            $this->invalidateCategories = true;
             return;
         }
     }

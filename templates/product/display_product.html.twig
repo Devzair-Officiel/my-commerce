@@ -1,7 +1,9 @@
 <div class="col-lg-3 col-md-4 col-6">
 	<div class="product">
 		<div class="product_img">
-			<a href="shop-product-detail.html"><img alt="product_img1" src="/assets/images/products/{{product.medias[0]}}"></a>
+			<a href="/product/{{product.slug}}">
+				<img alt="{{product.slug}}" src="/assets/images/products/{{product.medias[0]}}">
+			</a>
 			<div class="product_action_box">
 				<ul class="list_none pr_action_btn">
 					<li class="add-to-cart">
@@ -30,9 +32,9 @@
 		</div>
 		<div class="product_info">
 			<h6 class="product_title">
-				<a href="/product/bikini-unicolore-ctel-shop">
+				<a href="/product/{{product.slug}}">
 					{{product.title}}
-					côtelé</a>
+				</a>
 			</h6>
 			<div class="product_price">
 				{% if product.isOnSale %}
@@ -56,18 +58,6 @@
 					<div class="product_rate" style="width: 80%;"></div>
 				</div>
 				<span class="rating_num">(21)</span>
-			</div>
-			<div class="pr_desc">
-				<p>Lorem ipsum dolor sit amet,
-																																																			                                                        consectetur adipiscing elit. Phasellus blandit massa enim.
-																																																			                                                        Nullam id varius nunc id varius nunc.</p>
-			</div>
-			<div class="pr_switch_wrap">
-				<div class="product_color_switch">
-					<span data-color="#87554B" class="active"></span>
-					<span data-color="#333333"></span>
-					<span data-color="#DA323F"></span>
-				</div>
 			</div>
 		</div>
 	</div>

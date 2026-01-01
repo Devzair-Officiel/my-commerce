@@ -185,7 +185,7 @@ final class SettingCrudController extends AbstractCrudController
         ];
     }
 
-    public function createEntity(string $entityFqcn)
+    public function createEntity(string $entityFqcn): Setting
     {
         /** @var Setting $setting */
         $setting = new Setting();

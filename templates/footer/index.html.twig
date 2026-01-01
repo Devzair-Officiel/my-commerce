@@ -97,11 +97,11 @@
 							</li>
 							<li>
 								<i class="ti-email"></i>
-								<a href="{{app.session.get("setting").email}}"> {{app.session.get("setting").email}} </a>
+								<a href="{{globalSetting.email}}"> {{globalSetting.email}} </a>
 							</li>
 							<li>
 								<i class="ti-mobile"></i>
-								<p>+{{ app.session.get("setting").phone}}</p>
+								<p>+{{ globalSetting.phone}}</p>
 							</li>
 						</ul>
 					</div>
@@ -113,7 +113,7 @@
 		<div class="container">
 			<div class="row">
 				<div class="col-md-6">
-					<p class="mb-md-0 text-center text-md-start">{{app.session.get("setting").copyright}}</p>
+					<p class="mb-md-0 text-center text-md-start">{{globalSetting.copyright}}</p>
 				</div>
 				<div class="col-md-6">
 					<ul class="footer_payment text-center text-lg-end d-flex gap-2 justify-content-end">

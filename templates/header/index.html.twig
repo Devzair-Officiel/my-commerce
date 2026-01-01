@@ -137,98 +137,27 @@
 							<a href="#" data-bs-toggle="dropdown" class="dropdown-toggle nav-link" aria-expanded="false">Products</a>
 							<div class="dropdown-menu">
 								<ul class="mega-menu d-lg-flex">
-									<li class="mega-menu-col col-lg-3">
-										<ul>
-											<li class="dropdown-header">Robes</li>
-											<li>
-												<a class="dropdown-item nav-link nav_item" ng-reflect-router-link="/,product,bikini-unicolore-cte" href="/product/bikini-unicolore-ctel-shop">Bikini unicolore
-																																																																																																																					                                                    côtelé</a>
-												<a class="dropdown-item nav-link nav_item" ng-reflect-router-link="/,product,jupe-crayon-taille-h" href="/product/jupe-crayon-taille-haute-en-dentelle">Jupe crayon
-																																																																																																																					                                                    taille haute en dentelle</a>
-												<a class="dropdown-item nav-link nav_item" ng-reflect-router-link="/,product,jupe-imprim-floral-t" href="/product/jupe-imprim-floral-taille-fronce">Jupe à imprimé
-																																																																																																																					                                                    floral à taille froncée</a>
-												<a class="dropdown-item nav-link nav_item" ng-reflect-router-link="/,product,robe-fines-brides-im" href="/product/robe-fines-brides-imprim-tropical-en-dentelle">Robe à
-																																																																																																																					                                                    fines brides à imprimé tropical en dentelle</a>
-											</li>
-										</ul>
-									</li>
-									<li class="mega-menu-col col-lg-3">
-										<ul>
-											<li class="dropdown-header">Jupes</li>
-											<li>
-												<a class="dropdown-item nav-link nav_item" ng-reflect-router-link="/,product,bikini-unicolore-cte" href="/product/bikini-unicolore-ctel-shop">Bikini unicolore
-																																																																																																																					                                                    côtelé</a>
-												<a class="dropdown-item nav-link nav_item" ng-reflect-router-link="/,product,jupe-noire-brillante" href="/product/jupe-noire-brillante">Jupe noire brillante</a>
-												<a class="dropdown-item nav-link nav_item" ng-reflect-router-link="/,product,jupe-fendue-taille-h" href="/product/jupe-fendue-taille-haute">Jupe fendue taille
-																																																																																																																					                                                    haute</a>
-												<a class="dropdown-item nav-link nav_item" ng-reflect-router-link="/,product,jupe-imprim-floral-t" href="/product/jupe-imprim-floral-taille-fronce">Jupe à imprimé
-																																																																																																																					                                                    floral à taille froncée</a>
-											</li>
-										</ul>
-									</li>
-									<li class="mega-menu-col col-lg-3">
-										<ul>
-											<li class="dropdown-header">Culotes
-											</li>
-											<li>
-												<a class="dropdown-item nav-link nav_item" ng-reflect-router-link="/,product,bikini-unicolore-cte" href="/product/bikini-unicolore-ctel-shop">Bikini unicolore
-																																																																																																																					                                                    côtelé</a>
-												<a class="dropdown-item nav-link nav_item" ng-reflect-router-link="/,product,culotte-en-dentelle-" href="/product/culotte-en-dentelle-mudey">Culotte en dentelle</a>
-												<a class="dropdown-item nav-link nav_item" ng-reflect-router-link="/,product,culotte-en-dentelle-" href="/product/culotte-en-dentelle-espero">Culotte en dentelle</a>
-												<a class="dropdown-item nav-link nav_item" ng-reflect-router-link="/,product,culotte-en-dentelle" href="/product/culotte-en-dentelle">Culotte en dentelle</a>
-												<a class="dropdown-item nav-link nav_item" ng-reflect-router-link="/,product,short-paillettes-bro" href="/product/short-paillettes-broderie-dchir">Short à paillettes à
-																																																																																																																					                                                    broderie déchiré</a>
-											</li>
-										</ul>
-									</li>
-									<li class="mega-menu-col col-lg-3">
-										<ul>
-											<li class="dropdown-header">Pantalons</li>
-											<li>
-												<a class="dropdown-item nav-link nav_item" ng-reflect-router-link="/,product,pantalon-taille-haut" href="/product/pantalon-taille-haute-carreaux-avec-zip">Pantalon
-																																																																																																																					                                                    taille haute à carreaux avec zip</a>
-												<a class="dropdown-item nav-link nav_item" ng-reflect-router-link="/,product,pantalon-carreaux-av" href="/product/pantalon-carreaux-avec-cordon-la-taille">Pantalon à
-																																																																																																																					                                                    carreaux avec cordon à la taille</a>
-												<a class="dropdown-item nav-link nav_item" ng-reflect-router-link="/,product,pantalon-taille-fron" href="/product/pantalon-taille-fronce-poches">Pantalon à taille
-																																																																																																																					                                                    froncée à poches</a>
-												<a class="dropdown-item nav-link nav_item" ng-reflect-router-link="/,product,pantalon-unicolore-t" href="/product/pantalon-unicolore-taille-haute">Pantalon unicolore
-																																																																																																																					                                                    taille haute</a>
-											</li>
-										</ul>
-									</li>
+									{% for category in globalMegaCategories %}
+										<li class="mega-menu-col col-lg-4">
+											<ul>
+												<li class="dropdown-header">
+													{{category.title}}
+												</li>
+												{% for product in globalMegaProducts[category.id] %}
+													{% if loop.index < 6 %}
+														<li>
+															<a class="dropdown-item nav-link nav_item" href="/product/{{product.slug}}">
+																{{product.title}}
+															</a>
+														</li>
+
+													{% endif %}
+												{% endfor %}
+											</ul>
+										</li>
+
+									{% endfor %}
 								</ul>
-								<div class="d-lg-flex menu_banners row g-3 px-3">
-									<div class="col-sm-4">
-										<div class="header-banner"><img alt="menu_banner1" src="/assets/files/megaCollection/11736749706614988691774027121876766721152610541684827357419.png">
-											<div class="banne_info">
-												<h6>10% Off</h6>
-												<h4>New Arrival</h4>
-												<a href="http://localhost:4300/">Shop
-																																																																																																																					                                                    Now</a>
-											</div>
-										</div>
-									</div>
-									<div class="col-sm-4">
-										<div class="header-banner"><img alt="menu_banner1" src="/assets/files/megaCollection/8932488097310286313588503554459963159142614451684826970123.png">
-											<div class="banne_info">
-												<h6>15% Off</h6>
-												<h4>Men's Fashion</h4>
-												<a href="http://localhost:4300/">Shop
-																																																																																																																					                                                    Now</a>
-											</div>
-										</div>
-									</div>
-									<div class="col-sm-4">
-										<div class="header-banner"><img alt="menu_banner1" src="/assets/files/megaCollection/1412527185807988177642011518607795945067036381684827015102.png">
-											<div class="banne_info">
-												<h6>23% Off</h6>
-												<h4>Kids Fashion</h4>
-												<a href="http://localhost:4300/">Shop
-																																																																																																																					                                                    Now</a>
-											</div>
-										</div>
-									</div>
-								</div>
 							</div>
 						</li>
 						<li class="dropdown dropdown-mega-menu">
@@ -236,7 +165,7 @@
 						</li>
 						<li>
 							<a routerlink="/contact" class="nav-link nav_item" ng-reflect-router-link="/contact" href="/contact">Contact
-																																																																								                                Us</a>
+																																																																																																                                Us</a>
 						</li>
 					</ul>
 				</div>
@@ -293,7 +222,7 @@
 										<i class="ion-close"></i>
 									</a>
 									<a href="#"><img width="50" height="50" alt="cart_thumb1" src="/assets/files/culottes/culotte_5/36851533762117856286455670026456984987161761684087224828.webp">Culotte
-																																																																																										                                        en dentelle</a>
+																																																																																																																								                                        en dentelle</a>
 									<span class="cart_quantity">
 										11 x
 										<span class="cart_amount">
@@ -306,7 +235,7 @@
 										<i class="ion-close"></i>
 									</a>
 									<a href="#"><img width="50" height="50" alt="cart_thumb1" src="/assets/files/culottes/culotte_9/116945623386141314594418897879593148825527931684087225230.webp">Culotte
-																																																																																										                                        unicolore (sans couture)</a>
+																																																																																																																								                                        unicolore (sans couture)</a>
 									<span class="cart_quantity">
 										4 x
 										<span class="cart_amount">
@@ -319,7 +248,7 @@
 										<i class="ion-close"></i>
 									</a>
 									<a href="#"><img width="50" height="50" alt="cart_thumb1" src="/assets/files/culottes/culotte_7/825380258783085919054835307976332473139779511684087224936.webp">Culotte
-																																																																																										                                        en dentelle</a>
+																																																																																																																								                                        en dentelle</a>
 									<span class="cart_quantity">
 										3 x
 										<span class="cart_amount">
@@ -332,10 +261,10 @@
 										<i class="ion-close"></i>
 									</a>
 									<a href="#"><img width="50" height="50" alt="cart_thumb1" src="/assets/files/970670668041335927385290724653240714148366921684565574162.webp">Bikini
-																																																																																										                                        unicolore côtelé</a>
+																																																																																																																								                                        unicolore côtelé</a>
 									<span class="cart_quantity">
 										4
-																																																																																										                                        x
+																																																																																																																								                                        x
 										<span class="cart_amount">
 											<span class="price_symbole">28,24&nbsp;€</span>
 										</span>
@@ -346,7 +275,7 @@
 										<i class="ion-close"></i>
 									</a>
 									<a href="#"><img width="50" height="50" alt="cart_thumb1" src="/assets/files/culottes/culotte_4/87087411019387380483560199609827534551691041684087224752.webp">Culotte
-																																																																																										                                        unicolore femme (sans couture)</a>
+																																																																																																																								                                        unicolore femme (sans couture)</a>
 									<span class="cart_quantity">
 										2 x
 										<span class="cart_amount">
@@ -359,7 +288,7 @@
 										<i class="ion-close"></i>
 									</a>
 									<a href="#"><img width="50" height="50" alt="cart_thumb1" src="/assets/files/culottes/culotte_2/64690629656996101166169787112869964617448491684087224479.webp">Tanga
-																																																																																										                                        unicolore</a>
+																																																																																																																								                                        unicolore</a>
 									<span class="cart_quantity">
 										3 x
 										<span class="cart_amount">
@@ -372,7 +301,7 @@
 										<i class="ion-close"></i>
 									</a>
 									<a href="#"><img width="50" height="50" alt="cart_thumb1" src="/assets/files/culottes/culotte_8/10518988473111520886581236853833613928085898971684087225041.webp">Culotte
-																																																																																										                                        en dentelle</a>
+																																																																																																																								                                        en dentelle</a>
 									<span class="cart_quantity">
 										1 x
 										<span class="cart_amount">
@@ -385,7 +314,7 @@
 										<i class="ion-close"></i>
 									</a>
 									<a href="#"><img width="50" height="50" alt="cart_thumb1" src="/assets/files/culottes/culotte_3/6138170893214881132536005127536132168491807951684087224669.webp">Culotte
-																																																																																										                                        à blocs de couleurs en dentelle</a>
+																																																																																																																								                                        à blocs de couleurs en dentelle</a>
 									<span class="cart_quantity">
 										3 x
 										<span class="cart_amount">

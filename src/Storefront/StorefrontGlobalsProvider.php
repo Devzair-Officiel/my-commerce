@@ -4,24 +4,40 @@ namespace App\Storefront;
 
 use App\Repository\CategoryRepository;
 use App\Repository\PageRepository;
+use App\Repository\ProductRepository;
 use App\Repository\SettingRepository;
 use Symfony\Contracts\Cache\ItemInterface;
 use Symfony\Contracts\Cache\TagAwareCacheInterface;
 
+/**
+ * Fournit les données globales du storefront (header, footer, settings)
+ * sous forme de tableaux scalaires, avec cache taggable.
+ *
+ * Objectifs :
+ * - éviter l'utilisation de la session pour des données publiques
+ * - éviter le cache d'entités Doctrine (zéro entité en cache)
+ * - centraliser les données du layout (header/footer)
+ * - invalider automatiquement le cache lors des modifications en admin
+ */
 final class StorefrontGlobalsProvider
 {
     public const TAG_GLOBALS    = 'storefront.globals';
     public const TAG_SETTING    = 'storefront.setting';
     public const TAG_PAGES      = 'storefront.pages';
     public const TAG_CATEGORIES = 'storefront.categories';
+    public const TAG_PRODUCTS   = 'storefront.products';
 
-    private const CACHE_KEY = 'storefront.globals.v3.scalars';
+    // Clé versionnée : incrémenter la version si la structure change
+    private const CACHE_KEY = 'storefront.globals.v6.scalars';
+
+    private const MEGA_MENU_PRODUCTS_PER_CATEGORY = 6;
 
     public function __construct(
         private readonly SettingRepository $settings,
         private readonly PageRepository $pages,
         private readonly CategoryRepository $categories,
-        private readonly TagAwareCacheInterface $cacheStorefront, // @cache.storefront
+        private readonly ProductRepository $products,
+        private readonly TagAwareCacheInterface $cacheStorefront,
     ) {}
 
     public function getGlobals(): array
@@ -34,13 +50,40 @@ final class StorefrontGlobalsProvider
                 self::TAG_SETTING,
                 self::TAG_PAGES,
                 self::TAG_CATEGORIES,
+                self::TAG_PRODUCTS,
             ]);
 
+            $megaCategories = $this->categories->findMegaCategoriesForLayout();
+            $categoryIds = array_map(
+                static fn(array $c): int => (int) ($c['id'] ?? 0),
+                $megaCategories
+            );
+            $categoryIds = array_values(array_filter($categoryIds, static fn(int $id) => $id > 0));
+
+            $productsRows = $this->products->findByCategoriesForLayout($categoryIds);
+
+            // Regroupement + limite par catégorie côté PHP (simple et robuste)
+            $productsByCategory = [];
+            foreach ($productsRows as $row) {
+                $catId = (int) $row['category_id'];
+
+                if (!isset($productsByCategory[$catId])) {
+                    $productsByCategory[$catId] = [];
+                }
+
+                if (\count($productsByCategory[$catId]) >= self::MEGA_MENU_PRODUCTS_PER_CATEGORY) {
+                    continue;
+                }
+
+                $productsByCategory[$catId][] = $row;
+            }
+
             return [
-                'globalSetting' => $this->settings->findOneForLayout(),
-                'globalHeaderPages' => $this->pages->findHeaderPagesForLayout(),
-                'globalFooterPages' => $this->pages->findFooterPagesForLayout(),
-                'globalMegaCategories' => $this->categories->findMegaCategoriesForLayout(),
+                'globalSetting'        => $this->settings->findOneForLayout(),
+                'globalHeaderPages'    => $this->pages->findHeaderPagesForLayout(),
+                'globalFooterPages'    => $this->pages->findFooterPagesForLayout(),
+                'globalMegaCategories' => $megaCategories,
+                'globalMegaProducts'   => $productsByCategory,
             ];
         });
     }
@@ -58,6 +101,11 @@ final class StorefrontGlobalsProvider
     public function invalidateCategories(): void
     {
         $this->cacheStorefront->invalidateTags([self::TAG_CATEGORIES]);
+    }
+
+    public function invalidateProducts(): void
+    {
+        $this->cacheStorefront->invalidateTags([self::TAG_PRODUCTS]);
     }
 
     public function invalidateAll(): void

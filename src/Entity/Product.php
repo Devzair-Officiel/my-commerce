@@ -109,6 +109,9 @@ class Product
     #[ORM\OrderBy(['position' => 'ASC', 'id' => 'ASC'])]
     private Collection $medias;
 
+    #[ORM\ManyToOne(targetEntity: self::class)]
+    private ?self $relatedProducts = null;
+
     public function __construct()
     {
         $this->categories = new ArrayCollection();
@@ -432,5 +435,17 @@ class Product
     public function __toString(): string
     {
         return (string) $this->title;
+    }
+
+    public function getRelatedProducts(): ?self
+    {
+        return $this->relatedProducts;
+    }
+
+    public function setRelatedProducts(?self $relatedProducts): static
+    {
+        $this->relatedProducts = $relatedProducts;
+
+        return $this;
     }
 }

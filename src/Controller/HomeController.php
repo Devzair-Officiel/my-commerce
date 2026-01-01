@@ -31,4 +31,18 @@ final class HomeController extends AbstractController
         ]);
     }
 
+    #[Route('/product/{slug}', name: 'app_product_by_slug')]
+    public function showProduct(string $slug)
+    {
+        $product = $this->product->findOneBy(['slug' => $slug]);
+
+        if (!$product) {
+            throw $this->createNotFoundException();
+        }
+
+        return $this->render('product/show.html.twig', [
+            'product' => $product,
+        ]);
+    }
+
 }

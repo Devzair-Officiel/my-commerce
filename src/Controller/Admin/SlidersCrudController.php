@@ -71,7 +71,7 @@ final class SlidersCrudController extends AbstractCrudController
             ->setRequired(false);
     }
 
-    public function createEntity(string $entityFqcn)
+    public function createEntity(string $entityFqcn): Sliders
     {
         /** @var Sliders $slider */
         $slider = new Sliders();

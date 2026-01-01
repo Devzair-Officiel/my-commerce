@@ -15,11 +15,10 @@ final class PageController extends AbstractController
         $page = $page->findOneBy(["slug" => $slug]);
 
         if (!$page) {
-            return $this->render('page/not-found.html.twig');
+            throw $this->createNotFoundException();
         }
 
         return $this->render('page/index.html.twig', [
-            'controller_name' => 'PageController',
             'page' => $page,
         ]);
     }

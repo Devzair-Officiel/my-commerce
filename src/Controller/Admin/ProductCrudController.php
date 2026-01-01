@@ -116,10 +116,12 @@ class ProductCrudController extends AbstractCrudController
             ->setLabel('Stock')
             ->setColumns(4);
 
-        yield FormField::addTab('Catégorisation');
+        yield FormField::addTab('Catégorie & Relation');
         yield AssociationField::new('categories')
             ->setLabel('Catégories')
             ->setRequired(true);
+        yield AssociationField::new('relatedProducts')
+            ->setLabel('Produits liées');
 
         yield FormField::addTab('Médias');
         yield FormField::addFieldset('Images du produit')->collapsible();

@@ -18,17 +18,15 @@ class CategoryRepository extends ServiceEntityRepository
 
     /**
      * Catégories mega menu (scalaires uniquement)
-     * Adapte les champs selon ton entité Category (ici id/title/slug).
-     *
-     * @return array<int, array{id:int,title:string,slug:string}>
      */
     public function findMegaCategoriesForLayout(): array
     {
         return $this->createQueryBuilder('c')
-            ->select('c.title AS title, c.slug AS slug, c.description AS description')
+            ->select('c.id AS id, c.title AS title, c.slug AS slug, c.description AS description')
             ->andWhere('c.isMega = true')
             ->orderBy('c.id', 'ASC')
             ->getQuery()
             ->getArrayResult();
     }
+
 }

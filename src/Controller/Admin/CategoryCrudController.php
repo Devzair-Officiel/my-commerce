@@ -66,7 +66,7 @@ final class CategoryCrudController extends AbstractCrudController
             ->setRequired(false);
     }
 
-    public function createEntity(string $entityFqcn)
+    public function createEntity(string $entityFqcn): Category
     {
         /** @var Category $category */
         $category = new Category();
