@@ -1,44 +1,11 @@
 <header class="header_wrap fixed-top header_with_topbar active">
-	<div class="top-header" style="">
+	<div class="top-header">
 		<div class="container">
 			<div class="row align-items-center">
+
 				<div class="col-md-6">
 					<div class="d-flex align-items-center justify-content-center justify-content-md-start">
-						<div class="me-3">
-							<div class="ddOutOfVision" id="msdrpdd20_msddHolder" style="height: 0px; overflow: hidden; position: absolute;">
-								<select name="countries" class="custome_select" id="msdrpdd20" tabindex="-1">
-									<option value="USD" data-title="USD" ng-reflect-value="USD">USD</option>
-									<option value="EUR" data-title="EUR" ng-reflect-value="EUR">EUR</option>
-									<option value="GBR" data-title="GBR" ng-reflect-value="GBR">GBR</option>
-								</select>
-							</div>
-							<div class="dd ddcommon borderRadius" id="msdrpdd20_msdd" tabindex="0" style="width: 52px;">
-								<div class="ddTitle borderRadiusTp">
-									<span class="divider"></span>
-									<span class="ddArrow arrowoff"></span>
-									<span class="ddTitleText " id="msdrpdd20_title">
-										<span class="ddlabel">USD</span>
-										<span class="description" style="display: none;"></span>
-									</span>
-								</div><input id="msdrpdd20_titleText" type="text" autocomplete="off" class="text shadow borderRadius" style="display: none;">
-								<div class="ddChild ddchild_ border shadow" id="msdrpdd20_child" style="z-index: 9999; display: none; position: absolute; visibility: visible; height: 99px;">
-									<ul>
-										<li class="enabled _msddli_ selected" title="USD">
-											<span class="ddlabel">USD</span>
-											<div class="clear"></div>
-										</li>
-										<li class="enabled _msddli_" title="EUR">
-											<span class="ddlabel">EUR</span>
-											<div class="clear"></div>
-										</li>
-										<li class="enabled _msddli_" title="GBR">
-											<span class="ddlabel">GBR</span>
-											<div class="clear"></div>
-										</li>
-									</ul>
-								</div>
-							</div>
-						</div>
+
 						<ul class="contact_detail text-center text-lg-start">
 							<li>
 								<i class="ti-mobile"></i>
@@ -47,6 +14,7 @@
 								</span>
 							</li>
 						</ul>
+
 					</div>
 				</div>
 				<div class="col-md-6">
@@ -54,49 +22,47 @@
 						<ul class="header_list">
 							<li>
 								<a href="/compare">
-									<i class="ti-control-shuffle"></i>
-									<span>Comparer</span>
+									<i class="ti-control-shuffle fa-2x" title="Comparateur"></i>
 								</a>
 							</li>
 							<li>
 								<a href="/wishlist">
-									<i class="ti-heart"></i>
-									<span>Liste de souhaits</span>
+									<i class="ti-heart fa-2x" title="Liste d'envies "></i>
 								</a>
 							</li>
-
 							{% if app.user %}
-								<li>
-									<a href="/account">
-										<i class="ti-user"></i>
-										<span>Mon compte</span>
-									</a>
-								</li>
+								{% if is_granted('ROLE_ADMIN') %}
+									<li>
+										<a href="/admin">
+											<i class="ti-user fa-2x" title="Mon compte"></i>
+										</a>
+									</li>
+								{% else %}
 
+									<li>
+										<a href="/account">
+											<i class="ti-user fa-2x" title="Mon compte"></i>
+										</a>
+									</li>
+								{% endif %}
 								<li>
 									<a href="/logout">
-										<i class="ti-user"></i>
-										<span>Se deconnecter</span>
+										<i class="ti-shift-right fa-2x" title="Me Deconnecter"></i>
 									</a>
 								</li>
 							{% else %}
 								<li>
 									<a href="/login">
-										<i class="ti-user"></i>
-										<span>Se connecter</span>
+										<i class=""></i>
+										<span>Connexion
+										</span>
+									</a>
+									/<a href="/register">
+										<i class=""></i>
+										<span>Créer un compte</span>
 									</a>
 								</li>
-
-								<li>
-									<a href="/register">
-										<i class="ti-user"></i>
-										<span>S'enregistrer</span>
-									</a>
-								</li>
-
 							{% endif %}
-							<li></li>
-							<li></li>
 						</ul>
 					</div>
 				</div>
@@ -106,21 +72,26 @@
 	<div class="bottom_header dark_skin main_menu_uppercase">
 		<div class="container">
 			<nav class="navbar navbar-expand-lg">
-				<a routerlink="/" class="navbar-brand" href="/">
-					<h2>
-						{{ globalSetting.website_name }}
-					</h2>
+				<a class="navbar-brand" href="/">
+					<div class="d-flex align-items-center">
+						<a href="/" style="margin-right: 20px;">
+							<img src="/assets/images/setting/{{globalSetting.logo_filename}}" alt="logo de {{globalSetting.website_name}}" height="60">
+						</a>
+						<h2>
+							{{globalSetting.website_name}}
+						</h2>
+					</div>
 				</a>
 				<button type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-expanded="false" class="navbar-toggler collapsed">
 					<span class="ion-android-menu"></span>
 				</button>
-				<div id="navbarSupportedContent" class="navbar-collapse justify-content-end collapse" style="">
+				<div id="navbarSupportedContent" class="navbar-collapse justify-content-end collapse">
 					<ul class="navbar-nav">
 						<li class="dropdown">
-							<a routerlink="/" class="nav-link" href="/">Home</a>
+							<a class="nav-link" href="/">Accueil</a>
 						</li>
 						<li class="dropdown">
-							<a href="#" data-bs-toggle="dropdown" class="dropdown-toggle nav-link active" aria-expanded="false">Pages</a>
+							<a href="#" data-bs-toggle="dropdown" class="dropdown-toggle nav-link " aria-expanded="false">A propos</a>
 							<div class="dropdown-menu">
 								<ul>
 									{% for page in globalHeaderPages %}
@@ -134,7 +105,7 @@
 							</div>
 						</li>
 						<li class="dropdown dropdown-mega-menu">
-							<a href="#" data-bs-toggle="dropdown" class="dropdown-toggle nav-link" aria-expanded="false">Products</a>
+							<a href="#" data-bs-toggle="dropdown" class="dropdown-toggle nav-link" aria-expanded="false">Produits</a>
 							<div class="dropdown-menu">
 								<ul class="mega-menu d-lg-flex">
 									{% for category in globalMegaCategories %}
@@ -158,14 +129,35 @@
 
 									{% endfor %}
 								</ul>
+								{# <div class="d-lg-flex menu_banners row g-3 px-3">
+									{% for intro in app.session.get('megaIntro') %}
+										<div class="col-sm-4">
+											<div class="header-banner"><img alt="menu_banner1" src="/assets/images/intro/{{intro.image}}">
+												<div class="banne_info">
+													<h6>
+														{{ intro.description }}
+													</h6>
+													<h4>
+														{{ intro.title }}
+													</h4>
+													<a href="{{intro.buttonLink}}">
+														{{ intro.buttonText }}
+													</a>
+												</div>
+											</div>
+										</div>
+
+									{% endfor %}
+								</div> #}
 							</div>
 						</li>
 						<li class="dropdown dropdown-mega-menu">
-							<a routerlink="/shop-list" class="nav-link" ng-reflect-router-link="/shop-list" href="/shop-list">Shop</a>
+							<a class="nav-link" href="/article">
+								Blog
+							</a>
 						</li>
 						<li>
-							<a routerlink="/contact" class="nav-link nav_item" ng-reflect-router-link="/contact" href="/contact">Contact
-																																																																																																                                Us</a>
+							<a class="nav-link nav_item" href="/contact">Contact</a>
 						</li>
 					</ul>
 				</div>
@@ -178,161 +170,37 @@
 							<span class="close-search">
 								<i class="ion-ios-close-empty"></i>
 							</span>
-							<form novalidate="" class="ng-untouched ng-pristine ng-valid">
-								<input type="text" placeholder="Search" id="search_input" class="form-control"><button type="submit" class="search_icon">
+							<form action="/produits-paris/search" method="get">
+								<input type="text" placeholder="Search" name="term" class="form-control">
+								<button type="submit" class="search_icon">
 									<i class="ion-ios-search-strong"></i>
 								</button>
 							</form>
 						</div>
-						<div class="search_overlay"></div>
-						<div class="search_overlay"></div>
-						<div class="search_overlay"></div>
-						<div class="search_overlay"></div>
-						<div class="search_overlay"></div>
-						<div class="search_overlay"></div>
-						<div class="search_overlay"></div>
-						<div class="search_overlay"></div>
-						<div class="search_overlay"></div>
-						<div class="search_overlay"></div>
-						<div class="search_overlay"></div>
-						<div class="search_overlay"></div>
-						<div class="search_overlay"></div>
-						<div class="search_overlay"></div>
-						<div class="search_overlay"></div>
-						<div class="search_overlay"></div>
-						<div class="search_overlay"></div>
-						<div class="search_overlay"></div>
-						<div class="search_overlay"></div>
-						<div class="search_overlay"></div>
-						<div class="search_overlay"></div>
-						<div class="search_overlay"></div>
-						<div class="search_overlay"></div>
-						<div class="search_overlay"></div>
-						<div class="search_overlay"></div>
 					</li>
 					<li class="dropdown cart_dropdown">
 						<a href="#" data-bs-toggle="dropdown" class="nav-link cart_trigger">
 							<i class="linearicons-cart"></i>
-							<span class="cart_count">31</span>
+							<span class="cart_count"></span>
 						</a>
 						<div class="cart_box dropdown-menu dropdown-menu-right">
-							<ul class="cart_list">
-								<li>
-									<a href="#" class="item_remove">
-										<i class="ion-close"></i>
-									</a>
-									<a href="#"><img width="50" height="50" alt="cart_thumb1" src="/assets/files/culottes/culotte_5/36851533762117856286455670026456984987161761684087224828.webp">Culotte
-																																																																																																																								                                        en dentelle</a>
-									<span class="cart_quantity">
-										11 x
-										<span class="cart_amount">
-											<span class="price_symbole">23,91&nbsp;€</span>
-										</span>
-									</span>
-								</li>
-								<li>
-									<a href="#" class="item_remove">
-										<i class="ion-close"></i>
-									</a>
-									<a href="#"><img width="50" height="50" alt="cart_thumb1" src="/assets/files/culottes/culotte_9/116945623386141314594418897879593148825527931684087225230.webp">Culotte
-																																																																																																																								                                        unicolore (sans couture)</a>
-									<span class="cart_quantity">
-										4 x
-										<span class="cart_amount">
-											<span class="price_symbole">44,54&nbsp;€</span>
-										</span>
-									</span>
-								</li>
-								<li>
-									<a href="#" class="item_remove">
-										<i class="ion-close"></i>
-									</a>
-									<a href="#"><img width="50" height="50" alt="cart_thumb1" src="/assets/files/culottes/culotte_7/825380258783085919054835307976332473139779511684087224936.webp">Culotte
-																																																																																																																								                                        en dentelle</a>
-									<span class="cart_quantity">
-										3 x
-										<span class="cart_amount">
-											<span class="price_symbole">17,17&nbsp;€</span>
-										</span>
-									</span>
-								</li>
-								<li>
-									<a href="#" class="item_remove">
-										<i class="ion-close"></i>
-									</a>
-									<a href="#"><img width="50" height="50" alt="cart_thumb1" src="/assets/files/970670668041335927385290724653240714148366921684565574162.webp">Bikini
-																																																																																																																								                                        unicolore côtelé</a>
-									<span class="cart_quantity">
-										4
-																																																																																																																								                                        x
-										<span class="cart_amount">
-											<span class="price_symbole">28,24&nbsp;€</span>
-										</span>
-									</span>
-								</li>
-								<li>
-									<a href="#" class="item_remove">
-										<i class="ion-close"></i>
-									</a>
-									<a href="#"><img width="50" height="50" alt="cart_thumb1" src="/assets/files/culottes/culotte_4/87087411019387380483560199609827534551691041684087224752.webp">Culotte
-																																																																																																																								                                        unicolore femme (sans couture)</a>
-									<span class="cart_quantity">
-										2 x
-										<span class="cart_amount">
-											<span class="price_symbole">56,07&nbsp;€</span>
-										</span>
-									</span>
-								</li>
-								<li>
-									<a href="#" class="item_remove">
-										<i class="ion-close"></i>
-									</a>
-									<a href="#"><img width="50" height="50" alt="cart_thumb1" src="/assets/files/culottes/culotte_2/64690629656996101166169787112869964617448491684087224479.webp">Tanga
-																																																																																																																								                                        unicolore</a>
-									<span class="cart_quantity">
-										3 x
-										<span class="cart_amount">
-											<span class="price_symbole">38,84&nbsp;€</span>
-										</span>
-									</span>
-								</li>
-								<li>
-									<a href="#" class="item_remove">
-										<i class="ion-close"></i>
-									</a>
-									<a href="#"><img width="50" height="50" alt="cart_thumb1" src="/assets/files/culottes/culotte_8/10518988473111520886581236853833613928085898971684087225041.webp">Culotte
-																																																																																																																								                                        en dentelle</a>
-									<span class="cart_quantity">
-										1 x
-										<span class="cart_amount">
-											<span class="price_symbole">58,43&nbsp;€</span>
-										</span>
-									</span>
-								</li>
-								<li>
-									<a href="#" class="item_remove">
-										<i class="ion-close"></i>
-									</a>
-									<a href="#"><img width="50" height="50" alt="cart_thumb1" src="/assets/files/culottes/culotte_3/6138170893214881132536005127536132168491807951684087224669.webp">Culotte
-																																																																																																																								                                        à blocs de couleurs en dentelle</a>
-									<span class="cart_quantity">
-										3 x
-										<span class="cart_amount">
-											<span class="price_symbole">54,95&nbsp;€</span>
-										</span>
-									</span>
-								</li>
-							</ul>
+							<ul class="cart_list"></ul>
 							<div class="cart_footer">
-								<p class="cart_total">
-									<strong>Subtotal:</strong>
-									<span class="cart_price">
-										<span class="price_symbole"></span>
-									</span>1 057,58&nbsp;€
+								<p class="cart_total_ht cart_total">
+									<strong>Sous-total HT:</strong>
+									<span class="cart_price_value_ht"></span>
+								</p>
+								<p class="cart_taxe cart_total">
+									<strong>Taxe:</strong>
+									<span class="cart_taxe_value"></span>
+								</p>
+								<p class="cart_total_ttc cart_total">
+									<strong>Sous-total TTC:</strong>
+									<span class="cart_price_value_ttc"></span>
 								</p>
 								<p class="cart_buttons">
-									<a routerlink="/cart" class="btn btn-fill-line view-cart" ng-reflect-router-link="/cart" href="/cart">View Cart</a>
-									<a routerlink="/checkout" class="btn btn-fill-out checkout" ng-reflect-router-link="/checkout" href="/checkout">Checkout</a>
+									<a class="btn btn-fill-line view-cart" href="/cart">Mon panier</a>
+									<a class="btn btn-fill-out checkout" href="/checkout">Paiement</a>
 								</p>
 							</div>
 						</div>

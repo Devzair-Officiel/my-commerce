@@ -2,11 +2,12 @@
 
 namespace App\Entity;
 
-use App\Repository\CategoryRepository;
 use App\Trait\DateTrait;
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use App\Repository\CategoryRepository;
+use Doctrine\Common\Collections\Collection;
+use Doctrine\Common\Collections\ArrayCollection;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 #[ORM\HasLifecycleCallbacks]
 #[ORM\Entity(repositoryClass: CategoryRepository::class)]
@@ -30,6 +31,8 @@ class Category
 
     #[ORM\Column(nullable: true)]
     private ?bool $isMega = null;
+
+    private ?UploadedFile $imageFile = null;
 
     /**
      * @var Collection<int, Product>
@@ -94,6 +97,18 @@ class Category
     public function setIsMega(?bool $isMega): static
     {
         $this->isMega = $isMega;
+
+        return $this;
+    }
+
+    public function getImageFile(): ?UploadedFile
+    {
+        return $this->imageFile;
+    }
+
+    public function setImageFile(?UploadedFile $imageFile): self
+    {
+        $this->imageFile = $imageFile;
 
         return $this;
     }

@@ -10,11 +10,14 @@ use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
 use EasyCorp\Bundle\EasyAdminBundle\Field\BooleanField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\FileField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\FormField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\IdField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\ImageField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\SlugField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextEditorField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 final class CategoryCrudController extends AbstractCrudController
 {
@@ -32,7 +35,6 @@ final class CategoryCrudController extends AbstractCrudController
             ->setEntityLabelInSingular('Catégorie')
             ->setEntityLabelInPlural('Catégories')
             ->setDefaultSort(['id' => 'DESC'])
-            ->setSearchFields(['id', 'title', 'slug', 'description'])
             ->showEntityActionsInlined();
     }
 
@@ -46,25 +48,44 @@ final class CategoryCrudController extends AbstractCrudController
 
     public function configureFields(string $pageName): iterable
     {
+        $isForm = \in_array($pageName, [Crud::PAGE_NEW, Crud::PAGE_EDIT], true);
+
         yield IdField::new('id')->hideOnForm();
 
-        yield TextField::new('title', 'Titre')
-            ->setRequired(true);
+        if ($isForm) {
+            yield FormField::addTab('Informations');
+            yield FormField::addColumn(8);
 
-        yield SlugField::new('slug', 'Slug')
-            ->setTargetFieldName('title')
-            ->hideOnIndex();
+            yield TextField::new('title', 'Titre')->setRequired(true);
 
-        yield TextEditorField::new('description', 'Description');
+            yield SlugField::new('slug')
+                ->setTargetFieldName('title')
+                ->hideOnIndex();
 
-        yield BooleanField::new('isMega', 'Mega menu');
+            yield TextEditorField::new('description')
+                ->setFormTypeOption('attr', ['rows' => 8]);
 
-        yield ImageField::new('media.filename', 'Image')
-            ->setBasePath(self::BASE_PATH)
-            ->setUploadDir(self::UPLOAD_DIR)
-            ->setUploadedFileNamePattern('[slug].[extension]')
-            ->setRequired(false);
+            yield BooleanField::new('isMega', 'Mega menu');
+
+            yield FormField::addColumn(4);
+            yield FormField::addPanel('Image');
+
+            // ✅ UNIQUE champ image (upload + preview)
+            yield ImageField::new('media.filename', 'Image')
+                ->setUploadDir(self::UPLOAD_DIR)
+                ->setBasePath(self::BASE_PATH)
+                ->setUploadedFileNamePattern('[slug]-[timestamp].[extension]')
+                ->setRequired(false);
+        } else {
+            yield TextField::new('title');
+            yield BooleanField::new('isMega');
+
+            yield ImageField::new('media.filename', 'Image')
+                ->setBasePath(self::BASE_PATH)
+                ->onlyOnIndex();
+        }
     }
+
 
     public function createEntity(string $entityFqcn): Category
     {
@@ -90,5 +111,4 @@ final class CategoryCrudController extends AbstractCrudController
 
         parent::persistEntity($entityManager, $entityInstance);
     }
-
 }

@@ -1,0 +1,184 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Miel World | check!
+{% endblock %}
+{# 
+{% block stylesheets %}
+
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" integrity="sha512-z3gLpd7yknf1YoNbCzqRKc4qyor8gaKU1qmn+CShxbuBusANI9QpRohGBreCFkKxLhei6S9CQXFEbbKuqLg0DA==" crossorigin="anonymous" referrerpolicy="no-referrer"/>
+	<link rel="stylesheet" href="/assets/css/stripe.css">
+	<script src="https://www.paypal.com/sdk/js?client-id={{paypal_public_key}}&currency=EUR"></script>
+	<script src="https://js.stripe.com/v3/"></script>
+
+{% endblock %} #}
+
+{% block body %}
+
+	{# <div class="main_content" data-stripe_public_key="{{stripe_public_key}}" data-paypal_public_key="{{paypal_public_key}}" data-cart="{{cart_json}}" data-orderid="{{orderId}}"> #}
+
+	<div class="section">
+		<div class="container">
+			<div class="row"></div>
+			<div
+				class="row">
+				{# <div class="col-md-6">
+														<div class="heading_s1">
+															<h4>Adresse de livraison</h4>
+															<select name="shipping_address" class="form-control">
+																<option value="">--- Choisir l'adresse de livraison ---</option>
+																{% for address in addresses %}
+																	<option>
+																		{{address.clientName}}
+																		({{address.street}}
+																		{{address.codePostal}}
+																		{{address.city}}
+																		{{address.state}})
+																	</option>
+																{% endfor %}
+															</select>
+														</div>
+														<div class="heading_s1">
+															<h4>Detail de la facture</h4>
+															<select name="billing_address" class="form-control">
+																<option value="">--- Choisir l'adresse de facturation ---</option>
+																{% for address in addresses %}
+																	<option>
+																		{{address.clientName}}
+																		({{address.street}}
+																		{{address.codePostal}}
+																		{{address.city}}
+																		{{address.state}})
+																	</option>
+																{% endfor %}
+															</select>
+														</div>
+														<div class="heading_s1">
+															<h4>Commentaire</h4>
+															<textarea class="form-control" name="comments" id="" cols="30" rows="10"></textarea>
+														</div>
+													</div> #}
+				<div class="col-md-6">
+					<div class="order_review">
+						<div class="heading_s1">
+							<h4>Your Orders</h4>
+						</div>
+						<div class="table-responsive order_table">
+							<table class="table">
+								<thead>
+									<tr>
+										<th>Product</th>
+										<th>Total</th>
+									</tr>
+								</thead>
+								<tbody>
+									{% for item in cart.items %}
+										<tr>
+											<td>
+												<img src="/assets/images/products/{{item.product.image[0]}}" width="30" alt="">
+												{{ item.product.title }}
+												(<span class="product-qty">
+													{{ item.quantity }}
+												</span>
+												<span class="product-price">
+													x
+													{{ (item.product.soldePrice/100) |format_currency('EUR')
+                                    }}
+												</span>)
+											</td>
+											<td>
+												{{ (item.product.soldePrice*item.quantity/100) |format_currency('EUR') }}
+											</td>
+										</tr>
+									{% endfor %}
+
+								</tbody>
+								<tfoot>
+									<tr>
+										<th>Sous-total HT</th>
+										<td class="product-subtotal">{{(cart.sub_total_ht/100) |format_currency('EUR')}}
+										</td>
+									</tr>
+									<tr>
+										<th>Taxe</th>
+										<td class="product-subtotal">{{(cart.taxe/100) |format_currency('EUR')}}
+										</td>
+									</tr>
+									{# <tr>
+																													{% if cart.sub_total_ht  > 5000%}
+																														<th>Livraison offerte</th>
+																														<td>{{(cart.carrier.price /100) |format_currency('EUR')}}</td>
+																													{% else %}
+																														<th>Frais de livraison</th>
+																														<td>{{(cart.carrier.price /100) |format_currency('EUR')}}</td>
+																													{% endif %}
+																												</tr> #}
+									<tr>
+										<th>Total TTC
+										</th>
+										{# <td class="product-subtotal">{{ (cart.sub_total_with_carrier/100)
+																				                                    |format_currency('EUR') }}</td> #}
+									</tr>
+								</tfoot>
+							</table>
+						</div>
+						{# <div class="payment-button d-none m-2">
+																				<a href="#" class="btn btn-fill-out btn-block" type="button" data-bs-toggle="modal" data-bs-target="#staticBackdrop">
+																					Payer maintenant
+																					{{ (cart.sub_total_with_carrier/100) |format_currency('EUR') }}
+																				</a>
+																			</div> #}
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+	<div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+		<div class="modal-content">
+			<div
+				class="modal-header">
+				<!-- <h5 class="modal-title">Modal title</h5> -->
+				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+			</div>
+			<div class="modal-body">
+				<div class="payment-methods d-flex gap-2 justify-content-center align-items-center">
+					Stripe
+					<i class="fa-solid fa-toggle-off"></i>
+					Paypal
+				</div>
+				<div id="stripe-method">
+					<form id="payment-form">
+						<div
+							id="link-authentication-element"><!--Stripe.js injects the Link Authentication Element-->
+						</div>
+						<div
+							id="payment-element"><!--Stripe.js injects the Payment Element-->
+						</div>
+						<button id="submit">
+							<div class="spinner hidden" id="spinner"></div>
+							<span id="button-text">Pay now</span>
+						</button>
+						<div id="payment-message" class="hidden"></div>
+					</form>
+				</div>
+				<div id="paypal-method" class="d-none">
+					<div id="paypal-button-container"></div>
+					<p id="result-message"></p>
+				</div>
+			</div>
+		</div>
+	</div>
+
+
+{% endblock %}
+
+
+{% block javascripts %}
+	{{ parent() }}
+
+	<script src="{{ asset('js/checkout-stripe.js') }}" defer></script>
+	<script src="{{ asset('js/checkout-paypal.js') }}" defer></script>
+{% endblock %}
+

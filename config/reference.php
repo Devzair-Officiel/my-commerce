@@ -724,7 +724,7 @@ namespace Symfony\Component\DependencyInjection\Loader\Configurator;
  *         enabled?: bool, // Default: false
  *     },
  *     intl?: bool|array{
- *         enabled?: bool, // Default: false
+ *         enabled?: bool, // Default: true
  *     },
  *     cssinliner?: bool|array{
  *         enabled?: bool, // Default: false

@@ -29,6 +29,8 @@
 
 			{% include("header/index.html.twig") %}
 
+			<div class="notification" style="position: fixed; top: 20px; right: 20px; z-index: 9999;"></div>
+
 			{% block body %}{% endblock %}
 
 			{% include "footer/index.html.twig" %}
@@ -47,5 +49,6 @@
 			<script src="/assets/js/slick.min.js"></script>
 			<script src="/assets/js/jquery.elevatezoom.js"></script>
 			<script src="/assets/js/scripts.js"></script>
+			 <script type="module" src="/assets/js/main.js"></script>
 		</body>
 	</html>
