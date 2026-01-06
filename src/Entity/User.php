@@ -48,6 +48,10 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(type: 'string', length: 10, enumType: Civility::class, nullable: true)]
     private ?Civility $civility = null;
 
+    #[ORM\OneToOne(mappedBy: 'customer', cascade: ['persist'])]
+    private ?Wishlist $wishlist = null;
+
+
     public function getId(): ?int
     {
         return $this->id;
@@ -155,5 +159,36 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         $this->civility = $civility;
         return $this;
+    }
+
+    public function getWishlist(): ?Wishlist
+    {
+        return $this->wishlist;
+    }
+    
+    /**
+     * Setter simplifié (et cohérent avec customer non-nullable)
+     */
+    public function setWishlist(?Wishlist $wishlist): static
+    {
+        $this->wishlist = $wishlist;
+
+        if ($wishlist !== null && $wishlist->getCustomer() !== $this) {
+            $wishlist->setCustomer($this);
+        }
+
+        return $this;
+    }
+
+    /**
+     * Optionnel mais très pratique : créer la wishlist si absente
+     */
+    public function getOrCreateWishlist(): Wishlist
+    {
+        if ($this->wishlist === null) {
+            $this->wishlist = new Wishlist($this);
+        }
+
+        return $this->wishlist;
     }
 }

@@ -1,0 +1,34 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Miel World | Produits Favoris
+{% endblock %}
+
+{% block body %}
+	{% include "page_head/index.html.twig" with {'page_name': 'Mes Favoris'} %}
+
+	<div class="main_content wishlist_content" data-wishlist='{{ wishlist|json_encode|e("html_attr") }}'>
+		<div class="section">
+			<div class="container">
+				<div class="row">
+					<div class="col-12">
+						<div class="table-responsive wishlist_table">
+							<table class="table">
+								<thead>
+									<tr>
+										<th class="product-thumbnail">&nbsp;</th>
+										<th class="product-name">Produit</th>
+										<th class="product-price">Prix</th>
+										<th class="product-add-to-cart">Ajouter</th>
+										<th class="product-remove">Supprimer</th>
+									</tr>
+								</thead>
+								<tbody></tbody>
+							</table>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+{% endblock %}
+

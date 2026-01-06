@@ -112,10 +112,17 @@ class Product
     #[ORM\ManyToOne(targetEntity: self::class)]
     private ?self $relatedProducts = null;
 
+    /**
+     * @var Collection<int, Wishlist>
+     */
+    #[ORM\ManyToMany(targetEntity: Wishlist::class, mappedBy: 'products')]
+    private Collection $wishlists;
+
     public function __construct()
     {
         $this->categories = new ArrayCollection();
         $this->medias = new ArrayCollection();
+        $this->wishlists = new ArrayCollection();
     }
 
     // ---------------------------------------------------------------------
@@ -448,6 +455,36 @@ class Product
     public function setRelatedProducts(?self $relatedProducts): static
     {
         $this->relatedProducts = $relatedProducts;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Wishlist>
+     */
+    public function getWishlists(): Collection
+    {
+        return $this->wishlists;
+    }
+
+    public function addWishlist(Wishlist $wishlist): static
+    {
+        if (!$this->wishlists->contains($wishlist)) {
+            $this->wishlists->add($wishlist);
+            // Optionnel : si tu veux garder la synchro bidirectionnelle
+            if (!$wishlist->getProducts()->contains($this)) {
+                $wishlist->addProduct($this);
+            }
+        }
+
+        return $this;
+    }
+
+    public function removeWishlist(Wishlist $wishlist): static
+    {
+        if ($this->wishlists->removeElement($wishlist)) {
+            $wishlist->removeProduct($this);
+        }
 
         return $this;
     }
