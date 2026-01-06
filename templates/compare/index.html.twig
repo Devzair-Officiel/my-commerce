@@ -1,20 +1,35 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Hello CompareController!{% endblock %}
+{% block title %}
+	NideMiel | Comparaison
+{% endblock %}
 
 {% block body %}
-<style>
-    .example-wrapper { margin: 1em auto; max-width: 800px; width: 95%; font: 18px/1.5 sans-serif; }
-    .example-wrapper code { background: #F5F5F5; padding: 2px 6px; }
-</style>
 
-<div class="example-wrapper">
-    <h1>Hello {{ controller_name }}! ✅</h1>
+	{% include "page_head/index.html.twig" with {'page_name': 'Comparaison'} %}
 
-    This friendly message is coming from:
-    <ul>
-        <li>Your controller at <code>/app/src/Controller/CompareController.php</code></li>
-        <li>Your template at <code>/app/templates/compare/index.html.twig</code></li>
-    </ul>
-</div>
+	<div class="section compare_container" data-compare="{{ compare|json_encode|e('html_attr') }}">
+		<div class="container">
+			<div class="row">
+				<div class="col-md-12">
+					<div class="compare_box">
+						<div class="table-responsive">
+							<table class="table table-bordered text-center compare_table">
+								<tbody>
+									<tr class="pr_image"></tr>
+									<tr class="pr_title"></tr>
+									<tr class="pr_price"></tr>
+
+									<tr class="pr_add_to_cart"></tr>
+
+									<tr class="pr_remove"></tr>
+								</tbody>
+							</table>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
 {% endblock %}
+

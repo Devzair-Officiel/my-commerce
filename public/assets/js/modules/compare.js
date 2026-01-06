@@ -95,7 +95,7 @@ export async function displayCompare(compare = null) {
       "beforeend",
       `
       <td class="product_name">
-        <a href="/produits-bio-paris/${product.slug ?? ""}">${product.title ?? ""}</a>
+        <a href="/products/${product.slug ?? ""}">${product.title ?? ""}</a>
       </td>
       `
     );
