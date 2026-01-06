@@ -1,56 +1,40 @@
-import { displayCompare, displayCart, displayWishlist, formatPrice } from './library.js';
+import { displayCompare, initCompare } from "./modules/compare.js";
+import { displayWishlist, initWishlist } from "./modules/wishlist.js";
+import { initCart, displayCart, initCarrierSelector, updateHeaderCart } from "./modules/cart.js";
 
-const safeJsonParse = (value, fallback = null) => {
+function safeJsonParse(value, fallback = null) {
   if (!value || typeof value !== "string") return fallback;
-  try { return JSON.parse(value); } catch { return fallback; }
-};
+  try {
+    return JSON.parse(value);
+  } catch {
+    return fallback;
+  }
+}
 
-window.addEventListener("load", () => {
-  // compare
-  let mainContent = document.querySelector('.compare_container');
-  const compare = safeJsonParse(mainContent?.dataset?.compare, null);
-  displayCompare(compare);
+window.addEventListener("load", async () => {
+  // Init listeners (1 fois chacun)
+  initCart();
+  initCompare();
+  initWishlist();
 
-  // wishlist
-  mainContent = document.querySelector('.wishlist_content');
-  const wishlist = safeJsonParse(mainContent?.dataset?.wishlist, null);
+  // Compare dataset
+  const compareContainer = document.querySelector(".compare_container");
+  const compare = safeJsonParse(compareContainer?.dataset?.compare, null);
+  await displayCompare(compare);
+
+  // Wishlist dataset
+  const wishlistContainer = document.querySelector(".wishlist_content");
+  const wishlist = safeJsonParse(wishlistContainer?.dataset?.wishlist, null);
   displayWishlist(wishlist);
 
-  // cart
-  mainContent = document.querySelector('.cart_content');
-  const cart = safeJsonParse(mainContent?.dataset?.cart, null);
+  // Cart dataset + carriers
+  const cartContainer = document.querySelector(".cart_content");
+  const cart = safeJsonParse(cartContainer?.dataset?.cart, null);
+  const carriers = safeJsonParse(cartContainer?.dataset?.carriers, []);
 
-  const carriers = safeJsonParse(mainContent?.dataset?.carriers, []);
-  const form = document.querySelector(".carrier_form form");
-  const select = document.querySelector(".carrier_form select");
-
-  if (cart && select && Array.isArray(carriers)) {
-    select.innerHTML = "";
-    carriers.forEach((carrier) => {
-      const selected = carrier.id == cart?.carrier?.id ? "selected" : "";
-      select.innerHTML += `
-        <option value="${carrier.id}" ${selected}>
-          ${carrier.name} (${formatPrice(carrier.price / 100)})
-        </option>
-      `;
-    });
-  }
-
-  const handleChange = async (event) => {
-    event.preventDefault();
-    const id = event.target.value;
-    if (!id) return;
-
-    const response = await fetch('/api/cart/update/carrier/' + id);
-    const result = await response.json();
-
-    if (result.isSuccess) {
-      displayCart(result.data);
-    }
-  };
-
-  form?.addEventListener('submit', (e) => e.preventDefault());
-  select?.addEventListener('change', handleChange);
-
+  initCarrierSelector({ cart, carriers });
   displayCart(cart);
+
+  // Si tu veux être sûr que le mini-cart est à jour même sans dataset :
+  await updateHeaderCart(cart);
 });

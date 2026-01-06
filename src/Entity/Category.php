@@ -8,9 +8,13 @@ use App\Repository\CategoryRepository;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\Collections\ArrayCollection;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
+use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Validator\Context\ExecutionContextInterface;
+
 
 #[ORM\HasLifecycleCallbacks]
 #[ORM\Entity(repositoryClass: CategoryRepository::class)]
+#[Assert\Callback('validateMegaRequiresProducts')]
 class Category
 {
     use DateTrait;
@@ -48,6 +52,22 @@ class Category
         $this->products = new ArrayCollection();
     }
 
+    // ---------------------------------------------------------------------
+    // Validation métier
+    // ---------------------------------------------------------------------
+    public function validateMegaRequiresProducts(ExecutionContextInterface $context): void
+    {
+        if ($this->isMega !== true) {
+            return;
+        }
+
+        if ($this->products->count() < 1) {
+            $context->buildViolation('Si "Mega menu" est activé, la catégorie doit avoir au moins un produit associé.')
+                ->atPath('isMega')
+                ->addViolation();
+        }
+    }
+    
     public function getId(): ?int
     {
         return $this->id;
