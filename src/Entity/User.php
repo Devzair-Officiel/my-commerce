@@ -65,9 +65,13 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(mappedBy: 'user', targetEntity: Address::class)]
     private Collection $addresses;
 
+    #[ORM\OneToMany(mappedBy: 'user', targetEntity: Order::class)]
+    private Collection $orders;
+
     public function __construct()
     {
         $this->addresses = new ArrayCollection();
+        $this->orders = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -274,5 +278,16 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         }
 
         return $this;
+    }
+
+    /** @return Collection<int, Order> */
+    public function getOrders(): Collection
+    {
+        return $this->orders;
+    }
+
+    public function __toString(): string
+    {
+        return (string) $this->full_name;
     }
 }

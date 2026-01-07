@@ -2,13 +2,14 @@
 
 namespace App\Entity;
 
+use App\Enum\OrderStatus;
+use App\Repository\OrderRepository;
 use App\Trait\DateTrait;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
-use App\Repository\OrderRepository;
-use Doctrine\Common\Collections\Collection;
-use Doctrine\Common\Collections\ArrayCollection;
-use DH\Auditor\Provider\Doctrine\Auditing\Annotation\Auditable;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: OrderRepository::class)]
 #[ORM\Table(name: '`order`')]
@@ -22,54 +23,102 @@ class Order
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column(length: 255)]
-    private ?string $client_name = null;
+    /**
+     * Propriétaire de la commande (sécurité/ownership).
+     */
+    #[ORM\ManyToOne(inversedBy: 'orders')]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
+    #[Assert\NotNull]
+    private ?User $user = null;
+
+    /**
+     * Adresse figée (snapshot) pour historiser.
+     */
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    #[Assert\Length(max: 4000)]
+    private ?string $shippingAddress = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
-    private ?string $shipping_address = null;
+    #[Assert\Length(max: 4000)]
+    private ?string $billingAddress = null;
 
-    #[ORM\Column(type: Types::TEXT, nullable: true)]
-    private ?string $billing_address = null;
-
+    /**
+     * Montants en CENTIMES.
+     */
     #[ORM\Column]
-    private ?int $quantity = null;
-
-    #[ORM\Column]
-    private ?int $order_cost_ht = null;
+    #[Assert\NotNull]
+    #[Assert\PositiveOrZero]
+    private int $itemsTotalHtCents = 0;
 
     #[ORM\Column(nullable: true)]
-    private ?int $taxe = null;
+    #[Assert\PositiveOrZero]
+    private ?int $taxAmountCents = null;
 
     #[ORM\Column]
-    private ?int $order_cost_ttc = null;
+    #[Assert\NotNull]
+    #[Assert\PositiveOrZero]
+    private int $orderTotalTtcCents = 0;
+
+    /**
+     * Devise (ISO 4217). Tu peux forcer "EUR" si tu veux.
+     */
+    #[ORM\Column(length: 3)]
+    #[Assert\NotBlank]
+    #[Assert\Length(min: 3, max: 3)]
+    private string $currency = 'EUR';
+
+    #[ORM\Column(type: Types::STRING, length: 20, enumType: OrderStatus::class)]
+    #[Assert\NotNull]
+    private OrderStatus $status = OrderStatus::Draft;
+
+    /**
+     * Carrier : relation + snapshot.
+     */
+    #[ORM\ManyToOne(inversedBy: 'orders')]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
+    private ?Carrier $carrier = null;
+
+    #[ORM\Column(length: 255)]
+    #[Assert\NotBlank]
+    #[Assert\Length(max: 255)]
+    private string $carrierNameSnapshot = '';
+
+    #[ORM\Column]
+    #[Assert\PositiveOrZero]
+    private int $carrierPriceSnapshotCents = 0;
+
+    /**
+     * Paiement : relation + snapshot.
+     */
+    #[ORM\ManyToOne(inversedBy: 'orders')]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
+    private ?PaymentMethod $paymentMethod = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    #[Assert\Length(max: 255)]
+    private ?string $paymentMethodNameSnapshot = null;
+
+    /**
+     * Référence provider (ex: Stripe payment_intent id / PayPal order id).
+     */
+    #[ORM\Column(length: 255, nullable: true)]
+    #[Assert\Length(max: 255)]
+    private ?string $paymentReference = null;
+
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
+    private ?\DateTimeImmutable $paidAt = null;
 
     #[ORM\Column(nullable: true)]
-    private ?bool $isPaid = false;
+    private ?\DateTimeImmutable $cartClearedAt = null;
 
-    #[ORM\Column(length: 255)]
-    private ?string $status = null;
-
-    #[ORM\Column]
-    private ?int $carrier_price = null;
-
-    #[ORM\Column(length: 255)]
-    private ?string $carrier_name = null;
-
-    #[ORM\Column]
-    private ?int $carrier_id = null;
-
-    #[ORM\OneToMany(mappedBy: 'myOrder', targetEntity: OrderDetails::class)]
+    #[ORM\OneToMany(
+        mappedBy: 'myOrder',
+        targetEntity: OrderDetails::class,
+        cascade: ['persist', 'remove'],
+        orphanRemoval: true
+    )]
+    #[Assert\Valid] // valide aussi les lignes
     private Collection $orderDetails;
-
-
-    #[ORM\Column(length: 255, nullable: true)]
-    private ?string $stripeClientSecret = null;
-
-    #[ORM\Column(length: 255, nullable: true)]
-    private ?string $paypalClientSecret = null;
-
-    #[ORM\Column(length: 255, nullable: true)]
-    private ?string $paymentMethod = null;
 
     public function __construct()
     {
@@ -81,129 +130,167 @@ class Order
         return $this->id;
     }
 
-    public function getClientName(): ?string
+    public function getUser(): ?User
     {
-        return $this->client_name;
+        return $this->user;
     }
-
-    public function setClientName(string $client_name): static
+    public function setUser(User $user): static
     {
-        $this->client_name = $client_name;
-
+        $this->user = $user;
         return $this;
     }
 
-    public function getQuantity(): ?int
+    public function getShippingAddress(): ?string
     {
-        return $this->quantity;
+        return $this->shippingAddress;
     }
-
-    public function setQuantity(int $quantity): static
+    public function setShippingAddress(?string $shippingAddress): static
     {
-        $this->quantity = $quantity;
-
+        $this->shippingAddress = $shippingAddress !== null ? trim($shippingAddress) : null;
         return $this;
     }
 
-    public function getOrderCostHt(): ?int
+    public function getBillingAddress(): ?string
     {
-        return $this->order_cost_ht;
+        return $this->billingAddress;
     }
-
-    public function setOrderCostHt(int $order_cost): static
+    public function setBillingAddress(?string $billingAddress): static
     {
-        $this->order_cost_ht = $order_cost;
-
+        $this->billingAddress = $billingAddress !== null ? trim($billingAddress) : null;
         return $this;
     }
 
-    public function getTaxe(): ?int
+    public function getItemsTotalHtCents(): int
     {
-        return $this->taxe;
+        return $this->itemsTotalHtCents;
     }
-
-    public function setTaxe(?int $taxe): static
+    public function setItemsTotalHtCents(int $cents): static
     {
-        $this->taxe = $taxe;
-
+        $this->itemsTotalHtCents = $cents;
         return $this;
     }
 
-    public function getOrderCostTtc(): ?int
+    public function getTaxAmountCents(): ?int
     {
-        return $this->order_cost_ttc;
+        return $this->taxAmountCents;
     }
-
-    public function setOrderCostTtc(int $order_cost_ttc): static
+    public function setTaxAmountCents(?int $cents): static
     {
-        $this->order_cost_ttc = $order_cost_ttc;
-
+        $this->taxAmountCents = $cents;
         return $this;
     }
 
-    public function isIsPaid(): ?bool
+    public function getOrderTotalTtcCents(): int
     {
-        return $this->isPaid;
+        return $this->orderTotalTtcCents;
     }
-
-    public function setIsPaid(?bool $isPaid): static
+    public function setOrderTotalTtcCents(int $cents): static
     {
-        $this->isPaid = $isPaid;
-
+        $this->orderTotalTtcCents = $cents;
         return $this;
     }
 
-    public function getStatus(): ?string
+    public function getCurrency(): string
+    {
+        return $this->currency;
+    }
+    public function setCurrency(string $currency): static
+    {
+        $this->currency = strtoupper($currency);
+        return $this;
+    }
+
+    public function getStatus(): OrderStatus
     {
         return $this->status;
     }
-
-    public function setStatus(string $status): static
+    public function setStatus(OrderStatus $status): static
     {
         $this->status = $status;
-
         return $this;
     }
 
-    public function getCarrierPrice(): ?int
+    public function getCarrier(): ?Carrier
     {
-        return $this->carrier_price;
+        return $this->carrier;
     }
-
-    public function setCarrierPrice(int $carrier_price): static
+    public function setCarrier(?Carrier $carrier): static
     {
-        $this->carrier_price = $carrier_price;
-
+        $this->carrier = $carrier;
         return $this;
     }
 
-    public function getCarrierName(): ?string
+    public function getCarrierNameSnapshot(): string
     {
-        return $this->carrier_name;
+        return $this->carrierNameSnapshot;
     }
-
-    public function setCarrierName(string $carrier_name): static
+    public function setCarrierNameSnapshot(string $name): static
     {
-        $this->carrier_name = $carrier_name;
-
+        $this->carrierNameSnapshot = trim($name);
         return $this;
     }
 
-    public function getCarrierId(): ?int
+    public function getCarrierPriceSnapshotCents(): int
     {
-        return $this->carrier_id;
+        return $this->carrierPriceSnapshotCents;
     }
-
-    public function setCarrierId(int $carrier_id): static
+    public function setCarrierPriceSnapshotCents(int $cents): static
     {
-        $this->carrier_id = $carrier_id;
-
+        $this->carrierPriceSnapshotCents = $cents;
         return $this;
     }
 
-    /**
-     * @return Collection<int, OrderDetails>
-     */
+    public function getPaymentMethod(): ?PaymentMethod
+    {
+        return $this->paymentMethod;
+    }
+    public function setPaymentMethod(?PaymentMethod $paymentMethod): static
+    {
+        $this->paymentMethod = $paymentMethod;
+        return $this;
+    }
+
+    public function getPaymentMethodNameSnapshot(): ?string
+    {
+        return $this->paymentMethodNameSnapshot;
+    }
+    public function setPaymentMethodNameSnapshot(?string $name): static
+    {
+        $this->paymentMethodNameSnapshot = $name !== null ? trim($name) : null;
+        return $this;
+    }
+
+    public function getPaymentReference(): ?string
+    {
+        return $this->paymentReference;
+    }
+    public function setPaymentReference(?string $ref): static
+    {
+        $this->paymentReference = $ref !== null ? trim($ref) : null;
+        return $this;
+    }
+
+    public function getPaidAt(): ?\DateTimeImmutable
+    {
+        return $this->paidAt;
+    }
+    public function setPaidAt(?\DateTimeImmutable $paidAt): static
+    {
+        $this->paidAt = $paidAt;
+        return $this;
+    }
+
+    public function getCartClearedAt(): ?\DateTimeImmutable
+    {
+        return $this->cartClearedAt;
+    }
+
+    public function markCartCleared(): void
+    {
+        $this->cartClearedAt = new \DateTimeImmutable();
+    }
+
+    /** @return Collection<int, OrderDetails> */
     public function getOrderDetails(): Collection
     {
         return $this->orderDetails;
@@ -215,79 +302,16 @@ class Order
             $this->orderDetails->add($orderDetail);
             $orderDetail->setMyOrder($this);
         }
-
         return $this;
     }
 
     public function removeOrderDetail(OrderDetails $orderDetail): static
     {
         if ($this->orderDetails->removeElement($orderDetail)) {
-            // set the owning side to null (unless already changed)
             if ($orderDetail->getMyOrder() === $this) {
                 $orderDetail->setMyOrder(null);
             }
         }
-
-        return $this;
-    }
-
-    public function getShippingAddress(): ?string
-    {
-        return $this->shipping_address;
-    }
-
-    public function setShippingAddress(?string $shipping_address): static
-    {
-        $this->shipping_address = $shipping_address;
-
-        return $this;
-    }
-
-    public function getBillingAddress(): ?string
-    {
-        return $this->billing_address;
-    }
-
-    public function setBillingAddress(?string $billing_address): static
-    {
-        $this->billing_address = $billing_address;
-
-        return $this;
-    }
-
-    public function getStripeClientSecret(): ?string
-    {
-        return $this->stripeClientSecret;
-    }
-
-    public function setStripeClientSecret(?string $stripeClientSecret): static
-    {
-        $this->stripeClientSecret = $stripeClientSecret;
-
-        return $this;
-    }
-
-    public function getPaypalClientSecret(): ?string
-    {
-        return $this->paypalClientSecret;
-    }
-
-    public function setPaypalClientSecret(?string $paypalClientSecret): static
-    {
-        $this->paypalClientSecret = $paypalClientSecret;
-
-        return $this;
-    }
-
-    public function getPaymentMethod(): ?string
-    {
-        return $this->paymentMethod;
-    }
-
-    public function setPaymentMethod(?string $paymentMethod): static
-    {
-        $this->paymentMethod = $paymentMethod;
-
         return $this;
     }
 }

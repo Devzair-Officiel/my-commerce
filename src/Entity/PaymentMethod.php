@@ -7,38 +7,39 @@ use App\Trait\DateTrait;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use App\Repository\PaymentMethodRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
+use Symfony\Component\Validator\Constraints as Assert;
 use DH\Auditor\Provider\Doctrine\Auditing\Annotation\Auditable;
 
 #[ORM\Entity(repositoryClass: PaymentMethodRepository::class)]
 class PaymentMethod
 {
-    use DateTrait;
-
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank]
+    #[Assert\Length(max: 255)]
     private ?string $name = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank]
+    #[Assert\Length(max: 255)]
     private ?string $description = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $more_description = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
+    #[Assert\Length(max: 2000)]
     private ?string $test_public_api_key = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
+    #[Assert\Length(max: 2000)]
     private ?string $test_private_api_key = null;
-
-    #[ORM\Column(type: Types::TEXT, nullable: true)]
-    private ?string $prod_public_api_key = null;
-
-    #[ORM\Column(type: Types::TEXT, nullable: true)]
-    private ?string $prod_private_api_key = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $testBaseUrl = null;
@@ -49,9 +50,12 @@ class PaymentMethod
     #[ORM\OneToOne(mappedBy: 'paymentMethod', cascade: ['persist', 'remove'])]
     private ?Media $mediaPayment = null;
 
+    #[ORM\OneToMany(mappedBy: 'paymentMethod', targetEntity: Order::class)]
+    private Collection $orders;
+
     public function __construct()
     {
-        $this->setCreatedAt(new \DateTimeImmutable());
+        $this->orders = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -119,30 +123,6 @@ class PaymentMethod
         return $this;
     }
 
-    public function getProdPublicApiKey(): ?string
-    {
-        return $this->prod_public_api_key;
-    }
-
-    public function setProdPublicApiKey(?string $prod_public_api_key): static
-    {
-        $this->prod_public_api_key = $prod_public_api_key;
-
-        return $this;
-    }
-
-    public function getProdPrivateApiKey(): ?string
-    {
-        return $this->prod_private_api_key;
-    }
-
-    public function setProdPrivateApiKey(?string $prod_private_api_key): static
-    {
-        $this->prod_private_api_key = $prod_private_api_key;
-
-        return $this;
-    }
-
     public function getTestBaseUrl(): ?string
     {
         return $this->testBaseUrl;
@@ -187,5 +167,11 @@ class PaymentMethod
         $this->mediaPayment = $mediaPayment;
 
         return $this;
+    }
+
+    /** @return Collection<int, Order> */
+    public function getOrders(): Collection
+    {
+        return $this->orders;
     }
 }

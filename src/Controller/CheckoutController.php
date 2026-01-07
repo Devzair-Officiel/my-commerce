@@ -4,10 +4,11 @@ namespace App\Controller;
 
 use App\Entity\User;
 use App\Entity\Order;
+use App\Enum\OrderStatus;
 use App\Entity\OrderDetails;
 use App\Service\CartService;
-use App\Services\PaypalService;
-use App\Services\StripeService;
+use App\Service\PaypalService;
+use App\Service\StripeService;
 use Symfony\Component\Mime\Email;
 use App\Repository\OrderRepository;
 use App\Repository\AddressRepository;
@@ -22,182 +23,186 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 class CheckoutController extends AbstractController
 {
     private $session;
-    public function __construct(private CartService $cartService, private OrderRepository $orderRepo, RequestStack $requestStack, private EntityManagerInterface $em)
-    {
+
+    public function __construct(
+        private readonly CartService $cartService,
+        RequestStack $requestStack,
+        private readonly EntityManagerInterface $em,
+        private readonly OrderRepository $orderRepo,
+    ) {
         $this->session = $requestStack->getSession();
     }
 
-    #[Route('/checkout', name: 'app_checkout')]
-    public function index(AddressRepository $addressRepo, StripeService $stripeService, PaypalService $paypalService): Response
-    {
+    #[Route('/checkout', name: 'app_checkout', methods: ['GET'])]
+    public function index(
+        AddressRepository $addressRepo,
+        StripeService $stripeService,
+        PaypalService $paypalService,
+    ): Response {
         $cart = $this->cartService->getCartDetails();
 
-        if (!count($cart["items"])) {
+        if (!isset($cart['items']) || !\is_array($cart['items']) || count($cart['items']) === 0) {
             return $this->redirectToRoute('app_home');
         }
 
-        $user = $this->getUser();
+        $this->denyAccessUnlessGranted('ROLE_USER');
 
-        if (!$user) {
-            $this->session->set("next", [
-                'route' => 'app_checkout',
-                'params' => []
-            ]);
+        $user = $this->getUser();
+        if (!$user instanceof User) {
+            // fallback (normalement denyAccessUnlessGranted suffit)
+            $this->session->set('next', ['route' => 'app_checkout', 'params' => []]);
             return $this->redirectToRoute('app_login');
         }
 
-        $addresses = $addressRepo->findBy(['user' => $user]);
-        $cart_json = json_encode($cart);
+        $addresses = $addressRepo->findBy(['user' => $user], ['id' => 'DESC']);
 
-        $orderId = $this->createOrder($cart);
-
-        $stripe_Public_Key = $stripeService->getPublicKey();
-        $paypal_Public_Key = $paypalService->getPublicKey();
+        $order = $this->createDraftOrderFromCart($user, $cart);
 
         return $this->render('checkout/index.html.twig', [
-            'controller_name' => 'CheckoutController',
             'cart' => $cart,
-            'orderId' => $orderId,
-            'cart_json' => $cart_json,
-            'stripe_public_key' => $stripe_Public_Key,
-            'paypal_public_key' => $paypal_Public_Key,
+            'orderId' => $order->getId(),
+            'cart_json' => json_encode($cart, JSON_UNESCAPED_UNICODE),
+            'stripe_public_key' => $stripeService->getPublicKey(),
+            'paypal_public_key' => $paypalService->getPublicKey(),
             'addresses' => $addresses,
         ]);
     }
 
-    #[Route('/stripe/payment/success', name: 'app_stripe_payment_success')]
-    public function paymentSuccess(Request $request, OrderRepository $orderRepo, EntityManagerInterface $em, MailerInterface $mailer): Response
+    #[Route('/stripe/payment/success', name: 'app_stripe_payment_success', methods: ['GET'])]
+    public function stripePaymentSuccess(): Response
     {
-        $stripeClientSecret = $request->query->get("payment_intent_client_secret");
+        $this->denyAccessUnlessGranted('ROLE_USER');
 
-        $order = $orderRepo->findOneBy(['stripeClientSecret' => $stripeClientSecret]);
+        return $this->render('payment/success.html.twig');
+    }
+
+    #[Route('/paypal/payment/success', name: 'app_paypal_payment_success', methods: ['GET'])]
+    public function paypalPaymentSuccess(
+        Request $request,
+        OrderRepository $orderRepo,
+        EntityManagerInterface $em,
+        MailerInterface $mailer,
+    ): Response {
+        $this->denyAccessUnlessGranted('ROLE_USER');
+
         $user = $this->getUser();
+        if (!$user instanceof User) {
+            return $this->redirectToRoute('app_login');
+        }
 
-        if (!$order) {
+        // ⚠️ Pour PayPal aussi, la confirmation fiable vient de la capture côté serveur / webhook.
+        // Ici on garde ton flow "success" mais on sécurise au minimum.
+        $paypalRef = (string) $request->query->get('payment_intent_client_secret', '');
+        if ($paypalRef === '') {
             return $this->redirectToRoute('app_error');
         }
 
-        $this->cartService->update("cart", []);
-        $order->setIsPaid(true);
-
-        $em->persist($order);
-        $em->flush();
-
-
-        if ($user instanceof User && $order->isIsPaid() == true) {
-            // Envoi de l'e-mail de confirmation
-            $email = (new Email())
-                ->from('contact@nidemiel.com')
-                ->to($user->getEmail())
-                ->subject('Confirmation de paiement')
-                ->html($this->renderView('payment/email_payment_success.html.twig', [
-                    'order' => $order,
-                    'user' => $user
-                ]));
-
-            $mailer->send($email);
-        }
-
-        return $this->render('payment/index.html.twig', [
-            'controller_name' => 'PaymentController',
+        $order = $orderRepo->findOneBy([
+            'user' => $user,
+            'paymentReference' => $paypalRef,
         ]);
-    }
 
-    #[Route('/paypal/payment/success', name: 'app_paypal_payment_success')]
-    public function paypalPaymentSuccess(Request $request, OrderRepository $orderRepo, EntityManagerInterface $em, MailerInterface $mailer)
-    {
-        $paypalClientSecret = $request->query->get("payment_intent_client_secret");
-
-        $order = $orderRepo->findOneBy(['paypalClientSecret' => $paypalClientSecret]);
-        $user = $this->getUser();
-
-        if (!$order) {
+        if (!$order instanceof Order) {
             return $this->redirectToRoute('app_error');
         }
 
-        $this->cartService->update("cart", []);
-        $order->setIsPaid(true);
-
-        $em->persist($order);
-        $em->flush();
-
-
-        if ($user instanceof User && $order->isIsPaid() == true) {
-            // Envoi de l'e-mail de confirmation
-            $email = (new Email())
-                ->from('contact@nidemiel.com')
-                ->to($user->getEmail())
-                ->subject('Confirmation de paiement')
-                ->html($this->renderView('payment/email_payment_success.html.twig', [
-                    'order' => $order,
-                    'user' => $user
-                ]));
-
-            $mailer->send($email);
+        if ($order->getStatus() !== OrderStatus::Paid) {
+            $order->setStatus(OrderStatus::Paid);
+            $order->setPaidAt(new \DateTimeImmutable());
+            $em->flush();
         }
 
-        return $this->render('payment/index.html.twig', [
-            'controller_name' => 'PaymentController',
-        ]);
+        $this->cartService->update('cart', []);
+
+        $email = (new Email())
+            ->from('contact@nidemiel.com')
+            ->to($user->getEmail())
+            ->subject('Confirmation de paiement')
+            ->html($this->renderView('payment/email_payment_success.html.twig', [
+                'order' => $order,
+                'user' => $user,
+            ]));
+
+        $mailer->send($email);
+
+        return $this->render('payment/index.html.twig');
     }
 
-
-    public function createOrder($cart)
+    /**
+     * Crée une commande "draft" à partir du panier.
+     * - 1 commande draft active par user (on écrase son contenu si elle existe)
+     * - Montants en centimes
+     * - Lignes recréées à chaque /checkout (simple tant que tu es en dev)
+     */
+    private function createDraftOrderFromCart(User $user, array $cart): Order
     {
-        $user = $this->getUser();
+        $draft = $this->orderRepo->findOneBy([
+            'user' => $user,
+            'status' => OrderStatus::Draft,
+        ]);
 
-        if ($user instanceof User) {
+        $order = $draft ?? new Order();
+        $order->setUser($user);
+        $order->setStatus(OrderStatus::Draft);
 
-            $order = $this->orderRepo->findOneBy([
-                "client_name" => $user->getFullName(),
-                "order_cost_ht" => $cart["sub_total_ht"],
-                "isPaid" => false,
-                "taxe" => $cart["taxe"],
-                "order_cost_ttc" => $cart["sub_total_with_carrier"],
-                "carrier_name" => $cart["carrier"]["name"],
-                "carrier_price" => $cart["carrier"]["price"],
-                "carrier_id" => $cart["carrier"]["id"],
-                "quantity" => $cart["quantity"],
-            ]);
+        // IMPORTANT: adapte ces clés à ton CartService.
+        // Ici, j'assume que tes montants sont déjà en centimes.
+        // Si chez toi c'est en euros float, il faut convertir proprement avant.
+        $itemsTotalHtCents = (int) ($cart['sub_total_ht'] ?? 0);
+        $taxAmountCents = isset($cart['taxe']) ? (int) $cart['taxe'] : null;
+        $orderTotalTtcCents = (int) ($cart['sub_total_with_carrier'] ?? 0);
+
+        $order->setItemsTotalHtCents($itemsTotalHtCents);
+        $order->setTaxAmountCents($taxAmountCents);
+        $order->setOrderTotalTtcCents($orderTotalTtcCents);
+
+        // Carrier snapshot (relation Carrier optionnelle si tu l'as mise en place)
+        $carrierName = (string) (($cart['carrier']['name'] ?? '') ?: '');
+        $carrierPriceCents = (int) ($cart['carrier']['price'] ?? 0);
+
+        $order->setCarrierNameSnapshot($carrierName !== '' ? $carrierName : 'Standard');
+        $order->setCarrierPriceSnapshotCents($carrierPriceCents);
+
+        // adresses non encore choisies sur /checkout (seront PATCH via /api/order/{id})
+        if ($order->getBillingAddress() === null) {
+            $order->setBillingAddress('');
+        }
+        if ($order->getShippingAddress() === null) {
+            $order->setShippingAddress('');
         }
 
-        if (!$order) {
-            $order = new Order();
+        // Nettoyage des lignes existantes si on réutilise un draft
+        foreach ($order->getOrderDetails() as $detail) {
+            $order->removeOrderDetail($detail);
         }
 
-        if ($user instanceof User) {
-            $order = new Order();
-            $order->setClientName($user->getFullName())
-                ->setBillingAddress("")
-                ->setShippingAddress("")
-                ->setOrderCostHt($cart["sub_total_ht"])
-                ->setTaxe($cart["taxe"])
-                ->setOrderCostTtc($cart["sub_total_with_carrier"])
-                ->setCarrierName($cart["carrier"]["name"])
-                ->setCarrierPrice($cart["carrier"]["price"])
-                ->setQuantity($cart["quantity"])
-                ->setCarrierId($cart["carrier"]["id"])
-                ->setIsPaid(false)
-                ->setStatus("En cours");
-            $this->em->persist($order);
+        // Recréation lignes à partir du panier
+        foreach (($cart['items'] ?? []) as $item) {
+            $product = $item['product'] ?? [];
+            $qty = (int) ($item['quantity'] ?? 0);
+            if ($qty <= 0) {
+                continue;
+            }
+
+            $unitPriceCents = (int) ($product['soldePrice'] ?? $product['regularPrice'] ?? 0);
+            $lineTotalCents = (int) ($item['sub_total'] ?? ($unitPriceCents * $qty));
+            $lineTaxCents = isset($item['taxe']) ? (int) $item['taxe'] : null;
+
+            $detail = new OrderDetails();
+            $detail->setProductId(isset($product['id']) ? (int) $product['id'] : null);
+            $detail->setProductName((string) ($product['title'] ?? ''));
+            $detail->setProductDescription(isset($product['description']) ? mb_substr((string) $product['description'], 0, 2000) : null);
+            $detail->setUnitPriceCents($unitPriceCents);
+            $detail->setQuantity($qty);
+            $detail->setTaxAmountCents($lineTaxCents);
+            $detail->setLineTotalCents($lineTotalCents);
+
+            $order->addOrderDetail($detail); // maintient la relation
         }
 
-
-        foreach ($cart["items"] as $key => $item) {
-            $product = $item["product"];
-            $orderDetails = new OrderDetails();
-            $orderDetails->setProductName($product["title"])
-                ->setProductDescription(substr($product["description"], 0, 200))
-                ->setProductSoldePrice($product["soldePrice"])
-                ->setProductRegularPrice($product["regularPrice"])
-                ->setQuantity($item["quantity"])
-                ->setSubtotal($item["sub_total"])
-                ->setTaxe($item["taxe"])
-                ->setMyOrder($order);
-            $this->em->persist($orderDetails);
-        }
+        $this->em->persist($order);
         $this->em->flush();
 
-        return $order->getId();
+        return $order;
     }
 }

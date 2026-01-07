@@ -9,167 +9,187 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 
-class CartService
+final class CartService
 {
-    private $em;
     public function __construct(
-        private RequestStack $requestStack, 
-        EntityManagerInterface $em, 
-        private SettingRepository $settingRepo,
-        private ProductRepository $productRepo,
-        private CarrierRepository $carrierRepo
-    )
-    {
-        $this->em = $em;
-    }
+        private readonly RequestStack $requestStack,
+        private readonly EntityManagerInterface $em,
+        private readonly SettingRepository $settingRepo,
+        private readonly ProductRepository $productRepo,
+        private readonly CarrierRepository $carrierRepo,
+    ) {}
 
     private function session(): SessionInterface
     {
         $request = $this->requestStack->getCurrentRequest();
-        if (!$request) {
-            throw new \LogicException('CartService utilisé hors requête HTTP.');
+        if ($request === null) {
+            throw new \LogicException('CartService utilisé hors requête HTTP (pas de session disponible).');
         }
 
-        // Déclenche une exception claire si la session est désactivée/stateless
         return $request->getSession();
     }
 
-    public function get($key)
+    public function get(string $key): mixed
     {
         return $this->session()->get($key, []);
     }
 
-    public function update($key, $cart)
+    public function update(string $key, mixed $value): void
     {
-        return $this->session()->set($key, $cart);
+        $this->session()->set($key, $value);
     }
 
-    public function addToCart($productId, $count = 1)
+    public function clearCart(): void
     {
+        $this->update('cart', []);
+    }
+
+    public function updateCarrier(array $carrier): void
+    {
+        $this->update('carrier', $carrier);
+    }
+
+    /**
+     * ⚠️ ATTENTION :
+     * Décrémenter le stock à l'ajout au panier n'est pas robuste (abandon de panier).
+     * Le stock devrait être décrémenté au paiement confirmé (webhook).
+     * Je garde ton comportement actuel, mais à corriger ensuite.
+     */
+    public function addToCart(int $productId, int $count = 1): void
+    {
+        if ($count <= 0) {
+            throw new \InvalidArgumentException('Quantité invalide.');
+        }
+
         $product = $this->productRepo->find($productId);
         if (!$product) {
-            throw new \Exception("Produit non trouvé.");
+            throw new \RuntimeException('Produit non trouvé.');
         }
 
-        // Vérifier si le stock est suffisant pour la quantité demandée
-        $availableStock = $product->getStock();
+        $availableStock = (int) $product->getStock();
         if ($availableStock < $count) {
-            throw new \Exception("Stock insuffisant pour le produit demandé.");
+            throw new \RuntimeException('Stock insuffisant pour le produit demandé.');
         }
 
-        // Calculer le nouveau stock
-        $newStock = $availableStock - $count;
-
-        // Il n'est pas nécessaire de vérifier si newStock est négatif ici,
-        // car nous avons déjà vérifié que $count ne dépasse pas $availableStock
-        $product->setStock($newStock);
-
-        $this->em->persist($product);
+        $product->setStock($availableStock - $count);
         $this->em->flush();
 
-        // Ajouter le produit au panier dans la session
         $cart = $this->get('cart');
-        if (isset($cart[$productId])) {
-            $cart[$productId] += $count;
+        if (!\is_array($cart)) {
+            $cart = [];
+        }
+
+        $cart[$productId] = ($cart[$productId] ?? 0) + $count;
+        $this->update('cart', $cart);
+    }
+
+    public function removeToCart(int $productId, int $count = 1): void
+    {
+        if ($count <= 0) {
+            throw new \InvalidArgumentException('Quantité invalide.');
+        }
+
+        $cart = $this->get('cart');
+        if (!\is_array($cart) || !isset($cart[$productId])) {
+            return;
+        }
+
+        $product = $this->productRepo->find($productId);
+        if (!$product) {
+            // Produit supprimé : on retire juste de la session
+            unset($cart[$productId]);
+            $this->update('cart', $cart);
+            return;
+        }
+
+        $currentQty = (int) $cart[$productId];
+        $toRemove = min($currentQty, $count);
+
+        $product->setStock(((int) $product->getStock()) + $toRemove);
+        $this->em->flush();
+
+        $remaining = $currentQty - $toRemove;
+        if ($remaining <= 0) {
+            unset($cart[$productId]);
         } else {
-            $cart[$productId] = $count;
+            $cart[$productId] = $remaining;
         }
-        $this->update("cart", $cart);
+
+        $this->update('cart', $cart);
     }
 
-    public function removeToCart($productId, $count = 1)
+    public function getCartDetails(): array
     {
-        $cart = $this->get("cart");
-
-        if (isset($cart[$productId])) {
-            $product = $this->productRepo->find($productId);
-            if (!$product) {
-                throw new \Exception("Produit non trouvé.");
-            }
-
-            // Calculer la nouvelle quantité à retirer et ajuster le stock en conséquence
-            $actualCountToRemove = $cart[$productId] <= $count ? $cart[$productId] : $count;
-            $newStock = $product->getStock() + $actualCountToRemove;
-            $product->setStock($newStock);
-
-            // Sauvegarder le changement de stock
-            $this->em->persist($product);
-            $this->em->flush();
-
-            // Ajuster la quantité dans le panier ou supprimer le produit du panier
-            if ($cart[$productId] <= $count) {
-                unset($cart[$productId]);
-            } else {
-                $cart[$productId] -= $count;
-            }
-
-            $this->update("cart", $cart);
-        }
-    }
-
-    public function clearCart()
-    {
-        $this->update("cart", []);
-    }
-
-    public function updateCarrier($carrier)
-    {
-        $this->update("carrier", $carrier);
-    }
-    public function getCartDetails()
-    {
-
         $cart = $this->get('cart');
+        if (!\is_array($cart)) {
+            $cart = [];
+        }
+
         $result = [
             'items' => [],
             'sub_total' => 0,
+            'sub_total_ht' => 0,
+            'taxe' => 0,
             'cart_count' => 0,
             'quantity' => 0,
         ];
 
-        $sub_total = 0;
-        $taxe_rate = 0;
-
+        $subTotal = 0;
+        $taxeRate = 0; // TODO: config TVA
 
         foreach ($cart as $productId => $quantity) {
-            $product = $this->productRepo->find($productId);
-            if ($product) {
-                $current_sub_total = $product->getSoldePrice() * $quantity;
-                $sub_total += $current_sub_total;
-                $result['items'][] =
-                    [
-                        'product' => [
-                            'id' => $product->getId(),
-                            'title' => $product->getTitle(),
-                            'description' => $product->getDescription(),
-                            'slug' => $product->getSlug(),
-                            'image' => $product->getMediaFilenames(),
-                            'stock' => $product->getStock(),
-                            'soldePrice' => $product->getSoldePrice(),
-                            'regularPrice' => $product->getRegularPrice(),
-                        ],
-                        'quantity' => $quantity,
-                        'sub_total_ht' => round($current_sub_total / (1 + $taxe_rate)),
-                        'taxe' => round($taxe_rate * $current_sub_total / (1 + $taxe_rate)),
-                        'sub_total' => $current_sub_total,
-                    ];
-                $result['sub_total'] = $sub_total;
-                $result['sub_total_ht'] = round($sub_total / (1 + $taxe_rate));
-                $result['taxe'] = round($taxe_rate * $result['sub_total_ht']);
-                $result['cart_count'] += $quantity;
-                $result['quantity'] += $quantity;
-            } else {
+            $quantity = (int) $quantity;
+            if ($quantity <= 0) {
                 unset($cart[$productId]);
-                $this->update("cart", $cart);
+                continue;
             }
+
+            $product = $this->productRepo->find((int) $productId);
+            if (!$product) {
+                unset($cart[$productId]);
+                continue;
+            }
+
+            $unitPrice = (int) $product->getSoldePrice();
+            $currentSubTotal = $unitPrice * $quantity;
+
+            $subTotal += $currentSubTotal;
+
+            $result['items'][] = [
+                'product' => [
+                    'id' => $product->getId(),
+                    'title' => $product->getTitle(),
+                    'description' => $product->getDescription(),
+                    'slug' => $product->getSlug(),
+                    'image' => $product->getMediaFilenames(),
+                    'stock' => $product->getStock(),
+                    'soldePrice' => $product->getSoldePrice(),
+                    'regularPrice' => $product->getRegularPrice(),
+                ],
+                'quantity' => $quantity,
+                'sub_total_ht' => (int) round($currentSubTotal / (1 + $taxeRate)),
+                'taxe' => (int) round($taxeRate * $currentSubTotal / (1 + $taxeRate)),
+                'sub_total' => $currentSubTotal,
+            ];
+
+            $result['cart_count'] += $quantity;
+            $result['quantity'] += $quantity;
         }
+
+        // Nettoyage panier si produits invalides
+        $this->update('cart', $cart);
+
+        $result['sub_total'] = $subTotal;
+        $result['sub_total_ht'] = (int) round($subTotal / (1 + $taxeRate));
+        $result['taxe'] = (int) round($taxeRate * $result['sub_total_ht']);
+
+        // Carrier en session ou default
         $carrier = $this->get('carrier');
 
-        if (!$carrier) {
+        if (!\is_array($carrier) || !isset($carrier['price'])) {
             $defaultCarrierEntity = $this->carrierRepo->findOneBy([]);
 
             if (!$defaultCarrierEntity) {
-                // Aucun transporteur en base -> fallback propre
                 $carrier = [
                     'id' => null,
                     'name' => 'Livraison',
@@ -188,26 +208,24 @@ class CartService
             $this->update('carrier', $carrier);
         }
 
-
-        // Si le sous-total est supérieur à 50, les frais de transport sont offerts
+        // Livraison offerte au delà d'un seuil
         if ($result['sub_total'] > 5900) {
-            $carrier["price"] = 0;
+            $carrier['price'] = 0;
         }
 
-        $result["carrier"] =  $carrier;
-        $result['sub_total_with_carrier'] = $result['sub_total'] + $carrier["price"];
+        $result['carrier'] = $carrier;
+        $result['sub_total_with_carrier'] = $result['sub_total'] + (int) ($carrier['price'] ?? 0);
 
         return $result;
     }
 
-    public function isStockSufficient($productId, $quantity): bool
+    public function isStockSufficient(int $productId, int $quantity): bool
     {
         $product = $this->productRepo->find($productId);
         if (!$product) {
-            // Produit non trouvé
             return false;
         }
 
-        return $product->getStock() >= $quantity;
+        return (int) $product->getStock() >= $quantity;
     }
 }

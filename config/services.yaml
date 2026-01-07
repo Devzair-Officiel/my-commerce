@@ -13,6 +13,8 @@ parameters:
     upload_dir_settings: '%kernel.project_dir%/public/assets/images/settings'
     upload_dir_PaymentMethod: '%kernel.project_dir%/public/assets/images/payment_methods_logos'
 
+    stripe.webhook_secret: '%env(STRIPE_WEBHOOK_SECRET)%'
+
 services:
     # default configuration for services in *this* file
     _defaults:
@@ -46,3 +48,18 @@ services:
         tags:
         - { name: doctrine.event_listener, event: onFlush }
         - { name: doctrine.event_listener, event: postFlush }
+          
+    App\Service\PaymentConfigResolver:
+        arguments:
+            $appEnv: '%kernel.environment%'
+            $stripePublicProd: '%env(string:default::STRIPE_PUBLIC_KEY)%'
+            $stripeSecretProd: '%env(string:default::STRIPE_SECRET_KEY)%'
+            $paypalClientIdProd: '%env(string:default::PAYPAL_CLIENT_ID)%'
+            $paypalSecretProd: '%env(string:default::PAYPAL_SECRET)%'
+            $paypalBaseUrlProd: '%env(string:default::PAYPAL_BASE_URL)%'
+
+    App\Controller\Webhook\StripeWebhookController:
+        arguments:
+            $stripeWebhookSecret: '%stripe.webhook_secret%'
+    
+    

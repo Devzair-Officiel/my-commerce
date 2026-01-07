@@ -87,16 +87,16 @@ class PaymentMethodCrudController extends AbstractCrudController
             ->setHelp('Clé privée TEST.')
             ->setFormTypeOption('attr', ['autocomplete' => 'off']);
 
-        yield FormField::addPanel('Environnement PROD')->setIcon('fa fa-rocket');
+        // yield FormField::addPanel('Environnement PROD')->setIcon('fa fa-rocket');
 
-        yield TextField::new('prod_public_api_key', 'Public key (PROD)')
-            ->setColumns(6)
-            ->setHelp('Clé publique PROD.');
+        // yield TextField::new('prod_public_api_key', 'Public key (PROD)')
+        //     ->setColumns(6)
+        //     ->setHelp('Clé publique PROD.');
 
-        yield TextField::new('prod_private_api_key', 'Private key (PROD)')
-            ->setColumns(6)
-            ->setHelp('Clé privée PROD.')
-            ->setFormTypeOption('attr', ['autocomplete' => 'off']);
+        // yield TextField::new('prod_private_api_key', 'Private key (PROD)')
+        //     ->setColumns(6)
+        //     ->setHelp('Clé privée PROD.')
+        //     ->setFormTypeOption('attr', ['autocomplete' => 'off']);
 
         // ===== TAB 4 : URLS =====
         yield FormField::addTab('URLs')->setIcon('fa fa-link');
@@ -106,9 +106,9 @@ class PaymentMethodCrudController extends AbstractCrudController
             ->setColumns(6)
             ->setHelp('Endpoint de base pour l’environnement TEST.');
 
-        yield TextField::new('prodBaseUrl', 'Base URL (PROD)')
-            ->setColumns(6)
-            ->setHelp('Endpoint de base pour l’environnement PROD.');
+        // yield TextField::new('prodBaseUrl', 'Base URL (PROD)')
+        //     ->setColumns(6)
+        //     ->setHelp('Endpoint de base pour l’environnement PROD.');
     }
 
     public function createEntity(string $entityFqcn): PaymentMethod

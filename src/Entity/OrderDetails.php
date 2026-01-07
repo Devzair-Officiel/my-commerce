@@ -2,10 +2,11 @@
 
 namespace App\Entity;
 
-use App\Trait\DateTrait;
-use Doctrine\ORM\Mapping as ORM;
 use App\Repository\OrderDetailsRepository;
-use DH\Auditor\Provider\Doctrine\Auditing\Annotation\Auditable;
+use App\Trait\DateTrait;
+use Doctrine\DBAL\Types\Types;
+use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: OrderDetailsRepository::class)]
 #[ORM\HasLifecycleCallbacks]
@@ -18,29 +19,50 @@ class OrderDetails
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column(length: 255)]
-    private ?string $product_name = null;
-
-    #[ORM\Column(length: 255)]
-    private ?string $product_description = null;
-
+    /**
+     * Référence produit interne (optionnel si tu veux supporter produit supprimé).
+     */
     #[ORM\Column(nullable: true)]
-    private ?int $product_solde_price = null;
+    #[Assert\Positive]
+    private ?int $productId = null;
+
+    #[ORM\Column(length: 255)]
+    #[Assert\NotBlank]
+    #[Assert\Length(max: 255)]
+    private string $productName = '';
+
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    #[Assert\Length(max: 4000)]
+    private ?string $productDescription = null;
+
+    /**
+     * Prix unitaire appliqué (CENTIMES) au moment de l'achat.
+     */
+    #[ORM\Column]
+    #[Assert\PositiveOrZero]
+    private int $unitPriceCents = 0;
 
     #[ORM\Column]
-    private ?int $product_regular_price = null;
+    #[Assert\Positive]
+    private int $quantity = 1;
 
-    #[ORM\Column]
-    private ?int $quantity = null;
-
+    /**
+     * TVA ligne (CENTIMES) optionnelle.
+     */
     #[ORM\Column(nullable: true)]
-    private ?int $taxe = null;
+    #[Assert\PositiveOrZero]
+    private ?int $taxAmountCents = null;
 
+    /**
+     * Total ligne TTC (CENTIMES).
+     */
     #[ORM\Column]
-    private ?int $subtotal = null;
+    #[Assert\PositiveOrZero]
+    private int $lineTotalCents = 0;
 
-    #[ORM\ManyToOne(targetEntity: Order::class, inversedBy: 'OrderDetails')]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\ManyToOne(inversedBy: 'orderDetails')]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
+    #[Assert\NotNull]
     private ?Order $myOrder = null;
 
     public function getId(): ?int
@@ -48,87 +70,73 @@ class OrderDetails
         return $this->id;
     }
 
-    public function getProductName(): ?string
+    public function getProductId(): ?int
     {
-        return $this->product_name;
+        return $this->productId;
+    }
+    public function setProductId(?int $productId): static
+    {
+        $this->productId = $productId;
+        return $this;
     }
 
-    public function setProductName(string $product_name): static
+    public function getProductName(): string
     {
-        $this->product_name = $product_name;
-
+        return $this->productName;
+    }
+    public function setProductName(string $productName): static
+    {
+        $this->productName = trim($productName);
         return $this;
     }
 
     public function getProductDescription(): ?string
     {
-        return $this->product_description;
+        return $this->productDescription;
     }
-
-    public function setProductDescription(string $product_description): static
+    public function setProductDescription(?string $desc): static
     {
-        $this->product_description = $product_description;
-
+        $this->productDescription = $desc !== null ? trim($desc) : null;
         return $this;
     }
 
-    public function getProductSoldePrice(): ?int
+    public function getUnitPriceCents(): int
     {
-        return $this->product_solde_price;
+        return $this->unitPriceCents;
     }
-
-    public function setProductSoldePrice(?int $product_solde_price): static
+    public function setUnitPriceCents(int $cents): static
     {
-        $this->product_solde_price = $product_solde_price;
-
+        $this->unitPriceCents = $cents;
         return $this;
     }
 
-    public function getProductRegularPrice(): ?int
-    {
-        return $this->product_regular_price;
-    }
-
-    public function setProductRegularPrice(int $product_regular_price): static
-    {
-        $this->product_regular_price = $product_regular_price;
-
-        return $this;
-    }
-
-    public function getQuantity(): ?int
+    public function getQuantity(): int
     {
         return $this->quantity;
     }
-
     public function setQuantity(int $quantity): static
     {
         $this->quantity = $quantity;
-
         return $this;
     }
 
-    public function getTaxe(): ?int
+    public function getTaxAmountCents(): ?int
     {
-        return $this->taxe;
+        return $this->taxAmountCents;
     }
-
-    public function setTaxe(?int $taxe): static
+    public function setTaxAmountCents(?int $cents): static
     {
-        $this->taxe = $taxe;
-
+        $this->taxAmountCents = $cents;
         return $this;
     }
 
-    public function getSubtotal(): ?int
+    public function getLineTotalCents(): int
     {
-        return $this->subtotal;
+        return $this->lineTotalCents;
     }
-
-    public function setSubtotal(int $subtotal): static
+    public function setLineTotalCents(int $cents): static
     {
-        $this->subtotal = $subtotal;
-
+        $this->lineTotalCents = $cents;
         return $this;
     }
 
@@ -136,11 +144,9 @@ class OrderDetails
     {
         return $this->myOrder;
     }
-
     public function setMyOrder(?Order $myOrder): static
     {
         $this->myOrder = $myOrder;
-
         return $this;
     }
 }

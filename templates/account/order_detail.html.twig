@@ -1,15 +1,15 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}NideMiel | Detail commande
+{% block title %}NideMiel | Détail commande
 {% endblock %}
 
 {% block body %}
-	{% include "page_head/page_head.html.twig" with {'page':'Mon compte', 'url': '/account', 'page_name': 'Détail Commande'} %}
-
+	{% include "page_head/index.html.twig" with {'page':'Mon compte', 'url': '/account', 'page_name': 'Détail Commande'} %}
 
 	<div class="main_content">
 		<div class="section">
 			<div class="container">
+
 				<table class="table table-striped table-hover">
 					<thead>
 						<tr>
@@ -20,30 +20,34 @@
 							<th>Total</th>
 						</tr>
 					</thead>
-					{% for orderDetails in order.orderDetails %}
-						<tbody>
+
+					<tbody>
+						{% for line in order.orderDetails %}
 							<tr>
-								<td>
-									{{orderDetails.createdAt | date('d/m/Y')}}
-								</td>
-								<td>
-									{{orderDetails.productName}}
-								</td>
+								<td>{{ line.createdAt|date('d/m/Y') }}</td>
+								<td>{{ line.productName }}</td>
+
 								<td class="price">
-									{{ (orderDetails.productSoldePrice/100) | format_currency('EUR') }}
+									{{ (line.unitPriceCents / 100) | format_currency(order.currency ?? 'EUR') }}
 								</td>
+
+								<td>{{ line.quantity }}</td>
+
 								<td>
-									{{orderDetails.Quantity}}
-								</td>
-								<td>
-									{{ (orderDetails.productSoldePrice * orderDetails.Quantity/100) | format_currency('EUR') }}
+									{# Tu as déjà lineTotalCents => c’est le plus fiable #}
+									{{ (line.lineTotalCents / 100) | format_currency(order.currency ?? 'EUR') }}
 								</td>
 							</tr>
-						</tbody>
-					{% endfor %}
+						{% else %}
+							<tr>
+								<td colspan="5" class="text-center">Aucun article dans cette commande.</td>
+							</tr>
+						{% endfor %}
+					</tbody>
 				</table>
+
 			</div>
 		</div>
 	</div>
-
 {% endblock %}
+

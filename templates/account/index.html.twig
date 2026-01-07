@@ -116,9 +116,9 @@
 																<td>
 																	{{order.createdAt | date('d/m/Y')}}
 																</td>
-																<td>{{ order.status }}</td>
+																<td>{{ order.status.label() }}</td>
 																<td>
-																	{{ (order.orderCostTtc/100) | format_currency('EUR') }}
+																	<td>{{ (order.orderTotalTtcCents / 100) | format_currency(order.currency) }}</td>
 																</td>
 																<td>
 																	<a href="/account/order/{{order.id}}" class="btn btn-fill-out btn-sm">Détail</a>

@@ -4,6 +4,8 @@ namespace App\Controller\Admin;
 
 use App\Entity\Page;
 use App\Entity\User;
+use App\Entity\Order;
+use App\Entity\Address;
 use App\Entity\Carrier;
 use App\Entity\Product;
 use App\Entity\Setting;
@@ -94,13 +96,16 @@ final class DashboardController extends AbstractDashboardController
         yield MenuItem::linkToCrud('Sliders', 'fa fa-image', Sliders::class);
 
         yield MenuItem::section('Vente');
+        yield MenuItem::linkToCrud('Commandes', 'fas fa-shopping-cart', Order::class);
         yield MenuItem::linkToCrud('Modes de paiement', 'fa fa-credit-card', PaymentMethod::class);
         yield MenuItem::linkToCrud('Transporteurs', 'fa fa-truck', Carrier::class);
 
         yield MenuItem::section('Utilisateurs');
         yield MenuItem::linkToCrud('Utilisateurs', 'fa fa-users', User::class);
+        yield MenuItem::linkToCrud('Adresses', 'fas fa-address-card', Address::class);
 
         yield MenuItem::section('Configuration');
         yield MenuItem::linkToCrud('Réglages', 'fa fa-gear', Setting::class);
+
     }
 }

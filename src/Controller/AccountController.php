@@ -2,110 +2,139 @@
 
 namespace App\Controller;
 
-use App\Entity\User;
 use App\Entity\Order;
-use App\Entity\Address;
-use App\Entity\OrderDetails;
+use App\Entity\User;
 use App\Form\EditUserFormType;
-use App\Form\EditPasswordFormType;
-use App\Form\RegistrationFormType;
-use App\Repository\OrderRepository;
 use App\Repository\AddressRepository;
+use App\Repository\OrderRepository;
 use Doctrine\ORM\EntityManagerInterface;
-use App\Repository\OrderDetailsRepository;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Routing\Attribute\Route;
-use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\Validator\Validator\ValidatorInterface;
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
+use Symfony\Component\Routing\Attribute\Route;
 
 class AccountController extends AbstractController
 {
-    #[Route('/account', name: 'app_account')]
-    public function index(AddressRepository $addressRepo, OrderDetailsRepository $orderDetailsRepo, OrderRepository $orderRepo, Request $request, EntityManagerInterface $em, UserPasswordHasherInterface $passwordHasher): Response
-    {
+    #[Route('/account', name: 'app_account', methods: ['GET', 'POST'])]
+    public function index(
+        AddressRepository $addressRepo,
+        OrderRepository $orderRepo,
+        Request $request,
+        EntityManagerInterface $em,
+        UserPasswordHasherInterface $passwordHasher,
+    ): Response {
+        $this->denyAccessUnlessGranted('ROLE_USER');
+
         $user = $this->getUser();
-        if ($user instanceof User) {
-            $orders = $orderRepo->findBy(['client_name' => $user->getFullName()]);
+        if (!$user instanceof User) {
+            return $this->redirectToRoute('app_login');
         }
 
-        $order_detail = $orderDetailsRepo->findBy(['myOrder' => $orders]);
+        // commandes liées au user (nouveau modèle)
+        $orders = $orderRepo->findBy(
+            ['user' => $user],
+            ['id' => 'DESC']
+        );
 
-        $addresses = $addressRepo->findByUser($user);
+        $addresses = $addressRepo->findBy(['user' => $user], ['id' => 'DESC']);
 
-        // Formulaire edit user
         $form = $this->createForm(EditUserFormType::class, $user);
         $form->handleRequest($request);
+
+        // AJAX update profil
         if ($request->isXmlHttpRequest()) {
             if ($form->isSubmitted() && $form->isValid()) {
-                $em->persist($user);
                 $em->flush();
 
-                // Retourner une réponse JSON en cas de succès
                 return new JsonResponse([
                     'status' => 'success',
                     'message' => 'Vos informations ont été mises à jour avec succès.'
                 ]);
-            } else {
-                // Collecter les erreurs de formulaire et les renvoyer
-                $errors = [];
-                foreach ($form->getErrors(true) as $error) {
-                    $errors[$error->getOrigin()->getName()] = $error->getMessage();
-                }
-
-                // Retourner une réponse JSON en cas d'échec
-                return new JsonResponse([
-                    'status' => 'error',
-                    'errors' => $errors
-                ], 422);
             }
+
+            $errors = [];
+            if ($form->isSubmitted()) {
+                foreach ($form->getErrors(true) as $error) {
+                    $origin = $error->getOrigin();
+                    $name = $origin ? $origin->getName() : '_form';
+                    $errors[$name] = $error->getMessage();
+                }
+            }
+
+            return new JsonResponse([
+                'status' => 'error',
+                'errors' => $errors
+            ], 422);
         }
-        ////////////////////////
 
         return $this->render('account/index.html.twig', [
-            'controller_name' => 'AccountController',
             'addresses' => $addresses,
             'user' => $user,
             'orders' => $orders,
-            'order_detail' => $order_detail,
             'editForm' => $form->createView(),
         ]);
     }
 
-
-    #[Route('/account/order/{id}', name: 'app_account_order_detail')]
-    public function getOrderDetail(Order $order)
+    #[Route('/account/order/{id<\d+>}', name: 'app_account_order_detail', methods: ['GET'])]
+    public function getOrderDetail(Order $order): Response
     {
+        $this->denyAccessUnlessGranted('ROLE_USER');
+
+        $user = $this->getUser();
+        if (!$user instanceof User) {
+            throw $this->createAccessDeniedException();
+        }
+
+        // Ownership check
+        if ($order->getUser()->getId() !== $user->getId()) {
+            throw $this->createAccessDeniedException();
+        }
+
+        // On n’a pas besoin d’un repo OrderDetails : $order->getOrderDetails() suffit
         return $this->render('account/order_detail.html.twig', [
             'order' => $order,
         ]);
     }
 
-    #[Route("/api/change-password", name: 'api_change_password', methods: ['POST'])]
-    public function changePassword(Request $request, UserPasswordHasherInterface $passwordHasher, EntityManagerInterface $em)
-    {
+    #[Route('/api/change-password', name: 'api_change_password', methods: ['POST'])]
+    public function changePassword(
+        Request $request,
+        UserPasswordHasherInterface $passwordHasher,
+        EntityManagerInterface $em,
+    ): JsonResponse {
+        $this->denyAccessUnlessGranted('ROLE_USER');
+
         $user = $this->getUser();
-        $data = json_decode($request->getContent(), true);
-
-        $currentPassword = $data['currentPassword'];
-        $newPassword = $data['newPassword'] ?? '';
-
-        if ($user instanceof User) {
-            if (!$passwordHasher->isPasswordValid($user, $currentPassword)) {
-                return new JsonResponse(['status' => 'error', 'message' => 'Mot de passe actuel incorrect.'], 422);
-            }
-
-            if (strlen($newPassword) < 6) {
-                return new JsonResponse(['status' => 'error', 'message' => 'Le nouveau mot de passe doit contenir au moins 6 caractères.'], 422);
-            }
-
-            $user->setPassword($passwordHasher->hashPassword($user, $newPassword));
-            $em->persist($user);
-            $em->flush();
-
-            return new JsonResponse(['status' => 'success', 'message' => 'Mot de passe mis à jour avec succès.']);
+        if (!$user instanceof User) {
+            return new JsonResponse(['status' => 'error', 'message' => 'Unauthorized'], 401);
         }
+
+        $payload = json_decode($request->getContent() ?? '', true);
+        if (!is_array($payload)) {
+            return new JsonResponse(['status' => 'error', 'message' => 'Invalid JSON'], 400);
+        }
+
+        $currentPassword = $payload['currentPassword'] ?? null;
+        $newPassword = $payload['newPassword'] ?? null;
+
+        if (!is_string($currentPassword) || !is_string($newPassword)) {
+            return new JsonResponse(['status' => 'error', 'message' => 'Invalid payload'], 400);
+        }
+
+        if (!$passwordHasher->isPasswordValid($user, $currentPassword)) {
+            return new JsonResponse(['status' => 'error', 'message' => 'Mot de passe actuel incorrect.'], 422);
+        }
+
+        // ⚠️ Idéalement: utiliser les contraintes PasswordStrength / NotCompromisedPassword + validation formulaire
+        if (mb_strlen($newPassword) < 8) {
+            return new JsonResponse(['status' => 'error', 'message' => 'Le nouveau mot de passe doit contenir au moins 8 caractères.'], 422);
+        }
+
+        $user->setPassword($passwordHasher->hashPassword($user, $newPassword));
+        $em->flush();
+
+        return new JsonResponse(['status' => 'success', 'message' => 'Mot de passe mis à jour avec succès.']);
     }
 }
