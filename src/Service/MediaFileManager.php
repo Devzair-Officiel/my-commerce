@@ -29,6 +29,7 @@ final class MediaFileManager
         private string $uploadDirCategories,
         private string $uploadDirSliders,
         private string $uploadDirSettings,
+        private string $uploadDirPaymentMethod,
         private SluggerInterface $slugger,
     ) {}
 
@@ -58,12 +59,17 @@ final class MediaFileManager
             $paths[] = rtrim($this->uploadDirSettings, '/') . '/' . $filename;
         }
 
+        if ($media->getPaymentMethod() !== null) {
+            $paths[] = rtrim($this->uploadDirPaymentMethod, '/') . '/' . $filename;
+        }
+
         // cas orphanRemoval : relation null au moment du postRemove
         if ($paths === []) {
             $paths[] = rtrim($this->uploadDirProducts, '/') . '/' . $filename;
             $paths[] = rtrim($this->uploadDirCategories, '/') . '/' . $filename;
             $paths[] = rtrim($this->uploadDirSliders, '/') . '/' . $filename;
             $paths[] = rtrim($this->uploadDirSettings, '/') . '/' . $filename;
+            $paths[] = rtrim($this->uploadDirPaymentMethod, '/') . '/' . $filename;
         }
 
         foreach (array_unique($paths) as $path) {

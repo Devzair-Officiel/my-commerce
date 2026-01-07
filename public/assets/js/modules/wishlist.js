@@ -1,5 +1,5 @@
-import { fetchJson } from "../utiles/fetch.js";
-import { addFlashMessage, formatPrice } from "../utiles/ui.js";
+import { fetchJson } from "../utils/fetch.js";
+import { addFlashMessage, formatPrice } from "../utils/ui.js";
 
 export function initWishlist() {
   document.addEventListener("click", onDocumentClick, { passive: false });

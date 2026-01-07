@@ -34,6 +34,9 @@ class Media
     #[ORM\OneToOne(inversedBy: 'media', cascade: ['persist', 'remove'])]
     private ?Category $category = null;
 
+    #[ORM\OneToOne(inversedBy: 'mediaPayment', cascade: ['persist', 'remove'])]
+    private ?PaymentMethod $paymentMethod = null;
+
     #[ORM\OneToOne(inversedBy: 'logoMedia')]
     private ?Setting $setting = null;
 
@@ -122,6 +125,18 @@ class Media
     public function setCategory(?Category $category): static
     {
         $this->category = $category;
+
+        return $this;
+    }
+
+    public function getPaymentMethod(): ?PaymentMethod
+    {
+        return $this->paymentMethod;
+    }
+
+    public function setPaymentMethod(?PaymentMethod $paymentMethod): static
+    {
+        $this->paymentMethod = $paymentMethod;
 
         return $this;
     }

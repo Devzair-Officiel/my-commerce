@@ -1,0 +1,49 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}NideMiel | Detail commande
+{% endblock %}
+
+{% block body %}
+	{% include "page_head/page_head.html.twig" with {'page':'Mon compte', 'url': '/account', 'page_name': 'Détail Commande'} %}
+
+
+	<div class="main_content">
+		<div class="section">
+			<div class="container">
+				<table class="table table-striped table-hover">
+					<thead>
+						<tr>
+							<th>Date d'achat</th>
+							<th>Produit</th>
+							<th>Prix unitaire</th>
+							<th>Quantité</th>
+							<th>Total</th>
+						</tr>
+					</thead>
+					{% for orderDetails in order.orderDetails %}
+						<tbody>
+							<tr>
+								<td>
+									{{orderDetails.createdAt | date('d/m/Y')}}
+								</td>
+								<td>
+									{{orderDetails.productName}}
+								</td>
+								<td class="price">
+									{{ (orderDetails.productSoldePrice/100) | format_currency('EUR') }}
+								</td>
+								<td>
+									{{orderDetails.Quantity}}
+								</td>
+								<td>
+									{{ (orderDetails.productSoldePrice * orderDetails.Quantity/100) | format_currency('EUR') }}
+								</td>
+							</tr>
+						</tbody>
+					{% endfor %}
+				</table>
+			</div>
+		</div>
+	</div>
+
+{% endblock %}

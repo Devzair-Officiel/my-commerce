@@ -10,14 +10,12 @@ use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
 use EasyCorp\Bundle\EasyAdminBundle\Field\BooleanField;
-use EasyCorp\Bundle\EasyAdminBundle\Field\FileField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\FormField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\IdField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\ImageField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\SlugField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextEditorField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
-use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 final class CategoryCrudController extends AbstractCrudController
 {
@@ -48,53 +46,79 @@ final class CategoryCrudController extends AbstractCrudController
 
     public function configureFields(string $pageName): iterable
     {
-        $isForm = \in_array($pageName, [Crud::PAGE_NEW, Crud::PAGE_EDIT], true);
-
-        yield IdField::new('id')->hideOnForm();
-
-        if ($isForm) {
-            yield FormField::addTab('Informations');
-            yield FormField::addColumn(8);
-
-            yield TextField::new('title', 'Titre')->setRequired(true);
-
-            yield SlugField::new('slug')
-                ->setTargetFieldName('title')
-                ->hideOnIndex();
-
-            yield TextEditorField::new('description')
-                ->setFormTypeOption('attr', ['rows' => 8]);
-
+        // =========================
+        // INDEX
+        // =========================
+        if (Crud::PAGE_INDEX === $pageName) {
+            yield IdField::new('id');
+            yield TextField::new('title', 'Titre');
             yield BooleanField::new('isMega', 'Mega menu');
-
-            yield FormField::addColumn(4);
-            yield FormField::addPanel('Image');
-
-            // ✅ UNIQUE champ image (upload + preview)
-            yield ImageField::new('media.filename', 'Image')
-                ->setUploadDir(self::UPLOAD_DIR)
-                ->setBasePath(self::BASE_PATH)
-                ->setUploadedFileNamePattern('[slug]-[timestamp].[extension]')
-                ->setRequired(false);
-        } else {
-            yield TextField::new('title');
-            yield BooleanField::new('isMega');
 
             yield ImageField::new('media.filename', 'Image')
                 ->setBasePath(self::BASE_PATH)
                 ->onlyOnIndex();
-        }
-    }
 
+            return;
+        }
+
+        // =========================
+        // FORM / EDIT
+        // =========================
+        yield FormField::addTab('Informations')->setIcon('fa fa-folder-open');
+
+        // ---------- COLONNE GAUCHE (CONTENU) ----------
+        yield FormField::addColumn(6);
+
+        yield FormField::addFieldset('Contenu')
+            ->setIcon('fa fa-pen-to-square')
+            ->collapsible();
+
+        yield IdField::new('id')->hideOnForm();
+
+        yield TextField::new('title', 'Titre')
+            ->setRequired(true)
+            ->setHelp('Nom affiché sur le site.');
+
+        yield SlugField::new('slug')
+            ->setTargetFieldName('title')
+            ->hideOnIndex()
+            ->setHelp('Généré automatiquement depuis le titre.');
+
+        yield TextEditorField::new('description', 'Description')
+            ->setFormTypeOption('attr', ['rows' => 8])
+            ->setHelp('Optionnel, utile pour le SEO.');
+
+        // ---------- COLONNE DROITE (AFFICHAGE) ----------
+        yield FormField::addColumn(6);
+
+        yield FormField::addFieldset('Affichage')
+            ->setIcon('fa fa-eye')
+            ->collapsible();
+
+        yield BooleanField::new('isMega', 'Mega menu')
+            ->setHelp('Affiche la catégorie dans le mega menu.');
+
+        // =========================
+        // TAB MEDIA
+        // =========================
+        yield FormField::addTab('Média')->setIcon('fa fa-image');
+
+        yield FormField::addFieldset('Image')
+            ->setIcon('fa fa-camera')
+            ->collapsible();
+
+        yield ImageField::new('media.filename', 'Image')
+            ->setUploadDir(self::UPLOAD_DIR)
+            ->setBasePath(self::BASE_PATH)
+            ->setUploadedFileNamePattern('[slug]-[timestamp].[extension]')
+            ->setRequired(false)
+            ->setHelp('PNG ou JPG – carré recommandé.');
+    }
 
     public function createEntity(string $entityFqcn): Category
     {
-        /** @var Category $category */
         $category = new Category();
-
-        // Important: créer le Media tout de suite pour éviter les null
-        $media = new Media();
-        $category->setMedia($media);
+        $category->setMedia(new Media());
 
         return $category;
     }
@@ -104,7 +128,6 @@ final class CategoryCrudController extends AbstractCrudController
         /** @var Category $category */
         $category = $entityInstance;
 
-        // Sécurité: si jamais media est null, on le recrée
         if ($category->getMedia() === null) {
             $category->setMedia(new Media());
         }

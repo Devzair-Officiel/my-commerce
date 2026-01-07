@@ -76,8 +76,12 @@ class ProductCrudController extends AbstractCrudController
         }
 
         // ---------- FORMS / DETAIL ----------
-        yield FormField::addTab('Général');
-        yield FormField::addFieldset('Identité')->collapsible();
+        yield FormField::addTab('Général')
+            ->setIcon('fa fa-box');
+
+        yield FormField::addFieldset('Identité')
+            ->setIcon('fa fa-id-card')
+            ->collapsible();
 
         yield IdField::new('id')->hideOnForm();
 
@@ -93,14 +97,21 @@ class ProductCrudController extends AbstractCrudController
             ->setLabel('Description')
             ->setColumns(12);
 
-        yield FormField::addFieldset('Informations supplémentaires')->renderCollapsed();
+        yield FormField::addFieldset('Informations supplémentaires')
+            ->setIcon('fa fa-circle-info')
+            ->renderCollapsed();
+
         yield TextEditorField::new('additional_infos')
             ->setLabel('')
             ->setColumns(12)
             ->hideOnIndex();
 
-        yield FormField::addTab('Prix & Stock');
-        yield FormField::addFieldset('Tarification')->collapsible();
+        yield FormField::addTab('Prix & Stock')
+            ->setIcon('fa fa-euro-sign');
+
+        yield FormField::addFieldset('Tarification')
+            ->setIcon('fa fa-tags')
+            ->collapsible();
 
         yield MoneyField::new('solde_price')
             ->setLabel('Prix promo')
@@ -116,22 +127,36 @@ class ProductCrudController extends AbstractCrudController
             ->setLabel('Stock')
             ->setColumns(4);
 
-        yield FormField::addTab('Catégorie & Relation');
+        yield FormField::addTab('Catégories & Relations')
+            ->setIcon('fa fa-folder-tree');
+
+        yield FormField::addFieldset('Catégorisation')
+            ->setIcon('fa fa-layer-group')
+            ->collapsible();
+
         yield AssociationField::new('categories')
             ->setLabel('Catégories')
             ->setRequired(true);
+
+        yield FormField::addFieldset('Produits liés')
+            ->setIcon('fa fa-link')
+            ->collapsible()
+            ->renderCollapsed();
+
         yield AssociationField::new('relatedProducts')
-            ->setLabel('Produits liées');
+            ->setLabel('Produits liés');
 
-        yield FormField::addTab('Médias');
-        yield FormField::addFieldset('Images du produit')->collapsible();
+        yield FormField::addTab('Médias')
+            ->setIcon('fa fa-images');
 
-        // Affichage image(s) sur show/detail (pas sur form)
+        yield FormField::addFieldset('Images du produit')
+            ->setIcon('fa fa-camera')
+            ->collapsible();
+
         yield ImageField::new('getMediaFilenames', 'Images')
             ->setBasePath('/assets/images/products')
             ->hideOnForm();
 
-        // Uploads en CollectionType uniquement sur forms
         yield CollectionField::new('medias')
             ->setLabel('Ajouter / modifier des médias')
             ->setEntryType(\App\Form\MediaType::class)
@@ -144,8 +169,12 @@ class ProductCrudController extends AbstractCrudController
             ->setEntryIsComplex(true)
             ->renderExpanded(true);
 
-        yield FormField::addTab('Visibilité');
-        yield FormField::addFieldset('Badges')->collapsible();
+        yield FormField::addTab('Visibilité')
+            ->setIcon('fa fa-eye');
+
+        yield FormField::addFieldset('Badges')
+            ->setIcon('fa fa-badge-check') // si cette icône n’existe pas chez toi, remplace par 'fa fa-certificate'
+            ->collapsible();
 
         yield BooleanField::new('isBestSeller')->setLabel('Best seller');
         yield BooleanField::new('isNewArrival')->setLabel('Nouveauté');

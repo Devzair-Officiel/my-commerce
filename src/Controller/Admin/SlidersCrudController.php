@@ -5,17 +5,16 @@ namespace App\Controller\Admin;
 use App\Entity\Media;
 use App\Entity\Sliders;
 use Doctrine\ORM\EntityManagerInterface;
-use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
-use EasyCorp\Bundle\EasyAdminBundle\Field\IdField;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
-use EasyCorp\Bundle\EasyAdminBundle\Field\UrlField;
-use EasyCorp\Bundle\EasyAdminBundle\Field\FormField;
-use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
-use EasyCorp\Bundle\EasyAdminBundle\Field\ImageField;
-use EasyCorp\Bundle\EasyAdminBundle\Field\CollectionField;
-use EasyCorp\Bundle\EasyAdminBundle\Field\TextEditorField;
+use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
+use EasyCorp\Bundle\EasyAdminBundle\Field\FormField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\IdField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\ImageField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\TextEditorField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\UrlField;
 
 final class SlidersCrudController extends AbstractCrudController
 {
@@ -29,6 +28,9 @@ final class SlidersCrudController extends AbstractCrudController
         return $crud
             ->setEntityLabelInSingular('Slider')
             ->setEntityLabelInPlural('Sliders')
+            ->setPageTitle(Crud::PAGE_INDEX, 'Sliders')
+            ->setPageTitle(Crud::PAGE_NEW, 'Créer un slider')
+            ->setPageTitle(Crud::PAGE_EDIT, fn(Sliders $s) => sprintf('Modifier : %s', $s->getTitle() ?: 'Slider'))
             ->setDefaultSort(['id' => 'DESC'])
             ->setSearchFields(['id', 'title', 'description', 'button_text', 'button_link'])
             ->showEntityActionsInlined()
@@ -44,41 +46,90 @@ final class SlidersCrudController extends AbstractCrudController
 
     public function configureFields(string $pageName): iterable
     {
-        yield FormField::addTab('Contenu');
-        yield IdField::new('id')->onlyOnIndex();
+        yield IdField::new('id')->hideOnForm();
+
+        /**
+         * =====================================================
+         * INDEX — simple et lisible
+         * =====================================================
+         */
+        if (Crud::PAGE_INDEX === $pageName) {
+            yield TextField::new('title', 'Titre');
+
+            yield TextField::new('button_text', 'CTA')
+                ->formatValue(static fn($v) => $v ?: '—');
+
+            yield UrlField::new('button_link', 'Lien')
+                ->formatValue(static fn($v) => $v ?: '—');
+
+            // Optionnel : afficher l’image sur l’index
+            // yield ImageField::new('mediaSlider.filename', 'Image')
+            //     ->setBasePath('/assets/images/sliders')
+            //     ->onlyOnIndex();
+
+            return;
+        }
+
+        /**
+         * =====================================================
+         * FORMULAIRE — NEW / EDIT
+         * =====================================================
+         */
+
+        // ===== TAB 1 : CONTENU =====
+        yield FormField::addTab('Contenu')
+            ->setIcon('fa fa-circle-info');
+
+        yield FormField::addPanel('Informations générales')
+            ->setIcon('fa fa-pen-to-square');
 
         yield TextField::new('title', 'Titre')
+            ->setColumns(6)
             ->setHelp('Optionnel. Court et impactant.');
 
         yield TextEditorField::new('description', 'Description')
-            ->setHelp('Optionnel. Évite trop long pour garder un rendu propre dans le header.')
-            ->hideOnIndex();
+            ->setColumns(6)
+            ->setHelp('Optionnel. Évite les textes trop longs pour garder un rendu propre.');
 
-        yield FormField::addTab('Bouton');
+        // ===== TAB 2 : BOUTON =====
+        yield FormField::addTab('Bouton')
+            ->setIcon('fa fa-bullhorn');
+
+        yield FormField::addPanel('Call-to-action (CTA)')
+            ->setIcon('fa fa-hand-pointer')
+            ->setHelp('Optionnel. Le slider peut s’afficher sans bouton.');
 
         yield TextField::new('button_text', 'Texte du bouton')
-            ->setHelp('Ex: "Découvrir", "Acheter", "Voir la collection".');
+            ->setColumns(6)
+            ->setHelp('Ex : "Découvrir", "Acheter", "Voir la collection".')
+            ->setRequired(false);
 
         yield UrlField::new('button_link', 'Lien du bouton')
-            ->setHelp('URL absolue ou chemin interne (ex: /boutique).');
+            ->setColumns(6)
+            ->setHelp('URL absolue ou chemin interne (ex : /boutique).')
+            ->setRequired(false);
 
-        yield FormField::addTab('Médias');
+        // ===== TAB 3 : MEDIA =====
+        yield FormField::addTab('Média')
+            ->setIcon('fa fa-image');
+
+        yield FormField::addPanel('Image du slider')
+            ->setIcon('fa fa-image')
+            ->setHelp('Formats recommandés : JPG, PNG ou WebP. Optimisée pour le header.');
 
         yield ImageField::new('mediaSlider.filename', 'Image')
+            ->setColumns(12)
             ->setBasePath('/assets/images/sliders')
             ->setUploadDir('public/assets/images/sliders')
-            ->setUploadedFileNamePattern('[slug].[timestamp].[extension]')
+            ->setUploadedFileNamePattern('[slug]-[timestamp].[extension]')
             ->setRequired(false);
     }
 
+
     public function createEntity(string $entityFqcn): Sliders
     {
-        /** @var Sliders $slider */
         $slider = new Sliders();
-
-        // Important: créer le Media tout de suite pour éviter les null
-        $media = new Media();
-        $slider->setMediaSlider($media);
+        $slider->setMediaSlider(new Media());
 
         return $slider;
     }
@@ -88,11 +139,22 @@ final class SlidersCrudController extends AbstractCrudController
         /** @var Sliders $slider */
         $slider = $entityInstance;
 
-        // Sécurité: si jamais media est null, on le recrée
         if ($slider->getMediaSlider() === null) {
             $slider->setMediaSlider(new Media());
         }
 
         parent::persistEntity($entityManager, $entityInstance);
+    }
+
+    public function updateEntity(EntityManagerInterface $entityManager, $entityInstance): void
+    {
+        /** @var Sliders $slider */
+        $slider = $entityInstance;
+
+        if ($slider->getMediaSlider() === null) {
+            $slider->setMediaSlider(new Media());
+        }
+
+        parent::updateEntity($entityManager, $entityInstance);
     }
 }

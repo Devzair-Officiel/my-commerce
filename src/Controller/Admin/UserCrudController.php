@@ -55,40 +55,74 @@ final class UserCrudController extends AbstractCrudController
     {
         $isNew = $pageName === Crud::PAGE_NEW;
 
-        yield FormField::addTab('Identité');
+        // INDEX : sobre & efficace
+        if (Crud::PAGE_INDEX === $pageName) {
+            yield IdField::new('id');
+            yield EmailField::new('email', 'Email');
+            yield TextField::new('full_name', 'Nom complet');
+            yield ChoiceField::new('roles', 'Rôles')
+                ->allowMultipleChoices()
+                ->renderExpanded(false)
+                ->setChoices([
+                    'Utilisateur' => 'ROLE_USER',
+                    'Admin' => 'ROLE_ADMIN',
+                ]);
+            yield BooleanField::new('isVerified', 'Email vérifié');
+            return;
+        }
+
+        // =========================
+        // TAB 1 — IDENTITÉ
+        // =========================
+        yield FormField::addTab('Identité')->setIcon('fa fa-user');
+
+        // Layout 2 colonnes sur ce tab
         yield FormField::addColumn(8);
-        yield FormField::addFieldset('Informations');
+        yield FormField::addFieldset('Informations')->setIcon('fa fa-id-card')->collapsible();
 
         yield IdField::new('id')->hideOnForm();
 
-        yield EmailField::new('email', 'Email');
+        yield EmailField::new('email', 'Email')
+            ->setHelp('Utilisé pour la connexion.')
+            ->setFormTypeOption('attr', ['autocomplete' => 'email']);
 
         yield TextField::new('full_name', 'Nom complet')
-            ->setRequired(false);
+            ->setRequired(false)
+            ->setHelp('Affichage (optionnel).')
+            ->setFormTypeOption('attr', ['autocomplete' => 'name']);
 
         yield ChoiceField::new('civility', 'Civilité')
             ->setChoices($this->getCivilityChoices())
-            ->setRequired(false);
+            ->setRequired(false)
+            ->setColumns(6);
 
+        // =========================
+        // TAB 2 — SÉCURITÉ
+        // =========================
         yield FormField::addColumn(4);
-        yield FormField::addFieldset('Sécurité');
+        yield FormField::addFieldset('Sécurité')->setIcon('fa fa-shield-halved')->collapsible();
 
-        yield BooleanField::new('isVerified', 'Email vérifié');
+        yield BooleanField::new('isVerified', 'Email vérifié')
+            ->setHelp('Indique si l’utilisateur a confirmé son email.');
 
-        // Champ non mappé, géré manuellement dans persist/update
-        yield TextField::new('plainPassword', 'Mot de passe')
+        // Champ non mappé, géré manuellement (persist/update)
+        yield TextField::new('plainPassword', $isNew ? 'Mot de passe' : 'Nouveau mot de passe')
             ->setFormType(RepeatedType::class)
             ->setFormTypeOptions([
                 'type' => PasswordType::class,
                 'mapped' => false,
                 'required' => $isNew,
                 'first_options' => [
-                    'label' => 'Mot de passe',
-                    'attr' => ['autocomplete' => 'new-password'],
+                    'label' => $isNew ? 'Mot de passe' : 'Nouveau mot de passe',
+                    'attr' => [
+                        'autocomplete' => $isNew ? 'new-password' : 'new-password',
+                    ],
                 ],
                 'second_options' => [
                     'label' => 'Confirmer',
-                    'attr' => ['autocomplete' => 'new-password'],
+                    'attr' => [
+                        'autocomplete' => $isNew ? 'new-password' : 'new-password',
+                    ],
                 ],
                 'invalid_message' => 'Les mots de passe doivent être identiques.',
                 'constraints' => $isNew
@@ -100,17 +134,25 @@ final class UserCrudController extends AbstractCrudController
                         new Length(min: 6, max: 4096, minMessage: 'Minimum {{ limit }} caractères.'),
                     ],
             ])
+            ->setHelp($isNew ? 'Minimum 6 caractères.' : 'Laisse vide pour conserver le mot de passe actuel.')
             ->onlyOnForms();
 
-        yield FormField::addTab('Droits');
+        // =========================
+        // TAB 3 — DROITS
+        // =========================
+        yield FormField::addTab('Droits')->setIcon('fa fa-user-gear');
+
+        yield FormField::addFieldset('Rôles & permissions')->setIcon('fa fa-key')->collapsible();
+
         yield ChoiceField::new('roles', 'Rôles')
             ->allowMultipleChoices()
             ->renderExpanded(false)
             ->setChoices([
                 'Utilisateur' => 'ROLE_USER',
                 'Admin' => 'ROLE_ADMIN',
-                // ajoute tes rôles ici
-            ]);
+                // Ajoute tes rôles ici
+            ])
+            ->setHelp('Attention : les rôles donnent accès à des fonctionnalités sensibles.');
     }
 
     public function persistEntity(EntityManagerInterface $entityManager, $entityInstance): void
@@ -148,8 +190,7 @@ final class UserCrudController extends AbstractCrudController
             return;
         }
 
-        $userData = $context->getRequest()->request->all('User'); // ✅ clé explicite
-
+        $userData = $context->getRequest()->request->all('User');
         $plainPassword = $userData['plainPassword'] ?? null;
 
         if (is_array($plainPassword)) {
@@ -163,14 +204,12 @@ final class UserCrudController extends AbstractCrudController
 
     private function getCivilityChoices(): array
     {
-        // Si Civility est un enum PHP 8.1+ :
-        // Tu adaptes label()/value selon TON enum.
         $choices = [];
         foreach (Civility::cases() as $case) {
-            // Si tu as une méthode label() comme tu l’avais dans ton code :
             $label = method_exists($case, 'label') ? $case->label() : $case->name;
             $choices[$label] = $case;
         }
+
         return $choices;
     }
 }

@@ -28,7 +28,8 @@ final class PageCrudController extends AbstractCrudController
             ->setEntityLabelInPlural('Pages')
             ->setDefaultSort(['id' => 'DESC'])
             ->setSearchFields(['id', 'title', 'slug', 'content'])
-            ->showEntityActionsInlined();
+            ->showEntityActionsInlined()
+            ->setPaginatorPageSize(25);
     }
 
     public function configureActions(Actions $actions): Actions
@@ -36,49 +37,74 @@ final class PageCrudController extends AbstractCrudController
         return $actions
             ->add(Crud::PAGE_EDIT, Action::INDEX)
             ->add(Crud::PAGE_INDEX, Action::DETAIL)
-            ->add(Crud::PAGE_EDIT, Action::DETAIL);
+            ->add(Crud::PAGE_EDIT, Action::DETAIL)
+            ->reorder(Crud::PAGE_INDEX, [Action::EDIT, Action::DETAIL, Action::DELETE]);
     }
 
     public function configureFields(string $pageName): iterable
     {
         yield IdField::new('id')->hideOnForm();
 
-        // --- Bloc principal (look moderne : structure claire)
-        yield FormField::addPanel('Contenu')
-            ->setIcon('fa fa-file-lines');
+        /**
+         * =====================================================
+         * INDEX — simple & lisible
+         * =====================================================
+         */
+        if (Crud::PAGE_INDEX === $pageName) {
+            yield TextField::new('title', 'Titre');
+            yield TextField::new('slug', 'Slug');
+            yield BooleanField::new('isHead', 'Header');
+            yield BooleanField::new('isFoot', 'Footer');
+
+            return;
+        }
+
+        /**
+         * =====================================================
+         * FORM / DETAIL — structuré
+         * =====================================================
+         */
+
+        // ===== TAB 1 : CONTENU =====
+        yield FormField::addTab('Contenu')->setIcon('fa fa-file-lines');
+
+        yield FormField::addPanel('Informations')
+            ->setIcon('fa fa-pen-to-square');
 
         yield TextField::new('title', 'Titre')
+            ->setColumns(6)
             ->setRequired(true)
             ->setHelp('Titre visible (SEO + affichage).');
 
         yield SlugField::new('slug', 'Slug')
+            ->setColumns(6)
             ->setTargetFieldName('title')
-            ->hideOnIndex()
             ->setHelp('Généré depuis le titre. Ajuste-le uniquement si nécessaire.');
 
-        // Pour un contenu “CMS-like” : un gros champ, hors index
+        // Contenu en pleine largeur (12 colonnes)
+        yield FormField::addPanel('Contenu de la page')
+            ->setIcon('fa fa-align-left')
+            ->setHelp('HTML autorisé. Évite les scripts (risque XSS).');
+
         yield TextareaField::new('content', 'Contenu (HTML/texte)')
-            ->hideOnIndex()
+            ->setColumns(12)
             ->renderAsHtml()
             ->setNumOfRows(18)
-            ->setHelp('Tu peux mettre du HTML. Évite les scripts. (Sécurité/XSS)');
+            ->setHelp('Tu peux mettre du HTML. Évite les scripts.');
 
-        // --- Bloc options
-        yield FormField::addPanel('Emplacements')
-            ->setIcon('fa fa-location-dot')
-            ->hideOnIndex();
+        // ===== TAB 2 : EMPLACEMENTS =====
+        yield FormField::addTab('Emplacements')->setIcon('fa fa-location-dot');
+
+        yield FormField::addPanel('Visibilité')
+            ->setIcon('fa fa-eye')
+            ->setHelp('Choisis où afficher cette page dans le site.');
 
         yield BooleanField::new('isHead', 'Afficher en header')
+            ->setColumns(6)
             ->setHelp('Active si cette page doit apparaître dans le menu du haut.');
 
         yield BooleanField::new('isFoot', 'Afficher en footer')
+            ->setColumns(6)
             ->setHelp('Active si cette page doit apparaître dans le footer.');
-
-        // --- Sur l’index, on veut quelque chose de lisible
-        // (Les champs ci-dessous s’affichent aussi sur index si pas hideOnIndex)
-        if ($pageName === Crud::PAGE_INDEX) {
-            // Rien de plus à yield ici : title + booléens + id suffisent.
-            // content & slug sont déjà hideOnIndex.
-        }
     }
 }

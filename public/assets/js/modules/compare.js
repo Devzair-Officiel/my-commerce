@@ -1,7 +1,7 @@
 // public/assets/js/compare.js
 
-import { fetchJson } from "../utiles/fetch.js";
-import { addFlashMessage, formatPrice } from "../utiles/ui.js";
+import { fetchJson } from "../utils/fetch.js";
+import { addFlashMessage, formatPrice } from "../utils/ui.js";
 
 function isComparePath(pathname) {
   return pathname.startsWith("/compare/add/") || pathname.startsWith("/compare/remove/");

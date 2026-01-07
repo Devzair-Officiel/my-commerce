@@ -212,6 +212,10 @@ body:not(.ea-content-width-full) .content-wrapper {
     background-color: var(--table-hover-cell-bg) !important;
 }
 
+.ea-dark-scheme #main-menu .menu .menu-header {
+    font-size: 17px;
+}
+
 /* ------------------------------
    Boutons : un peu plus “premium”
    ------------------------------ */

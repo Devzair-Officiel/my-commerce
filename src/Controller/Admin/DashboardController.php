@@ -9,6 +9,7 @@ use App\Entity\Product;
 use App\Entity\Setting;
 use App\Entity\Sliders;
 use App\Entity\Category;
+use App\Entity\PaymentMethod;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Response;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Assets;
@@ -28,23 +29,34 @@ final class DashboardController extends AbstractDashboardController
 
     public function index(): Response
     {
-        $productCount = (int) $this->em->getRepository(Product::class)->count([]);
-        $userCount = (int) $this->em->getRepository(User::class)->count([]);
-        $categoryCount = (int) $this->em->getRepository(Category::class)->count([]);
-
-        // Si tu as 1 seule ligne Setting, on récupère la dernière / unique
-        $setting = $this->em->getRepository(Setting::class)->findOneBy([], ['id' => 'DESC']);
-
-        $urls = [
-            'products' => $this->adminUrlGenerator->setController(ProductCrudController::class)->generateUrl(),
-            'users' => $this->adminUrlGenerator->setController(UserCrudController::class)->generateUrl(),
-            'categories' => $this->adminUrlGenerator->setController(CategoryCrudController::class)->generateUrl(),
-            'settings_index' => $this->adminUrlGenerator->setController(SettingCrudController::class)->generateUrl(),
+        $counts = [
+            'products' => (int) $this->em->getRepository(Product::class)->count([]),
+            'users' => (int) $this->em->getRepository(User::class)->count([]),
+            'categories' => (int) $this->em->getRepository(Category::class)->count([]),
+            'pages' => (int) $this->em->getRepository(Page::class)->count([]),
+            'sliders' => (int) $this->em->getRepository(Sliders::class)->count([]),
+            'paymentMethods' => (int) $this->em->getRepository(PaymentMethod::class)->count([]),
+            'carriers' => (int) $this->em->getRepository(Carrier::class)->count([]),
         ];
 
-        // Si setting existe, on génère direct l’URL d’édition
+        $setting = $this->em->getRepository(Setting::class)->findOneBy([], ['id' => 'DESC']);
+
+        // ⚠️ AdminUrlGenerator est stateful → clone pour chaque URL
+        $urls = [
+            'products' => (clone $this->adminUrlGenerator)->setController(ProductCrudController::class)->generateUrl(),
+            'users' => (clone $this->adminUrlGenerator)->setController(UserCrudController::class)->generateUrl(),
+            'categories' => (clone $this->adminUrlGenerator)->setController(CategoryCrudController::class)->generateUrl(),
+
+            'pages' => (clone $this->adminUrlGenerator)->setController(PageCrudController::class)->generateUrl(),
+            'sliders' => (clone $this->adminUrlGenerator)->setController(SlidersCrudController::class)->generateUrl(),
+            'paymentMethods' => (clone $this->adminUrlGenerator)->setController(PaymentMethodCrudController::class)->generateUrl(),
+            'carriers' => (clone $this->adminUrlGenerator)->setController(CarrierCrudController::class)->generateUrl(),
+
+            'settings_index' => (clone $this->adminUrlGenerator)->setController(SettingCrudController::class)->generateUrl(),
+        ];
+
         $urls['settings_edit'] = $setting
-            ? $this->adminUrlGenerator
+            ? (clone $this->adminUrlGenerator)
             ->setController(SettingCrudController::class)
             ->setAction('edit')
             ->setEntityId((string) $setting->getId())
@@ -52,15 +64,12 @@ final class DashboardController extends AbstractDashboardController
             : null;
 
         return $this->render('admin/dashboard.html.twig', [
-            'counts' => [
-                'products' => $productCount,
-                'users' => $userCount,
-                'categories' => $categoryCount,
-            ],
+            'counts' => $counts,
             'setting' => $setting,
             'urls' => $urls,
         ]);
     }
+
 
     public function configureAssets(): Assets
     {
@@ -75,12 +84,23 @@ final class DashboardController extends AbstractDashboardController
     public function configureMenuItems(): iterable
     {
         yield MenuItem::linkToDashboard('Dashboard', 'fa fa-home');
-        yield MenuItem::linkToCrud('Produits', 'fas fa-list', Product::class);
-        yield MenuItem::linkToCrud('Utilisateurs', 'fas fa-users', User::class);
-        yield MenuItem::linkToCrud('Categories', 'fas fa-tag', Category::class);
-        yield MenuItem::linkToCrud('Sliders', 'fas fa-image', Sliders::class);
-        yield MenuItem::linkToCrud('Page', 'fas fa-file', Page::class);
-        yield MenuItem::linkToCrud('Transporteurs', 'fas fa-car', Carrier::class);
-        yield MenuItem::linkToCrud('Setting', 'fas fa-gear', Setting::class);
+
+        yield MenuItem::section('Catalogue');
+        yield MenuItem::linkToCrud('Produits', 'fa fa-box', Product::class);
+        yield MenuItem::linkToCrud('Catégories', 'fa fa-tags', Category::class);
+
+        yield MenuItem::section('Contenu');
+        yield MenuItem::linkToCrud('Pages', 'fa fa-file', Page::class);
+        yield MenuItem::linkToCrud('Sliders', 'fa fa-image', Sliders::class);
+
+        yield MenuItem::section('Vente');
+        yield MenuItem::linkToCrud('Modes de paiement', 'fa fa-credit-card', PaymentMethod::class);
+        yield MenuItem::linkToCrud('Transporteurs', 'fa fa-truck', Carrier::class);
+
+        yield MenuItem::section('Utilisateurs');
+        yield MenuItem::linkToCrud('Utilisateurs', 'fa fa-users', User::class);
+
+        yield MenuItem::section('Configuration');
+        yield MenuItem::linkToCrud('Réglages', 'fa fa-gear', Setting::class);
     }
 }

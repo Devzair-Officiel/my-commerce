@@ -1,6 +1,6 @@
 
-import { fetchJson } from "../utiles/fetch.js";
-import { addFlashMessage, formatPrice } from "../utiles/ui.js";
+import { fetchJson } from "../utils/fetch.js";
+import { addFlashMessage, formatPrice } from "../utils/ui.js";
 
 function extractProductIdFromPath(pathname) {
     const parts = pathname.split("/").filter(Boolean); // ["cart","add","123","1"]
