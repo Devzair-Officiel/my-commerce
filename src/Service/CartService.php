@@ -41,7 +41,13 @@ final class CartService
 
     public function clearCart(): void
     {
-        $this->update('cart', []);
+        $session = $this->session();
+
+        $session->remove('cart');
+        $session->remove('carrier');
+
+        // Force l'écriture immédiate dans certains cas (redirect, etc.)
+        $session->save();
     }
 
     public function updateCarrier(array $carrier): void

@@ -2,13 +2,14 @@
 
 namespace App\Entity;
 
-use App\Enum\OrderStatus;
-use App\Repository\OrderRepository;
 use App\Trait\DateTrait;
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
+use App\Enum\PaymentStatus;
 use Doctrine\DBAL\Types\Types;
+use App\Enum\FulfillmentStatus;
 use Doctrine\ORM\Mapping as ORM;
+use App\Repository\OrderRepository;
+use Doctrine\Common\Collections\Collection;
+use Doctrine\Common\Collections\ArrayCollection;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: OrderRepository::class)]
@@ -67,9 +68,13 @@ class Order
     #[Assert\Length(min: 3, max: 3)]
     private string $currency = 'EUR';
 
-    #[ORM\Column(type: Types::STRING, length: 20, enumType: OrderStatus::class)]
+    #[ORM\Column(type: Types::STRING, length: 20, enumType: PaymentStatus::class)]
     #[Assert\NotNull]
-    private OrderStatus $status = OrderStatus::Draft;
+    private PaymentStatus $paymentStatus = PaymentStatus::Pending;
+
+    #[ORM\Column(type: Types::STRING, length: 20, enumType: FulfillmentStatus::class)]
+    #[Assert\NotNull]
+    private FulfillmentStatus $fulfillmentStatus = FulfillmentStatus::Draft;
 
     /**
      * Carrier : relation + snapshot.
@@ -200,13 +205,25 @@ class Order
         return $this;
     }
 
-    public function getStatus(): OrderStatus
+    public function getPaymentStatus(): PaymentStatus
     {
-        return $this->status;
+        return $this->paymentStatus;
     }
-    public function setStatus(OrderStatus $status): static
+
+    public function setPaymentStatus(PaymentStatus $status): static
     {
-        $this->status = $status;
+        $this->paymentStatus = $status;
+        return $this;
+    }
+
+    public function getFulfillmentStatus(): FulfillmentStatus
+    {
+        return $this->fulfillmentStatus;
+    }
+
+    public function setFulfillmentStatus(FulfillmentStatus $status): static
+    {
+        $this->fulfillmentStatus = $status;
         return $this;
     }
 

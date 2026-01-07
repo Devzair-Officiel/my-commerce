@@ -2,7 +2,7 @@
 
 namespace App\Controller\Webhook;
 
-use App\Enum\OrderStatus;
+use App\Enum\PaymentStatus;
 use App\Repository\OrderRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Stripe\Event;
@@ -88,19 +88,14 @@ final class StripeWebhookController extends AbstractController
         }
 
         // Idempotence : si déjà payé, on ne refait pas
-        if ($order->getStatus() !== OrderStatus::Paid) {
-            $order->setStatus(OrderStatus::Paid);
+        if ($order->getPaymentStatus() !== PaymentStatus::Paid) {
+            $order->setPaymentStatus(PaymentStatus::Paid);
             $order->setPaidAt(new \DateTimeImmutable());
 
             // Assure que paymentReference est bien le pi_...
             if (!$order->getPaymentReference()) {
                 $order->setPaymentReference($paymentIntentId);
             }
-        }
-
-        // On marque que le panier doit être vidé côté session au prochain hit user
-        if ($order->getCartClearedAt() === null) {
-            $order->markCartCleared(); // met cartClearedAt = now
         }
 
         $em->flush();

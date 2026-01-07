@@ -3,7 +3,7 @@
 namespace App\EventSubscriber;
 
 use App\Entity\User;
-use App\Enum\OrderStatus;
+use App\Enum\PaymentStatus;
 use App\Service\CartService;
 use App\Repository\OrderRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -42,10 +42,10 @@ final class ClearCartAfterPaymentSubscriber implements EventSubscriberInterface
         $order = $this->orderRepository->findOneBy(
             [
                 'user' => $user,
-                'status' => OrderStatus::Paid,
+                'paymentStatus' => PaymentStatus::Paid,
                 'cartClearedAt' => null,
             ],
-            ['paidAt' => 'DESC']
+            ['id' => 'DESC']
         );
 
         if ($order === null) {

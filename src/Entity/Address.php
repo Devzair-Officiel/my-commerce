@@ -9,6 +9,7 @@ use App\Repository\AddressRepository;
 use DH\Auditor\Provider\Doctrine\Auditing\Annotation\Auditable;
 
 #[ORM\Entity(repositoryClass: AddressRepository::class)]
+#[ORM\HasLifecycleCallbacks]
 class Address
 {
     use DateTrait;
@@ -45,11 +46,6 @@ class Address
 
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $address_type = null;
-
-    public function __construct()
-    {
-        $this->setCreatedAt(new \DateTimeImmutable());
-    }
 
     public function getId(): ?int
     {
@@ -154,8 +150,25 @@ class Address
 
     public function __toString(): string
     {
-        return $this->client_name . " (" . $this->name . ")" . " " . $this->street . " " . $this->code_postal . " " . $this->city . " " . $this->state;
+        return sprintf('Adresse #%d', $this->id ?? 0);
     }
+
+    public function toSnapshotString(): string
+    {
+        $parts = [
+            $this->client_name,
+            $this->name ? '(' . $this->name . ')' : null,
+            $this->street,
+            $this->code_postal,
+            $this->city,
+            $this->state,
+        ];
+
+        $parts = array_filter($parts, static fn($v) => is_string($v) && trim($v) !== '');
+
+        return implode(' ', array_map('trim', $parts));
+    }
+
 
     public function getAddressType(): ?string
     {

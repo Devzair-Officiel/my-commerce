@@ -4,8 +4,9 @@ namespace App\Controller;
 
 use App\Entity\User;
 use App\Entity\Order;
-use App\Enum\OrderStatus;
 use App\Entity\OrderDetails;
+use App\Enum\FulfillmentStatus;
+use App\Enum\PaymentStatus;
 use App\Service\CartService;
 use App\Service\PaypalService;
 use App\Service\StripeService;
@@ -73,8 +74,30 @@ class CheckoutController extends AbstractController
     {
         $this->denyAccessUnlessGranted('ROLE_USER');
 
+        $user = $this->getUser();
+        if (!$user instanceof User) {
+            throw $this->createAccessDeniedException();
+        }
+
+        $order = $this->orderRepo->findOneBy(
+            [
+                'user' => $user,
+                'paymentStatus' => PaymentStatus::Paid,
+            ],
+            ['id' => 'DESC']
+        );
+
+        if ($order) {
+            $this->cartService->clearCart(); // idéalement remove + save, comme discuté
+            if ($order->getCartClearedAt() === null) {
+                $order->markCartCleared();
+                $this->em->flush();
+            }
+        }
+
         return $this->render('payment/success.html.twig');
     }
+
 
     #[Route('/paypal/payment/success', name: 'app_paypal_payment_success', methods: ['GET'])]
     public function paypalPaymentSuccess(
@@ -106,8 +129,8 @@ class CheckoutController extends AbstractController
             return $this->redirectToRoute('app_error');
         }
 
-        if ($order->getStatus() !== OrderStatus::Paid) {
-            $order->setStatus(OrderStatus::Paid);
+        if ($order->getPaymentStatus() !== PaymentStatus::Paid) {
+            $order->setPaymentStatus(PaymentStatus::Paid);
             $order->setPaidAt(new \DateTimeImmutable());
             $em->flush();
         }
@@ -138,12 +161,12 @@ class CheckoutController extends AbstractController
     {
         $draft = $this->orderRepo->findOneBy([
             'user' => $user,
-            'status' => OrderStatus::Draft,
+            'paymentStatus' => FulfillmentStatus::Draft,
         ]);
 
         $order = $draft ?? new Order();
         $order->setUser($user);
-        $order->setStatus(OrderStatus::Draft);
+        $order->setFulfillmentStatus(FulfillmentStatus::Draft);
 
         // IMPORTANT: adapte ces clés à ton CartService.
         // Ici, j'assume que tes montants sont déjà en centimes.

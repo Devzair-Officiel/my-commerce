@@ -42,7 +42,7 @@ final class AddressCrudController extends AbstractCrudController
                 'city',
                 'state',
                 'address_type',
-                // 'user.email', // active seulement si User a bien un champ email
+                'user.email', 
             ])
             ->showEntityActionsInlined()
             ->setPaginatorPageSize(25);
@@ -59,7 +59,7 @@ final class AddressCrudController extends AbstractCrudController
 
     public function configureFields(string $pageName): iterable
     {
-        yield IdField::new('id')->hideOnForm();
+        
 
         /**
          * =====================================================
@@ -67,6 +67,7 @@ final class AddressCrudController extends AbstractCrudController
          * =====================================================
          */
         if (Crud::PAGE_INDEX === $pageName) {
+            yield IdField::new('id');
             yield TextField::new('client_name', 'Client');
             yield TextField::new('name', 'Libellé');
             yield ChoiceField::new('address_type', 'Type')
@@ -92,9 +93,13 @@ final class AddressCrudController extends AbstractCrudController
         // ===== TAB 1 : ADRESSE =====
         yield FormField::addTab('Adresse')->setIcon('fa fa-address-card');
 
+        
+
         yield FormField::addPanel('Identification')
             ->setIcon('fa fa-tag')
             ->setHelp('Nom interne de l’adresse et informations du destinataire.');
+
+        yield IdField::new('id')->hideOnForm();
 
         yield TextField::new('name', 'Libellé')
             ->setColumns(6)

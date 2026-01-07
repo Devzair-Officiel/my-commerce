@@ -116,7 +116,7 @@
 																<td>
 																	{{order.createdAt | date('d/m/Y')}}
 																</td>
-																<td>{{ order.status.label() }}</td>
+																<td>{{ order.paymentStatus.label() }}</td>
 																<td>
 																	<td>{{ (order.orderTotalTtcCents / 100) | format_currency(order.currency) }}</td>
 																</td>

@@ -2,6 +2,9 @@
 
 namespace App\Controller\Api;
 
+use App\Entity\Address;
+use App\Entity\User;
+use App\Repository\AddressRepository;
 use App\Repository\OrderRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -10,21 +13,21 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
-class ApiOrderController extends AbstractController
+final class ApiOrderController extends AbstractController
 {
     #[Route('/api/order/{id<\d+>}', name: 'app_api_order_update', methods: ['PATCH'])]
     public function update(
         int $id,
         Request $request,
         OrderRepository $orderRepo,
+        AddressRepository $addressRepo,
         EntityManagerInterface $em,
         ValidatorInterface $validator,
     ): JsonResponse {
         $this->denyAccessUnlessGranted('ROLE_USER');
 
-        /** @var \App\Entity\User $user */
         $user = $this->getUser();
-        if (!$user) {
+        if (!$user instanceof User) {
             return $this->json(['error' => 'Unauthorized'], 401);
         }
 
@@ -34,25 +37,34 @@ class ApiOrderController extends AbstractController
             return $this->json(['error' => 'Order not found'], 404);
         }
 
-        // Attendu: JSON { "shipping_address": "...", "billing_address": "..." }
         $payload = $request->toArray();
 
-        $shipping = array_key_exists('shipping_address', $payload) ? $payload['shipping_address'] : null;
-        $billing  = array_key_exists('billing_address', $payload) ? $payload['billing_address'] : null;
+        // ✅ On attend des IDs, pas des strings
+        $shippingRaw = $payload['shipping_address'] ?? null;
+        $billingRaw  = $payload['billing_address'] ?? null;
 
-        if ($shipping !== null && !is_string($shipping)) {
-            return $this->json(['error' => 'shipping_address must be a string'], 400);
-        }
-        if ($billing !== null && !is_string($billing)) {
-            return $this->json(['error' => 'billing_address must be a string'], 400);
+        $shippingId = is_numeric($shippingRaw) ? (int) $shippingRaw : null;
+        $billingId  = is_numeric($billingRaw) ? (int) $billingRaw : null;
+
+        if ($shippingId !== null) {
+            $shippingAddress = $addressRepo->find($shippingId);
+
+            if (!$shippingAddress instanceof Address || $shippingAddress->getUser() !== $user) {
+                return $this->json(['error' => 'Invalid shipping address'], 403);
+            }
+
+            // ✅ SNAPSHOT TEXTE
+            $order->setShippingAddress($shippingAddress->toSnapshotString());
         }
 
-        // Mise à jour partielle
-        if ($shipping !== null) {
-            $order->setShippingAddress($shipping);
-        }
-        if ($billing !== null) {
-            $order->setBillingAddress($billing);
+        if ($billingId !== null) {
+            $billingAddress = $addressRepo->find($billingId);
+
+            if (!$billingAddress instanceof Address || $billingAddress->getUser() !== $user) {
+                return $this->json(['error' => 'Invalid billing address'], 403);
+            }
+
+            $order->setBillingAddress($billingAddress->toSnapshotString());
         }
 
         $violations = $validator->validate($order);
@@ -73,6 +85,8 @@ class ApiOrderController extends AbstractController
         return $this->json([
             'ok' => true,
             'orderId' => $order->getId(),
+            'shipping_snapshot' => $order->getShippingAddress(),
+            'billing_snapshot' => $order->getBillingAddress(),
         ]);
     }
 }

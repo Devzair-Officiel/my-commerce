@@ -174,4 +174,9 @@ class PaymentMethod
     {
         return $this->orders;
     }
+
+    public function __toString()
+    {
+        return $this->name;
+    }
 }

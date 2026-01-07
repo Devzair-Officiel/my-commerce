@@ -42,7 +42,7 @@ final class CarrierCrudController extends AbstractCrudController
 
     public function configureFields(string $pageName): iterable
     {
-        yield IdField::new('id')->hideOnForm();
+        
 
         /**
          * ===========================
@@ -50,6 +50,7 @@ final class CarrierCrudController extends AbstractCrudController
          * ===========================
          */
         if (Crud::PAGE_INDEX === $pageName) {
+            yield IdField::new('id');
             yield TextField::new('name', 'Nom');
             yield MoneyField::new('price', 'Prix')
                 ->setCurrency('EUR');
@@ -65,6 +66,7 @@ final class CarrierCrudController extends AbstractCrudController
         yield FormField::addTab('Infos')->setIcon('fa fa-truck');
         yield FormField::addPanel('Informations générales')->setIcon('fa fa-pen-to-square');
 
+        yield IdField::new('id')->hideOnForm();
         yield TextField::new('name', 'Nom')
             ->setColumns(6)
             ->setHelp('Nom affiché côté client (checkout, pages).');

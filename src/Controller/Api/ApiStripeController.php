@@ -4,7 +4,7 @@ namespace App\Controller\Api;
 
 use App\Entity\Order;
 use App\Entity\User;
-use App\Enum\OrderStatus;
+use App\Enum\FulfillmentStatus;
 use App\Repository\OrderRepository;
 use App\Service\StripeService;
 use Doctrine\ORM\EntityManagerInterface;
@@ -37,7 +37,7 @@ final class ApiStripeController extends AbstractController
         }
 
         // On évite de créer un intent si la commande n’est pas au bon état
-        if ($order->getStatus() !== OrderStatus::Draft) {
+        if ($order->getFulfillmentStatus() !== FulfillmentStatus::Draft) {
             return $this->json(['error' => 'Order not payable'], 409);
         }
 
