@@ -25,7 +25,14 @@
 				<div class="row">
 					<div class="col-12 mb-3">
 						<div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
-							<h3 class="mb-0">Checkout</h3>
+								<a href="{{ path('app_cart') }}" class="btn btn-outline-secondary btn-sm" aria-label="Revenir au panier">
+									<i class="fa-solid fa-arrow-left me-1" aria-hidden="true"></i>
+									Revenir au Panier
+								</a>
+							<div class="d-flex align-items-center gap-2 flex-wrap">
+								<h3 class="mb-0">Checkout</h3>
+							</div>
+
 							<div class="badge bg-light text-dark border">
 								{{ total_products }}
 								produit
@@ -91,7 +98,9 @@
 							<div class="heading_s1 d-flex justify-content-between align-items-center">
 								<h4 class="mb-0">Votre commande</h4>
 								<span class="text-muted small">{{ total_products }}
-									article{% if total_products > 1 %}s{% endif %}
+									article
+									{% if total_products > 1 %}s
+									{% endif %}
 								</span>
 							</div>
 
@@ -222,4 +231,3 @@
 	<script src="{{ asset('assets/js/pages/checkout/stripe.js') }}" type="module" defer></script>
 	<script src="{{ asset('assets/js/pages/checkout/paypal.js') }}" type="module" defer></script>
 {% endblock %}
-
