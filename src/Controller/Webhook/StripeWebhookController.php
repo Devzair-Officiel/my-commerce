@@ -6,15 +6,19 @@ use App\Entity\StripeWebhookEvent;
 use App\Enum\PaymentStatus;
 use App\Repository\OrderRepository;
 use App\Service\StockAllocator;
+use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 use Doctrine\DBAL\LockMode;
 use Doctrine\ORM\EntityManagerInterface;
+use Psr\Log\LoggerInterface;
 use Stripe\Event;
 use Stripe\Exception\SignatureVerificationException;
 use Stripe\Webhook;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\RateLimiter\RateLimiterFactory;
 
 final class StripeWebhookController extends AbstractController
 {
@@ -23,23 +27,27 @@ final class StripeWebhookController extends AbstractController
         private readonly EntityManagerInterface $em,
         private readonly OrderRepository $orderRepository,
         private readonly StockAllocator $stockAllocator,
+        #[Autowire(service: 'limiter.stripe_webhook')]
+        private readonly RateLimiterFactory $stripeWebhookLimiter,
+        private readonly LoggerInterface $logger,
     ) {}
 
     #[Route('/webhooks/stripe', name: 'webhook_stripe', methods: ['POST'])]
     public function __invoke(Request $request): Response
     {
-        $payload = $request->getContent();
         $sigHeader = (string) $request->headers->get('Stripe-Signature', '');
-
         if ($sigHeader === '') {
             return new Response('Missing Stripe-Signature', 400, ['Content-Type' => 'text/plain; charset=utf-8']);
         }
-        error_log('Stripe webhook HIT at ' . (new \DateTimeImmutable())->format(DATE_ATOM));
 
+        $limit = $this->stripeWebhookLimiter->create('stripe_webhook')->consume(1);
+        if (!$limit->isAccepted()) {
+            return new Response('Too Many Requests', 429, ['Content-Type' => 'text/plain; charset=utf-8']);
+        }
+
+        $payload = $request->getContent();
 
         try {
-            error_log('Stripe webhook HIT at ' . (new \DateTimeImmutable())->format(DATE_ATOM));
-
             /** @var Event $event */
             $event = Webhook::constructEvent($payload, $sigHeader, $this->stripeWebhookSecret);
         } catch (SignatureVerificationException) {
@@ -48,11 +56,17 @@ final class StripeWebhookController extends AbstractController
             return new Response('Invalid payload', 400, ['Content-Type' => 'text/plain; charset=utf-8']);
         }
 
-        if ($event->type !== 'payment_intent.succeeded') {
+        $handled = [
+            'payment_intent.succeeded',
+            'payment_intent.payment_failed',
+            'payment_intent.canceled',
+        ];
+
+        if (!\in_array($event->type, $handled, true)) {
             return new Response('ignored', 200, ['Content-Type' => 'text/plain; charset=utf-8']);
         }
 
-        $pi = $event->data->object; // PaymentIntent (stdClass)
+        $pi = $event->data->object;
         $piId = (string) ($pi->id ?? '');
         if ($piId === '') {
             return new Response('Missing payment_intent id', 400, ['Content-Type' => 'text/plain; charset=utf-8']);
@@ -60,12 +74,11 @@ final class StripeWebhookController extends AbstractController
 
         try {
             $this->em->wrapInTransaction(function () use ($event, $pi, $piId): void {
-                // 1) Idempotence : on tente d'insérer l'event DANS la transaction.
-                // Si doublon => exception => transaction rollback => on catch plus bas et on répond OK.
+                // Idempotence : si l'event est déjà en base, UniqueConstraintViolationException
                 $this->em->persist(new StripeWebhookEvent((string) $event->id, (string) $event->type));
                 $this->em->flush();
 
-                // 2) Retrouver la commande
+                // Find order
                 $order = $this->orderRepository->findOneBy(['paymentReference' => $piId]);
 
                 if ($order === null) {
@@ -76,47 +89,71 @@ final class StripeWebhookController extends AbstractController
                 }
 
                 if ($order === null) {
-                    // on échoue pour que Stripe retente (si tu préfères stopper retries, remplace par return + pas d’exception)
                     throw new \RuntimeException('Order not found for payment_intent.');
                 }
 
-                // 3) Lock commande pour éviter double traitement concurrent
                 $this->em->lock($order, LockMode::PESSIMISTIC_WRITE);
 
+                // Ne jamais rétrograder une commande payée
                 if ($order->getPaymentStatus() === PaymentStatus::Paid) {
                     return;
                 }
-
-                // 4) Vérif montant si dispo
-                $amountReceived = isset($pi->amount_received) ? (int) $pi->amount_received : null;
-                if ($amountReceived !== null && $amountReceived !== (int) $order->getOrderTotalTtcCents()) {
-                    throw new \RuntimeException('Montant payé différent du total commande.');
-                }
-
-                // 5) Décrément stock (avec locks produits)
-                $this->stockAllocator->decrementStockForPaidOrder($order);
-
-                // 6) Mettre commande en Paid
-                $order->setPaymentStatus(PaymentStatus::Paid);
-                $order->setPaidAt(new \DateTimeImmutable());
 
                 if (!$order->getPaymentReference()) {
                     $order->setPaymentReference($piId);
                 }
 
+                if ($event->type === 'payment_intent.succeeded') {
+                    $amountReceived = isset($pi->amount_received) ? (int) $pi->amount_received : null;
+                    if ($amountReceived !== null && $amountReceived !== (int) $order->getOrderTotalTtcCents()) {
+                        throw new \RuntimeException('Amount mismatch.');
+                    }
+
+                    $this->stockAllocator->decrementStockForPaidOrder($order);
+
+                    $order->setPaymentStatus(PaymentStatus::Paid);
+                    $order->setPaidAt(new \DateTimeImmutable());
+                    $order->setPaymentFailureReason(null);
+                }
+
+                if ($event->type === 'payment_intent.payment_failed') {
+                    $order->setPaymentStatus(PaymentStatus::Failed);
+
+                    $reason = null;
+                    if (isset($pi->last_payment_error) && isset($pi->last_payment_error->message)) {
+                        $reason = (string) $pi->last_payment_error->message;
+                    }
+                    $order->setPaymentFailureReason($reason);
+                }
+
+                if ($event->type === 'payment_intent.canceled') {
+                    $order->setPaymentStatus(PaymentStatus::Failed);
+
+                    // Stripe peut fournir cancellation_reason sur l'intent
+                    $reason = null;
+                    if (isset($pi->cancellation_reason) && $pi->cancellation_reason !== null) {
+                        $reason = 'Canceled: ' . (string) $pi->cancellation_reason;
+                    } else {
+                        $reason = 'Canceled';
+                    }
+                    $order->setPaymentFailureReason($reason);
+                }
+
                 $this->em->flush();
             });
+        } catch (UniqueConstraintViolationException) {
+            // Event déjà traité
+            return new Response('ok', 200, ['Content-Type' => 'text/plain; charset=utf-8']);
         } catch (\Throwable $e) {
-            // Important : si doublon event.id => on retourne 200 (déjà traité)
-            // si autre erreur => on retourne 500 pour que Stripe retente (comportement souhaitable tant que bug)
-            $msg = $e->getMessage();
+            $this->logger->error('Stripe webhook error', [
+                'exception' => $e,
+                'event_id' => (string) ($event->id ?? ''),
+                'type' => (string) ($event->type ?? ''),
+                'payment_intent' => $piId,
+            ]);
 
-            // heuristique simple : si c’est une contrainte unique (doublon event), on stoppe retries
-            if (str_contains($msg, 'uniq_stripe_event_id') || str_contains($msg, 'stripe_event_id')) {
-                return new Response('ok', 200, ['Content-Type' => 'text/plain; charset=utf-8']);
-            }
-
-            return new Response('error: ' . $msg, 500, ['Content-Type' => 'text/plain; charset=utf-8']);
+            // 500 => Stripe retente (utile si bug temporaire)
+            return new Response('error', 500, ['Content-Type' => 'text/plain; charset=utf-8']);
         }
 
         return new Response('ok', 200, ['Content-Type' => 'text/plain; charset=utf-8']);

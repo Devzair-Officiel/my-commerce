@@ -110,6 +110,9 @@ class Order
     #[Assert\Length(max: 255)]
     private ?string $paymentReference = null;
 
+    #[ORM\Column(type: 'text', nullable: true)]
+    private ?string $paymentFailureReason = null;
+
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
     private ?\DateTimeImmutable $paidAt = null;
 
@@ -284,6 +287,12 @@ class Order
     public function setPaymentReference(?string $ref): static
     {
         $this->paymentReference = $ref !== null ? trim($ref) : null;
+        return $this;
+    }
+
+    public function setPaymentFailureReason(?string $reason): static
+    {
+        $this->paymentFailureReason = $reason;
         return $this;
     }
 

@@ -50,6 +50,13 @@ Exemple :
 {% endif %}
 ```
 
+En local, Stripe ne peut pas appeler directement notre serveur (localhost, Docker, réseau privé).
+Donc stripe listen doit tourner en permanence pendant les tests de paiement.
+
+```bash
+stripe listen --forward-to https://localhost/webhooks/stripe --skip-verify
+```
+
 ---
 
 ## 🐳 Commandes utiles (Docker)

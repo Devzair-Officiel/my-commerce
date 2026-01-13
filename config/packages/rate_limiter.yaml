@@ -1,0 +1,6 @@
+framework:
+  rate_limiter:
+    stripe_webhook:
+      policy: fixed_window
+      limit: 120
+      interval: '1 minute'
