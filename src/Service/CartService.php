@@ -2,18 +2,27 @@
 
 namespace App\Service;
 
+use App\Entity\Setting;
 use App\Repository\CarrierRepository;
 use App\Repository\ProductRepository;
 use App\Repository\SettingRepository;
-use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 
+/**
+ * Gère le panier côté client via la session (ajout/retrait d’articles, transporteur, totaux).
+ * Ne réserve ni ne décrémente le stock : le stock est décrémenté uniquement au paiement confirmé (webhook).
+ * Calcule les montants TTC/HT/TVA en centimes, de façon déterministe, à partir du taux TVA stocké en Setting.
+ */
 final class CartService
 {
+    private const SESSION_CART = 'cart';
+    private const SESSION_CARRIER = 'carrier';
+
+    private ?Setting $cachedSetting = null;
+
     public function __construct(
         private readonly RequestStack $requestStack,
-        private readonly EntityManagerInterface $em,
         private readonly SettingRepository $settingRepo,
         private readonly ProductRepository $productRepo,
         private readonly CarrierRepository $carrierRepo,
@@ -27,6 +36,49 @@ final class CartService
         }
 
         return $request->getSession();
+    }
+
+    /**
+     * @return array<int, int> [productId => quantity]
+     */
+    private function getCartRaw(): array
+    {
+        $cart = $this->session()->get(self::SESSION_CART, []);
+        if (!\is_array($cart)) {
+            return [];
+        }
+
+        return $this->normalizeCart($cart);
+    }
+
+    /**
+     * @param array<mixed, mixed> $cart
+     * @return array<int, int>
+     */
+    private function normalizeCart(array $cart): array
+    {
+        $normalized = [];
+
+        foreach ($cart as $productId => $qty) {
+            $id = (int) $productId;
+            $quantity = (int) $qty;
+
+            if ($id <= 0 || $quantity <= 0) {
+                continue;
+            }
+
+            $normalized[$id] = ($normalized[$id] ?? 0) + $quantity;
+        }
+
+        return $normalized;
+    }
+
+    /**
+     * @param array<int, int> $cart
+     */
+    private function saveCart(array $cart): void
+    {
+        $this->session()->set(self::SESSION_CART, $cart);
     }
 
     public function get(string $key): mixed
@@ -43,26 +95,26 @@ final class CartService
     {
         $session = $this->session();
 
-        $session->remove('cart');
-        $session->remove('carrier');
+        $session->remove(self::SESSION_CART);
+        $session->remove(self::SESSION_CARRIER);
 
-        // Force l'écriture immédiate dans certains cas (redirect, etc.)
         $session->save();
     }
 
     public function updateCarrier(array $carrier): void
     {
-        $this->update('carrier', $carrier);
+        $this->update(self::SESSION_CARRIER, $carrier);
     }
 
     /**
-     * ⚠️ ATTENTION :
-     * Décrémenter le stock à l'ajout au panier n'est pas robuste (abandon de panier).
-     * Le stock devrait être décrémenté au paiement confirmé (webhook).
-     * Je garde ton comportement actuel, mais à corriger ensuite.
+     * Ajoute au panier sans toucher le stock.
+     * On peut refuser si stock affiché insuffisant, mais la vérité est revalidée à la confirmation/paiement.
      */
     public function addToCart(int $productId, int $count = 1): void
     {
+        if ($productId <= 0) {
+            throw new \InvalidArgumentException('Produit invalide.');
+        }
         if ($count <= 0) {
             throw new \InvalidArgumentException('Quantité invalide.');
         }
@@ -77,42 +129,31 @@ final class CartService
             throw new \RuntimeException('Stock insuffisant pour le produit demandé.');
         }
 
-        $product->setStock($availableStock - $count);
-        $this->em->flush();
-
-        $cart = $this->get('cart');
-        if (!\is_array($cart)) {
-            $cart = [];
-        }
-
+        $cart = $this->getCartRaw();
         $cart[$productId] = ($cart[$productId] ?? 0) + $count;
-        $this->update('cart', $cart);
+
+        $this->saveCart($cart);
     }
 
+    /**
+     * Retire du panier sans toucher le stock.
+     */
     public function removeToCart(int $productId, int $count = 1): void
     {
+        if ($productId <= 0) {
+            return;
+        }
         if ($count <= 0) {
             throw new \InvalidArgumentException('Quantité invalide.');
         }
 
-        $cart = $this->get('cart');
-        if (!\is_array($cart) || !isset($cart[$productId])) {
-            return;
-        }
-
-        $product = $this->productRepo->find($productId);
-        if (!$product) {
-            // Produit supprimé : on retire juste de la session
-            unset($cart[$productId]);
-            $this->update('cart', $cart);
+        $cart = $this->getCartRaw();
+        if (!isset($cart[$productId])) {
             return;
         }
 
         $currentQty = (int) $cart[$productId];
         $toRemove = min($currentQty, $count);
-
-        $product->setStock(((int) $product->getStock()) + $toRemove);
-        $this->em->flush();
 
         $remaining = $currentQty - $toRemove;
         if ($remaining <= 0) {
@@ -121,15 +162,40 @@ final class CartService
             $cart[$productId] = $remaining;
         }
 
-        $this->update('cart', $cart);
+        $this->saveCart($cart);
     }
 
+    /**
+     * @return array{
+     *   items: array<int, array{
+     *     product: array{
+     *       id:int,
+     *       title:mixed,
+     *       description:mixed,
+     *       slug:mixed,
+     *       image:mixed,
+     *       stock:mixed,
+     *       soldePrice:mixed,
+     *       regularPrice:mixed,
+     *       displayPrice:int
+     *     },
+     *     quantity:int,
+     *     sub_total_ht:int,
+     *     taxe:int,
+     *     sub_total:int
+     *   }>,
+     *   sub_total:int,
+     *   sub_total_ht:int,
+     *   taxe:int,
+     *   cart_count:int,
+     *   quantity:int,
+     *   carrier: array{id:mixed,name:string,description:string,price:int},
+     *   sub_total_with_carrier:int
+     * }
+     */
     public function getCartDetails(): array
     {
-        $cart = $this->get('cart');
-        if (!\is_array($cart)) {
-            $cart = [];
-        }
+        $cart = $this->getCartRaw();
 
         $result = [
             'items' => [],
@@ -140,30 +206,57 @@ final class CartService
             'quantity' => 0,
         ];
 
+        $carrier = $this->resolveCarrierFromSessionOrDefault();
+
+        if ($cart === []) {
+            $carrier = $this->applyFreeShippingIfEligible($carrier, 0);
+
+            $result['carrier'] = $carrier;
+            $result['sub_total_with_carrier'] = 0 + (int) ($carrier['price'] ?? 0);
+
+            $this->saveCart([]);
+
+            return $result;
+        }
+
+        $ratePercent = $this->getTaxRatePercent();
+
+        // 1 requête pour tous les produits du panier
+        $ids = array_keys($cart);
+        $products = $this->productRepo->findBy(['id' => $ids]);
+
+        $productsById = [];
+        foreach ($products as $p) {
+            $productsById[(int) $p->getId()] = $p;
+        }
+
         $subTotal = 0;
-        $taxeRate = 0; // TODO: config TVA
 
         foreach ($cart as $productId => $quantity) {
-            $quantity = (int) $quantity;
-            if ($quantity <= 0) {
-                unset($cart[$productId]);
-                continue;
-            }
-
-            $product = $this->productRepo->find((int) $productId);
+            $product = $productsById[$productId] ?? null;
             if (!$product) {
                 unset($cart[$productId]);
                 continue;
             }
 
-            $unitPrice = (int) $product->getSoldePrice();
-            $currentSubTotal = $unitPrice * $quantity;
+            $qty = (int) $quantity;
+            if ($qty <= 0) {
+                unset($cart[$productId]);
+                continue;
+            }
 
-            $subTotal += $currentSubTotal;
+            $unitPrice = $product->isOnSale() && $product->getSoldePrice() !== null
+                ? (int) $product->getSoldePrice()
+                : (int) $product->getRegularPrice();
+
+            $lineTotal = $unitPrice * $qty;
+            $subTotal += $lineTotal;
+
+            $split = $this->splitTtcIntoHtAndTax($lineTotal, $ratePercent);
 
             $result['items'][] = [
                 'product' => [
-                    'id' => $product->getId(),
+                    'id' => (int) $product->getId(),
                     'title' => $product->getTitle(),
                     'description' => $product->getDescription(),
                     'slug' => $product->getSlug(),
@@ -171,53 +264,28 @@ final class CartService
                     'stock' => $product->getStock(),
                     'soldePrice' => $product->getSoldePrice(),
                     'regularPrice' => $product->getRegularPrice(),
+                    'displayPrice' => $unitPrice,
                 ],
-                'quantity' => $quantity,
-                'sub_total_ht' => (int) round($currentSubTotal / (1 + $taxeRate)),
-                'taxe' => (int) round($taxeRate * $currentSubTotal / (1 + $taxeRate)),
-                'sub_total' => $currentSubTotal,
+                'quantity' => $qty,
+                'sub_total_ht' => $split['ht'],
+                'taxe' => $split['tax'],
+                'sub_total' => $lineTotal,
             ];
 
-            $result['cart_count'] += $quantity;
-            $result['quantity'] += $quantity;
+            $result['cart_count'] += $qty;
+            $result['quantity'] += $qty;
         }
 
-        // Nettoyage panier si produits invalides
-        $this->update('cart', $cart);
+        // Nettoyage session si produits invalides/supprimés
+        $this->saveCart($cart);
 
         $result['sub_total'] = $subTotal;
-        $result['sub_total_ht'] = (int) round($subTotal / (1 + $taxeRate));
-        $result['taxe'] = (int) round($taxeRate * $result['sub_total_ht']);
 
-        // Carrier en session ou default
-        $carrier = $this->get('carrier');
+        $totalSplit = $this->splitTtcIntoHtAndTax($subTotal, $ratePercent);
+        $result['sub_total_ht'] = $totalSplit['ht'];
+        $result['taxe'] = $totalSplit['tax'];
 
-        if (!\is_array($carrier) || !isset($carrier['price'])) {
-            $defaultCarrierEntity = $this->carrierRepo->findOneBy([]);
-
-            if (!$defaultCarrierEntity) {
-                $carrier = [
-                    'id' => null,
-                    'name' => 'Livraison',
-                    'description' => '',
-                    'price' => 0,
-                ];
-            } else {
-                $carrier = [
-                    'id' => $defaultCarrierEntity->getId(),
-                    'name' => $defaultCarrierEntity->getName(),
-                    'description' => $defaultCarrierEntity->getDescription(),
-                    'price' => $defaultCarrierEntity->getPrice(),
-                ];
-            }
-
-            $this->update('carrier', $carrier);
-        }
-
-        // Livraison offerte au delà d'un seuil
-        if ($result['sub_total'] > 5900) {
-            $carrier['price'] = 0;
-        }
+        $carrier = $this->applyFreeShippingIfEligible($carrier, $result['sub_total']);
 
         $result['carrier'] = $carrier;
         $result['sub_total_with_carrier'] = $result['sub_total'] + (int) ($carrier['price'] ?? 0);
@@ -227,11 +295,122 @@ final class CartService
 
     public function isStockSufficient(int $productId, int $quantity): bool
     {
+        if ($productId <= 0 || $quantity <= 0) {
+            return false;
+        }
+
         $product = $this->productRepo->find($productId);
         if (!$product) {
             return false;
         }
 
         return (int) $product->getStock() >= $quantity;
+    }
+
+    private function resolveCarrierFromSessionOrDefault(): array
+    {
+        $carrier = $this->get(self::SESSION_CARRIER);
+
+        if (\is_array($carrier) && isset($carrier['price'])) {
+            // Normalise pour garantir int
+            $carrier['price'] = (int) $carrier['price'];
+            return $carrier;
+        }
+
+        $defaultCarrierEntity = $this->carrierRepo->findOneBy([], ['id' => 'ASC']);
+
+        if (!$defaultCarrierEntity) {
+            $carrier = [
+                'id' => null,
+                'name' => 'Livraison',
+                'description' => '',
+                'price' => 0,
+            ];
+        } else {
+            $carrier = [
+                'id' => $defaultCarrierEntity->getId(),
+                'name' => (string) $defaultCarrierEntity->getName(),
+                'description' => (string) $defaultCarrierEntity->getDescription(),
+                'price' => (int) $defaultCarrierEntity->getPrice(),
+            ];
+        }
+
+        $this->update(self::SESSION_CARRIER, $carrier);
+
+        return $carrier;
+    }
+
+    private function applyFreeShippingIfEligible(array $carrier, int $subTotal): array
+    {
+        $threshold = $this->getFreeShippingThresholdCents();
+
+        if ($threshold !== null && $subTotal >= $threshold) {
+            $carrier['price'] = 0;
+            $this->update(self::SESSION_CARRIER, $carrier);
+        }
+
+        return $carrier;
+    }
+
+    private function getTaxRatePercent(): int
+    {
+        // Utilise le repo "layout-safe" (scalaires) pour éviter de hydrater l’entité si tu préfères,
+        // mais ici on privilégie une lecture unique + cohérente (tax + seuil).
+        $rate = (int) ($this->setting()->getTaxeRate() ?? 0);
+
+        if ($rate < 0 || $rate > 100) {
+            throw new \RuntimeException('taxe_rate invalide dans Setting.');
+        }
+
+        return $rate;
+    }
+
+    private function getFreeShippingThresholdCents(): ?int
+    {
+        $v = $this->setting()->getFreeShippingThresholdCents();
+
+        return $v !== null ? max(0, (int) $v) : null;
+    }
+
+    private function setting(): Setting
+    {
+        if ($this->cachedSetting) {
+            return $this->cachedSetting;
+        }
+
+        /** @var Setting|null $setting */
+        $setting = $this->settingRepo->findOneBy([], ['id' => 'ASC']);
+        if (!$setting) {
+            throw new \RuntimeException('Setting manquant en base.');
+        }
+
+        return $this->cachedSetting = $setting;
+    }
+
+    /**
+     * Découpe un montant TTC (centimes) en HT + TVA (centimes) sans float.
+     *
+     * @return array{ht:int,tax:int}
+     */
+    private function splitTtcIntoHtAndTax(int $ttcCents, int $ratePercent): array
+    {
+        if ($ttcCents < 0) {
+            throw new \InvalidArgumentException('Montant TTC invalide.');
+        }
+        if ($ratePercent < 0 || $ratePercent > 100) {
+            throw new \InvalidArgumentException('Taux TVA invalide.');
+        }
+
+        if ($ratePercent === 0 || $ttcCents === 0) {
+            return ['ht' => $ttcCents, 'tax' => 0];
+        }
+
+        $den = 100 + $ratePercent;
+
+        // half-up, 100% integer
+        $ht = intdiv($ttcCents * 100 + intdiv($den, 2), $den);
+        $tax = $ttcCents - $ht;
+
+        return ['ht' => $ht, 'tax' => $tax];
     }
 }

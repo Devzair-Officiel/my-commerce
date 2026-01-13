@@ -13,6 +13,7 @@ use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
 use EasyCorp\Bundle\EasyAdminBundle\Field\ChoiceField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\DateTimeField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\FormField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\IntegerField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\MoneyField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextareaField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
@@ -64,6 +65,8 @@ final class OrderCrudController extends AbstractCrudController
 
     public function configureFields(string $pageName): iterable
     {
+        $id = IntegerField::new('id', 'Id');
+
         $paymentStatus = ChoiceField::new('paymentStatus', 'Paiement')
             ->setChoices($this->paymentChoices())
             ->renderAsBadges($this->paymentBadges());
@@ -107,6 +110,7 @@ final class OrderCrudController extends AbstractCrudController
 
         if (Crud::PAGE_INDEX === $pageName) {
             return [
+                $id,
                 $paymentStatus,
                 $fulfillmentStatus,
                 $userEmail,

@@ -4,6 +4,11 @@ namespace App\Service;
 
 use App\Repository\PaymentMethodRepository;
 
+/**
+ * Centralise la résolution des paramètres de paiement selon l’environnement.
+ * En production, lit les secrets depuis la configuration applicative ; hors production, récupère les clés de test en base via le dépôt.
+ * Règle : si une valeur requise est absente ou vide, l’exécution échoue immédiatement avec une exception.
+ */
 final class PaymentConfigResolver
 {
     public function __construct(

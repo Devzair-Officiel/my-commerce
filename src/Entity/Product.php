@@ -18,10 +18,6 @@ class Product
 {
     use DateTrait;
 
-    // ---------------------------------------------------------------------
-    // Doctrine fields / relations
-    // ---------------------------------------------------------------------
-
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]

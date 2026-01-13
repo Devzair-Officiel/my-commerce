@@ -48,15 +48,24 @@ final class ApiStripeController extends AbstractController
 
         Stripe::setApiKey($stripeService->getPrivateKey());
 
-        $intent = PaymentIntent::create([
-            'amount' => $amount,
-            'currency' => 'eur',
-            'automatic_payment_methods' => ['enabled' => true],
-            'metadata' => [
-                'order_id' => (string) $order->getId(),
-                'user_id' => (string) $user->getId(),
+        if ($order->getPaymentReference()) {
+            return $this->json(['clientSecret' => null, 'paymentIntentId' => $order->getPaymentReference()]);
+        }
+
+        $intent = PaymentIntent::create(
+            [
+                'amount' => $amount,
+                'currency' => 'eur',
+                'automatic_payment_methods' => ['enabled' => true],
+                'metadata' => [
+                    'order_id' => (string) $order->getId(),
+                    'user_id' => (string) $user->getId(),
+                ],
             ],
-        ]);
+            [
+                'idempotency_key' => 'pi_order_' . $order->getId(),
+            ]
+        );
 
         // Recommandation: stocker l’ID du PaymentIntent (pas le client_secret)
         $order->setPaymentReference($intent->id);

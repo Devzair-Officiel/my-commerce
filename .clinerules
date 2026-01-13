@@ -1,0 +1,100 @@
+# CLINE — Rules projet (Symfony 8 / PHP 8.4 / Twig + AJAX / Bootstrap 5 / Stripe / EasyAdmin / PostgreSQL / Docker)
+
+## 1) Contexte (à toujours garder)
+- Application Symfony
+- Front : Twig + CSS + Bootstrap 5 + JavaScript (AJAX pour l’asynchrone)
+- Admin : EasyAdmin
+- Paiement : Stripe (Checkout / PaymentIntents + Webhooks)
+- Auth : sessions Symfony (Security)
+- BDD : PostgreSQL
+- Environnement : Docker
+
+## 2) Règles non négociables (qualité & vérité)
+- Ne jamais inventer des fichiers, routes, services, entités, champs BDD, variables d’environnement ou comportements.
+- Si un point est ambigu (flux Stripe, structure des templates, conventions du projet), poser des questions ciblées AVANT de coder.
+- Proposer des changements par incréments : petites PR/patches testables et faciles à relire.
+- Préférer le standard Symfony ; éviter les patterns “custom” sans nécessité.
+
+## 3) Standards PHP / Symfony (PSR & modernité)
+- Respect PSR-12 + PSR-4, `declare(strict_types=1);`, typage strict.
+- Controllers fins (orchestration), logique métier dans des services.
+- Utiliser le Validator Symfony pour toutes entrées utilisateur importantes.
+- Pas de duplication : extraire en service si une logique se répète.
+- Journaliser proprement (Monolog) sans exposer de données sensibles.
+
+## 4) Twig / Bootstrap 5 / JS (AJAX) — règles de rendu
+- Twig :
+  - échapper par défaut (ne pas utiliser `|raw` sur contenu utilisateur).
+  - privilégier des templates composables (partials, macros) plutôt que du “copier-coller”.
+- Bootstrap 5 :
+  - suivre la structure du design system (classes, composants) ; éviter le CSS spécifique inutile.
+- JavaScript :
+  - code lisible, modulaire, sans dépendance superflue.
+  - côté AJAX : gérer les erreurs (réseau, 4xx/5xx) + afficher un feedback utilisateur.
+  - ne jamais faire confiance au front pour des règles métier (prix, réduction, stock, statut commande).
+
+## 5) Sécurité (priorité e-commerce)
+- Auth/session :
+  - vérifier accès sur toute route sensible (voters/attributes/IsGranted).
+  - CSRF obligatoire sur toutes actions mutables via formulaires.
+- AJAX :
+  - les endpoints AJAX mutables doivent être protégés (CSRF token ou autre stratégie Symfony cohérente).
+  - même validation serveur que pour un formulaire classique.
+- SQL/Doctrine :
+  - aucune concat SQL ; paramètres obligatoires.
+- XSS :
+  - tout contenu utilisateur est considéré dangereux → échapper.
+- Secrets :
+  - Stripe keys et secrets uniquement via env ; jamais en code ni en logs.
+- Upload (si présent) :
+  - validation MIME/taille, stockage sécurisé, noms sûrs.
+
+## 6) Stripe (règles critiques)
+- Ne jamais considérer un paiement “ok” sur la base d’un retour front.
+- Toute confirmation finale = basée sur Stripe côté serveur (webhook recommandé).
+- Webhooks :
+  - vérifier la signature (`STRIPE_WEBHOOK_SECRET`).
+  - handler idempotent (ne jamais doubler une commande/paiement si l’événement est rejoué).
+  - stocker un identifiant Stripe (PaymentIntent/Checkout Session id) côté commande.
+- Montants :
+  - toujours calculés côté serveur depuis la BDD (panier/produits), jamais depuis le client.
+- États commande :
+  - définir une machine d’état simple (ex: `draft` → `pending_payment` → `paid` → `fulfilled` / `cancelled`).
+  - transitions contrôlées par back (webhook ou admin), jamais directement par le client.
+
+## 7) EasyAdmin (admin sécurisé)
+- Accès admin strict (ROLE_ADMIN, ROLE_SUPER_ADMIN).
+- Actions dangereuses (delete, refund, changement de statut) :
+  - confirmation + permissions + logs.
+- Ne pas exposer de données sensibles inutilement (ex: secrets, tokens, données Stripe brutes).
+- Les opérations métier (ex: remboursement) doivent appeler un service dédié, pas être “dans le CRUD”.
+
+## 8) PostgreSQL / Doctrine — bonnes pratiques
+- Requêtes paginées pour les listes (admin inclus).
+- Index à proposer sur champs filtrés/triés fréquemment (ex: `created_at`, `status`, `user_id`, `order_number`).
+- Transactions explicites si plusieurs écritures liées (commande + lignes + stock).
+- Migrations Doctrine systématiques (pas de modifications manuelles non tracées).
+
+## 9) Fiabilité & UX
+- Messages flash / retours AJAX cohérents (succès/erreur).
+- Gestion des erreurs :
+  - messages utilisateur non techniques,
+  - logs techniques côté serveur (avec contexte, sans secrets).
+- Prévenir les doubles clics / doubles soumissions (front + back : idempotence).
+
+## 10) Tests & outillage (minimum requis)
+- Toute règle métier e-commerce (prix, coupon, stock, transition commande, webhook Stripe) doit avoir des tests.
+- Chaque bug corrigé idéalement avec test de non-régression.
+- Maintenir un niveau d’analyse statique réaliste (PHPStan/Psalm) + formatage (CS Fixer).
+
+## 11) Docker — exécution
+- Ne jamais supposer l’environnement host.
+- Préférer `docker compose exec <php|app> ...` pour console, tests, migrations.
+- Garder dev/test/prod distincts via `.env` et variables.
+
+## 12) Format de livraison attendu
+À chaque proposition de changement :
+- liste claire des fichiers modifiés/ajoutés,
+- commandes Docker pour tester (tests + lint),
+- impacts (DB/migrations, sécurité, compat, perf),
+- si sujet Stripe : préciser idempotence + vérif signature webhook.

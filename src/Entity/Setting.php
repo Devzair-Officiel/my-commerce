@@ -56,6 +56,9 @@ class Setting
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $copyright = null;
 
+    #[ORM\Column(nullable: true)]
+    private ?int $freeShippingThresholdCents = null;
+
     #[ORM\OneToOne(mappedBy: 'setting', cascade: ['persist', 'remove'], orphanRemoval: true)]
     private ?Media $logoMedia = null;
 
@@ -229,6 +232,17 @@ class Setting
     {
         $this->copyright = $copyright;
 
+        return $this;
+    }
+
+    public function getFreeShippingThresholdCents(): ?int
+    {
+        return $this->freeShippingThresholdCents;
+    }
+
+    public function setFreeShippingThresholdCents(?int $value): static
+    {
+        $this->freeShippingThresholdCents = $value;
         return $this;
     }
 
