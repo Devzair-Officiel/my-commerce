@@ -62,4 +62,4 @@ services:
         arguments:
             $stripeWebhookSecret: '%stripe.webhook_secret%'
     
-    
+    App\Admin\Dashboard\DashboardMetricsProvider: ~

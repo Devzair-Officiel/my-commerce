@@ -2,6 +2,7 @@
 
 namespace App\Controller\Admin;
 
+use App\Admin\Dashboard\DashboardMetricsProvider;
 use App\Entity\Page;
 use App\Entity\User;
 use App\Entity\Order;
@@ -27,6 +28,7 @@ final class DashboardController extends AbstractDashboardController
     public function __construct(
         private readonly EntityManagerInterface $em,
         private readonly AdminUrlGenerator $adminUrlGenerator,
+        private readonly DashboardMetricsProvider $metrics,
     ) {}
 
     public function index(): Response
@@ -34,6 +36,7 @@ final class DashboardController extends AbstractDashboardController
         $counts = [
             'products' => (int) $this->em->getRepository(Product::class)->count([]),
             'users' => (int) $this->em->getRepository(User::class)->count([]),
+            'orders' => (int) $this->em->getRepository(Order::class)->count([]),
             'categories' => (int) $this->em->getRepository(Category::class)->count([]),
             'pages' => (int) $this->em->getRepository(Page::class)->count([]),
             'sliders' => (int) $this->em->getRepository(Sliders::class)->count([]),
@@ -43,17 +46,15 @@ final class DashboardController extends AbstractDashboardController
 
         $setting = $this->em->getRepository(Setting::class)->findOneBy([], ['id' => 'DESC']);
 
-        // ⚠️ AdminUrlGenerator est stateful → clone pour chaque URL
         $urls = [
             'products' => (clone $this->adminUrlGenerator)->setController(ProductCrudController::class)->generateUrl(),
             'users' => (clone $this->adminUrlGenerator)->setController(UserCrudController::class)->generateUrl(),
+            'orders' => (clone $this->adminUrlGenerator)->setController(OrderCrudController::class)->generateUrl(),
             'categories' => (clone $this->adminUrlGenerator)->setController(CategoryCrudController::class)->generateUrl(),
-
             'pages' => (clone $this->adminUrlGenerator)->setController(PageCrudController::class)->generateUrl(),
             'sliders' => (clone $this->adminUrlGenerator)->setController(SlidersCrudController::class)->generateUrl(),
             'paymentMethods' => (clone $this->adminUrlGenerator)->setController(PaymentMethodCrudController::class)->generateUrl(),
             'carriers' => (clone $this->adminUrlGenerator)->setController(CarrierCrudController::class)->generateUrl(),
-
             'settings_index' => (clone $this->adminUrlGenerator)->setController(SettingCrudController::class)->generateUrl(),
         ];
 
@@ -65,13 +66,15 @@ final class DashboardController extends AbstractDashboardController
             ->generateUrl()
             : null;
 
+        $metrics = $this->metrics->getMetrics();
+
         return $this->render('admin/dashboard.html.twig', [
             'counts' => $counts,
             'setting' => $setting,
             'urls' => $urls,
+            'metrics' => $metrics,
         ]);
     }
-
 
     public function configureAssets(): Assets
     {
@@ -106,6 +109,5 @@ final class DashboardController extends AbstractDashboardController
 
         yield MenuItem::section('Configuration');
         yield MenuItem::linkToCrud('Réglages', 'fa fa-gear', Setting::class);
-
     }
 }
