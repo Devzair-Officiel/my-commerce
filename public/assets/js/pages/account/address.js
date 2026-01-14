@@ -126,11 +126,18 @@ export function initAddressBook() {
     closeForm();
   }
 
+  function getCsrfTokenAddress() {
+    return document.querySelector('meta[name="csrf-token-address"]')?.getAttribute("content") || "";
+  }
+
   async function submitForm(event) {
     event.preventDefault();
 
     const formData = new FormData(form);
     const payload = Object.fromEntries(formData.entries());
+    for (const k of ["name", "client_name", "street", "code_postal", "city", "state", "more_details", "address_type"]) {
+      if (typeof payload[k] === "string") payload[k] = payload[k].trim();
+    }
 
     const method = isUpdating ? "PUT" : "POST";
     const url = isUpdating ? `${apiBase}/${encodeURIComponent(currentId)}` : apiBase;
@@ -141,6 +148,7 @@ export function initAddressBook() {
         headers: {
           "Content-Type": "application/json",
           "X-Requested-With": "XMLHttpRequest",
+          "X-CSRF-TOKEN": getCsrfTokenAddress(),
         },
         body: JSON.stringify(payload),
       });

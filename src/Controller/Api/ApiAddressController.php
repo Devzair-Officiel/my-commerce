@@ -209,6 +209,15 @@ class ApiAddressController extends AbstractController
             ], Response::HTTP_FORBIDDEN);
         }
 
+        $origin = $request->headers->get('Origin');
+        if ($origin && !str_starts_with($origin, $request->getSchemeAndHttpHost())) {
+            return $this->json([
+                'isSuccess' => false,
+                'message' => 'Origin invalide',
+                'data' => [],
+            ], Response::HTTP_FORBIDDEN);
+        }
+
         return null;
     }
 }

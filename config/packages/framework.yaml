@@ -3,7 +3,13 @@ framework:
     secret: '%env(APP_SECRET)%'
 
     # Note that the session will be started ONLY if you read or write from it.
-    session: true
+    session: 
+        # "auto" => Secure seulement quand la requête est en HTTPS
+        cookie_secure: auto
+        # Lax est un bon compromis pour une app classique (login + pages)
+        cookie_samesite: lax
+        # Bon réflexe : JS ne peut pas lire le cookie de session
+        cookie_httponly: true
 
     serializer:
         enabled: true
