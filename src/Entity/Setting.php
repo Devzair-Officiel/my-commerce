@@ -45,6 +45,9 @@ class Setting
     private ?string $email = null;
 
     #[ORM\Column(length: 255, nullable: true)]
+    private ?string $emailNoReply = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
     private ?string $facebookLink = null;
 
     #[ORM\Column(length: 255, nullable: true)]
@@ -183,6 +186,18 @@ class Setting
     public function setEmail(?string $email): static
     {
         $this->email = $email;
+
+        return $this;
+    }
+
+    public function getEmailNoReply(): ?string
+    {
+        return $this->emailNoReply;
+    }
+
+    public function setEmailNoReply(?string $emailNoReply): static
+    {
+        $this->emailNoReply = $emailNoReply;
 
         return $this;
     }

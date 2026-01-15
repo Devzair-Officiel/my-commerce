@@ -1,0 +1,83 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}NideMiel | Contact
+{% endblock %}
+
+{% block body %}
+	{% include "page_head/index.html.twig" with {'page_name': 'Formulaire de contact'} %}
+
+
+	<div class="main_content">
+		<div class="login_register_wrap section">
+			<div class="container">
+				<div class="row justify-content-center">
+					<div class="col-xl-9 col-md-10">
+						{% for message in app.flashes('success') %}
+							<div class="alert alert-success mt-4 text-center">
+								{{message}}
+							</div>
+						{% endfor %}
+						<div class="login_wrap">
+							<div class="padding_eight_all bg-white">
+								{{ form_start(form) }}
+
+								{{ form_row(form.email) }}
+								{{ form_row(form.subject) }}
+								{{ form_row(form.content) }}
+
+								{# IMPORTANT : rendre le champ captcha #}
+								{{ form_row(form.captcha) }}
+								{{ form_errors(form.captcha) }}
+
+								{{ form_row(form.submit) }}
+
+								{{ form_end(form) }}
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+{% endblock %}
+
+{% block javascripts %}
+  {{ parent() }}
+
+<script src="https://www.google.com/recaptcha/api.js?render={{ recaptcha3_site_key }}"></script>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      if (typeof grecaptcha === 'undefined') {
+        console.error('reCAPTCHA script not loaded');
+        return;
+      }
+
+      const formEl = document.querySelector('form');
+      const captchaInput = document.getElementById('contact_captcha');
+
+      if (!formEl || !captchaInput) {
+        console.error('Form or captcha input not found');
+        return;
+      }
+
+      formEl.addEventListener('submit', function (e) {
+        // Empêche l’envoi tant qu’on n’a pas le token
+        if (captchaInput.value) {
+          return; // déjà rempli
+        }
+
+        e.preventDefault();
+
+        grecaptcha.ready(function () {
+          grecaptcha.execute('{{ recaptcha3_site_key }}', { action: 'contact' })
+            .then(function (token) {
+              captchaInput.value = token;
+              formEl.submit();
+            });
+        });
+      });
+    });
+  </script>
+{% endblock %}

@@ -16,33 +16,10 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 final class ProductController extends AbstractController
 {
 
-    public function __construct(private ProductRepository $productRepo)
-    {}
-
-    // #[Route('/product',  name: 'app_home')]
-    // public function index(SettingRepository $settingRepo, SlidersRepository $slidersRepo, CategoryRepository $categoryRepo, PageRepository $pageRepo, Request $request): Response
-    // {
-    //     $session = $request->getSession();
-
-    //     $data = $settingRepo->findAll();
-    //     $sliders = $slidersRepo->findAll();
-    //     $categories = $categoryRepo->findBy(['isMega' => true]);
-
-
- 
-
-    //     return $this->render('home/index.html.twig', [
-    //         'sliders' => $sliders,
-    //         'categories' => $categories,
-    //         'productBestSeller' => $this->productRepo->findBy(['isBestSeller' => true]),
-    //         'productNewArrival' => $this->productRepo->findBy(['isNewArrival' => true]),
-    //         'productFeatured' => $this->productRepo->findBy(['isFeatured' => true]),
-    //         'productSpecialOffer' => $this->productRepo->findBy(['isSpecialOffer' => true]),
-    //     ]);
-    // }
-
+    public function __construct(private ProductRepository $productRepo) {}
+    
     #[Route('/product/{slug}', name: 'app_product_by_slug')]
-    public function showProduct( Request $request, string $slug)
+    public function showProduct(string $slug)
     {
         $product = $this->productRepo->findOneBy(['slug' => $slug]);
 

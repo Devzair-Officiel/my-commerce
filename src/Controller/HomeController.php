@@ -16,13 +16,13 @@ final class HomeController extends AbstractController
 {
     public function __construct(private ProductRepository $product) 
     {}
+
     #[Route('/', name: 'app_home')]
-    public function index(SettingRepository $setting, CategoryRepository $category, SlidersRepository $slider, PageRepository $page, Request $request): Response
+    public function index(SlidersRepository $slider): Response
     {
         $sliders = $slider->findAll();
 
         return $this->render('home/index.html.twig', [
-            'controller_name' => 'HomeController',
             'sliders' => $sliders,
             'productBestSeller' => $this->product->findBy(['isBestSeller' => true]),
             'productNewArrival' => $this->product->findBy(['isNewArrival' => true]),

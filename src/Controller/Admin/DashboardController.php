@@ -2,12 +2,12 @@
 
 namespace App\Controller\Admin;
 
-use App\Admin\Dashboard\DashboardMetricsProvider;
 use App\Entity\Page;
 use App\Entity\User;
 use App\Entity\Order;
 use App\Entity\Address;
 use App\Entity\Carrier;
+use App\Entity\Contact;
 use App\Entity\Product;
 use App\Entity\Setting;
 use App\Entity\Sliders;
@@ -15,6 +15,7 @@ use App\Entity\Category;
 use App\Entity\PaymentMethod;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Response;
+use App\Admin\Dashboard\DashboardMetricsProvider;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Assets;
 use EasyCorp\Bundle\EasyAdminBundle\Config\MenuItem;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Dashboard;
@@ -106,6 +107,7 @@ final class DashboardController extends AbstractDashboardController
         yield MenuItem::section('Utilisateurs');
         yield MenuItem::linkToCrud('Utilisateurs', 'fa fa-users', User::class);
         yield MenuItem::linkToCrud('Adresses', 'fas fa-address-card', Address::class);
+        yield MenuItem::linkToCrud('Message', 'fas fa-envelope', Contact::class);
 
         yield MenuItem::section('Configuration');
         yield MenuItem::linkToCrud('Réglages', 'fa fa-gear', Setting::class);

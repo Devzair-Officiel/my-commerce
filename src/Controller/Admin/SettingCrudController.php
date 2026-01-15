@@ -111,6 +111,10 @@ final class SettingCrudController extends AbstractCrudController
             ->setColumns(6)
             ->setFormTypeOption('attr', ['maxlength' => 255]);
 
+        $emailNoReply = EmailField::new('emailNoReply', 'Email No Reply')
+            ->setColumns(6)
+            ->setFormTypeOption('attr', ['maxlength' => 255]);
+
         // --- Social Link
         $facebook = TextField::new('facebookLink', 'Facebook')
             ->setHelp('<i class="fab fa-facebook-f"></i> URL complète (ex: https://facebook.com/ma-page)')
@@ -176,6 +180,7 @@ final class SettingCrudController extends AbstractCrudController
             FormField::addFieldset('Coordonnées')->setIcon('fa fa-address-book'),
             $phone,
             $email,
+            $emailNoReply,
 
             FormField::addTab('Réseaux sociaux')->setIcon('fa-solid fa-share-nodes'),
             FormField::addFieldset('Liens')->setIcon('fa-solid fa-link'),

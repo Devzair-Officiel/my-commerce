@@ -1,0 +1,29 @@
+{% block subject %}Contact
+{% endblock %}
+
+{% block html %}
+	<html>
+
+		<head>
+			<meta charset="UTF-8">
+			<title>Email de contact</title>
+		</head>
+
+		<body>
+			<div style="margin: 0 10px;">
+				<div>
+					<h1>NideMiel</h1>
+				</div>
+				<h2>Demande de
+					{{user.firstname}},</h2>
+
+				<div style="margin-bottom: 20px;">
+					<p>
+						{{contact.content}}
+					</p>
+				</div>
+			</div>
+		</body>
+
+	</html>
+{% endblock %}

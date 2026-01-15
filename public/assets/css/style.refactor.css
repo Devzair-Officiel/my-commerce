@@ -7318,3 +7318,11 @@ blockquote p:last-child {
 .input-group > .input-group-append > .btn {
 	height: 100%;
 }
+
+/*===================================*
+  25.MY COSTUM
+*===================================*/
+
+select {
+	cursor: pointer;
+}
