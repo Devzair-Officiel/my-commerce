@@ -35,9 +35,16 @@ class Carrier
     #[ORM\OneToMany(mappedBy: 'carrier', targetEntity: Order::class)]
     private Collection $orders;
 
+    /**
+     * @var Collection<int, Shipment>
+     */
+    #[ORM\OneToMany(targetEntity: Shipment::class, mappedBy: 'carrier')]
+    private Collection $shipments;
+
     public function __construct()
     {
         $this->orders = new ArrayCollection();
+        $this->shipments = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -84,5 +91,35 @@ class Carrier
     public function __toString()
     {
         return $this->name;
+    }
+
+    /**
+     * @return Collection<int, Shipment>
+     */
+    public function getShipments(): Collection
+    {
+        return $this->shipments;
+    }
+
+    public function addShipment(Shipment $shipment): static
+    {
+        if (!$this->shipments->contains($shipment)) {
+            $this->shipments->add($shipment);
+            $shipment->setCarrier($this);
+        }
+
+        return $this;
+    }
+
+    public function removeShipment(Shipment $shipment): static
+    {
+        if ($this->shipments->removeElement($shipment)) {
+            // set the owning side to null (unless already changed)
+            if ($shipment->getCarrier() === $this) {
+                $shipment->setCarrier(null);
+            }
+        }
+
+        return $this;
     }
 }

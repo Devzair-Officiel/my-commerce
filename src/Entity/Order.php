@@ -128,9 +128,16 @@ class Order
     #[Assert\Valid] // valide aussi les lignes
     private Collection $orderDetails;
 
+    /**
+     * @var Collection<int, Shipment>
+     */
+    #[ORM\OneToMany(targetEntity: Shipment::class, mappedBy: 'customerOrder', cascade: ['persist'])]
+    private Collection $shipments;
+
     public function __construct()
     {
         $this->orderDetails = new ArrayCollection();
+        $this->shipments = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -338,6 +345,36 @@ class Order
                 $orderDetail->setMyOrder(null);
             }
         }
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Shipment>
+     */
+    public function getShipments(): Collection
+    {
+        return $this->shipments;
+    }
+
+    public function addShipments(Shipment $shipments): static
+    {
+        if (!$this->shipments->contains($shipments)) {
+            $this->shipments->add($shipments);
+            $shipments->setCustomerOrder($this);
+        }
+
+        return $this;
+    }
+
+    public function removeShipments(Shipment $shipments): static
+    {
+        if ($this->shipments->removeElement($shipments)) {
+            // set the owning side to null (unless already changed)
+            if ($shipments->getCustomerOrder() === $this) {
+                $shipments->setCustomerOrder(null);
+            }
+        }
+
         return $this;
     }
 }

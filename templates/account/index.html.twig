@@ -27,8 +27,11 @@
 									</li>
 									<li class="nav-item">
 										<a class="nav-link" id="orders-tab" data-bs-toggle="tab" href="#orders" role="tab" aria-controls="orders" aria-selected="false">
-											<i class="ti-shopping-cart-full"></i>Mes
-																																																							                           commandes</a>
+											<i class="ti-shopping-cart-full"></i>Mes commandes</a>
+									</li>
+									<li class="nav-item">
+										<a class="nav-link" id="messages-tab" data-bs-toggle="tab" href="#messages" role="tab" aria-controls="messages" aria-selected="false">
+											<i class="ti-email"></i>Mes messages</a>
 									</li>
 									<li class="nav-item">
 										<a class="nav-link" id="address-tab" data-bs-toggle="tab" href="#address" role="tab" aria-controls="address" aria-selected="true">
@@ -36,8 +39,7 @@
 									</li>
 									<li class="nav-item">
 										<a class="nav-link" id="account-detail-tab" data-bs-toggle="tab" href="#account-detail" role="tab" aria-controls="account-detail" aria-selected="true">
-											<i class="ti-id-badge"></i>Mes
-																																																							                           informations</a>
+											<i class="ti-id-badge"></i>Mes informations</a>
 									</li>
 									<li class="nav-item">
 										<a class="nav-link" id="account-detail-tab password-tab" data-bs-toggle="tab" href="#password" role="tab" aria-controls="account-detail" aria-selected="true">
@@ -80,6 +82,7 @@
 										</div>
 									</div>
 								</div>
+								
 								<div class="tab-pane fade" id="logout" role="tabpanel" aria-labelledby="logout-tab">
 									<div class="card">
 										<div class="card-header">
@@ -132,6 +135,44 @@
 
 									</div>
 								</div>
+								
+								<div class="tab-pane fade" id="messages" role="tabpanel" aria-labelledby="messages-tab">
+									<div class="card">
+										<div class="card-header">
+											<h3>Mes messages</h3>
+										</div>
+										<div class="card-body">
+											<div class="table-responsive">
+												<table class="table">
+													<thead>
+														<tr>
+															<th>Sujet</th>
+															<th>Message</th>
+															<th>Date</th>
+														</tr>
+													</thead>
+													<tbody>
+														{% for contact in contacts %}
+														<tr>
+															<td>{{ contact.subject }}</td>
+															<td>{{ contact.content|striptags|slice(0, 40) ~ '...' }}</td>
+															<td>{{ contact.createdAt|date('d/m/Y H:i') }}</td>
+															<td>
+																<a href="{{ path('app_account_message_detail', {'id': contact.id}) }}" class="btn btn-fill-out btn-sm">Détail</a>
+															</td>
+														</tr>
+														{% else %}
+														<tr>
+															<td colspan="4" class="text-center text-muted">Aucun message pour le moment.</td>
+														</tr>
+														{% endfor %}
+													</tbody>
+												</table>
+											</div>
+										</div>
+									</div>
+								</div>
+
 								<div class="tab-pane fade" id="address" role="tabpanel" aria-labelledby="address-tab">
 									<div class="row">
 										<div id="address_details" class="col-lg-12 d-block">

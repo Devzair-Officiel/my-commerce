@@ -6,6 +6,8 @@ use App\Entity\Order;
 use App\Entity\User;
 use App\Form\EditUserFormType;
 use App\Repository\AddressRepository;
+use App\Entity\Contact;
+use App\Repository\ContactRepository;
 use App\Repository\OrderRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -21,6 +23,7 @@ class AccountController extends AbstractController
     public function index(
         AddressRepository $addressRepo,
         OrderRepository $orderRepo,
+        ContactRepository $contactRepo,
         Request $request,
         EntityManagerInterface $em,
         UserPasswordHasherInterface $passwordHasher,
@@ -39,6 +42,8 @@ class AccountController extends AbstractController
         );
 
         $addresses = $addressRepo->findBy(['user' => $user], ['id' => 'DESC']);
+
+        $contacts = $contactRepo->findBy(['user' => $user], ['createdAt' => 'DESC'], 10);
 
         $form = $this->createForm(EditUserFormType::class, $user);
         $form->handleRequest($request);
@@ -73,6 +78,7 @@ class AccountController extends AbstractController
             'addresses' => $addresses,
             'user' => $user,
             'orders' => $orders,
+            'contacts' => $contacts,
             'editForm' => $form->createView(),
         ]);
     }
@@ -95,6 +101,26 @@ class AccountController extends AbstractController
         // On n’a pas besoin d’un repo OrderDetails : $order->getOrderDetails() suffit
         return $this->render('account/order_detail.html.twig', [
             'order' => $order,
+        ]);
+    }
+
+    #[Route('/account/message/{id<\d+>}', name: 'app_account_message_detail', methods: ['GET'])]
+    public function getMessageDetail(Contact $contact): Response
+    {
+        $this->denyAccessUnlessGranted('ROLE_USER');
+
+        $user = $this->getUser();
+        if (!$user instanceof User) {
+            throw $this->createAccessDeniedException();
+        }
+
+        // Ownership check
+        if ($contact->getUser() && $contact->getUser()->getId() !== $user->getId()) {
+            throw $this->createAccessDeniedException();
+        }
+
+        return $this->render('account/message_detail.html.twig', [
+            'contact' => $contact,
         ]);
     }
 
