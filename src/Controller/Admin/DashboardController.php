@@ -2,6 +2,7 @@
 
 namespace App\Controller\Admin;
 
+use App\Controller\Admin\ContactCrudController;
 use App\Entity\Page;
 use App\Entity\User;
 use App\Entity\Order;
@@ -56,6 +57,7 @@ final class DashboardController extends AbstractDashboardController
             'sliders' => (clone $this->adminUrlGenerator)->setController(SlidersCrudController::class)->generateUrl(),
             'paymentMethods' => (clone $this->adminUrlGenerator)->setController(PaymentMethodCrudController::class)->generateUrl(),
             'carriers' => (clone $this->adminUrlGenerator)->setController(CarrierCrudController::class)->generateUrl(),
+            'contacts' => (clone $this->adminUrlGenerator)->setController(ContactCrudController::class)->generateUrl(),
             'settings_index' => (clone $this->adminUrlGenerator)->setController(SettingCrudController::class)->generateUrl(),
         ];
 

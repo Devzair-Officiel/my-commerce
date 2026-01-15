@@ -4,6 +4,7 @@ namespace App\Admin\Dashboard;
 
 use App\Entity\Order;
 use App\Entity\Product;
+use App\Entity\Contact;
 use App\Enum\PaymentStatus;
 use Doctrine\DBAL\Types\Types;
 use App\Enum\FulfillmentStatus;
@@ -64,6 +65,8 @@ final class DashboardMetricsProvider
             $recentOrders = $this->recentOrders(10);
             $lowStock = $this->lowStockProducts(8, 5);
 
+            $recentImportantContacts = $this->recentImportantContacts(5);
+
             // ✅ Séries pour Chart.js (PostgreSQL)
             $chart = $this->paidSeriesByDay($since14, $now);
 
@@ -85,6 +88,7 @@ final class DashboardMetricsProvider
                 ],
                 'recentOrders' => $recentOrders,
                 'lowStock' => $lowStock,
+                'recentImportantContacts' => $recentImportantContacts,
                 'charts' => $chart,
             ];
         });
@@ -355,5 +359,42 @@ final class DashboardMetricsProvider
         }
 
         return (($current - $previous) / $previous) * 100;
+    }
+
+    /**
+     * @return list<array{id:int,email:string|null,subject:string|null,snippet:string,createdAt:string,userEmail:string|null}>
+     */
+    private function recentImportantContacts(int $limit): array
+    {
+        $prioritySubjects = [
+            'Problème avec une commande reçue',
+            'Paiement et facturation',
+            'Retour ou échange de produit'
+        ];
+
+        $rows = $this->em->createQueryBuilder()
+            ->select('c.id AS id')
+            ->addSelect('c.email AS email')
+            ->addSelect('c.subject AS subject')
+            ->addSelect('c.content AS content')
+            ->addSelect('c.createdAt AS createdAt')
+            ->addSelect('u.email AS userEmail')
+            ->from(Contact::class, 'c')
+            ->leftJoin('c.user', 'u')
+            ->where('c.subject IN (:subjects)')
+            ->setParameter('subjects', $prioritySubjects)
+            ->orderBy('c.createdAt', 'DESC')
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getArrayResult();
+
+        foreach ($rows as &$row) {
+            $row['id'] = (int) $row['id'];
+            $content = $row['content'] ?? '';
+            $row['snippet'] = substr(strip_tags($content), 0, 80) . '...';
+            $row['createdAt'] = $row['createdAt']->format('d/m/Y H:i');
+        }
+
+        return $rows;
     }
 }

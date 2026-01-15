@@ -38,7 +38,7 @@ class ContactType extends AbstractType
                     'Suivi de commande' => 'Suivi de commande',
                     'Problème avec une commande reçue' => 'Problème avec une commande reçue',
                     'Paiement et facturation' => 'Paiement et facturation',
-                    'Retour ou échange de produit ' => 'Retour ou échange de produit ',
+                    'Retour ou échange de produit' => 'Retour ou échange de produit',
                     'Compte client' => 'Compte client',
                     'Autres demandes' => 'Autres demandes'
                 ],

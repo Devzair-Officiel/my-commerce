@@ -159,9 +159,9 @@
       </div>
     </div>
 
-    {# ================= ALERTS + CATALOGUE + SETTINGS ================= #}
+    {# ================= ALERTS + CATALOGUE + SETTINGS + CONTACTS ================= #}
     <div class="row g-3 mb-3">
-		<div class="col-12 col-lg-4">
+		<div class="col-12 col-lg-3">
 			<div class="card panel-card h-100">
 				<div class="card-body p-3">
 					<div class="panel-title">
@@ -192,7 +192,36 @@
 			</div>
 		</div>
 
-		<div class="col-12 col-lg-3">
+		<div class="col-12 col-lg-4">
+			<div class="card panel-card h-100">
+				<div class="card-body p-3">
+					<div class="panel-title">
+						<span>Messages importants</span>
+						<i class="fas fa-envelope"></i>
+					</div>
+
+					<div class="watchlist">
+						{% for contact in metrics.recentImportantContacts %}
+						<a class="watch-row" href="{{ urls.contacts }}/{{contact.id}}">
+							<span class="badge badge-warning">Urgent</span>
+							<span class="watch-label">{{ contact.email }} - {{ contact.subject }}</span><br>
+							<small class="text-muted">{{ contact.createdAt }}</small>
+						</a>
+						{% else %}
+							<div class="text-muted p-3">Aucun message urgent.</div>
+						{% endfor %}
+					</div>
+
+					{% if metrics.recentImportantContacts|length > 0 %}
+					<div class="panel-footer mt-3 d-flex justify-content-end">
+						<a class="btn btn-outline-secondary btn-sm" href="{{ urls.contacts }}">Voir tous les messages</a>
+					</div>
+					{% endif %}
+				</div>
+			</div>
+		</div>
+
+		<div class="col-12 col-lg-2">
 			<a class="card kpi-card h-100 text-decoration-none" href="{{ urls.users }}">
 				<div class="card-body kpi-body">
 					<div class="kpi-head">
@@ -217,7 +246,7 @@
 			</a>
 		</div>
 
-      <div class="col-12 col-xl-5">
+      <div class="col-12 col-lg-3">
 		<div class="card panel-card h-100">
 			<div class="card-body p-3">
 				<div class="panel-title">
