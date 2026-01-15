@@ -35,14 +35,16 @@ class AccountController extends AbstractController
             return $this->redirectToRoute('app_login');
         }
 
-        // commandes liées au user (nouveau modèle)
-        $orders = $orderRepo->findBy(
-            ['user' => $user],
-            ['id' => 'DESC']
-        );
+        // Pagination commandes liées au user
+        $limit = 10;
+        $page = 1;
+        $pagination = $orderRepo->findPaginatedByUser($user, $page, $limit);
+        $orders = $pagination['orders'];
+        $ordersTotal = $pagination['total'];
+        $ordersPage = $page;
+        $ordersPages = (int) ceil($ordersTotal / $limit);
 
         $addresses = $addressRepo->findBy(['user' => $user], ['id' => 'DESC']);
-
         $contacts = $contactRepo->findBy(['user' => $user], ['createdAt' => 'DESC'], 10);
 
         $form = $this->createForm(EditUserFormType::class, $user);
@@ -78,6 +80,9 @@ class AccountController extends AbstractController
             'addresses' => $addresses,
             'user' => $user,
             'orders' => $orders,
+            'ordersTotal' => $ordersTotal,
+            'ordersPage' => $ordersPage,
+            'ordersPages' => $ordersPages,
             'contacts' => $contacts,
             'editForm' => $form->createView(),
         ]);
@@ -162,5 +167,35 @@ class AccountController extends AbstractController
         $em->flush();
 
         return new JsonResponse(['status' => 'success', 'message' => 'Mot de passe mis à jour avec succès.']);
+    }
+    
+    #[Route('/account/orders/ajax', name: 'app_account_orders_ajax', methods: ['GET'])]
+    public function ordersAjax(
+        OrderRepository $orderRepo,
+        Request $request
+    ): Response {
+        $this->denyAccessUnlessGranted('ROLE_USER');
+
+        $user = $this->getUser();
+        if (!$user instanceof User) {
+            return new JsonResponse(['error' => 'Unauthorized'], 401);
+        }
+
+        $page = max(1, (int) $request->query->get('page', 1));
+        $limit = 10;
+
+        $pagination = $orderRepo->findPaginatedByUser($user, $page, $limit);
+        $orders = $pagination['orders'];
+        $ordersTotal = $pagination['total'];
+        $ordersPage = $page;
+        $ordersPages = (int) ceil($ordersTotal / $limit);
+
+        return $this->render('account/_orders_table.html.twig', [
+            'orders' => $orders,
+            'ordersTotal' => $ordersTotal,
+            'ordersPage' => $ordersPage,
+            'ordersPages' => $ordersPages,
+            'ajax' => true,
+        ]);
     }
 }

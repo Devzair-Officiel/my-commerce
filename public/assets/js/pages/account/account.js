@@ -110,9 +110,43 @@ function initPasswordFeatures() {
   };
 }
 
+function initOrdersPaginationAjax() {
+  const container = document.getElementById("orders-table-container");
+  if (!container) return;
+
+  container.addEventListener("click", async (e) => {
+    const target = e.target.closest("a.page-link[data-page]");
+    if (!target) return;
+    e.preventDefault();
+
+    const page = target.getAttribute("data-page");
+    if (!page) return;
+
+    // Optionnel : loader
+    container.classList.add("opacity-50");
+    container.style.pointerEvents = "none";
+
+    try {
+      const response = await fetch(`/account/orders/ajax?page=${page}`, {
+        headers: { "X-Requested-With": "XMLHttpRequest" },
+        credentials: "same-origin",
+      });
+      if (!response.ok) throw new Error("Erreur lors du chargement des commandes.");
+      const html = await response.text();
+      container.innerHTML = html;
+    } catch (err) {
+      container.innerHTML = `<div class="alert alert-danger">Erreur lors du chargement des commandes.</div>`;
+    } finally {
+      container.classList.remove("opacity-50");
+      container.style.pointerEvents = "";
+    }
+  });
+}
+
 // --- Boot ---
 document.addEventListener("DOMContentLoaded", () => {
   initAddressBook();
   initAccountInfoForm();
   initPasswordFeatures();
+  initOrdersPaginationAjax();
 });

@@ -21,7 +21,7 @@
 							<div class="dashboard_menu">
 								<ul class="nav nav-tabs flex-column" role="tablist">
 									<li class="nav-item">
-										<a class="nav-link active" id="dashboard-tab" data-bs-toggle="tab" href="#dashboard" role="tab" aria-controls="dashboard" aria-selected="false">
+										<a class="nav-link active" id="dashboard-tab" data-bs-toggle="tab" href="#dashboard" role="tab" aria-controls="dashboard" aria-selected="true">
 											<i class="ti-layout-grid2"></i>Tableau debord
 										</a>
 									</li>
@@ -99,40 +99,10 @@
 											<h3>Commandes</h3>
 										</div>
 										<div class="card-body">
-											<div class="table-responsive">
-												<table class="table">
-													<thead>
-														<tr>
-															<th>Commande</th>
-															<th>Date</th>
-															<th>Statut</th>
-															<th>Total TTC</th>
-															<th>Actions</th>
-														</tr>
-													</thead>
-													{% for order in orders %}
-														<tbody>
-															<tr>
-																<td>
-																	#{{order.id}}
-																</td>
-																<td>
-																	{{order.createdAt | date('d/m/Y')}}
-																</td>
-																<td>{{ order.paymentStatus.label() }}</td>
-																<td>
-																	<td>{{ (order.orderTotalTtcCents / 100) | format_currency(order.currency) }}</td>
-																</td>
-																<td>
-																	<a href="/account/order/{{order.id}}" class="btn btn-fill-out btn-sm">Détail</a>
-																</td>
-															</tr>
-														</tbody>
-													{% endfor %}
-												</table>
+											<div id="orders-table-container">
+												{% include 'account/_orders_table.html.twig' %}
 											</div>
 										</div>
-
 									</div>
 								</div>
 								

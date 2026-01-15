@@ -16,6 +16,42 @@ class OrderRepository extends ServiceEntityRepository
         parent::__construct($registry, Order::class);
     }
 
+    /**
+     * Retourne les commandes paginées d’un utilisateur + le total.
+     *
+     * @param \App\Entity\User $user
+     * @param int $page
+     * @param int $limit
+     * @return array{orders: Order[], total: int}
+     */
+    public function findPaginatedByUser(\App\Entity\User $user, int $page, int $limit): array
+    {
+        $qb = $this->createQueryBuilder('o')
+            ->andWhere('o.user = :user')
+            ->setParameter('user', $user)
+            ->orderBy('o.id', 'DESC');
+
+        $query = $qb
+            ->setFirstResult(($page - 1) * $limit)
+            ->setMaxResults($limit)
+            ->getQuery();
+
+        $orders = $query->getResult();
+
+        // Total pour pagination
+        $qbCount = clone $qb;
+        $qbCount->resetDQLPart('orderBy');
+        $qbCount->select('COUNT(o.id)')
+            ->setFirstResult(null)
+            ->setMaxResults(null);
+        $total = (int) $qbCount->getQuery()->getSingleScalarResult();
+
+        return [
+            'orders' => $orders,
+            'total' => $total,
+        ];
+    }
+
     //    /**
     //     * @return Order[] Returns an array of Order objects
     //     */
