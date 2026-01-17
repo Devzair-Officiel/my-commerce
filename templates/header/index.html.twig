@@ -75,7 +75,7 @@
 				<a class="navbar-brand" href="/">
 					<div class="d-flex align-items-center">
 						<a href="/" style="margin-right: 20px;">
-							<img src="/assets/images/setting/{{globalSetting.logo_filename}}" alt="logo de {{globalSetting.website_name}}" height="60">
+							<img src="/assets/images/setting/{{globalSetting.logo_filename}}" alt="logo de {{globalSetting.website_name}} " height="60">
 						</a>
 						<h2>
 							{{globalSetting.website_name}}
@@ -111,8 +111,12 @@
 									{% for category in globalMegaCategories %}
 										<li class="mega-menu-col col-lg-4">
 											<ul>
-												<li class="dropdown-header">
-													{{category.title}}
+												<li>
+													<h5>
+														<a class=" nav-link " href="/category/{{category.slug}}">
+															{{category.title}}
+														</a>
+													</h5>
 												</li>
 												{% for product in globalMegaProducts[category.id] %}
 													{% if loop.index < 6 %}
@@ -129,7 +133,7 @@
 
 									{% endfor %}
 								</ul>
-								{# <div class="d-lg-flex menu_banners row g-3 px-3">
+								<div class="d-lg-flex menu_banners row g-3 px-3">
 									{% for intro in app.session.get('megaIntro') %}
 										<div class="col-sm-4">
 											<div class="header-banner"><img alt="menu_banner1" src="/assets/images/intro/{{intro.image}}">
@@ -148,7 +152,7 @@
 										</div>
 
 									{% endfor %}
-								</div> #}
+								</div>
 							</div>
 						</li>
 						<li class="dropdown dropdown-mega-menu">

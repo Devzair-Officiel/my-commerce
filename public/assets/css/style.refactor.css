@@ -1841,7 +1841,7 @@ button:focus:not(:focus-visible) {
 
 /* 4) Top header: on l’anime (au lieu de display:none) */
 .top-header {
-	max-height: 60px;
+	max-height: 75px;
 	/* ajuste si besoin */
 	overflow: hidden;
 	opacity: 1;
@@ -5279,6 +5279,17 @@ footer .widget_title {
 	overflow: hidden;
 	text-transform: capitalize;
 }
+
+a:hover .product_title {
+	color: var(--nm-brand);
+	text-decoration: underline;
+}
+
+/* Empêche l'héritage du color sur les autres éléments enfants du lien produit */
+.product_info > *:not(.product_title) {
+	color: var(--nm-text);
+}
+
 .product_color_switch span {
 	height: 15px;
 	width: 15px;

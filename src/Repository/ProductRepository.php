@@ -35,4 +35,15 @@ class ProductRepository extends ServiceEntityRepository
             ->getQuery()
             ->getArrayResult();
     }
+
+    public function getByCategories($category)
+    {
+
+        return $this->createQueryBuilder('p')
+            ->innerJoin('p.categories', 'c')
+            ->where('c.id = :category')
+            ->setParameter('category', $category)
+            ->getQuery()
+            ->getResult();
+    }
 }

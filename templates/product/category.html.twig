@@ -1,0 +1,18 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{globalSetting.website_name}} | Home page
+{% endblock %}
+
+{% block body %}
+	{% include "page_head/index.html.twig" with {'page_name': category } %}
+	<div class="container my-5">
+		<div id="arrival" role="tabpanel" aria-labelledby="arrival-tab" class="tab-pane fade show active">
+			<div class="row shop_container">
+				{% for product in products %}
+					{% include "product/display_product.html.twig" %}
+				{% endfor %}
+			</div>
+		</div>
+	</div>
+
+{% endblock %}

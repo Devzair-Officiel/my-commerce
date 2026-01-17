@@ -69,8 +69,8 @@ final class ProductController extends AbstractController
         ]);
     }
 
-    #[Route('/product/category/{categoryName}', name: 'app_category')]
-    public function getProductByCategory( Request $request, CategoryRepository $categoryRepository, string $categoryName)
+    #[Route('/category/{categoryName}', name: 'app_category')]
+    public function getProductByCategory(CategoryRepository $categoryRepository, string $categoryName)
     {
 
         // Récupérez l'objet Category en fonction du nom de la catégorie
@@ -87,17 +87,12 @@ final class ProductController extends AbstractController
         // Utilisez l'ID de la catégorie pour récupérer les product
         $products = $this->productRepo->getByCategories($categoryId);
 
-
-
-
         // Passez les product à votre vue
         return $this->render('product/category.html.twig', [
             'products' => $products,
             'category' => $category->getTitle(),
         ]);
     }
-
-
 
     #[Route('/error', name: 'app_error')]
     public function errorPage()

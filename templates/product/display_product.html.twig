@@ -4,59 +4,56 @@
 			<a href="/product/{{product.slug}}">
 				<img alt="{{product.slug}}" src="/assets/images/products/{{product.medias[0]}}">
 			</a>
-			 <div class="product_action_box">
-                <ul class="list_none pr_action_btn">
-                    {% if product.stock != 0 %}
-                    <li>
-                        <a href="/cart/add/{{product.id}}/1" data-product-id="{{ product.id }}" class="add-to-cart" title="Ajouter au panier">
-                            <i class="icon-basket-loaded"></i>
-                        </a>
-                    </li>
-                    {% endif %}
-                    <li>
-                        <a href="/compare/add/{{product.id}}" class="add-to-compare" title="Ajouter au comparatif">
-                            <i class="icon-shuffle"></i>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="/wishlist/add/{{ product.id }}" class="add-to-wishlist" title="Ajouter a la liste des souhaits">
-                            <i class="icon-heart"></i>
-                        </a>
-                    </li>
-                </ul>
-            </div>
+			<div class="product_action_box">
+				<ul class="list_none pr_action_btn">
+					{% if product.stock != 0 %}
+						<li>
+							<a href="/cart/add/{{product.id}}/1" data-product-id="{{ product.id }}" class="add-to-cart" title="Ajouter au panier">
+								<i class="icon-basket-loaded"></i>
+							</a>
+						</li>
+					{% endif %}
+					<li>
+						<a href="/compare/add/{{product.id}}" class="add-to-compare" title="Ajouter au comparatif">
+							<i class="icon-shuffle"></i>
+						</a>
+					</li>
+					<li>
+						<a href="/wishlist/add/{{ product.id }}" class="add-to-wishlist" title="Ajouter a la liste des souhaits">
+							<i class="icon-heart"></i>
+						</a>
+					</li>
+				</ul>
+			</div>
 
 		</div>
-		<div class="product_info">
-			<h6 class="product_title">
-				<a href="/product/{{product.slug}}">
+		<a href="/product/{{product.slug}}">
+			<div class="product_info">
+				<h6 class="product_title">
 					{{product.title}}
-				</a>
-			</h6>
-			<div class="product_price">
-				{% if product.isOnSale %}
-					<span class="price">{{ (product.soldePrice / 100)|number_format(2, ',', ' ') }}
-						€</span>
-					<del>
-						{{ (product.regularPrice / 100)|number_format(2, ',', ' ') }} €
-					</del>
-
-					<div class="on_sale">
-						<span>-{{ product.discountPercentage }}
-							%</span>
-					</div>
-				{% else %}
-					<span class="price">{{ (product.regularPrice / 100)|number_format(2, ',', ' ') }}
-						€</span>
-				{% endif %}
-			</div>
-
-			<div class="rating_wrap">
-				<div class="rating">
-					<div class="product_rate" style="width: 80%;"></div>
+				</h6>
+				<div class="product_price">
+					{% if product.isOnSale %}
+						<span class="price">{{ (product.soldePrice / 100)|number_format(2, ',', ' ') }}€</span>
+						<del>
+							{{ (product.regularPrice / 100)|number_format(2, ',', ' ') }}€
+						</del>
+						<div class="on_sale">
+							<span>-{{ product.discountPercentage }}%</span>	
+						</div>
+					{% else %}
+						<span class="price">{{ (product.regularPrice / 100)|number_format(2, ',', ' ') }}
+							€</span>
+					{% endif %}
 				</div>
-				<span class="rating_num">(21)</span>
+
+				<div class="rating_wrap">
+					<div class="rating">
+						<div class="product_rate" style="width: 80%;"></div>
+					</div>
+					<span class="rating_num">(21)</span>
+				</div>
 			</div>
-		</div>
+		</a>
 	</div>
 </div>

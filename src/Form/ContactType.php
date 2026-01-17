@@ -66,7 +66,7 @@ class ContactType extends AbstractType
                 'attr' => [
                     'class' => 'btn btn-fill-out btn-block mt-4'
                 ],
-                'label' => 'Envoyer'
+                'label' => 'Envoyer le message'
             ])
             ->add('captcha', Recaptcha3Type::class, [
                 'constraints' => new Recaptcha3(),
