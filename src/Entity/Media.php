@@ -2,6 +2,8 @@
 
 namespace App\Entity;
 
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use App\Repository\MediaRepository;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
@@ -42,6 +44,17 @@ class Media
 
     #[ORM\OneToOne(inversedBy: 'mediaSlider', cascade: ['persist', 'remove'])]
     private ?Sliders $sliders = null;
+
+    /**
+     * @var Collection<int, Blog>
+     */
+    #[ORM\ManyToMany(targetEntity: Blog::class, mappedBy: 'medias')]
+    private Collection $blogs;
+
+    public function __construct()
+    {
+        $this->blogs = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -166,6 +179,33 @@ class Media
     public function setSliders(?Sliders $sliders): static
     {
         $this->sliders = $sliders;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Blog>
+     */
+    public function getBlogs(): Collection
+    {
+        return $this->blogs;
+    }
+
+    public function addBlog(Blog $blog): static
+    {
+        if (!$this->blogs->contains($blog)) {
+            $this->blogs->add($blog);
+            $blog->addMedia($this);
+        }
+
+        return $this;
+    }
+
+    public function removeBlog(Blog $blog): static
+    {
+        if ($this->blogs->removeElement($blog)) {
+            $blog->removeMedia($this);
+        }
 
         return $this;
     }

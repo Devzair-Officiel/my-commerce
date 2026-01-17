@@ -11,6 +11,7 @@ parameters:
     upload_dir_categories: '%kernel.project_dir%/public/assets/images/categories'
     upload_dir_sliders: '%kernel.project_dir%/public/assets/images/sliders'
     upload_dir_settings: '%kernel.project_dir%/public/assets/images/settings'
+    upload_dir_blogs: '%kernel.project_dir%/public/assets/images/blogs'
     upload_dir_PaymentMethod: '%kernel.project_dir%/public/assets/images/payment_methods_logos'
 
     stripe.webhook_secret: '%env(STRIPE_WEBHOOK_SECRET)%'
@@ -25,6 +26,7 @@ services:
             string $uploadDirCategories: '%upload_dir_categories%'
             string $uploadDirSliders: '%upload_dir_sliders%'
             string $uploadDirSettings: '%upload_dir_settings%'
+            string $uploadDirBlogs: '%upload_dir_blogs%'
             string $uploadDirPaymentMethod: '%upload_dir_PaymentMethod%'
 
     # makes classes in src/ available to be used as services

@@ -1,0 +1,35 @@
+{% extends 'base.html.twig' %}
+
+{% block title %} {{globalSetting.website_name}} | Blog
+{% endblock %}
+
+{% block body %}
+	{% include "page_head/index.html.twig" with {'page_name': "Blog" } %}
+
+	<div class="container my-5">
+		<div id="arrival" role="tabpanel" aria-labelledby="arrival-tab" class="tab-pane fade show active">
+			<div class="row shop_container">
+				<div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4 ">
+					{% for blog in blogs %}
+						<div class="col">
+							<a href="/blog/{{blog.slug}}" class="blog_card">
+								<div class="card h-100 blog_card">
+									<div class="image-container">
+										<img src="/assets/images/blogs/{{ blog.medias[0] }}" class="card-img-top zoom-on-hover" height="250" alt="image blog {{blog.title}}">
+									</div>
+									<div class="card-body">
+										<h3 class="card-title text-center">{{blog.title}}</h3>
+										<p class="card-text">
+											{{blog.description}}
+										</p>
+									</div>
+								</div>
+							</a>
+						</div>
+					{% endfor %}
+				</div>
+			</div>
+		</div>
+	</div>
+
+{% endblock %}

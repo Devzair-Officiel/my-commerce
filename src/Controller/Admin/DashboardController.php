@@ -17,6 +17,7 @@ use App\Entity\PaymentMethod;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Response;
 use App\Admin\Dashboard\DashboardMetricsProvider;
+use App\Entity\Blog;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Assets;
 use EasyCorp\Bundle\EasyAdminBundle\Config\MenuItem;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Dashboard;
@@ -100,6 +101,7 @@ final class DashboardController extends AbstractDashboardController
         yield MenuItem::section('Contenu');
         yield MenuItem::linkToCrud('Pages', 'fa fa-file', Page::class);
         yield MenuItem::linkToCrud('Sliders', 'fa fa-image', Sliders::class);
+        yield MenuItem::linkToCrud('Blog', 'fas fa-code', Blog::class);
 
         yield MenuItem::section('Vente');
         yield MenuItem::linkToCrud('Commandes', 'fas fa-shopping-cart', Order::class);

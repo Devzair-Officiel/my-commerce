@@ -2,11 +2,12 @@
 
 namespace App\Service;
 
+use App\Entity\Blog;
 use App\Entity\Media;
 use App\Entity\Product;
 use Symfony\Component\Filesystem\Filesystem;
-use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\String\Slugger\SluggerInterface;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 /**
  * Service responsable de la gestion physique des fichiers médias.
@@ -29,6 +30,7 @@ final class MediaFileManager
         private string $uploadDirCategories,
         private string $uploadDirSliders,
         private string $uploadDirSettings,
+        private string $uploadDirBlogs,
         private string $uploadDirPaymentMethod,
         private SluggerInterface $slugger,
     ) {}
@@ -59,6 +61,10 @@ final class MediaFileManager
             $paths[] = rtrim($this->uploadDirSettings, '/') . '/' . $filename;
         }
 
+        if ($media->getBlogs() !== null) {
+            $paths[] = rtrim($this->uploadDirBlogs, '/') . '/' . $filename;
+        }
+
         if ($media->getPaymentMethod() !== null) {
             $paths[] = rtrim($this->uploadDirPaymentMethod, '/') . '/' . $filename;
         }
@@ -69,6 +75,7 @@ final class MediaFileManager
             $paths[] = rtrim($this->uploadDirCategories, '/') . '/' . $filename;
             $paths[] = rtrim($this->uploadDirSliders, '/') . '/' . $filename;
             $paths[] = rtrim($this->uploadDirSettings, '/') . '/' . $filename;
+            $paths[] = rtrim($this->uploadDirBlogs, '/') . '/' . $filename;
             $paths[] = rtrim($this->uploadDirPaymentMethod, '/') . '/' . $filename;
         }
 
@@ -91,6 +98,22 @@ final class MediaFileManager
         $filename = sprintf('%s-%s.%s', $slug, bin2hex(random_bytes(8)), $extension);
 
         $file->move(rtrim($this->uploadDirProducts, '/'), $filename);
+
+        return $filename;
+    }
+
+    public function storeBlogFile(UploadedFile $file, Blog $blog): string
+    {
+        $baseName = $blog->getSlug() ?: $blog->getTitle() ?: 'blog';
+        $slug = $this->slugger->slug($baseName)->lower();
+
+        $extension = $file->guessExtension()
+            ?: $file->getClientOriginalExtension()
+            ?: 'bin';
+
+        $filename = sprintf('%s-%s.%s', $slug, bin2hex(random_bytes(8)), $extension);
+
+        $file->move(rtrim($this->uploadDirBlogs, '/'), $filename);
 
         return $filename;
     }

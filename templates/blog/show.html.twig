@@ -1,0 +1,21 @@
+{% extends 'base.html.twig' %}
+
+{% block title %} {{globalSetting.website_name}} | Blog
+{% endblock %}
+
+{% block body %}
+	{% include "page_head/index.html.twig" with {'url': "/blog", page: 'Blog', 'page_name': blog.title } %}
+
+
+	<div class="container my-5">
+		<div id="arrival" role="tabpanel" aria-labelledby="arrival-tab" class="tab-pane fade show active">
+			<div class="row shop_container">
+				{{blog.title}}
+				<div>
+					<p>{{blog.content | raw}}</p>
+				</div>
+			</div>
+		</div>
+	</div>
+
+{% endblock %}
