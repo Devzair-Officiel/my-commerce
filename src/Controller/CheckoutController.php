@@ -161,7 +161,7 @@ class CheckoutController extends AbstractController
     {
         $draft = $this->orderRepo->findOneBy([
             'user' => $user,
-            'paymentStatus' => FulfillmentStatus::Draft,
+            'fulfillmentStatus' => FulfillmentStatus::Draft,
         ]);
 
         $order = $draft ?? new Order();

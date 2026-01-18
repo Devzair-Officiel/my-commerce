@@ -277,4 +277,20 @@ class Setting
         return $this;
     }
 
+    public function getLogoAlt(): ?string
+    {
+        return $this->logoMedia?->getAlt();
+    }
+
+    public function setLogoAlt(?string $alt): static
+    {
+        if ($this->logoMedia === null) {
+            $this->setLogoMedia(new Media());
+        }
+
+        $this->logoMedia->setAlt($alt);
+
+        return $this;
+    }
+
 }

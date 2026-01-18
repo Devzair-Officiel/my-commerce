@@ -23,7 +23,7 @@ product.categories[0].slug, 'page_name': product.title } %}
 				<div class="row justify-content-center">
 					<div class="col-lg-6 col-md-11 mb-4 mb-md-3">
 						<div class="product-image">
-							<div class="product_img_box"><img id="product_img" alt="image {{ product.title }}" src="/assets/images/products/{{ product.medias[0] }}"><a title="Zoom" class="product_img_zoom">
+							<div class="product_img_box"><img id="product_img" alt="{{ product.media[0].alt }}" src="/assets/images/products/{{ product.medias[0] }}"><a title="Zoom" class="product_img_zoom">
 									<span class="linearicons-zoom-in"></span>
 								</a>
 							</div>
@@ -32,7 +32,8 @@ product.categories[0].slug, 'page_name': product.title } %}
 									<div class="slick-track" role="listbox" style="opacity: 1; width: 556px; left: 0px;">
 										{% for image in product.medias %}
 											<div class="item slick-slide slick-current slick-active" data-slick-index="0" aria-hidden="false" tabindex="-1" role="option" aria-describedby="slick-slide20" style="width: 129px;">
-												<a href="#" class="product_gallery_item active" data-image="/assets/images/products/{{ image }}" data-zoom-image="/assets/images/products/{{ image }}" tabindex="0"><img alt="product_small_img1" src="/assets/images/products/{{ image }}"></a>
+<a href="#" class="product_gallery_item active" data-image="/assets/images/products/{{ image }}" data-zoom-image="/assets/images/products/{{ image }}" tabindex="0"><img alt="image small - {{ product.media[0].alt }}" src="/assets/images/products/{{ image }}"></a>
+
 											</div>
 										{% endfor %}
 

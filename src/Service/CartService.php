@@ -26,6 +26,7 @@ final class CartService
         private readonly SettingRepository $settingRepo,
         private readonly ProductRepository $productRepo,
         private readonly CarrierRepository $carrierRepo,
+        private readonly int $freeShippingThresholdCents, // injecté via services.yaml
     ) {}
 
     private function session(): SessionInterface
@@ -125,15 +126,19 @@ final class CartService
         }
 
         $availableStock = (int) $product->getStock();
-        if ($availableStock < $count) {
+
+        $cart = $this->getCartRaw();
+        $currentQty = (int) ($cart[$productId] ?? 0);
+        $newQty = $currentQty + $count;
+
+        if ($availableStock > 0 && $newQty > $availableStock) {
             throw new \RuntimeException('Stock insuffisant pour le produit demandé.');
         }
 
-        $cart = $this->getCartRaw();
-        $cart[$productId] = ($cart[$productId] ?? 0) + $count;
-
+        $cart[$productId] = $newQty;
         $this->saveCart($cart);
     }
+
 
     /**
      * Retire du panier sans toucher le stock.
@@ -260,7 +265,7 @@ final class CartService
                     'title' => $product->getTitle(),
                     'description' => $product->getDescription(),
                     'slug' => $product->getSlug(),
-                    'image' => $product->getMediaFilenames(),
+                    'image' => $product->getMediaData(),
                     'stock' => $product->getStock(),
                     'soldePrice' => $product->getSoldePrice(),
                     'regularPrice' => $product->getRegularPrice(),
@@ -289,6 +294,14 @@ final class CartService
 
         $result['carrier'] = $carrier;
         $result['sub_total_with_carrier'] = $result['sub_total'] + (int) ($carrier['price'] ?? 0);
+
+        $threshold = $this->freeShippingThresholdCents;
+
+        $result['free_shipping_threshold'] = $threshold;
+        $result['free_shipping_remaining'] = max(
+            0,
+            $threshold - $result['sub_total']
+        );
 
         return $result;
     }
@@ -340,13 +353,21 @@ final class CartService
         return $carrier;
     }
 
-    private function applyFreeShippingIfEligible(array $carrier, int $subTotal): array
+    /**
+     * Applique la livraison offerte si le total TTC des produits atteint le seuil.
+     *
+     * @param array{name?:string, price?:int} $carrier
+     */
+    private function applyFreeShippingIfEligible(array $carrier, int $itemsTotalTtcCents): array
     {
-        $threshold = $this->getFreeShippingThresholdCents();
+        $eligible = $itemsTotalTtcCents >= $this->freeShippingThresholdCents;
 
-        if ($threshold !== null && $subTotal >= $threshold) {
+        // flag exploitable en Twig/JS
+        $carrier['free_shipping'] = $eligible;
+
+        if ($eligible) {
+            // IMPORTANT: on force à 0 pour que le calcul du total reste correct côté serveur
             $carrier['price'] = 0;
-            $this->update(self::SESSION_CARRIER, $carrier);
         }
 
         return $carrier;

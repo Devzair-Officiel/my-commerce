@@ -101,10 +101,10 @@ export function displayWishlist(wishlist = []) {
     const id = Number(product?.id ?? 0);
     const title = escapeHtml(product?.title ?? "");
     const slug = escapeHtml(product?.slug ?? "");
-
-    // image : si ton API renvoie un tableau de filenames
-    const imgFile = escapeHtml(product?.image?.[0] ?? "");
+    
+    const imgFile = escapeHtml(product.images?.[0]['filename']);
     const imgSrc = imgFile ? `/assets/images/products/${imgFile}` : "";
+    const alt = escapeHtml(product.images?.[0]['alt']) ?? "";
 
     // prix : ton back semble renvoyer des centimes
     const priceCents = Number(product?.soldePrice ?? 0);
@@ -116,17 +116,17 @@ export function displayWishlist(wishlist = []) {
       `
       <tr>
         <td class="product-thumbnail">
-          <a href="/produits-bio-Paris/${slug}">
+          <a href="/product/${slug}">
             ${
               imgSrc
-                ? `<img width="50" height="50" alt="product" src="${imgSrc}">`
+                ? `<img width="50" height="50" alt="${alt}" src="${imgSrc}">`
                 : ""
             }
           </a>
         </td>
 
-        <td data-title="Product" class="product-name">
-          <a href="/produits-bio-Paris/${slug}">${title}</a>
+        <td class="product-name">
+          <a href="/product/${slug}">${title}</a>
         </td>
 
         <td data-title="Price" class="product-price">

@@ -165,7 +165,7 @@ export const displayCompare = async (compare = null) => {
             compare.forEach((product) => {
                 imageContainer.innerHTML += `
                 <td class="row_img">
-                <img src="/assets/images/products/${product.image[0]}" width="500" alt="compare-img">
+                <img src="/assets/images/products/${product.image[0]}" width="500" alt="compare image ${product.image[0].alt}">
                 </td> 
                 `
                 nameContainer.innerHTML += `
@@ -262,7 +262,7 @@ export const displayCart = (cart = null) => {
                 </div>`; 
             let content = `
                 <tr>
-                    <td class="product-thumbnail"><a><img width="50" alt="product1"
+                    <td class="product-thumbnail"><a><img width="50" alt="${product.image[0].alt}"
                         src="/assets/images/products/${product.image[0]}"></a>
                     </td>
                     <td data-title="Product" class="product-title">
@@ -329,7 +329,7 @@ export const displayWishlist = (wishlist = null) => {
             <tr>
             <td class="product-thumbnail">
                 <a href="#">
-                    <img width="50" height="50" alt="product1"
+                    <img width="50" height="50" alt="${product.image[0].alt}"
                         src="/assets/images/products/${product.image[0]}">
                 </a>
             </td>
@@ -388,7 +388,7 @@ export const updateHeaderCart = async (cart = null) => {
                     <i class="ion-close"></i>
                 </a>
                 <a href="/produits-bio-paris/${product.slug}">
-                    <img width="50" height="50" alt="cart_thumb1" src="/assets/images/products/${product.image[0]}">
+                    <img width="50" height="50" alt="${product.image[0].alt}" src="/assets/images/products/${product.image[0]}">
                     ${product.title}
                 </a>
                 <span class="cart_quantity"> ${quantity} x

@@ -66,13 +66,15 @@ async function onDocumentClick(event) {
     const link = event.target.closest("a"); // remonte dans le DOM jusqu’au premier <a> parent
     if (!link) return; // Bon pour la perfer, C’est une sortie rapide (early return)
 
-    const isCartLink =
-        link.matches(".shop_cart_table tbody a") ||
-        link.matches("a.add-to-cart, a.item_remove, a.btn-addtocart") ||
-        link.matches(".compare_table .add-to-cart") ||
-        link.matches(".wishlist_table .add-to-cart");
+    // const isCartLink =
+    //     link.matches(".shop_cart_table tbody a") ||
+    //     link.matches("a.add-to-cart, a.item_remove, a.btn-addtocart") ||
+    //     link.matches(".compare_table .add-to-cart") ||
+    //     link.matches(".wishlist_table .add-to-cart");
+    //     link.matches(".cart_dropdown a.mini_cart_plus, .cart_dropdown a.mini_cart_minus");
 
-    if (!isCartLink) return;
+
+    // if (!isCartLink) return;
 
     // Récupère proprement url.pathname, sans query string et sans bricoler avec split
     // ex : link.href = "https://site.fr/cart/add/123/1"
@@ -144,42 +146,54 @@ export function displayCart(cart) {
     for (const item of cart.items ?? []) {
         const { product, quantity, sub_total, taxe, sub_total_ht } = item;
 
-        const addButton =
-            product?.stock > 0
-                ? `<a href="/cart/add/${product.id}/1"><input type="button" value="+" class="plus"></a>`
-                : `<div style="text-align:center;align-self:center;">
-             <i class="fa fa-ban" title="Stock épuisé" style="font-size:34px;color:#999;"></i>
-           </div>`;
+        const stock = Number(product?.stock ?? 0);
+        const qty = Number(quantity ?? 0);
+
+        const firstImage = product.image?.[0];
+        const src = firstImage?.filename ? `/assets/images/products/${firstImage.filename}` : "";
+        const alt = firstImage?.alt ?? "";
+
+        // si stock non numérique, on autorise (mais le serveur bloquera)
+        const canAdd = Number.isFinite(stock) ? qty < stock : true;
+
+        const addButton = canAdd
+            ? `<a href="/cart/add/${product.id}/1"><input type="button" value="+" class="plus"></a>`
+            : `<div class="cart_stock_blocked" style="text-align:center;align-self:center;" title="Stock épuisé" aria-label="Stock épuisé">
+            <i class="fa fa-ban" style="font-size:28px;color:#999;"></i>
+            </div>`;
+
 
         tbody.insertAdjacentHTML(
             "beforeend",
             `
             <tr>
                 <td class="product-thumbnail">
-                <a><img width="50" alt="product" src="/assets/images/products/${product.image?.[0] ?? ""}"></a>
+                    <a href="/product/${product.slug ?? ""}" >
+                        <img width="50" alt="${alt}" src="${src}">
+                    </a>
                 </td>
                 <td data-title="Product" class="product-title">
-                <a>${product.title ?? ""}</a>
+                    <a>${product.title ?? ""}</a>
                 </td>
                 <td data-title="Price" class="product-price">
-                ${formatPrice((product.soldePrice ?? 0) / 100)}
+                    ${formatPrice((product.soldePrice ?? 0) / 100)}
                 </td>
                 <td data-title="Quantity" class="product-quantity">
-                <div class="quantity">
-                    <a href="/cart/remove/${product.id}/1">
-                    <input type="button" value="-" class="minus">
-                    </a>
-                    <input type="text" name="quantity" value="${quantity ?? 0}" title="Qty" size="4" class="qty">
-                    ${addButton}
-                </div>
+                    <div class="quantity">
+                        <a href="/cart/remove/${product.id}/1">
+                        <input type="button" value="-" class="minus">
+                        </a>
+                        <input type="text" name="quantity" value="${quantity ?? 0}" title="Qty" size="4" class="qty">
+                        ${addButton}
+                    </div>
                 </td>
                 <td data-title="Total" class="product-subtotal">${formatPrice((taxe ?? 0) / 100)}</td>
                 <td data-title="Total" class="product-subtotal">${formatPrice((sub_total_ht ?? 0) / 100)}</td>
                 <td data-title="Total" class="product-subtotal">${formatPrice((sub_total ?? 0) / 100)}</td>
                 <td data-title="Remove" class="product-remove">
-                <a href="/cart/remove/${product.id}/${quantity ?? 0}">
-                    <i class="ti-close"></i>
-                </a>
+                    <a href="/cart/remove/${product.id}/${quantity ?? 0}">
+                        <i class="ti-close"></i>
+                    </a>
                 </td>
             </tr>
             `
@@ -228,24 +242,45 @@ export async function updateHeaderCart(cart = null) {
         const unit = (product.soldePrice ?? 0) / 100;
         const total = unit * (quantity ?? 0);
 
+        const firstImage = product.image?.[0];
+        const src = firstImage?.filename ? `/assets/images/products/${firstImage.filename}` : "";
+        const alt = firstImage?.alt ?? "";
+
+        const canAdd = (typeof product.stock === "number")
+            ? (quantity ?? 0) < product.stock
+            : true; // si stock non fourni, on autorise (à valider côté backend)
+
         cartList.insertAdjacentHTML(
             "beforeend",
             `
-      <li>
-        <a href="/cart/remove/${product.id}/${quantity ?? 0}" class="item_remove">
-          <i class="ion-close"></i>
-        </a>
-        <a href="/produits-bio-paris/${product.slug ?? ""}">
-          <img width="50" height="50" alt="cart_thumb" src="/assets/images/products/${product.image?.[0] ?? ""}">
-          ${product.title ?? ""}
-        </a>
-        <span class="cart_quantity">
-          ${quantity ?? 0} x
-          <span class="cart_amount"><span class="price_symbole">${formatPrice(unit)}</span> =</span>
-          <span class="cart_amount"><span class="price_symbole">${formatPrice(total)}</span></span>
-        </span>
-      </li>
-      `
+                <li class="mini_cart_item">
+                    <a href="/product/${product.slug ?? ""}" class="mini_cart_link">
+                        <img width="50" height="50" alt="${alt}" src="${src}">
+                        <span class="mini_cart_title">${product.title ?? ""}</span>
+                    </a>
+
+                    <div class="mini_cart_controls">
+                        <a href="/cart/remove/${product.id}/1" class="mini_cart_minus" aria-label="Diminuer">
+                            <button type="button" class="mini_btn" aria-hidden="true">−</button>
+                        </a>
+
+                        <input class="mini_qty" name="quantity" type="text" value="${quantity ?? 0}" readonly>
+
+                        <a href="/cart/add/${product.id}/1" class="mini_cart_plus" aria-label="Augmenter">
+                            <button type="button" class="mini_btn" aria-hidden="true">+</button>
+                        </a>
+                    
+
+                        <a href="/cart/remove/${product.id}/${quantity ?? 0}" class="mini_cart_remove item_remove" aria-label="Retirer">
+                            <svg width="25" height="25" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path class="remove-icon-bottom" d="M11.5 9v4.25M8.5 9v4.25M5.75 12.2V6h8.5c0 2.421 0 3.779 0 6.2 0 .853 0 1.447-.038 1.91-.037.453-.106.714-.207.911a2.498 2.498 0 0 1-.983 1.017c-.197.1-.458.17-.911.207-.463.037-1.057.038-1.91.038h-.4c-.853 0-1.447 0-1.91-.038-.453-.037-.714-.106-.911-.207a2.498 2.498 0 0 1-.984-1.017c-.1-.197-.17-.458-.207-.911C5.75 13.647 5.75 13.053 5.75 12.2z" stroke="currentColor" stroke-width="var(--icon-stroke-width)" stroke-linecap="round"></path>
+                                <path class="remove-icon-top" d="M4.25 6h11.5M8 5.25a2 2 0 1 1 4 0" stroke="currentColor" stroke-width="var(--icon-stroke-width)" stroke-linecap="round" stroke-linejoin="round"></path>
+                            </svg>
+                        </a>
+                    </div>
+                </li>
+            `
         );
+
     }
 }

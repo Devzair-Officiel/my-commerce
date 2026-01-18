@@ -82,11 +82,15 @@ export async function displayCompare(compare = null) {
   removeRow.innerHTML = "";
 
   for (const product of compare ?? []) {
+    const firstImage = product.images?.[0];
+    const src = firstImage?.filename ? `/assets/images/products/${firstImage.filename}` : "";
+    const alt = firstImage?.alt ?? "";
+    
     imageRow.insertAdjacentHTML(
       "beforeend",
       `
       <td class="row_img">
-        <img src="/assets/images/products/${product.image?.[0] ?? ""}" width="500" alt="compare-img">
+        <img src="${src}" width="500" alt="${alt}">
       </td>
       `
     );

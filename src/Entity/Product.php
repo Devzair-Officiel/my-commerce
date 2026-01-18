@@ -421,11 +421,8 @@ class Product
     {
         $filenames = [];
 
-        // Adapte le nom de la propriété: $this->medias / $this->media / etc.
         foreach ($this->getMedias() as $media) {
-            // Adapte aussi getFilename() selon ton entité Media
             $name = $media?->getFilename();
-
             if (is_string($name) && $name !== '') {
                 $filenames[] = $name;
             }
@@ -433,6 +430,28 @@ class Product
 
         return $filenames;
     }
+    
+    public function getMediaData(): array
+    {
+        $data = [];
+
+        foreach ($this->getMedias() as $media) {
+            $filename = $media?->getFilename();
+            if (!is_string($filename) || $filename === '') {
+                continue;
+            }
+
+            $alt = $media?->getAlt();
+            $data[] = [
+                'filename' => $filename,
+                'alt' => (is_string($alt) && $alt !== '') ? $alt : null,
+            ];
+        }
+
+        return $data;
+    }
+
+    
 
     // ---------------------------------------------------------------------
     // Misc

@@ -48,7 +48,7 @@ final class ProductController extends AbstractController
         return $this->json([
             'id' => $product->getId(),
             'title' => $product->getTitle(),
-            'image' => $product->getMediaFilenames(),
+            'image' => $product->getMediaData(),
             'stock' => $product->getStock(),
             'soldePrice' => $product->getSoldePrice(),
             'regularPrice' => $product->getRegularPrice(),

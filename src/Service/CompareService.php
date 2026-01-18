@@ -79,7 +79,7 @@ final class CompareService
                 'id' => $product->getId(),
                 'title' => $product->getTitle(),
                 'slug' => $product->getSlug(),
-                'image' => $product->getMediaFilenames(),
+                'images' => $product->getMediaData(),
                 'soldePrice' => $product->getSoldePrice(),
                 'regularPrice' => $product->getRegularPrice(),
             ];

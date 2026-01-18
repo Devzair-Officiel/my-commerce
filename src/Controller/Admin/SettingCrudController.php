@@ -81,6 +81,10 @@ final class SettingCrudController extends AbstractCrudController
             ->setUploadedFileNamePattern('[slug].[timestamp].[extension]')
             ->setRequired(false);
 
+        $logoAlt = TextField::new('logoAlt', 'Texte alternatif (alt)')
+            ->setHelp('Décrit l’image pour l’accessibilité et le SEO')
+            ->setRequired(false);
+
         // --- Adresse
         $street = TextField::new('street', 'Rue')
             ->setColumns(12)
@@ -168,6 +172,7 @@ final class SettingCrudController extends AbstractCrudController
 
             FormField::addFieldset('Image de marque')->setIcon('fa fa-image'),
             $logo,
+            $logoAlt,
 
             FormField::addTab('Adresse')->setIcon('fa fa-location-dot'),
             FormField::addFieldset('Adresse postale')->setIcon('fa fa-map'),
