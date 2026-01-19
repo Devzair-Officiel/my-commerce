@@ -1,14 +1,14 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}{{globalSetting.website_name}} | Payment success
+{% block title %}
+	{{globalSetting.website_name}}
+	| Payment success
 {% endblock %}
 
 
 {% block body %}
 
-{% include "page_head/index.html.twig" with {'page_name': "✅ Commande validé" } %}
-
-
+	{% include "page_head/index.html.twig" with {'page_name': "✅ Commande validé" } %}
 
 	<div class="section">
 		<div class="container">
@@ -22,6 +22,9 @@
 						<p>
 							Merci pour votre achat. Nous avons bien reçu votre commande et nous vous enverrons un email de confirmation avec les détails de votre commande.
 						</p>
+						{% if order is defined and order %}
+							<p class="text-muted">Commande n°{{ order.id }}</p>
+						{% endif %}
 						<a href="{{ path('app_account') }}" class="btn btn-fill-out">
 							Retour vers mon compte
 						</a>

@@ -457,7 +457,6 @@
 	margin-bottom: 20px;
 }
 .header_wrap nav.navbar {
-	display: table;
 	width: 100%;
 }
 .header_wrap .navbar .navbar-nav.attr-nav {
@@ -1231,7 +1230,7 @@ footer .widget_title {
 	font-size: 14px;
 }
 .btn + .btn {
-	margin-left: 5px;
+	margin: 10px 0px;
 }
 .btn-group-lg > .btn, .btn-lg {
 	padding: 14px 38px;
@@ -1246,6 +1245,9 @@ footer .widget_title {
 .btn-xs {
 	padding: 2px 14px;
 	font-size: 12px;
+}
+.btn-fill-out {
+	width: -webkit-fill-available;
 }
 p {
 	margin-bottom: 15px;
@@ -1998,7 +2000,7 @@ footer .widget_title,
 	padding: 2px 10px 2px 0;
 }
 .navbar-nav .dropdown-menu.cart_box.show {
-	right: -50px;
+	right: -12px;
 	width: 310px;
 }
 .navbar-nav .dropdown-menu.cart_box.show.cart_right {

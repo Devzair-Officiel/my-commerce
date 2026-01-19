@@ -172,6 +172,7 @@ export function initAddressBook() {
         method: "DELETE",
         headers: {
           "X-Requested-With": "XMLHttpRequest",
+          "X-CSRF-TOKEN": getCsrfTokenAddress(),
         },
       });
 

@@ -8,7 +8,7 @@ use App\Entity\OrderDetails;
 use App\Enum\FulfillmentStatus;
 use App\Enum\PaymentStatus;
 use App\Service\CartService;
-use App\Service\PaypalService;
+// use App\Service\PaypalService;
 use App\Service\StripeService;
 use Symfony\Component\Mime\Email;
 use App\Repository\OrderRepository;
@@ -38,7 +38,7 @@ class CheckoutController extends AbstractController
     public function index(
         AddressRepository $addressRepo,
         StripeService $stripeService,
-        PaypalService $paypalService,
+        // PaypalService $paypalService,
     ): Response {
         $cart = $this->cartService->getCartDetails();
 
@@ -62,15 +62,17 @@ class CheckoutController extends AbstractController
         return $this->render('checkout/index.html.twig', [
             'cart' => $cart,
             'orderId' => $order->getId(),
-            'cart_json' => json_encode($cart, JSON_UNESCAPED_UNICODE),
+            'cart_json' => json_encode($cart, JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR),
             'stripe_public_key' => $stripeService->getPublicKey(),
-            'paypal_public_key' => $paypalService->getPublicKey(),
+            // 'paypal_public_key' => $paypalService->getPublicKey(),
             'addresses' => $addresses,
+            'address_api' => $this->generateUrl('api_address_create'),
+            'csrf_token_address' => $this->container->get('security.csrf.token_manager')->getToken('address_api')->getValue(),
         ]);
     }
 
     #[Route('/stripe/payment/success', name: 'app_stripe_payment_success', methods: ['GET'])]
-    public function stripePaymentSuccess(): Response
+    public function stripePaymentSuccess(Request $request): Response
     {
         $this->denyAccessUnlessGranted('ROLE_USER');
 
@@ -79,77 +81,98 @@ class CheckoutController extends AbstractController
             throw $this->createAccessDeniedException();
         }
 
-        $order = $this->orderRepo->findOneBy(
-            [
-                'user' => $user,
-                'paymentStatus' => PaymentStatus::Paid,
-            ],
-            ['id' => 'DESC']
-        );
+        $paymentIntentId = (string) $request->query->get('payment_intent', '');
 
-        if ($order) {
-            $this->cartService->clearCart(); // idéalement remove + save, comme discuté
-            if ($order->getCartClearedAt() === null) {
-                $order->markCartCleared();
-                $this->em->flush();
-            }
+        // 1) Si Stripe ne renvoie pas payment_intent : pas d’erreur, page "en cours"
+        if ($paymentIntentId === '') {
+            return $this->render('payment/pending.html.twig', [
+                'page_name' => '⏳ Confirmation du paiement',
+                'auto_refresh' => false,
+            ]);
         }
 
-        return $this->render('payment/success.html.twig');
-    }
-
-
-    #[Route('/paypal/payment/success', name: 'app_paypal_payment_success', methods: ['GET'])]
-    public function paypalPaymentSuccess(
-        Request $request,
-        OrderRepository $orderRepo,
-        EntityManagerInterface $em,
-        MailerInterface $mailer,
-    ): Response {
-        $this->denyAccessUnlessGranted('ROLE_USER');
-
-        $user = $this->getUser();
-        if (!$user instanceof User) {
-            return $this->redirectToRoute('app_login');
-        }
-
-        // ⚠️ Pour PayPal aussi, la confirmation fiable vient de la capture côté serveur / webhook.
-        // Ici on garde ton flow "success" mais on sécurise au minimum.
-        $paypalRef = (string) $request->query->get('payment_intent_client_secret', '');
-        if ($paypalRef === '') {
-            return $this->redirectToRoute('app_error');
-        }
-
-        $order = $orderRepo->findOneBy([
+        // 2) Si on peut retrouver la commande via paymentReference (= pi_xxx)
+        $order = $this->orderRepo->findOneBy([
             'user' => $user,
-            'paymentReference' => $paypalRef,
+            'paymentReference' => $paymentIntentId,
         ]);
 
+        // 3) Si pas encore trouvé : webhook pas arrivé -> page "en cours" avec refresh
         if (!$order instanceof Order) {
-            return $this->redirectToRoute('app_error');
+            return $this->render('payment/pending.html.twig', [
+                'page_name' => '⏳ Confirmation du paiement',
+                'auto_refresh' => true, // refresh doux
+            ]);
         }
 
-        if ($order->getPaymentStatus() !== PaymentStatus::Paid) {
-            $order->setPaymentStatus(PaymentStatus::Paid);
-            $order->setPaidAt(new \DateTimeImmutable());
-            $em->flush();
+        // 4) Cart clear idempotent
+        if ($order->getCartClearedAt() === null) {
+            $this->cartService->clearCart();
+            $order->markCartCleared();
+            $this->em->flush();
         }
 
-        $this->cartService->update('cart', []);
-
-        $email = (new Email())
-            ->from('contact@nidemiel.com')
-            ->to($user->getEmail())
-            ->subject('Confirmation de paiement')
-            ->html($this->renderView('payment/email_payment_success.html.twig', [
-                'order' => $order,
-                'user' => $user,
-            ]));
-
-        $mailer->send($email);
-
-        return $this->render('payment/index.html.twig');
+        // 5) Page succès standard (ta page actuelle)
+        return $this->render('payment/success.html.twig', [
+            'order' => $order,
+        ]);
     }
+
+
+
+    // #[Route('/paypal/payment/success', name: 'app_paypal_payment_success', methods: ['GET'])]
+    // public function paypalPaymentSuccess(
+    //     Request $request,
+    //     OrderRepository $orderRepo,
+    //     EntityManagerInterface $em,
+    //     MailerInterface $mailer,
+    // ): Response {
+    //     $this->denyAccessUnlessGranted('ROLE_USER');
+
+    //     $user = $this->getUser();
+    //     if (!$user instanceof User) {
+    //         return $this->redirectToRoute('app_login');
+    //     }
+
+    //     // ⚠️ Pour PayPal aussi, la confirmation fiable vient de la capture côté serveur / webhook.
+    //     // Ici on garde ton flow "success" mais on sécurise au minimum.
+    //     $paypalRef = (string) $request->query->get('payment_intent_client_secret', '');
+    //     if ($paypalRef === '') {
+    //         return $this->redirectToRoute('app_error');
+    //     }
+
+    //     $order = $orderRepo->findOneBy([
+    //         'user' => $user,
+    //         'paymentReference' => $paypalRef,
+    //     ]);
+
+    //     if (!$order instanceof Order) {
+    //         return $this->redirectToRoute('app_error');
+    //     }
+
+    //     if ($order->getPaymentStatus() !== PaymentStatus::Paid) {
+    //         $order->setPaymentStatus(PaymentStatus::Paid);
+    //         $order->setPaidAt(new \DateTimeImmutable());
+    //         $em->flush();
+    //     }
+
+    //     $this->cartService->update('cart', []);
+
+    //     $email = (new Email())
+    //         ->from('contact@nidemiel.com')
+    //         ->to($user->getEmail())
+    //         ->subject('Confirmation de paiement')
+    //         ->html($this->renderView('payment/email_payment_success.html.twig', [
+    //             'order' => $order,
+    //             'user' => $user,
+    //         ]));
+
+    //     $mailer->send($email);
+
+    //     return $this->render('payment/index.html.twig');
+    // }
+
+
 
     /**
      * Crée une commande "draft" à partir du panier.
@@ -162,7 +185,13 @@ class CheckoutController extends AbstractController
         $draft = $this->orderRepo->findOneBy([
             'user' => $user,
             'fulfillmentStatus' => FulfillmentStatus::Draft,
+            'paymentStatus' => PaymentStatus::Pending,
         ]);
+
+        // ✅ on ne réutilise une Draft QUE si paiement Pending
+        if ($draft && $draft->getPaymentStatus() !== PaymentStatus::Pending) {
+            $draft = null;
+        }
 
         $order = $draft ?? new Order();
         $order->setUser($user);

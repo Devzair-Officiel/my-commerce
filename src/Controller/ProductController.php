@@ -28,10 +28,10 @@ final class ProductController extends AbstractController
                 'controller_name' => 'PageController'
             ]);
         }
-      
 
         return $this->render('product/show_product_by_slug.html.twig', [
             'product' => $product,
+            'media' => $product->getMediaData(),
             'productBestSeller' => $this->productRepo->findBy(['isBestSeller' => true]),
         ]);
     }
@@ -48,14 +48,14 @@ final class ProductController extends AbstractController
         return $this->json([
             'id' => $product->getId(),
             'title' => $product->getTitle(),
-            'image' => $product->getMediaData(),
+            'image' => $product->getMediaFilenames(),
             'stock' => $product->getStock(),
             'soldePrice' => $product->getSoldePrice(),
             'regularPrice' => $product->getRegularPrice(),
         ]);
     }
 
-    #[Route('/product-{city}/search', name: 'app_search')]
+    #[Route('/product/search', name: 'app_search')]
     public function searchProduct(Request $request)
     {
         $search = $request->query->get('term');

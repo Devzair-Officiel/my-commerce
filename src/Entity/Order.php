@@ -125,6 +125,7 @@ class Order
         cascade: ['persist', 'remove'],
         orphanRemoval: true
     )]
+    
     #[Assert\Valid] // valide aussi les lignes
     private Collection $orderDetails;
 

@@ -1,112 +1,98 @@
-<header class="header_wrap fixed-top header_with_topbar active">
-<div style="background-color: #e37e03; text-align: center;">
-	<p style="color: white; font-style: italic; margin: 0;">Profitez des frais de livraison OFFERTS à partir de 100€ d'achat</p>
-</div>
+<header class="header_wrap fixed-top header_with_topbar active" role="banner">
+	<div style="background-color: #e37e03; text-align: center;">
+		<p style="color: white; font-style: italic; margin: 0;">
+			Profitez des frais de livraison OFFERTS à partir de 100€ d'achat
+		</p>
+	</div>
+
 	<div class="top-header">
 		<div class="container">
 			<div class="row align-items-center">
 				<div class="col-md-6">
-					<div class="d-flex align-items-center justify-content-center justify-content-md-start">
-						<ul class="contact_detail text-center text-lg-start">
-							<li>
-								<i class="ti-mobile"></i>
-								<span>
-									{{globalSetting.phone}}
-								</span>
-							</li>
-						</ul>
-
-					</div>
+					<ul class="contact_detail text-center text-lg-start" aria-label="Informations de contact">
+						<li>
+							<i class="ti-mobile" aria-hidden="true"></i>
+							<span>{{ globalSetting.phone }}</span>
+						</li>
+					</ul>
 				</div>
-				<div class="col-md-6">
-					<div class="text-center text-md-end">
-						<ul class="header_list">
-							<li>
-								<a href="/compare">
-									<i class="ti-control-shuffle fa-2x" title="Comparateur"></i>
-								</a>
-							</li>
-							<li>
-								<a href="/wishlist">
-									<i class="ti-heart fa-2x" title="Liste d'envies "></i>
-								</a>
-							</li>
-							{% if app.user %}
-								{% if is_granted('ROLE_ADMIN') %}
-									<li>
-										<a href="/admin">
-											<i class="ti-user fa-2x" title="Mon compte"></i>
-										</a>
-									</li>
-								{% else %}
 
-									<li>
-										<a href="/account">
-											<i class="ti-user fa-2x" title="Mon compte"></i>
-										</a>
-									</li>
-								{% endif %}
+				<div class="col-md-6">
+					<ul class="header_list text-center text-md-end">
+						<li>
+							<a href="/compare" aria-label="Comparateur">
+								<i class="ti-control-shuffle fa-2x"></i>
+							</a>
+						</li>
+						<li>
+							<a href="/wishlist" aria-label="Liste d'envies">
+								<i class="ti-heart fa-2x"></i>
+							</a>
+						</li>
+
+						{% if app.user %}
+							{% if is_granted('ROLE_ADMIN') %}
 								<li>
-									<a href="/logout">
-										<i class="ti-shift-right fa-2x" title="Me Deconnecter"></i>
+									<a href="/admin" aria-label="Espace administrateur">
+										<i class="ti-user fa-2x"></i>
 									</a>
 								</li>
 							{% else %}
 								<li>
-									<a href="/login">
-										<i class=""></i>
-										<span>Connexion
-										</span>
-									</a>
-									/<a href="/register">
-										<i class=""></i>
-										<span>Créer un compte</span>
+									<a href="/account" aria-label="Mon compte">
+										<i class="ti-user fa-2x"></i>
 									</a>
 								</li>
 							{% endif %}
-						</ul>
-					</div>
+							<li>
+								<a href="/logout" aria-label="Me déconnecter">
+									<i class="ti-shift-right fa-2x"></i>
+								</a>
+							</li>
+						{% else %}
+							<li>
+								<a href="/login" aria-label="Connexion">Connexion</a>
+								/
+								<a href="/register" aria-label="Créer un compte">Créer un compte</a>
+							</li>
+						{% endif %}
+					</ul>
 				</div>
 			</div>
 		</div>
 	</div>
 	<div class="bottom_header dark_skin main_menu_uppercase">
 		<div class="container">
-			<nav class="navbar navbar-expand-lg">
-				<a class="navbar-brand" href="/">
-					<div class="d-flex align-items-center">
-						<a href="/" style="margin-right: 20px;">
-							<img src="/assets/images/setting/{{globalSetting.logo_filename}}" alt="logo de {{globalSetting.website_name}} " height="60">
-						</a>
-						<h2>
-							{{globalSetting.website_name}}
-						</h2>
-					</div>
-				</a>
-				<button type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-expanded="false" class="navbar-toggler collapsed">
+			<nav class="navbar navbar-expand-lg" role="navigation">
+				<div class="d-flex align-items-center">
+					<a href="/" class="navbar-brand d-flex align-items-center" aria-label="Retour à l'accueil">
+						<img src="/assets/images/setting/{{ globalSetting.logo_filename }}" alt="{{ globalSetting.logo_alt }}"  loading="lazy">
+					</a>
+				</div>
+
+				<button type="button" class="navbar-toggler collapsed" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-expanded="false" aria-label="Menu principal">
 					<span class="ion-android-menu"></span>
 				</button>
-				<div id="navbarSupportedContent" class="navbar-collapse justify-content-end collapse">
+
+				<div class="collapse navbar-collapse justify-content-end" id="navbarSupportedContent">
 					<ul class="navbar-nav">
-						<li class="dropdown">
+						<li>
 							<a class="nav-link" href="/">Accueil</a>
 						</li>
 						<li class="dropdown">
-							<a href="#" data-bs-toggle="dropdown" class="dropdown-toggle nav-link " aria-expanded="false">A propos</a>
+							<a href="#" class="dropdown-toggle nav-link" data-bs-toggle="dropdown" aria-expanded="false">A propos</a>
 							<div class="dropdown-menu">
 								<ul>
 									{% for page in globalHeaderPages %}
 										<li>
-											<a class="dropdown-item nav-link nav_item" href="/page/{{page.slug}}">
-												{{page.title}}
-											</a>
+											<a class="dropdown-item nav-link nav_item" href="/page/{{ page.slug }}">{{ page.title }}</a>
 										</li>
 									{% endfor %}
 								</ul>
 							</div>
 						</li>
 						<li class="dropdown dropdown-mega-menu">
-							<a href="#" data-bs-toggle="dropdown" class="dropdown-toggle nav-link" aria-expanded="false">Produits</a>
+							<a href="#" class="dropdown-toggle nav-link" data-bs-toggle="dropdown" aria-expanded="false">Produits</a>
 							<div class="dropdown-menu">
 								<ul class="mega-menu d-lg-flex">
 									{% for category in globalMegaCategories %}
@@ -114,77 +100,65 @@
 											<ul>
 												<li>
 													<h5>
-														<a class=" nav-link " href="/category/{{category.slug}}">
-															{{category.title}}
-														</a>
+														<a class="nav-link" href="/category/{{ category.slug }}">{{ category.title }}</a>
 													</h5>
 												</li>
 												{% for product in globalMegaProducts[category.id] %}
 													{% if loop.index < 6 %}
 														<li>
-															<a class="dropdown-item nav-link nav_item" href="/product/{{product.slug}}">
-																{{product.title}}
-															</a>
+															<a class="dropdown-item nav-link nav_item" href="/product/{{ product.slug }}">{{ product.title }}</a>
 														</li>
-
 													{% endif %}
 												{% endfor %}
 											</ul>
 										</li>
-
 									{% endfor %}
 								</ul>
-								<div class="d-lg-flex menu_banners row g-3 px-3">
+								{# <div class="d-lg-flex menu_banners row g-3 px-3">
 									{% for intro in app.session.get('megaIntro') %}
 										<div class="col-sm-4">
-											<div class="header-banner"><img alt="menu_banner1" src="/assets/images/intro/{{intro.image}}">
+											<div class="header-banner">
+												<img src="/assets/images/intro/{{ intro.image }}" alt="{{ intro.title }}" loading="lazy">
 												<div class="banne_info">
-													<h6>
-														{{ intro.description }}
-													</h6>
-													<h4>
-														{{ intro.title }}
-													</h4>
-													<a href="{{intro.buttonLink}}">
-														{{ intro.buttonText }}
-													</a>
+													<h6>{{ intro.description }}</h6>
+													<h4>{{ intro.title }}</h4>
+													<a href="{{ intro.buttonLink }}">{{ intro.buttonText }}</a>
 												</div>
 											</div>
 										</div>
-
 									{% endfor %}
-								</div>
+								</div> #}
 							</div>
 						</li>
-						<li class="dropdown dropdown-mega-menu">
-							<a class="nav-link" href="/blog">
-								Blog
-							</a>
+						<li>
+							<a class="nav-link" href="/blog">Blog</a>
 						</li>
 						<li>
 							<a class="nav-link nav_item" href="/contact">Contact</a>
 						</li>
 					</ul>
 				</div>
+
 				<ul class="navbar-nav attr-nav align-items-center">
 					<li>
-						<a href="javascript:void(0);" class="nav-link search_trigger">
+						<a href="#" class="nav-link search_trigger" aria-label="Recherche">
 							<i class="linearicons-magnifier"></i>
 						</a>
 						<div class="search_wrap">
-							<span class="close-search">
+							<span class="close-search" aria-label="Fermer la recherche">
 								<i class="ion-ios-close-empty"></i>
 							</span>
 							<form action="/produits-paris/search" method="get">
-								<input type="text" placeholder="Search" name="term" class="form-control">
-								<button type="submit" class="search_icon">
+								<input type="text" name="term" placeholder="Rechercher..." class="form-control" aria-label="Champ de recherche">
+								<button type="submit" class="search_icon" aria-label="Valider la recherche">
 									<i class="ion-ios-search-strong"></i>
 								</button>
 							</form>
 						</div>
 					</li>
+
 					<li class="dropdown cart_dropdown">
-						<a href="#" data-bs-toggle="dropdown" class="nav-link cart_trigger">
+						<a href="#" class="nav-link cart_trigger" data-bs-toggle="dropdown" aria-label="Panier">
 							<i class="linearicons-cart"></i>
 							<span class="cart_count"></span>
 						</a>
@@ -215,3 +189,4 @@
 		</div>
 	</div>
 </header>
+

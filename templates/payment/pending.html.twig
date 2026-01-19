@@ -1,0 +1,68 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}
+	{{ globalSetting.website_name }}
+	| Paiement en cours
+{% endblock %}
+
+{% block body %}
+
+	{% include "page_head/index.html.twig" with {'page_name': page_name ?? "⏳ Confirmation du paiement" } %}
+
+	<div class="section">
+		<div class="container">
+			<div class="row justify-content-center">
+				<div class="col-md-8">
+					<div class="text-center order_complete">
+						<i class="fas fa-spinner fa-spin"></i>
+						<div class="heading_s1">
+							<h3>Nous confirmons votre paiement…</h3>
+						</div>
+						<p>
+							Cela peut prendre quelques secondes (notamment en environnement local).
+														              Cette page va se mettre à jour automatiquement.
+						</p>
+
+						<div class="d-flex justify-content-center gap-2 flex-wrap">
+							<a href="{{ path('app_account') }}" class="btn btn-outline-secondary">
+								Aller sur mon compte
+							</a>
+							<a href="{{ path('app_home') }}" class="btn btn-fill-out">
+								Retour à l’accueil
+							</a>
+						</div>
+
+						{% if auto_refresh %}
+							<p class="text-muted mt-3 mb-0 small">
+								Si ça ne se valide pas, vérifie que ton webhook Stripe tourne bien en local.
+							</p>
+						{% endif %}
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+{% endblock %}
+
+{% block javascripts %}
+	{{ parent() }}
+	{% if auto_refresh %}
+		<script>
+			(function () {
+            let tries = 0;
+            const maxTries = 10; // ~20s si 2s interval
+            const intervalMs = 2000;
+
+            const timer = setInterval(function () {
+            tries++;
+            if (tries > maxTries) {
+            clearInterval(timer);
+            return;
+            }
+            window.location.reload();
+            }, intervalMs);
+            })();
+		</script>
+	{% endif %}
+{% endblock %}

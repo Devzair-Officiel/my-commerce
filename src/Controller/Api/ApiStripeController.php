@@ -8,6 +8,7 @@ use App\Enum\FulfillmentStatus;
 use App\Repository\OrderRepository;
 use App\Service\StripeService;
 use Doctrine\ORM\EntityManagerInterface;
+use Stripe\Exception\ApiErrorException;
 use Stripe\PaymentIntent;
 use Stripe\Stripe;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -21,9 +22,8 @@ final class ApiStripeController extends AbstractController
         int $orderId,
         OrderRepository $orderRepository,
         StripeService $stripeService,
-        EntityManagerInterface $em
+        EntityManagerInterface $em,
     ): JsonResponse {
-
         $this->denyAccessUnlessGranted('ROLE_USER');
 
         $user = $this->getUser();
@@ -36,7 +36,6 @@ final class ApiStripeController extends AbstractController
             return $this->json(['error' => 'Order not found'], 404);
         }
 
-        // On évite de créer un intent si la commande n’est pas au bon état
         if ($order->getFulfillmentStatus() !== FulfillmentStatus::Draft) {
             return $this->json(['error' => 'Order not payable'], 409);
         }
@@ -48,31 +47,71 @@ final class ApiStripeController extends AbstractController
 
         Stripe::setApiKey($stripeService->getPrivateKey());
 
-        if ($order->getPaymentReference()) {
-            return $this->json(['clientSecret' => null, 'paymentIntentId' => $order->getPaymentReference()]);
-        }
+        try {
+            // 1) Si un intent existe, on le récupère
+            if ($order->getPaymentReference()) {
+                $existing = PaymentIntent::retrieve($order->getPaymentReference());
 
-        $intent = PaymentIntent::create(
-            [
-                'amount' => $amount,
-                'currency' => 'eur',
-                'automatic_payment_methods' => ['enabled' => true],
-                'metadata' => [
-                    'order_id' => (string) $order->getId(),
-                    'user_id' => (string) $user->getId(),
+                // ✅ Si déjà finalisé -> on ne le réutilise pas
+                if (\in_array($existing->status, ['succeeded', 'canceled'], true)) {
+                    $order->setPaymentReference(null);
+                    $em->flush();
+                } else {
+                    // ✅ On n'update le montant que si le status le permet.
+                    // Stripe permet update sur requires_payment_method / requires_confirmation / requires_action
+                    if ((int) $existing->amount !== $amount) {
+                        if (\in_array($existing->status, ['requires_payment_method', 'requires_confirmation', 'requires_action'], true)) {
+                            $existing = PaymentIntent::update($existing->id, ['amount' => $amount]);
+                        } else {
+                            // Statut non-updatable => on recrée
+                            $order->setPaymentReference(null);
+                            $em->flush();
+                        }
+                    }
+
+                    // Si on a gardé l'existant
+                    if ($order->getPaymentReference()) {
+                        return $this->json([
+                            'clientSecret' => $existing->client_secret,
+                            'paymentIntentId' => $existing->id,
+                            'status' => $existing->status,
+                        ]);
+                    }
+                }
+            }
+
+            // 2) Créer un nouvel intent (idempotent par commande)
+            $intent = PaymentIntent::create(
+                [
+                    'amount' => $amount,
+                    'currency' => 'eur',
+                    'automatic_payment_methods' => ['enabled' => true],
+                    'metadata' => [
+                        'order_id' => (string) $order->getId(),
+                        'user_id' => (string) $user->getId(),
+                    ],
                 ],
-            ],
-            [
-                'idempotency_key' => 'pi_order_' . $order->getId(),
-            ]
-        );
+                [
+                    // ⚠️ Idempotency key: change-la si tu veux forcer un nouvel intent.
+                    // Ici, comme on a purgé paymentReference si besoin, c’est OK.
+                    'idempotency_key' => sprintf('pi_order_%d_amount_%d', $order->getId(), $amount),
 
-        // Recommandation: stocker l’ID du PaymentIntent (pas le client_secret)
-        $order->setPaymentReference($intent->id);
-        $em->flush();
+                ]
+            );
 
-        return $this->json([
-            'clientSecret' => $intent->client_secret,
-        ]);
+            $order->setPaymentReference($intent->id);
+            $em->flush();
+
+            return $this->json([
+                'clientSecret' => $intent->client_secret,
+                'paymentIntentId' => $intent->id,
+                'status' => $intent->status,
+            ]);
+        } catch (ApiErrorException $e) {
+            return $this->json([
+                'error' => 'Stripe error',
+                'message' => $e->getMessage(),
+            ], 502);
+        }
     }
 }

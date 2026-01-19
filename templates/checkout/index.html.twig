@@ -6,9 +6,14 @@
 {% block stylesheets %}
 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" integrity="sha512-z3gLpd7yknf1YoNbCzqRKc4qyor8gaKU1qmn+CShxbuBusANI9QpRohGBreCFkKxLhei6S9CQXFEbbKuqLg0DA==" crossorigin="anonymous" referrerpolicy="no-referrer"/>
 	<link rel="stylesheet" href="/assets/css/stripe.css">
-	<script src="https://www.paypal.com/sdk/js?client-id={{ paypal_public_key }}&currency=EUR"></script>
 	<script src="https://js.stripe.com/v3/"></script>
 {% endblock %}
+
+
+{% block csrf_meta %}
+	<meta name="csrf-token-address" content="{{ csrf_token('address_api') }}">
+{% endblock %}
+
 
 {% block body %}
 
@@ -18,7 +23,7 @@
 		{% set total_products = total_products + (item.quantity ?? 0) %}
 	{% endfor %}
 
-	<div class="main_content" data-stripe_public_key="{{ stripe_public_key }}" data-paypal_public_key="{{ paypal_public_key }}" data-cart="{{ cart_json|e('html_attr') }}" data-orderid="{{ orderId }}">
+	<div class="main_content" data-stripe-public-key="{{ stripe_public_key }}" data-cart="{{ cart_json|e('html_attr') }}" data-orderid="{{ orderId }}" data-address-api="{{ address_api }}" data-address-csrf="{{ csrf_token('address_api') }}" data-countries-url="{{ asset('assets/data/countries.json') }}">
 
 		<div class="section">
 			<div class="container">
@@ -65,6 +70,84 @@
 									</option>
 								{% endfor %}
 							</select>
+							{% if addresses|length == 0 %}
+								<div class="alert alert-warning mt-2" role="status">
+									Vous n’avez aucune adresse enregistrée. Ajoutez-en une pour continuer.
+								</div>
+							{% endif %}
+
+							<div class="mt-2">
+								<a href="#" class="btn btn-outline-primary btn-sm" id="checkout-add-address-btn">
+									Ajouter une adresse
+								</a>
+							</div>
+
+							<div id="checkout-add-address-form" class="card mt-3 d-none">
+								<div class="card-body">
+									<h5 class="card-title mb-3">Nouvelle adresse</h5>
+
+									<form id="checkoutAddressForm">
+										<div class="row">
+											<div class="form-group col-md-12 mb-3">
+												<label>Type de l'adresse<span class="required">*</span>
+												</label>
+												<select name="address_type" class="form-control" required>
+													<option value="livraison">Livraison</option>
+													<option value="facturation">Facturation</option>
+												</select>
+											</div>
+
+											<div class="form-group col-md-12 mb-3">
+												<label>Nom de l'adresse<span class="required">*</span>
+												</label>
+												<input required class="form-control" name="name" type="text">
+											</div>
+
+											<div class="form-group col-md-12 mb-3">
+												<label>Nom du destinataire<span class="required">*</span>
+												</label>
+												<input required class="form-control" name="client_name" type="text">
+											</div>
+
+											<div class="form-group col-md-6 mb-3">
+												<label>Rue<span class="required">*</span>
+												</label>
+												<input required class="form-control" name="street" type="text">
+											</div>
+
+											<div class="form-group col-md-6 mb-3">
+												<label>Ville<span class="required">*</span>
+												</label>
+												<input required class="form-control" name="city" type="text">
+											</div>
+
+											<div class="form-group col-md-6 mb-3">
+												<label>Code postal<span class="required">*</span>
+												</label>
+												<input required class="form-control" name="code_postal" type="text" inputmode="numeric" maxlength="5">
+											</div>
+
+											<div class="form-group col-md-6 mb-3">
+												<label>Pays<span class="required">*</span>
+												</label>
+												<select class="form-control" name="state" id="checkout-state" required></select>
+											</div>
+
+											<div class="form-group col-md-12 mb-3">
+												<label>Complément (optionnel)</label>
+												<input class="form-control" name="more_details" type="text" maxlength="500">
+											</div>
+
+											<div class="col-md-12 d-flex gap-2">
+												<button type="submit" class="btn btn-fill-out">Enregistrer</button>
+												<button type="button" class="btn btn-outline-secondary" id="checkout-cancel-address">
+													Annuler
+												</button>
+											</div>
+										</div>
+									</form>
+								</div>
+							</div>
 						</div>
 
 						<div class="heading_s1 mb-3">
@@ -118,7 +201,7 @@
 											<tr>
 												<td>
 													<div class="d-flex align-items-center gap-2">
-														<img src="/assets/images/products/{{ item.product.image[0] }}" width="36" height="36" loading="lazy" alt="{{ tem.product.image[0].alt }}"/>
+														<img src="/assets/images/products/{{ item.product.image[0].filename }}" width="36" height="36" loading="lazy" alt="{{ item.product.image[0].alt }}"/>
 														<div>
 															<div class="fw-semibold">{{ item.product.title }}</div>
 															<div class="small text-muted">
@@ -178,7 +261,7 @@
 							</div>
 
 							<div class="payment-button d-none m-2">
-								<a href="#" class="btn btn-fill-out btn-block" type="button" data-bs-toggle="modal" data-bs-target="#staticBackdrop" aria-controls="staticBackdrop">
+								<button id="open-payment-modal" class="btn btn-fill-out btn-block" type="button">
 									Payer maintenant —
 									{{ (cart.sub_total_with_carrier / 100)|format_currency('EUR') }}
 								</a>
@@ -203,12 +286,6 @@
 				</div>
 
 				<div class="modal-body">
-					<div class="payment-methods d-flex gap-2 justify-content-center align-items-center mb-3" aria-label="Choix du moyen de paiement">
-						<span>Stripe</span>
-						<i class="fa-solid fa-toggle-off" role="button" aria-label="Basculer vers PayPal" tabindex="0"></i>
-						<span>PayPal</span>
-					</div>
-
 					<div id="stripe-method">
 						<form id="payment-form">
 							<div id="link-authentication-element"></div>
@@ -223,10 +300,6 @@
 						</form>
 					</div>
 
-					<div id="paypal-method" class="d-none">
-						<div id="paypal-button-container"></div>
-						<p id="result-message" aria-live="polite"></p>
-					</div>
 				</div>
 			</div>
 		</div>
@@ -237,5 +310,4 @@
 {% block javascripts %}
 	{{ parent() }}
 	<script src="{{ asset('assets/js/pages/checkout/stripe.js') }}" type="module" defer></script>
-	<script src="{{ asset('assets/js/pages/checkout/paypal.js') }}" type="module" defer></script>
 {% endblock %}

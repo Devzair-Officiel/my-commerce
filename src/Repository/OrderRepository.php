@@ -2,9 +2,11 @@
 
 namespace App\Repository;
 
+use App\Entity\User;
 use App\Entity\Order;
-use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use App\Enum\FulfillmentStatus;
 use Doctrine\Persistence\ManagerRegistry;
+use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 
 /**
  * @extends ServiceEntityRepository<Order>
@@ -50,6 +52,19 @@ class OrderRepository extends ServiceEntityRepository
             'orders' => $orders,
             'total' => $total,
         ];
+    }
+
+    public function findLatestDraftForUser(User $user): ?Order
+    {
+        return $this->createQueryBuilder('o')
+            ->andWhere('o.user = :user')
+            ->andWhere('o.fulfillmentStatus = :draft')
+            ->setParameter('user', $user)
+            ->setParameter('draft', FulfillmentStatus::Draft)
+            ->orderBy('o.id', 'DESC')
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult();
     }
 
     //    /**

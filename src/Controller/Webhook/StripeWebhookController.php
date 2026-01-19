@@ -2,23 +2,24 @@
 
 namespace App\Controller\Webhook;
 
-use App\Entity\StripeWebhookEvent;
-use App\Enum\PaymentStatus;
-use App\Repository\OrderRepository;
-use App\Service\StockAllocator;
-use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
-use Doctrine\DBAL\LockMode;
-use Doctrine\ORM\EntityManagerInterface;
-use Psr\Log\LoggerInterface;
 use Stripe\Event;
-use Stripe\Exception\SignatureVerificationException;
 use Stripe\Webhook;
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\DependencyInjection\Attribute\Autowire;
+use App\Enum\PaymentStatus;
+use Doctrine\DBAL\LockMode;
+use Psr\Log\LoggerInterface;
+use App\Enum\FulfillmentStatus;
+use App\Service\StockAllocator;
+use App\Entity\StripeWebhookEvent;
+use App\Repository\OrderRepository;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Stripe\Exception\SignatureVerificationException;
 use Symfony\Component\RateLimiter\RateLimiterFactory;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
+use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
 final class StripeWebhookController extends AbstractController
 {
@@ -112,6 +113,7 @@ final class StripeWebhookController extends AbstractController
                     $this->stockAllocator->decrementStockForPaidOrder($order);
 
                     $order->setPaymentStatus(PaymentStatus::Paid);
+                    $order->setFulfillmentStatus(FulfillmentStatus::Preparing); // ✅ SORT DU DRAFT
                     $order->setPaidAt(new \DateTimeImmutable());
                     $order->setPaymentFailureReason(null);
                 }

@@ -1,6 +1,7 @@
 import { displayCompare, initCompare } from "./modules/compare.js";
 import { displayWishlist, initWishlist } from "./modules/wishlist.js";
 import { initCart, displayCart, initCarrierSelector, updateHeaderCart } from "./modules/cart.js";
+import { initCheckoutAddressInline } from "./pages/checkout/address.js";
 
 function safeJsonParse(value, fallback = null) {
   if (!value || typeof value !== "string") return fallback;
@@ -16,6 +17,7 @@ window.addEventListener("load", async () => {
   initCart();
   initCompare();
   initWishlist();
+  initCheckoutAddressInline();
 
   // Compare dataset
   const compareContainer = document.querySelector(".compare_container");
