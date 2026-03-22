@@ -1,7 +1,7 @@
 <div class="col-lg-3 col-md-4 col-6">
 	<div class="product">
 		<div class="product_img">
-			<a href="/product/{{product.slug}}">
+			<a href="/{{product.catalog}}/{{product.slug}}">
 				<img alt="{{product.medias[0].alt}}" src="/assets/images/products/{{product.medias[0]}}">
 			</a>
 			<div class="product_action_box">
@@ -25,9 +25,8 @@
 					</li>
 				</ul>
 			</div>
-
 		</div>
-		<a href="/product/{{product.slug}}">
+		<a href="/{{product.catalog}}/{{product.slug}}">
 			<div class="product_info">
 				<h6 class="product_title">
 					{{product.title}}

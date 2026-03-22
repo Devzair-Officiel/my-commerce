@@ -2,10 +2,7 @@
 
 namespace App\Controller;
 
-use App\Repository\CategoryRepository;
-use App\Repository\PageRepository;
 use App\Repository\ProductRepository;
-use App\Repository\SettingRepository;
 use App\Repository\SlidersRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -24,25 +21,24 @@ final class HomeController extends AbstractController
 
         return $this->render('home/index.html.twig', [
             'sliders' => $sliders,
-            'productBestSeller' => $this->product->findBy(['isBestSeller' => true]),
-            'productNewArrival' => $this->product->findBy(['isNewArrival' => true]),
-            'productFeatured' => $this->product->findBy(['isFeatured' => true]),
-            'productSpecialOffer' => $this->product->findBy(['isSpecialOffer' => true]),
+            'productBestSeller' => $this->product->findBy(['isBestSeller' => true], ['id' => 'DESC']),
+            'productNewArrival' => $this->product->findBy(['isNewArrival' => true], ['id' => 'DESC']),
+            'productAll' => $this->product->findBy(['isAvailable' => true], ['id' => 'DESC']),
+            // 'productSpecialOffer' => $this->product->findBy(['isSpecialOffer' => true]),
+            'seo' => [
+                'title' => 'Miels rares du monde | Nidemiel',
+                'description' => 'Sélection de miels premium : origine, rareté, pureté et goût d’exception.',
+                'canonical' => $this->generateUrl('app_home', [], \Symfony\Component\Routing\Generator\UrlGeneratorInterface::ABSOLUTE_URL),
+                'robots' => 'index,follow',
+                'og' => [
+                    'title' => 'Miels rares du monde | Nidemiel',
+                    'description' => 'Sélection de miels premium : origine, rareté, pureté et goût d’exception.',
+                    'url' => $this->generateUrl('app_home', [], \Symfony\Component\Routing\Generator\UrlGeneratorInterface::ABSOLUTE_URL),
+                    'type' => 'website',
+                    'image' => null,
+                ],
+                'jsonLd' => [],
+            ],
         ]);
     }
-
-    #[Route('/product/{slug}', name: 'app_product_by_slug')]
-    public function showProduct(string $slug)
-    {
-        $product = $this->product->findOneBy(['slug' => $slug]);
-
-        if (!$product) {
-            throw $this->createNotFoundException();
-        }
-
-        return $this->render('product/show.html.twig', [
-            'product' => $product,
-        ]);
-    }
-
 }

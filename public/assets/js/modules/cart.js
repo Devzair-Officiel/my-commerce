@@ -1,4 +1,3 @@
-
 import { fetchJson } from "../utils/fetch.js";
 import { addFlashMessage, formatPrice } from "../utils/ui.js";
 
@@ -162,13 +161,12 @@ export function displayCart(cart) {
             <i class="fa fa-ban" style="font-size:28px;color:#999;"></i>
             </div>`;
 
-
         tbody.insertAdjacentHTML(
             "beforeend",
             `
             <tr>
                 <td class="product-thumbnail">
-                    <a href="/product/${product.slug ?? ""}" >
+                    <a href="/${product.catalog}/${product.slug ?? ""}" >
                         <img width="50" alt="${alt}" src="${src}">
                     </a>
                 </td>
@@ -254,7 +252,7 @@ export async function updateHeaderCart(cart = null) {
             "beforeend",
             `
                 <li class="mini_cart_item">
-                    <a href="/product/${product.slug ?? ""}" class="mini_cart_link">
+                    <a href="/${product.catalog}/${product.slug ?? ""}" class="mini_cart_link">
                         <img width="50" height="50" alt="${alt}" src="${src}">
                         <span class="mini_cart_title">${product.title ?? ""}</span>
                     </a>

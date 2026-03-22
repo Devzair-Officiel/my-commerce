@@ -17,7 +17,9 @@
 									<div class="col-lg-7 col-9">
 										<div class="banner_content overflow-hidden">
 											<h5 data-animation="slideInLeft" data-animation-delay="0.5s" class="mb-3 staggered-animation font-weight-light animated slideInLeft" style="animation-delay: 0.5s; opacity: 1;">{{slider.title}}</h5>
-											<h2 data-animation="slideInLeft" data-animation-delay="1s" class="staggered-animation animated slideInLeft" style="animation-delay: 1s; opacity: 1;"> {{slider.description|striptags}} </h2>
+											<h2 data-animation="slideInLeft" data-animation-delay="1s" class="staggered-animation animated slideInLeft" style="animation-delay: 1s; opacity: 1;">
+												{{slider.description|striptags}}
+											</h2>
 											<a data-animation="slideInLeft" data-animation-delay="1.5s" class="btn btn-fill-out rounded-0 staggered-animation text-uppercase animated slideInLeft" href="{{slider.buttonLink}}" style="animation-delay: 1.5s; opacity: 1;">{{slider.buttonText}}</a>
 										</div>
 									</div>
@@ -42,7 +44,7 @@
 				<div class="row justify-content-center">
 					<div class="col-md-6">
 						<div class="heading_s1 text-center">
-							<h2>Exclusive Products</h2>
+							<h2>Produits exclusifs</h2>
 						</div>
 					</div>
 				</div>
@@ -51,49 +53,47 @@
 						<div class="tab-style1">
 							<ul role="tablist" class="nav nav-tabs justify-content-center">
 								<li class="nav-item">
-									<a id="arrival-tab" data-bs-toggle="tab" href="#arrival" role="tab" aria-controls="arrival" aria-selected="true" class="nav-link active">New
-																													                                        Arrival</a>
+									<a id="all-tab" data-bs-toggle="tab" href="#all" role="tab" aria-controls="all" aria-selected="true" class="nav-link active">Tous les produits</a>
 								</li>
 								<li class="nav-item">
-									<a id="sellers-tab" data-bs-toggle="tab" href="#sellers" role="tab" aria-controls="sellers" aria-selected="false" class="nav-link">Best Sellers</a>
+									<a id="arrival-tab" data-bs-toggle="tab" href="#arrival" role="tab" aria-controls="arrival" aria-selected="false" class="nav-link ">Nouveautés</a>
 								</li>
 								<li class="nav-item">
-									<a id="featured-tab" data-bs-toggle="tab" href="#featured" role="tab" aria-controls="featured" aria-selected="false" class="nav-link">Featured</a>
+									<a id="sellers-tab" data-bs-toggle="tab" href="#sellers" role="tab" aria-controls="sellers" aria-selected="false" class="nav-link">Incontournables</a>
 								</li>
-								<li class="nav-item">
-									<a id="special-tab" data-bs-toggle="tab" href="#special" role="tab" aria-controls="special" aria-selected="false" class="nav-link">Special Offer
-									</a>
-								</li>
+								{# <li class="nav-item">
+									<a id="special-tab" data-bs-toggle="tab" href="#special" role="tab" aria-controls="special" aria-selected="false" class="nav-link">Promotions</a>
+								</li> #}
 							</ul>
 						</div>
 						<div class="tab-content">
-							<div id="arrival" role="tabpanel" aria-labelledby="arrival-tab" class="tab-pane fade show active">
+							<div id="all" role="tabpanel" aria-labelledby="all-tab" class="tab-pane fade show active">
 								<div class="row shop_container">
-								{% for product in productNewArrival %}
-									{% include 'product/display_product.html.twig' %}
-								{% endfor %}
+									{% for product in productAll %}
+										{% include 'product/display_product.html.twig' %}
+									{% endfor %}
+								</div>
+							</div>
+							<div id="arrival" role="tabpanel" aria-labelledby="arrival-tab" class="tab-pane fade ">
+								<div class="row shop_container">
+									{% for product in productNewArrival %}
+										{% include 'product/display_product.html.twig' %}
+									{% endfor %}
 								</div>
 							</div>
 							<div id="sellers" role="tabpanel" aria-labelledby="sellers-tab" class="tab-pane fade">
 								<div class="row shop_container">
-								{% for product in productBestSeller %}
-									{% include 'product/display_product.html.twig' %}
-								{% endfor %}
+									{% for product in productBestSeller %}
+										{% include 'product/display_product.html.twig' %}
+									{% endfor %}
 								</div>
 							</div>
-							<div id="featured" role="tabpanel" aria-labelledby="featured-tab" class="tab-pane fade">
+							{# <div id="special" role="tabpanel" aria-labelledby="special-tab" class="tab-pane fade">
 								<div class="row shop_container">
-								{% for product in productFeatured %}
-									{% include 'product/display_product.html.twig' %}
-								{% endfor %}
-								</div>
-							</div>
-							<div id="special" role="tabpanel" aria-labelledby="special-tab" class="tab-pane fade">
-								<div class="row shop_container">
-								{% for product in productSpecialOffer %}
-									{% include 'product/display_product.html.twig' %}
-								{% endfor %}
-								</div>
+									{% for product in productSpecialOffer %}
+										{% include 'product/display_product.html.twig' %}
+									{% endfor %}
+								</div> #}
 							</div>
 						</div>
 					</div>

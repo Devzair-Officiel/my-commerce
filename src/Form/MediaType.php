@@ -36,7 +36,10 @@ class MediaType extends AbstractType
             ])
             ->add('alt', TextType::class, ['required' => false])
             ->add('position', IntegerType::class, ['required' => false])
-            ->add('isCover', CheckboxType::class, ['required' => false]);
+            ->add('isCover', CheckboxType::class, [
+                'required' => false,
+                'label' => 'Image principale',
+            ]);
     }
 
     public function configureOptions(OptionsResolver $resolver): void

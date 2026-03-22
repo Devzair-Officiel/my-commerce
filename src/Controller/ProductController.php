@@ -2,15 +2,11 @@
 
 namespace App\Controller;
 
-use App\Repository\PageRepository;
-use App\Repository\SettingRepository;
-use App\Repository\SlidersRepository;
-use App\Repository\CategoryRepository;
+use App\Seo\SeoResolver;
 use App\Repository\ProductRepository;
+use App\Repository\CategoryRepository;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
-use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
 final class ProductController extends AbstractController
@@ -18,10 +14,14 @@ final class ProductController extends AbstractController
 
     public function __construct(private ProductRepository $productRepo) {}
     
-    #[Route('/product/{slug}', name: 'app_product_by_slug')]
-    public function showProduct(string $slug)
+    #[Route('/{catalog}/{slug}', name: 'app_product_by_slug', requirements: [
+        'catalog' => '[a-z0-9-]+',
+        'slug' => '[a-z0-9-]+',
+    ])]
+    public function showProduct(string $slug, string $catalog, SeoResolver $seoResolver, Request $request)
     {
-        $product = $this->productRepo->findOneBy(['slug' => $slug]);
+        $product = $this->productRepo->findOneBy(['slug' => $slug, 'catalog' => $catalog]);
+
 
         if (!$product) {
             return $this->render('page/not-fount.html.twig', [
@@ -29,10 +29,16 @@ final class ProductController extends AbstractController
             ]);
         }
 
+        $seo = $seoResolver->forProduct($product, $request);
+
+        // dd($seo);
+
         return $this->render('product/show_product_by_slug.html.twig', [
             'product' => $product,
             'media' => $product->getMediaData(),
             'productBestSeller' => $this->productRepo->findBy(['isBestSeller' => true]),
+            'relatedProducts' => $product->getRelatedProducts(),
+            'seo' => $seo
         ]);
     }
 

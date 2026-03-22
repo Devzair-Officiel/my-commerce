@@ -2,8 +2,13 @@
 <html>
 	<head>
 		<meta charset="UTF-8">
-        <title>{% block title %} {{globalSetting.website_name}} {% endblock %}</title>
-        <link rel="canonical" href="{{ link_canonical|default('https://nidemiel.com') }}" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+		<title>
+			{% block title %}
+				{{globalSetting.website_name}}
+			{% endblock %}
+		</title>
 
 		<link rel="icon" type="image/png" href="{{ asset('favicon/favicon-96x96.png') }}" sizes="96x96">
 		<link rel="icon" type="image/svg+xml" href="{{ asset('favicon/favicon.svg') }}">
@@ -11,13 +16,32 @@
 		<link rel="apple-touch-icon" sizes="180x180" href="{{ asset('favicon/apple-touch-icon.png') }}">
 		<link rel="manifest" href="{{ asset('favicon/site.webmanifest') }}">
 
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <meta name="description" content="{% block meta_description %}Découvrez notre boutique en ligne, Miels, huiles... Que des produits de qualités ! {% endblock %}">
-        <meta property="og:type" content="website" />
-        <meta property="og:url" content="{{ app.request.uri }}" />
-        <meta property="og:site_name" content="nidemiel" />
-        <meta property="og:locale" content="fr_FR" />
-        <meta name="geo.region" content="FR-IDF" />
+		{% set s = seo ?? null %}
+
+		{% if s.description is defined %}<meta name="description" content="{{ s.description }}">
+		{% endif %}
+		{% if s.canonical is defined %}<link rel="canonical" href="{{ s.canonical }}">
+		{% endif %}
+		<meta name="robots" content="{{ s.robots ?? 'index,follow' }}">
+
+
+		<meta property="og:site_name" content="nidemiel"/>
+		<meta property="og:locale" content="fr_FR"/>
+		<meta name="geo.region" content="FR-IDF"/>
+
+		{% if s.og is defined %}
+			<meta property="og:title" content="{{ s.og.title }}">
+			<meta property="og:description" content="{{ s.og.description }}">
+			<meta property="og:url" content="{{ s.og.url }}">
+			<meta property="og:type" content="{{ s.og.type ?? 'website' }}">
+			{% if s.og.image %}<meta property="og:image" content="{{ s.og.image }}">
+			{% endif %}
+		{% endif %}
+
+		{% for schema in s.jsonLd|default([]) %}
+			<script type="application/ld+json">{{ schema|json_encode(constant('JSON_UNESCAPED_SLASHES'))|raw }}</script>
+		{% endfor %}
+
 
 		<link rel="stylesheet" href="/assets/css/animate.css">
 		<link rel="stylesheet" href="/assets/bootstrap/css/bootstrap.min.css"/>
@@ -34,37 +58,33 @@
 		<link rel="stylesheet" href="/assets/css/slick.css"/>
 		<link rel="stylesheet" href="/assets/css/slick-theme.css"/>
 		<link rel="stylesheet" href="/assets/css/style.refactor.css"/>
-		<link rel="stylesheet" href="/assets/css/responsive.css"/> 
-		
-		{% block stylesheets %}{% endblock %}
-		{% block csrf_meta %}{% endblock %}
-		{% block javascripts %}{% endblock %}
-	</head>
+		<link rel="stylesheet" href="/assets/css/responsive.css"/> {% block stylesheets %}{% endblock %}{% block csrf_meta %}{% endblock %}{% block javascripts %}{% endblock %}
+		</head>
 
-	<body>
+		<body>
 
-		{% include("header/index.html.twig") %}
+			{% include("header/index.html.twig") %}
 
-		<div class="notification" style="position: fixed; top: 20px; right: 20px; z-index: 9999;"></div>
+			<div class="notification" style="position: fixed; top: 20px; right: 20px; z-index: 9999;"></div>
 
-		{% block body %}{% endblock %}
+			{% block body %}{% endblock %}
 
-		{% include "footer/index.html.twig" %}
+			{% include "footer/index.html.twig" %}
 
-		<script src="/assets/js/jquery-3.6.0.min.js"></script>
-		<script src="/assets/js/popper.min.js"></script>
-		<script src="/assets/bootstrap/js/bootstrap.min.js"></script>
-		<script src="/assets/owlcarousel/js/owl.carousel.min.js"></script>
-		<script src="/assets/js/magnific-popup.min.js"></script>
-		<script src="/assets/js/waypoints.min.js"></script>
-		<script src="/assets/js/parallax.js"></script>
-		<script src="/assets/js/jquery.countdown.min.js"></script>
-		<script src="/assets/js/imagesloaded.pkgd.min.js"></script>
-		<script src="/assets/js/isotope.min.js"></script>
-		<script src="/assets/js/jquery.dd.min.js"></script>
-		<script src="/assets/js/slick.min.js"></script>
-		<script src="/assets/js/jquery.elevatezoom.js"></script>
-		<script src="/assets/js/scripts.js"></script>
-		<script type="module" src="/assets/js/main.js?v=1.0.3"></script>
-	</body>
-</html>
+			<script src="/assets/js/jquery-3.6.0.min.js"></script>
+			<script src="/assets/js/popper.min.js"></script>
+			<script src="/assets/bootstrap/js/bootstrap.min.js"></script>
+			<script src="/assets/owlcarousel/js/owl.carousel.min.js"></script>
+			<script src="/assets/js/magnific-popup.min.js"></script>
+			<script src="/assets/js/waypoints.min.js"></script>
+			<script src="/assets/js/parallax.js"></script>
+			<script src="/assets/js/jquery.countdown.min.js"></script>
+			<script src="/assets/js/imagesloaded.pkgd.min.js"></script>
+			<script src="/assets/js/isotope.min.js"></script>
+			<script src="/assets/js/jquery.dd.min.js"></script>
+			<script src="/assets/js/slick.min.js"></script>
+			<script src="/assets/js/jquery.elevatezoom.js"></script>
+			<script src="/assets/js/scripts.js"></script>
+			<script type="module" src="/assets/js/main.js?v=1.0.3"></script>
+		</body>
+	</html>

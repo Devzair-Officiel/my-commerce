@@ -2,6 +2,7 @@
 
 namespace App\Entity;
 
+use App\Trait\SeoFieldsTrait;
 use App\Trait\DateTrait;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
@@ -16,7 +17,7 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
 #[Assert\Callback('validatePricing')]
 class Product
 {
-    use DateTrait;
+    use DateTrait, SeoFieldsTrait;
 
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -60,10 +61,16 @@ class Product
     )]
     private ?string $additional_infos = null;
 
+    #[ORM\Column(length: 80, nullable: true)]
+    private ?string $originCountry = null;
+
     #[ORM\Column(nullable: true)]
     #[Assert\PositiveOrZero(message: 'Le stock ne peut pas être négatif.')]
-    // Stock nullable = “non géré / illimité” (selon ta logique). Si tu veux “obligatoire”, remplace par NotNull.
     private ?int $stock = null;
+
+    #[ORM\Column(type: 'integer', nullable: true)]
+    #[Assert\Positive(message: 'Le poids doit être strictement positif.')]
+    private ?int $weightGrams = null;
 
     #[ORM\Column(nullable: true)]
     #[Assert\Positive(message: 'Le prix soldé doit être strictement positif.')]
@@ -80,11 +87,11 @@ class Product
     #[ORM\ManyToMany(targetEntity: Category::class, inversedBy: 'products')]
     private Collection $categories;
 
-    #[ORM\Column(length: 255, nullable: true)]
-    private ?string $brand = null;
+    // #[ORM\Column(length: 255, nullable: true)]
+    // private ?string $brand = null;
 
     #[ORM\Column(nullable: true)]
-    private ?bool $isAvailable = null;
+    private ?bool $isAvailable = true;
 
     #[ORM\Column(nullable: true)]
     private ?bool $isBestSeller = null;
@@ -105,8 +112,11 @@ class Product
     #[ORM\OrderBy(['position' => 'ASC', 'id' => 'ASC'])]
     private Collection $medias;
 
-    #[ORM\ManyToOne(targetEntity: self::class)]
-    private ?self $relatedProducts = null;
+    #[ORM\ManyToMany(targetEntity: self::class)]
+    #[ORM\JoinTable(name: 'product_related')]
+    #[ORM\JoinColumn(name: 'product_id', referencedColumnName: 'id', onDelete: 'CASCADE')]
+    #[ORM\InverseJoinColumn(name: 'related_product_id', referencedColumnName: 'id', onDelete: 'CASCADE')]
+    private Collection $relatedProducts;
 
     /**
      * @var Collection<int, Wishlist>
@@ -114,11 +124,15 @@ class Product
     #[ORM\ManyToMany(targetEntity: Wishlist::class, mappedBy: 'products')]
     private Collection $wishlists;
 
+    #[ORM\Column(length: 100, nullable: true)]
+    private ?string $catalog = 'miels';
+
     public function __construct()
     {
         $this->categories = new ArrayCollection();
         $this->medias = new ArrayCollection();
         $this->wishlists = new ArrayCollection();
+        $this->relatedProducts = new ArrayCollection();
     }
 
     // ---------------------------------------------------------------------
@@ -218,6 +232,17 @@ class Product
         return $this;
     }
 
+    public function getOriginCountry(): ?string
+    {
+        return $this->originCountry;
+    }
+    public function setOriginCountry(?string $v): self
+    {
+        $this->originCountry = $v;
+        return $this;
+    }
+
+
     public function getStock(): ?int
     {
         return $this->stock;
@@ -227,6 +252,17 @@ class Product
     {
         $this->stock = $stock;
 
+        return $this;
+    }
+
+    public function getWeightGrams(): ?int
+    {
+        return $this->weightGrams;
+    }
+
+    public function setWeightGrams(?int $weightGrams): self
+    {
+        $this->weightGrams = $weightGrams;
         return $this;
     }
 
@@ -254,17 +290,17 @@ class Product
         return $this;
     }
 
-    public function getBrand(): ?string
-    {
-        return $this->brand;
-    }
+    // public function getBrand(): ?string
+    // {
+    //     return $this->brand;
+    // }
 
-    public function setBrand(?string $brand): static
-    {
-        $this->brand = $brand;
+    // public function setBrand(?string $brand): static
+    // {
+    //     $this->brand = $brand;
 
-        return $this;
-    }
+    //     return $this;
+    // }
 
     public function isAvailable(): ?bool
     {
@@ -414,6 +450,11 @@ class Product
         );
     }
 
+    public function isInStock(): bool
+    {
+        return $this->stock > 0;
+    }
+
     /**
      * Liste des noms de fichiers médias (utile Twig / front).
      */
@@ -429,6 +470,26 @@ class Product
         }
 
         return $filenames;
+    }
+
+    public function getCoverFilename(): ?string
+    {
+        // 1) on privilégie un media marqué cover
+        foreach ($this->getMedias() as $media) {
+            if ($media->isCover() === true) {
+                $name = $media->getFilename();
+                if (is_string($name) && $name !== '') {
+                    return $name;
+                }
+            }
+        }
+
+        // 2) fallback : première image valide (ton helper existant)
+        foreach ($this->getMediaFilenames() as $name) {
+            return $name;
+        }
+
+        return null;
     }
     
     public function getMediaData(): array
@@ -462,14 +523,28 @@ class Product
         return (string) $this->title;
     }
 
-    public function getRelatedProducts(): ?self
+    /** @return Collection<int, self> */
+    public function getRelatedProducts(): Collection
     {
         return $this->relatedProducts;
     }
 
-    public function setRelatedProducts(?self $relatedProducts): static
+    public function addRelatedProduct(self $product): self
     {
-        $this->relatedProducts = $relatedProducts;
+        if ($product === $this) {
+            return $this; // évite qu’un produit se référence lui-même
+        }
+
+        if (!$this->relatedProducts->contains($product)) {
+            $this->relatedProducts->add($product);
+        }
+
+        return $this;
+    }
+
+    public function removeRelatedProduct(self $product): self
+    {
+        $this->relatedProducts->removeElement($product);
 
         return $this;
     }
@@ -500,6 +575,18 @@ class Product
         if ($this->wishlists->removeElement($wishlist)) {
             $wishlist->removeProduct($this);
         }
+
+        return $this;
+    }
+
+    public function getCatalog(): ?string
+    {
+        return $this->catalog;
+    }
+
+    public function setCatalog(?string $catalog): static
+    {
+        $this->catalog = $catalog;
 
         return $this;
     }

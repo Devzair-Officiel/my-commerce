@@ -78,6 +78,7 @@ final class CompareService
             $result[] = [
                 'id' => $product->getId(),
                 'title' => $product->getTitle(),
+                'catalog' => $product->getCatalog(),
                 'slug' => $product->getSlug(),
                 'images' => $product->getMediaData(),
                 'soldePrice' => $product->getSoldePrice(),

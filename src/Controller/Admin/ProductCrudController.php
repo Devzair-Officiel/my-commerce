@@ -4,6 +4,7 @@ namespace App\Controller\Admin;
 
 use App\Entity\Media;
 use App\Entity\Product;
+use App\Form\MediaType;
 use App\Service\MediaFileManager;
 use Doctrine\ORM\EntityManagerInterface;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
@@ -15,7 +16,9 @@ use EasyCorp\Bundle\EasyAdminBundle\Field\SlugField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\ImageField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\MoneyField;
+use Symfony\Component\String\Slugger\SluggerInterface;
 use EasyCorp\Bundle\EasyAdminBundle\Field\BooleanField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\CountryField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\IntegerField;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use EasyCorp\Bundle\EasyAdminBundle\Field\CollectionField;
@@ -23,9 +26,9 @@ use EasyCorp\Bundle\EasyAdminBundle\Field\TextEditorField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\AssociationField;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
 
-class ProductCrudController extends AbstractCrudController
+final class ProductCrudController extends AbstractCrudController
 {
-    public function __construct(private MediaFileManager $files) {}
+    public function __construct(private readonly MediaFileManager $files, private readonly SluggerInterface $slugger,) {}
 
     public static function getEntityFqcn(): string
     {
@@ -38,8 +41,9 @@ class ProductCrudController extends AbstractCrudController
             ->setEntityLabelInSingular('Produit')
             ->setEntityLabelInPlural('Produits')
             ->setDefaultSort(['id' => 'DESC'])
-            ->setSearchFields(['id', 'title', 'slug'])
-            ->showEntityActionsInlined();
+            ->setSearchFields(['id', 'title', 'slug', 'brand', 'catalog'])
+            ->showEntityActionsInlined()
+            ->setPaginatorPageSize(25);
     }
 
     public function configureActions(Actions $actions): Actions
@@ -52,143 +56,146 @@ class ProductCrudController extends AbstractCrudController
 
     public function configureFields(string $pageName): iterable
     {
-        // ---------- INDEX (liste) : sobre & efficace ----------
+        // =========================
+        // INDEX
+        // =========================
         if (Crud::PAGE_INDEX === $pageName) {
             yield IdField::new('id');
 
-            yield TextField::new('title')->setLabel('Titre');
-            yield MoneyField::new('solde_price')->setLabel('Prix promo')->setCurrency('EUR');
-            yield MoneyField::new('regular_price')->setLabel('Prix normal')->setCurrency('EUR');
-            yield IntegerField::new('stock')->setLabel('Stock');
+            yield ImageField::new('coverFilename', 'Image')
+                ->setBasePath('/assets/images/products')
+                ->setSortable(false);
 
-            yield AssociationField::new('categories')->setLabel('Catégories');
+            yield TextField::new('title', 'Titre');
 
-            // Thumbnail (si ta méthode getMediaFilenames renvoie quelque chose de pertinent)
-            yield ImageField::new('getMediaFilenames', 'Image')
-                ->setBasePath('/assets/images/products');
+            yield MoneyField::new('regular_price', 'Prix normal')->setCurrency('EUR');
+            yield MoneyField::new('solde_price', 'Prix promo')->setCurrency('EUR');
 
-            yield BooleanField::new('isBestSeller')->setLabel('Best seller');
-            yield BooleanField::new('isNewArrival')->setLabel('Nouveauté');
-            yield BooleanField::new('isFeatured')->setLabel('Mis en avant');
-            yield BooleanField::new('isSpecialOffer')->setLabel('Offre spéciale');
+            yield IntegerField::new('stock', 'Stock');
+
+            yield BooleanField::new('isAvailable', 'Disponible');
+            yield BooleanField::new('isBestSeller', 'Incontournable');
+            yield BooleanField::new('isNewArrival', 'Nouveauté');
+            // yield BooleanField::new('isSpecialOffer', 'Offre spéciale');
+
 
             return;
         }
 
-        // ---------- FORMS / DETAIL ----------
-        yield FormField::addTab('Général')
-            ->setIcon('fa fa-box');
 
-        yield FormField::addFieldset('Identité')
-            ->setIcon('fa fa-id-card')
-            ->collapsible();
+        // =========================
+        // FORMS
+        // =========================
+
+        // ----- TAB Général
+        yield FormField::addTab('Général')->setIcon('fa fa-box');
+        yield FormField::addFieldset('Identité')->setIcon('fa fa-id-card')->collapsible();
 
         yield IdField::new('id')->hideOnForm();
 
-        yield TextField::new('title')->setLabel('Titre')->setColumns(6);
+        yield TextField::new('title', 'Titre')->setColumns(7);
 
-        yield SlugField::new('slug')
-            ->setLabel('Slug')
+        yield SlugField::new('slug', 'Slug')
             ->setTargetFieldName('title')
-            ->hideOnIndex()
-            ->setColumns(6);
-
-        yield TextEditorField::new('description')
-            ->setLabel('Description')
-            ->setColumns(12);
-
-        yield FormField::addFieldset('Informations supplémentaires')
-            ->setIcon('fa fa-circle-info')
-            ->renderCollapsed();
-
-        yield TextEditorField::new('additional_infos')
-            ->setLabel('')
-            ->setColumns(12)
+            ->setColumns(5)
             ->hideOnIndex();
 
-        yield FormField::addTab('Prix & Stock')
-            ->setIcon('fa fa-euro-sign');
 
-        yield FormField::addFieldset('Tarification')
-            ->setIcon('fa fa-tags')
-            ->collapsible();
-
-        yield MoneyField::new('solde_price')
-            ->setLabel('Prix promo')
-            ->setCurrency('EUR')
+        // yield TextField::new('brand', 'Marque')->setColumns(4);
+        yield IntegerField::new('weightGrams', 'Poid')
+            ->setHelp('Mettre le poid net en gramme')
             ->setColumns(4);
 
-        yield MoneyField::new('regular_price')
-            ->setLabel('Prix normal')
-            ->setCurrency('EUR')
+        yield TextField::new('catalog', 'Catalogue')
+            ->setColumns(4)
+            ->setHelp('il sera présent dans l\'url, (ex : /huiles/slug), par defaut miels');
+        yield CountryField::new('originCountry', 'Pays d’origine')->setColumns(4);
+
+        // ----- TAB Contenu
+        yield FormField::addTab('Contenu')->setIcon('fa fa-align-left');
+        yield FormField::addFieldset('Descriptions')->setIcon('fa fa-pen')->collapsible();
+
+        yield TextEditorField::new('description', 'Description courte')->setColumns(12);
+        yield TextEditorField::new('more_description', 'Description détaillée')->setColumns(12);
+
+        yield FormField::addFieldset('Infos additionnelles')
+            ->setIcon('fa fa-circle-info')
+            ->collapsible()
+            ->renderCollapsed();
+
+        yield TextEditorField::new('additional_infos', '')->setColumns(12);
+
+        // ----- TAB Prix & Stock
+        yield FormField::addTab('Prix & Stock')->setIcon('fa fa-euro-sign');
+        yield FormField::addFieldset('Tarification')->setIcon('fa fa-tags')->collapsible();
+
+        yield MoneyField::new('regular_price', 'Prix normal')->setCurrency('EUR')->setColumns(4);
+        yield MoneyField::new('solde_price', 'Prix promo')->setCurrency('EUR')->setColumns(4);
+
+        yield IntegerField::new('stock', 'Stock')
+            ->setHelp('Vide = stock non géré / illimité (selon ta règle actuelle).')
             ->setColumns(4);
 
-        yield IntegerField::new('stock')
-            ->setLabel('Stock')
-            ->setColumns(4);
+        // ----- TAB Relations
+        yield FormField::addTab('Relations')->setIcon('fa fa-folder-tree');
+        yield FormField::addFieldset('Catégories')->setIcon('fa fa-layer-group')->collapsible();
 
-        yield FormField::addTab('Catégories & Relations')
-            ->setIcon('fa fa-folder-tree');
+        yield AssociationField::new('categories', 'Catégories')->setRequired(true);
 
-        yield FormField::addFieldset('Catégorisation')
-            ->setIcon('fa fa-layer-group')
-            ->collapsible();
-
-        yield AssociationField::new('categories')
-            ->setLabel('Catégories')
-            ->setRequired(true);
-
-        yield FormField::addFieldset('Produits liés')
+        yield FormField::addFieldset('Produit lié')
             ->setIcon('fa fa-link')
             ->collapsible()
             ->renderCollapsed();
 
-        yield AssociationField::new('relatedProducts')
-            ->setLabel('Produits liés');
+        yield AssociationField::new('relatedProducts', 'Produit lié');
 
-        yield FormField::addTab('Médias')
-            ->setIcon('fa fa-images');
+        // ----- TAB Médias
+        yield FormField::addTab('Médias')->setIcon('fa fa-images');
 
-        yield FormField::addFieldset('Images du produit')
-            ->setIcon('fa fa-camera')
-            ->collapsible();
-
-        yield ImageField::new('getMediaFilenames', 'Images')
+        yield FormField::addFieldset('Aperçu')->setIcon('fa fa-image')->collapsible();
+        yield ImageField::new('coverFilename', 'Image principale')
             ->setBasePath('/assets/images/products')
             ->hideOnForm();
 
-        yield CollectionField::new('medias')
-            ->setLabel('Ajouter / modifier des médias')
-            ->setEntryType(\App\Form\MediaType::class)
+        yield FormField::addFieldset('Galerie')->setIcon('fa fa-camera')->collapsible();
+
+        yield CollectionField::new('medias', 'Images')
+            ->setEntryType(MediaType::class)
             ->onlyOnForms()
-            ->setFormTypeOptions([
-                'by_reference' => false,
-            ])
+            ->setFormTypeOptions(['by_reference' => false])
             ->allowAdd()
             ->allowDelete()
             ->setEntryIsComplex(true)
             ->renderExpanded(true);
 
-        yield FormField::addTab('Visibilité')
-            ->setIcon('fa fa-eye');
+        // ----- TAB SEO & Visibilité
+        yield FormField::addTab('SEO & Visibilité')->setIcon('fa fa-bullhorn');
 
-        yield FormField::addFieldset('Badges')
-            ->setIcon('fa fa-badge-check') // si cette icône n’existe pas chez toi, remplace par 'fa fa-certificate'
+        yield FormField::addFieldset('Visibilité')->setIcon('fa fa-eye')->collapsible();
+        yield BooleanField::new('isAvailable', 'Disponible')->setColumns(3);
+        yield BooleanField::new('isBestSeller', 'Best seller')->setColumns(3);
+        yield BooleanField::new('isNewArrival', 'Nouveauté')->setColumns(3);
+        yield BooleanField::new('isFeatured', 'Mis en avant')->setColumns(3);
+        yield BooleanField::new('isSpecialOffer', 'Offre spéciale')->setColumns(3);
+
+        yield FormField::addFieldset('SEO')
+            ->setIcon('fa fa-magnifying-glass')
             ->collapsible();
 
-        yield BooleanField::new('isBestSeller')->setLabel('Best seller');
-        yield BooleanField::new('isNewArrival')->setLabel('Nouveauté');
-        yield BooleanField::new('isFeatured')->setLabel('Mis en avant');
-        yield BooleanField::new('isSpecialOffer')->setLabel('Offre spéciale');
+        yield TextField::new('seoTitle', 'SEO title')->setColumns(6);
+        yield TextField::new('seoDescription', 'SEO description')->setColumns(6);
+        yield BooleanField::new('seoNoindex', 'Noindex')->setColumns(3);
+        yield TextField::new('seoOgImage', 'OG image')->setColumns(6);
+        yield TextField::new('seoCanonicalOverride', 'Canonical override')->setColumns(6);
     }
 
-    public function persistEntity(EntityManagerInterface $em, $entityInstance): void
+    public function persistEntity(EntityManagerInterface $em, $entity): void
     {
-        if ($entityInstance instanceof Product) {
-            $this->handleMediaUploads($entityInstance);
+        if ($entity instanceof Product) {
+            $this->handleMediaUploads($entity);
         }
 
-        parent::persistEntity($em, $entityInstance);
+        parent::persistEntity($em, $entity);
     }
 
     public function updateEntity(EntityManagerInterface $em, $entityInstance): void
@@ -202,31 +209,53 @@ class ProductCrudController extends AbstractCrudController
 
     private function handleMediaUploads(Product $product): void
     {
+        // Optionnel mais très utile: garantir UNE seule cover
+        $coverAlreadySet = false;
+
         foreach ($product->getMedias() as $media) {
             if (!$media instanceof Media) {
                 continue;
             }
 
-            // 1) Si l’admin a ajouté une ligne media mais sans fichier et sans filename => on la supprime
             $file = $media->getUpload();
             $hasFile = $file instanceof UploadedFile;
-            $hasFilename = (string) $media->getFilename() !== '';
+            $hasFilename = is_string($media->getFilename()) && $media->getFilename() !== '';
 
+            // ligne vide => suppression
             if (!$hasFile && !$hasFilename) {
-                $product->removeMedia($media); // ou removeMedia() selon ton nom de méthode
+                $product->removeMedia($media);
                 continue;
             }
 
-            // 2) Si un fichier est uploadé => on génère filename et on l’écrit en base
             if ($hasFile) {
-                $newFilename = $this->files->storeProductFile($file, $product); // à implémenter
+                $newFilename = $this->files->storeProductFile($file, $product);
                 $media->setFilename($newFilename);
-                $media->setUpload(null); // optionnel, évite de garder l’objet en mémoire
+                $media->setUpload(null);
             }
 
-            // 3) sécurité relation
+            // relation
             if ($media->getProduct() !== $product) {
                 $media->setProduct($product);
+            }
+
+            // unicité cover (soft)
+            if ($media->isCover() === true) {
+                if ($coverAlreadySet) {
+                    $media->setIsCover(false);
+                } else {
+                    $coverAlreadySet = true;
+                }
+            }
+        }
+
+        // fallback: si aucune cover explicitement, on peut mettre la première image comme cover
+        if (!$coverAlreadySet) {
+            foreach ($product->getMedias() as $media) {
+                $name = $media->getFilename();
+                if (is_string($name) && $name !== '') {
+                    $media->setIsCover(true);
+                    break;
+                }
             }
         }
     }

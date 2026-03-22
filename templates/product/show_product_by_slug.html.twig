@@ -8,7 +8,7 @@
 
 {% block meta_description %}
 	Découvrez nos produits bio en ligne, limitrophe
-			et partout en France,
+					et partout en France,
 	{# {{ product.metaDescription }} #}
 {% endblock %}
 
@@ -17,7 +17,7 @@
 {% block body %}
 
 	{% include "page_head/index.html.twig" with {'url': "/product/category/" ~ product.categories[0].slug, 'page':
-product.categories[0].slug, 'page_name': product.title } %}
+	product.categories[0].slug, 'page_name': product.title } %}
 
 	<div class="main_content">
 		<div class="section">
@@ -26,28 +26,24 @@ product.categories[0].slug, 'page_name': product.title } %}
 					<div class="col-lg-6 col-md-11 mb-4 mb-md-3">
 						<div class="product-image">
 							<div class="product_img_box">
-								<img id="product_img" alt="{{ media[0].alt }}" src="/assets/images/products/{{ media[0].filename }}">
+								<img id="product_img" alt="{{ product.medias[0].alt }}" src="/assets/images/products/{{ product.medias[0].filename }}">
 								<a title="Zoom" class="product_img_zoom">
 									<span class="linearicons-zoom-in"></span>
 								</a>
 							</div>
-							<div id="pr_item_gallery" data-slides-to-show="4" data-slides-to-scroll="1" data-infinite="false" class="product_gallery_item slick_slider slick-initialized slick-slider">
-								<div aria-live="polite" class="slick-list draggable">
-									<div class="slick-track" role="listbox" style="opacity: 1; width: 556px; left: 0px;">
-										{% for image in product.medias %}
-											<div class="item slick-slide slick-current slick-active" data-slick-index="0" aria-hidden="false" tabindex="-1" role="option" aria-describedby="slick-slide20" style="width: 129px;">
-												<a href="#" class="product_gallery_item active" data-image="/assets/images/products/{{ media[0].filename }}" data-zoom-image="/assets/images/products/{{ media[0].filename }}" tabindex="0">
-													<img alt="image small - {{ media[0].alt }}" src="/assets/images/products/{{ media[0].filename }}">
-												</a>
 
-											</div>
-										{% endfor %}
+							<div id="pr_item_gallery" data-slides-to-show="4" data-slides-to-scroll="1" data-infinite="false" class="product_gallery_item slick_slider">
 
+								{% for image in product.medias %}
+									<div class="item">
+										<a href="#" class="product_gallery_item {% if loop.first %}active{% endif %}" data-image="/assets/images/products/{{ image.filename }}" data-zoom-image="/assets/images/products/{{ image.filename }}">
+											<img alt="image small - {{ image.alt }}" src="/assets/images/products/{{ image.filename }}">
+										</a>
 									</div>
-								</div>
-
+								{% endfor %}
 							</div>
 						</div>
+
 					</div>
 					<div class="col-lg-6 col-md-11">
 						<div class="pr_detail">
@@ -67,16 +63,16 @@ product.categories[0].slug, 'page_name': product.title } %}
 									{% endif %}
 								</div>
 								{# <div class="rating_wrap">
-									{% set totalScoring = 0 %}
-									{% for opinion in opinions %}
-										{% set totalScoring = totalScoring + opinion.scoring %}
-									{% endfor %}
-									<div class="rating">
-										<div class="product_rate" style="width: {{ opinions|length > 0 ? ((totalScoring / opinions|length) / 5) * 100 : 0 }}%;"></div>
-
-									</div>
-									<span class="rating_num">({{ opinions|length }})</span>
-								</div> #}
+																	{% set totalScoring = 0 %}
+																	{% for opinion in opinions %}
+																		{% set totalScoring = totalScoring + opinion.scoring %}
+																	{% endfor %}
+																	<div class="rating">
+																		<div class="product_rate" style="width: {{ opinions|length > 0 ? ((totalScoring / opinions|length) / 5) * 100 : 0 }}%;"></div>
+								
+																	</div>
+																	<span class="rating_num">({{ opinions|length }})</span>
+																</div> #}
 								<div class="pr_desc m-3">
 									<p>{{ product.description | raw}}
 									</p>
@@ -207,17 +203,19 @@ product.categories[0].slug, 'page_name': product.title } %}
 					</div>
 				</div>
 				<div class="row shop_container">
-					<h3 class="my-4">Les Best Seller</h3>
-					{% for product in productBestSeller %}
-						{% include "product/display_product.html.twig" %}
-					{% endfor %}
+					{% if relatedProducts is not empty %}
+						<h3 class="my-4">Vous apprécierez également</h3>
+						<div class="row shop_container">
+							{% for related in relatedProducts %}
+								{% include "product/display_product.html.twig" with { product: related } only %}
+							{% endfor %}
+						</div>
+					{% endif %}
 				</div>
 				<div class="row justify-content-center mt-4">
 
 					<p class="col-9 text-center">
-						Ce sont des produits d'exception qui traversent les frontières pour arriver à
-																		et partout en France. 
-																		                    Profitez des meilleurs
+						Ce sont des produits d'exception qui traversent les frontières pour arriver à et partout en France. Profitez des meilleurs
 						<strong>miels</strong>,
 						<strong>huiles</strong>
 						et autres produits d'exception sur le marché actuellement.

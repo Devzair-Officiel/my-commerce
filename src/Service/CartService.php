@@ -184,6 +184,8 @@ final class CartService
      *       regularPrice:mixed,
      *       displayPrice:int
      *     },
+     *     weight_grams: int
+     *     line_weight_grams: int
      *     quantity:int,
      *     sub_total_ht:int,
      *     taxe:int,
@@ -208,6 +210,7 @@ final class CartService
             'sub_total_ht' => 0,
             'taxe' => 0,
             'cart_count' => 0,
+            'total_weight_grams' => 0,
             'quantity' => 0,
         ];
 
@@ -250,6 +253,11 @@ final class CartService
                 continue;
             }
 
+            $unitWeight = max(0, (int) ($product->getWeightGrams() ?? 0));
+            $lineWeight = $unitWeight * $qty;
+
+            $result['total_weight_grams'] += $lineWeight;
+
             $unitPrice = $product->isOnSale() && $product->getSoldePrice() !== null
                 ? (int) $product->getSoldePrice()
                 : (int) $product->getRegularPrice();
@@ -263,6 +271,7 @@ final class CartService
                 'product' => [
                     'id' => (int) $product->getId(),
                     'title' => $product->getTitle(),
+                    'catalog' => $product->getCatalog(),
                     'description' => $product->getDescription(),
                     'slug' => $product->getSlug(),
                     'image' => $product->getMediaData(),
@@ -272,13 +281,14 @@ final class CartService
                     'displayPrice' => $unitPrice,
                 ],
                 'quantity' => $qty,
+                'weight_grams' => $unitWeight,
+                'line_weight_grams' => $lineWeight,
                 'sub_total_ht' => $split['ht'],
                 'taxe' => $split['tax'],
                 'sub_total' => $lineTotal,
             ];
 
             $result['cart_count'] += $qty;
-            $result['quantity'] += $qty;
         }
 
         // Nettoyage session si produits invalides/supprimés

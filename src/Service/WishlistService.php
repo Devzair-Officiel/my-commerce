@@ -86,6 +86,7 @@ class WishlistService
                 'id' => $product->getId(),
                 'title' => $product->getTitle(),
                 'slug' => $product->getSlug(),
+                'catalog' => $product->getCatalog(),
                 'images' => $product->getMediaData(),
                 'soldePrice' => $product->getSoldePrice(),
                 'regularPrice' => $product->getRegularPrice(),

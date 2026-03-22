@@ -106,7 +106,7 @@
 												{% for product in globalMegaProducts[category.id] %}
 													{% if loop.index < 6 %}
 														<li>
-															<a class="dropdown-item nav-link nav_item" href="/product/{{ product.slug }}">{{ product.title }}</a>
+															<a class="dropdown-item nav-link nav_item" href="/{{product.catalog}}/{{ product.slug }}">{{ product.title }}</a>
 														</li>
 													{% endif %}
 												{% endfor %}
@@ -148,7 +148,7 @@
 							<span class="close-search" aria-label="Fermer la recherche">
 								<i class="ion-ios-close-empty"></i>
 							</span>
-							<form action="/produits-paris/search" method="get">
+							<form action="/product/search" method="get">
 								<input type="text" name="term" placeholder="Rechercher..." class="form-control" aria-label="Champ de recherche">
 								<button type="submit" class="search_icon" aria-label="Valider la recherche">
 									<i class="ion-ios-search-strong"></i>
