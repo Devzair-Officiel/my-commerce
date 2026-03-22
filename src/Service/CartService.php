@@ -289,6 +289,7 @@ final class CartService
             ];
 
             $result['cart_count'] += $qty;
+            $result['quantity'] += $qty;
         }
 
         // Nettoyage session si produits invalides/supprimés

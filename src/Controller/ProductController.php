@@ -14,7 +14,7 @@ final class ProductController extends AbstractController
 
     public function __construct(private ProductRepository $productRepo) {}
     
-    #[Route('/{catalog}/{slug}', name: 'app_product_by_slug', requirements: [
+    #[Route('/produits/{catalog}/{slug}', name: 'app_product_by_slug', requirements: [
         'catalog' => '[a-z0-9-]+',
         'slug' => '[a-z0-9-]+',
     ])]
@@ -30,8 +30,6 @@ final class ProductController extends AbstractController
         }
 
         $seo = $seoResolver->forProduct($product, $request);
-
-        // dd($seo);
 
         return $this->render('product/show_product_by_slug.html.twig', [
             'product' => $product,
@@ -103,8 +101,6 @@ final class ProductController extends AbstractController
     #[Route('/error', name: 'app_error')]
     public function errorPage()
     {
-        return $this->render('page/not-fount.html.twig', [
-            'controller_name' => 'PageController'
-        ]);
+        return $this->render('page/not-fount.html.twig');
     }
 }

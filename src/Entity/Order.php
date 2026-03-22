@@ -92,6 +92,10 @@ class Order
     #[Assert\PositiveOrZero]
     private int $carrierPriceSnapshotCents = 0;
 
+    #[ORM\Column(nullable: true)]
+    #[Assert\PositiveOrZero]
+    private ?int $totalWeightGrams = 0;
+
     /**
      * Paiement : relation + snapshot.
      */
@@ -268,6 +272,18 @@ class Order
         return $this;
     }
 
+    public function getTotalWeightGrams(): int
+    {
+        return $this->totalWeightGrams;
+    }
+
+    public function setTotalWeightGrams(int $totalWeightGrams): self
+    {
+        $this->totalWeightGrams = max(0, $totalWeightGrams);
+
+        return $this;
+    }
+
     public function getPaymentMethod(): ?PaymentMethod
     {
         return $this->paymentMethod;
@@ -377,5 +393,12 @@ class Order
         }
 
         return $this;
+    }
+
+    // METHODE UTILITAIRE //
+
+    public function getTotalWeightKgFormatted(): string
+    {
+        return number_format($this->totalWeightGrams / 1000, 3, ',', ' ') . ' kg';
     }
 }

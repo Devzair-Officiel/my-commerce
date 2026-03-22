@@ -203,10 +203,12 @@ class CheckoutController extends AbstractController
         $itemsTotalHtCents = (int) ($cart['sub_total_ht'] ?? 0);
         $taxAmountCents = isset($cart['taxe']) ? (int) $cart['taxe'] : null;
         $orderTotalTtcCents = (int) ($cart['sub_total_with_carrier'] ?? 0);
+        $totalWeightGrams = (int) ($cart['total_weight_grams'] ?? 0);
 
         $order->setItemsTotalHtCents($itemsTotalHtCents);
         $order->setTaxAmountCents($taxAmountCents);
         $order->setOrderTotalTtcCents($orderTotalTtcCents);
+        $order->setTotalWeightGrams($totalWeightGrams);
 
         // Carrier snapshot (relation Carrier optionnelle si tu l'as mise en place)
         $carrierName = (string) (($cart['carrier']['name'] ?? '') ?: '');
@@ -232,24 +234,29 @@ class CheckoutController extends AbstractController
         foreach (($cart['items'] ?? []) as $item) {
             $product = $item['product'] ?? [];
             $qty = (int) ($item['quantity'] ?? 0);
+
             if ($qty <= 0) {
                 continue;
             }
 
-            $unitPriceCents = (int) ($product['soldePrice'] ?? $product['regularPrice'] ?? 0);
+            $unitPriceCents = (int) ($product['displayPrice'] ?? 0);
             $lineTotalCents = (int) ($item['sub_total'] ?? ($unitPriceCents * $qty));
             $lineTaxCents = isset($item['taxe']) ? (int) $item['taxe'] : null;
 
             $detail = new OrderDetails();
             $detail->setProductId(isset($product['id']) ? (int) $product['id'] : null);
             $detail->setProductName((string) ($product['title'] ?? ''));
-            $detail->setProductDescription(isset($product['description']) ? mb_substr((string) $product['description'], 0, 2000) : null);
+            $detail->setProductDescription(
+                isset($product['description'])
+                    ? mb_substr((string) $product['description'], 0, 2000)
+                    : null
+            );
             $detail->setUnitPriceCents($unitPriceCents);
             $detail->setQuantity($qty);
             $detail->setTaxAmountCents($lineTaxCents);
             $detail->setLineTotalCents($lineTotalCents);
 
-            $order->addOrderDetail($detail); // maintient la relation
+            $order->addOrderDetail($detail);
         }
 
         $this->em->persist($order);

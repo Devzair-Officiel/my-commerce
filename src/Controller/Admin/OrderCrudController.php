@@ -91,6 +91,8 @@ final class OrderCrudController extends AbstractCrudController
             ->setStoredAsCents(true)
             ->setCurrencyPropertyPath('currency');
 
+        $weight = TextField::new('totalWeightKgFormatted', 'Poids total');
+
         $carrierPrice = MoneyField::new('carrierPriceSnapshotCents', 'Frais de port')
             ->setStoredAsCents(true)
             ->setCurrencyPropertyPath('currency');
@@ -115,6 +117,7 @@ final class OrderCrudController extends AbstractCrudController
                 $fulfillmentStatus,
                 $userEmail,
                 TextField::new('shippingAddress', 'Livraison')->setMaxLength(80),
+                $weight,
                 $orderTotal,
                 $paidAt,
                 $paymentReference,
@@ -147,6 +150,7 @@ final class OrderCrudController extends AbstractCrudController
             $carrierPrice,
             $orderTotal,
             $currency,
+            $weight,
 
             FormField::addTab('Transport & paiement'),
             $carrierName,
