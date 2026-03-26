@@ -5,6 +5,7 @@ namespace App\Entity;
 use App\Trait\DateTrait;
 use Doctrine\ORM\Mapping as ORM;
 use App\Repository\CategoryRepository;
+use App\Trait\SeoFieldsTrait;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\Collections\ArrayCollection;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
@@ -17,7 +18,7 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
 #[Assert\Callback('validateMegaRequiresProducts')]
 class Category
 {
-    use DateTrait;
+    use DateTrait, SeoFieldsTrait;
 
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -30,7 +31,12 @@ class Category
     #[ORM\Column(length: 255)]
     private ?string $slug = null;
 
-    #[ORM\Column(length: 255, nullable: true)]
+    // petit texte au-dessus des produits
+    #[ORM\Column(type: 'text', nullable: true)]
+    private ?string $intro = null;
+
+    // bloc SEO plus complet
+    #[ORM\Column(type: 'text', nullable: true)]
     private ?string $description = null;
 
     #[ORM\Column(nullable: true)]
@@ -93,6 +99,18 @@ class Category
     public function setSlug(string $slug): static
     {
         $this->slug = $slug;
+
+        return $this;
+    }
+
+    public function getIntro(): ?string
+    {
+        return $this->intro;
+    }
+
+    public function setintro(?string $intro): static
+    {
+        $this->intro = $intro;
 
         return $this;
     }

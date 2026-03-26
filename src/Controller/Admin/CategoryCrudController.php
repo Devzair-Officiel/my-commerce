@@ -84,9 +84,9 @@ final class CategoryCrudController extends AbstractCrudController
             ->hideOnIndex()
             ->setHelp('Généré automatiquement depuis le titre.');
 
-        yield TextEditorField::new('description', 'Description')
-            ->setFormTypeOption('attr', ['rows' => 8])
-            ->setHelp('Optionnel, utile pour le SEO.');
+        
+
+        
 
         // ---------- COLONNE DROITE (AFFICHAGE) ----------
         yield FormField::addColumn(6);
@@ -97,6 +97,17 @@ final class CategoryCrudController extends AbstractCrudController
 
         yield BooleanField::new('isMega', 'Mega menu')
             ->setHelp('Affiche la catégorie dans le mega menu.');
+
+        
+        yield FormField::addColumn(6);
+        yield TextEditorField::new('intro', 'Introduction')
+            ->setFormTypeOption('attr', ['rows' => 8])
+            ->setHelp('Optionnel, petit texte au-dessus des produits.');
+
+        yield FormField::addColumn(6);
+        yield TextEditorField::new('description', 'Description')
+            ->setFormTypeOption('attr', ['rows' => 8])
+            ->setHelp('Optionnel, bloc SEO plus complet sous la grille.');
 
         // =========================
         // TAB MEDIA
@@ -113,6 +124,19 @@ final class CategoryCrudController extends AbstractCrudController
             ->setUploadedFileNamePattern('[slug]-[timestamp].[extension]')
             ->setRequired(false)
             ->setHelp('PNG ou JPG – carré recommandé.');
+
+        // ----- TAB SEO & Visibilité
+        yield FormField::addTab('SEO')->setIcon('fa fa-bullhorn');
+
+        yield FormField::addFieldset('SEO')
+            ->setIcon('fa fa-magnifying-glass')
+            ->collapsible();
+
+        yield TextField::new('seoTitle', 'SEO title')->setColumns(6);
+        yield TextField::new('seoDescription', 'SEO description')->setColumns(6);
+        yield BooleanField::new('seoNoindex', 'Noindex')->setColumns(3);
+        yield TextField::new('seoOgImage', 'OG image')->setColumns(6);
+        yield TextField::new('seoCanonicalOverride', 'Canonical override')->setColumns(6);
     }
 
     public function createEntity(string $entityFqcn): Category

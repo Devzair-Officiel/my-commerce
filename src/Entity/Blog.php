@@ -8,12 +8,13 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use App\Repository\BlogRepository;
+use App\Trait\SeoFieldsTrait;
 
 #[ORM\Entity(repositoryClass: BlogRepository::class)]
 #[ORM\HasLifecycleCallbacks]
 class Blog
 {
-    use DateTrait;
+    use DateTrait, SeoFieldsTrait;
 
     #[ORM\Id]
     #[ORM\GeneratedValue]

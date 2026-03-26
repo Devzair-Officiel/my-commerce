@@ -94,7 +94,7 @@ final class ProductController extends AbstractController
         // Passez les product à votre vue
         return $this->render('product/category.html.twig', [
             'products' => $products,
-            'category' => $category->getTitle(),
+            'category' => $category,
         ]);
     }
 

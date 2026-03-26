@@ -1,18 +1,46 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}{{globalSetting.website_name}} | {{ category }}
+{% block title %}
+	{{ category.title }} – Acheter du miel naturel en ligne | {{ globalSetting.website_name }}
 {% endblock %}
 
 {% block body %}
-	{% include "page_head/index.html.twig" with {'page_name': category } %}
-	<div class="container my-5">
-		<div id="arrival" role="tabpanel" aria-labelledby="arrival-tab" class="tab-pane fade show active">
+	{% include "page_head/index.html.twig" with {'page_name': category.title } %}
+
+	<main class="category-page">
+		<section class="container my-5" aria-labelledby="category-title">
+			<div class="row justify-content-center">
+				<div class="col-lg-10 col-xl-8 text-center mb-4">
+					<h1 id="category-title">{{ category.title }}</h1>
+
+					<p class="lead">
+						{{ category.intro | raw}}
+					</p>
+				</div>
+			</div>
+
 			<div class="row shop_container">
 				{% for product in products %}
 					{% include "product/display_product.html.twig" %}
+				{% else %}
+					<div class="col-12">
+						<p class="text-center">Aucun produit disponible dans cette catégorie pour le moment.</p>
+					</div>
 				{% endfor %}
 			</div>
-		</div>
-	</div>
+		</section>
 
+		<section class="container pb-5" aria-labelledby="category-seo-title">
+			<div class="row justify-content-center">
+				<div class="col-lg-10 col-xl-8">
+					<h2 id="category-seo-title" class="text-center mb-4">
+						Acheter du miel naturel en ligne
+					</h2>
+                    
+                    {{ category.description|raw }}
+
+				</div>
+			</div>
+		</section>
+	</main>
 {% endblock %}

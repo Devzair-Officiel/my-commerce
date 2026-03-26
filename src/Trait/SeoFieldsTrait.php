@@ -7,30 +7,45 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 trait SeoFieldsTrait
 {
-    #[ORM\Column(length: 70)]
-    #[Assert\NotBlank(message: 'Le titre est obligatoire.')]
+    #[ORM\Column(length: 70, nullable: true)]
+    #[Assert\Length(
+        max: 70,
+        maxMessage: 'Le meta title ne doit pas dépasser {{ limit }} caractères.'
+    )]
     private ?string $seoTitle = null;
 
-    #[ORM\Column(length: 170)]
-    #[Assert\NotBlank(message: 'La description est obligatoire.')]
+    #[ORM\Column(length: 170, nullable: true)]
+    #[Assert\Length(
+        max: 170,
+        maxMessage: 'La meta description ne doit pas dépasser {{ limit }} caractères.'
+    )]
     private ?string $seoDescription = null;
 
     #[ORM\Column(options: ['default' => false])]
     private bool $seoNoindex = false;
 
     #[ORM\Column(length: 255, nullable: true)]
-    private ?string $seoOgImage = null; // URL ou chemin public
+    #[Assert\Length(
+        max: 255,
+        maxMessage: 'L’image Open Graph ne doit pas dépasser {{ limit }} caractères.'
+    )]
+    private ?string $seoOgImage = null;
 
     #[ORM\Column(length: 255, nullable: true)]
+    #[Assert\Length(
+        max: 255,
+        maxMessage: 'L’URL canonique ne doit pas dépasser {{ limit }} caractères.'
+    )]
     private ?string $seoCanonicalOverride = null;
 
     public function getSeoTitle(): ?string
     {
         return $this->seoTitle;
     }
+
     public function setSeoTitle(?string $v): self
     {
-        $this->seoTitle = $v;
+        $this->seoTitle = $v !== null ? trim($v) : null;
         return $this;
     }
 
@@ -38,9 +53,10 @@ trait SeoFieldsTrait
     {
         return $this->seoDescription;
     }
+
     public function setSeoDescription(?string $v): self
     {
-        $this->seoDescription = $v;
+        $this->seoDescription = $v !== null ? trim($v) : null;
         return $this;
     }
 
@@ -48,6 +64,7 @@ trait SeoFieldsTrait
     {
         return $this->seoNoindex;
     }
+
     public function setSeoNoindex(bool $v): self
     {
         $this->seoNoindex = $v;
@@ -58,9 +75,10 @@ trait SeoFieldsTrait
     {
         return $this->seoOgImage;
     }
+
     public function setSeoOgImage(?string $v): self
     {
-        $this->seoOgImage = $v;
+        $this->seoOgImage = $v !== null ? trim($v) : null;
         return $this;
     }
 
@@ -68,9 +86,10 @@ trait SeoFieldsTrait
     {
         return $this->seoCanonicalOverride;
     }
+
     public function setSeoCanonicalOverride(?string $v): self
     {
-        $this->seoCanonicalOverride = $v;
+        $this->seoCanonicalOverride = $v !== null ? trim($v) : null;
         return $this;
     }
 }
