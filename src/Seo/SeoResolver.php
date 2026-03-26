@@ -52,7 +52,7 @@ final class SeoResolver
         $description = $product->getSeoDescription();
         if (!$description) {
             $bits = [];
-            $bits[] = 'Miel premium';
+            $bits[] = 'Miel 100% naturel';
             if ($product->getOriginCountry()) $bits[] = 'origine ' . $product->getOriginCountry();
             $bits[] = 'pureté et goût d’exception';
             $description = ucfirst(implode(', ', array_unique($bits))) . '.';

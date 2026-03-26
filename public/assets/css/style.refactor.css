@@ -112,7 +112,6 @@ img[id^="product"] {
 
 p {
 	color: var(--nm-text);
-	line-height: 28px;
 	margin-bottom: 25px;
 }
 
@@ -776,6 +775,7 @@ button:focus:not(:focus-visible) {
 .background_bg {
 	background-position: center center;
 	background-size: cover;
+    background-repeat: no-repeat;
 }
 
 .bg_size_auto {
@@ -1033,6 +1033,7 @@ button:focus:not(:focus-visible) {
 	font-weight: 700;
 	margin: 0;
 	text-transform: capitalize;
+    margin-bottom: 15px;
 }
 
 .heading_s2 {
@@ -3290,7 +3291,7 @@ input.text {
 .banner_section.shop_el_slider .carousel-item,
 .banner_section.shop_el_slider .banner_content_wrap,
 .banner_section.shop_el_slider .banner_content_wrap .carousel-item {
-	height: 500px;
+	height: 700px;
 }
 
 .banner_section.slide_wrap,
@@ -3473,8 +3474,9 @@ input.text {
 
 .banner_content p,
 .banner_content2 p {
-	margin-bottom: 30px;
+	margin-bottom: -5px;
 }
+
 
 .banner_content2 h2 {
 	font-size: 70px;

@@ -1246,9 +1246,7 @@ footer .widget_title {
 	padding: 2px 14px;
 	font-size: 12px;
 }
-.btn-fill-out {
-	width: -webkit-fill-available;
-}
+
 p {
 	margin-bottom: 15px;
 }
@@ -1560,7 +1558,7 @@ p {
 	font-size: 30px;
 }
 .banner_content p {
-	margin-bottom: 25px;
+	margin-bottom: 5px;
 }
 .banner_content2 h2 {
 	font-size: 26px;

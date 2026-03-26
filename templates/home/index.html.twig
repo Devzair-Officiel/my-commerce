@@ -1,106 +1,156 @@
 {% extends 'base.html.twig' %}
 
 {% block title %}
-	Accueil
+	Acheter du miel naturel en ligne |
+	{{ globalSetting.website_name }}
 {% endblock %}
 
 {% block body %}
 
-	<div class="banner_section slide_medium shop_banner_slider staggered-animation-wrap">
-		<div id="carouselExampleControls" data-bs-ride="carousel" class="carousel slide carousel-fade light_arrow">
-			<div class="carousel-inner">
-				{% for slider in sliders %}
-					<div class="lazyload {{loop.index < 2 ? 'carousel-item background_bg  active' : 'carousel-item background_bg'}}" class="carousel-item active background_bg" data-img-src="/assets/images/sliders/{{slider.mediaSlider}}" style="background-image: url(&quot;/assets/images/sliders/{{slider.mediaSlider}}&quot;);">
-						<div class="banner_slide_content">
-							<div class="container">
-								<div class="row">
-									<div class="col-lg-7 col-9">
-										<div class="banner_content overflow-hidden">
-											<h5 data-animation="slideInLeft" data-animation-delay="0.5s" class="mb-3 staggered-animation font-weight-light animated slideInLeft" style="animation-delay: 0.5s; opacity: 1;">{{slider.title}}</h5>
-											<h2 data-animation="slideInLeft" data-animation-delay="1s" class="staggered-animation animated slideInLeft" style="animation-delay: 1s; opacity: 1;">
-												{{slider.description|striptags}}
-											</h2>
-											<a data-animation="slideInLeft" data-animation-delay="1.5s" class="btn btn-fill-out rounded-0 staggered-animation text-uppercase animated slideInLeft" href="{{slider.buttonLink}}" style="animation-delay: 1.5s; opacity: 1;">{{slider.buttonText}}</a>
+	<main id="main-content">
+		<section class="banner_section slide_medium shop_banner_slider staggered-animation-wrap" aria-label="Mise en avant des produits">
+			<div id="carouselExampleControls" data-bs-ride="carousel" class="carousel slide carousel-fade light_arrow">
+				<div class="carousel-inner">
+					{% for slider in sliders %}
+						<div class="lazyload {{ loop.first ? 'carousel-item background_bg active' : 'carousel-item background_bg' }}" data-img-src="/assets/images/sliders/{{ slider.mediaSlider }}" style="background-image: url('/assets/images/sliders/{{ slider.mediaSlider }}');" aria-label="Slide {{ loop.index }}">
+							<div class="banner_slide_content">
+								<div class="container">
+									<div class="row">
+										<div class="col-lg-7 col-9">
+											<div class="banner_content overflow-hidden">
+
+												{% if slider.title %}
+													<p data-animation="slideInLeft" data-animation-delay="0.5s" class=" staggered-animation font-weight-light animated slideInLeft" style="animation-delay: 0.5s; opacity: 1;">
+														{{ slider.title }}
+													</p>
+												{% endif %}
+
+												{% if loop.first %}
+													<h1 data-animation="slideInLeft" data-animation-delay="1s" class="staggered-animation animated slideInLeft" style="color: aliceblue; animation-delay: 1s; opacity: 1;">
+														Acheter du miel naturel en ligne
+													</h1>
+												{% else %}
+													{% if slider.description %}
+														<p data-animation="slideInLeft" data-animation-delay="1s" class="h2 mb-3 staggered-animation animated slideInLeft banner_main_text" style="color: aliceblue; animation-delay: 1s; opacity: 1;">
+															{{ slider.description|striptags }}
+														</p>
+													{% endif %}
+												{% endif %}
+
+												<a data-animation="slideInLeft" data-animation-delay="1.5s" class="mt-4 btn btn-fill-out rounded-0 staggered-animation text-uppercase animated slideInLeft" href="{{ slider.buttonLink }}" style="animation-delay: 1.5s; opacity: 1;">
+													{{ slider.buttonText }}
+												</a>
+											</div>
 										</div>
 									</div>
 								</div>
 							</div>
 						</div>
+					{% endfor %}
+				</div>
+
+				<a href="#carouselExampleControls" role="button" data-bs-slide="prev" class="carousel-control-prev" aria-label="Slide précédent">
+					<i class="ion-chevron-left" aria-hidden="true"></i>
+				</a>
+
+				<a href="#carouselExampleControls" role="button" data-bs-slide="next" class="carousel-control-next" aria-label="Slide suivant">
+					<i class="ion-chevron-right" aria-hidden="true"></i>
+				</a>
+			</div>
+		</section>
+
+		<section class="main_content" aria-labelledby="home-products-title">
+			<div class="section small_pt pb_70">
+				<div class="container">
+					<div class="row justify-content-center">
+						<div class="col-md-10 col-lg-8">
+							<div class="heading_s1 text-center">
+								<h2 id="home-products-title">Notre sélection de miels naturels</h2>
+								<p>
+									Retrouvez sur notre boutique une sélection de miels naturels choisis avec exigence.
+									Que vous recherchiez un miel au goût délicat, intense ou plus boisé, nous vous proposons
+									des produits de qualité pour acheter du miel en ligne en toute confiance.
+								</p>
+							</div>
+						</div>
 					</div>
 
-				{% endfor %}
-			</div>
-			<a href="#carouselExampleControls" role="button" data-bs-slide="prev" class="carousel-control-prev">
-				<i class="ion-chevron-left"></i>
-			</a>
-			<a href="#carouselExampleControls" role="button" data-bs-slide="next" class="carousel-control-next">
-				<i class="ion-chevron-right"></i>
-			</a>
-		</div>
-	</div>
-	<div class="main_content">
-		<div class="section small_pt pb_70">
-			<div class="container">
-				<div class="row justify-content-center">
-					<div class="col-md-6">
-						<div class="heading_s1 text-center">
-							<h2>Produits exclusifs</h2>
+					<div class="row">
+						<div class="col-12">
+							<div class="tab-style1">
+								<ul role="tablist" class="nav nav-tabs justify-content-center" aria-label="Filtres produits">
+									<li class="nav-item">
+										<a id="all-tab" data-bs-toggle="tab" href="#all" role="tab" aria-controls="all" aria-selected="true" class="nav-link active">
+											Tous les produits
+										</a>
+									</li>
+									<li class="nav-item">
+										<a id="arrival-tab" data-bs-toggle="tab" href="#arrival" role="tab" aria-controls="arrival" aria-selected="false" class="nav-link">
+											Nouveautés
+										</a>
+									</li>
+									<li class="nav-item">
+										<a id="sellers-tab" data-bs-toggle="tab" href="#sellers" role="tab" aria-controls="sellers" aria-selected="false" class="nav-link">
+											Incontournables
+										</a>
+									</li>
+								</ul>
+							</div>
+
+							<div class="tab-content">
+								<div id="all" role="tabpanel" aria-labelledby="all-tab" class="tab-pane fade show active">
+									<div class="row shop_container">
+										{% for product in productAll %}
+											{% include 'product/display_product.html.twig' %}
+										{% else %}
+											<div class="col-12">
+												<p class="text-center">Aucun produit disponible pour le moment.</p>
+											</div>
+										{% endfor %}
+									</div>
+								</div>
+
+								<div id="arrival" role="tabpanel" aria-labelledby="arrival-tab" class="tab-pane fade">
+									<div class="row shop_container">
+										{% for product in productNewArrival %}
+											{% include 'product/display_product.html.twig' %}
+										{% else %}
+											<div class="col-12">
+												<p class="text-center">Aucune nouveauté disponible pour le moment.</p>
+											</div>
+										{% endfor %}
+									</div>
+								</div>
+
+								<div id="sellers" role="tabpanel" aria-labelledby="sellers-tab" class="tab-pane fade">
+									<div class="row shop_container">
+										{% for product in productBestSeller %}
+											{% include 'product/display_product.html.twig' %}
+										{% else %}
+											<div class="col-12">
+												<p class="text-center">Aucun produit incontournable disponible pour le moment.</p>
+											</div>
+										{% endfor %}
+									</div>
+								</div>
+							</div>
+
+							<div class="row justify-content-center mt-4">
+								<div class="col-md-10 col-lg-8">
+									<div class="text-center">
+										<p>
+											Notre boutique vous permet d’acheter du miel naturel en ligne simplement,
+																						avec une sélection limitée de références choisies pour leur qualité.
+																						Nous privilégions des produits authentiques, un catalogue clair et une expérience d’achat fluide.
+										</p>
+									</div>
+								</div>
+							</div>
 						</div>
 					</div>
 				</div>
-				<div class="row">
-					<div class="col-12">
-						<div class="tab-style1">
-							<ul role="tablist" class="nav nav-tabs justify-content-center">
-								<li class="nav-item">
-									<a id="all-tab" data-bs-toggle="tab" href="#all" role="tab" aria-controls="all" aria-selected="true" class="nav-link active">Tous les produits</a>
-								</li>
-								<li class="nav-item">
-									<a id="arrival-tab" data-bs-toggle="tab" href="#arrival" role="tab" aria-controls="arrival" aria-selected="false" class="nav-link ">Nouveautés</a>
-								</li>
-								<li class="nav-item">
-									<a id="sellers-tab" data-bs-toggle="tab" href="#sellers" role="tab" aria-controls="sellers" aria-selected="false" class="nav-link">Incontournables</a>
-								</li>
-								{# <li class="nav-item">
-									<a id="special-tab" data-bs-toggle="tab" href="#special" role="tab" aria-controls="special" aria-selected="false" class="nav-link">Promotions</a>
-								</li> #}
-							</ul>
-						</div>
-						<div class="tab-content">
-							<div id="all" role="tabpanel" aria-labelledby="all-tab" class="tab-pane fade show active">
-								<div class="row shop_container">
-									{% for product in productAll %}
-										{% include 'product/display_product.html.twig' %}
-									{% endfor %}
-								</div>
-							</div>
-							<div id="arrival" role="tabpanel" aria-labelledby="arrival-tab" class="tab-pane fade ">
-								<div class="row shop_container">
-									{% for product in productNewArrival %}
-										{% include 'product/display_product.html.twig' %}
-									{% endfor %}
-								</div>
-							</div>
-							<div id="sellers" role="tabpanel" aria-labelledby="sellers-tab" class="tab-pane fade">
-								<div class="row shop_container">
-									{% for product in productBestSeller %}
-										{% include 'product/display_product.html.twig' %}
-									{% endfor %}
-								</div>
-							</div>
-							{# <div id="special" role="tabpanel" aria-labelledby="special-tab" class="tab-pane fade">
-								<div class="row shop_container">
-									{% for product in productSpecialOffer %}
-										{% include 'product/display_product.html.twig' %}
-									{% endfor %}
-								</div> #}
-							</div>
-						</div>
-					</div>
-				</div>
 			</div>
-		</div>
-	</div>
-
+		</section>
+	</main>
 
 {% endblock %}
