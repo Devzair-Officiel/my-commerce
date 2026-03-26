@@ -4717,9 +4717,9 @@ footer .widget {
 
 footer .widget_title {
 	text-transform: capitalize;
-	margin-top: 10px;
-	margin-bottom: 25px;
-	font-size: 18px;
+	margin-top: 20px;
+	margin-bottom: 15px;
+	font-size: 21px;
 }
 
 .widget_links li {

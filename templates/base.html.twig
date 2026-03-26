@@ -16,16 +16,18 @@
 		<link rel="apple-touch-icon" sizes="180x180" href="{{ asset('favicon/apple-touch-icon.png') }}">
 		<link rel="manifest" href="{{ asset('favicon/site.webmanifest') }}">
 
-		{% set s = seo ?? null %}
+        {% set s = seo ?? null %}
 
-		{% if s.description is defined %}<meta name="description" content="{{ s.description }}">
-		{% endif %}
-		{% if s.canonical is defined %}<link rel="canonical" href="{{ s.canonical }}">
-		{% endif %}
-		<meta name="robots" content="{{ s.robots ?? 'index,follow' }}">
+        {% if s and s.description %}
+            <meta name="description" content="{{ s.description }}">
+        {% endif %}
+        {% if s and s.canonical %}
+            <link rel="canonical" href="{{ s.canonical }}">
+        {% endif %}
+        <meta name="robots" content="{{ s and s.robots ? s.robots : 'index,follow' }}">
 
 
-		<meta property="og:site_name" content="nidemiel"/>
+		<meta property="og:site_name" content="{{ globalSetting.website_name }}">
 		<meta property="og:locale" content="fr_FR"/>
 		<meta name="geo.region" content="FR-IDF"/>
 
@@ -38,9 +40,12 @@
 			{% endif %}
 		{% endif %}
 
-		{% for schema in s.jsonLd|default([]) %}
-			<script type="application/ld+json">{{ schema|json_encode(constant('JSON_UNESCAPED_SLASHES'))|raw }}</script>
-		{% endfor %}
+        {% for schema in s.jsonLd|default([]) %}
+            <script type="application/ld+json">
+                {{ schema|json_encode(constant('JSON_UNESCAPED_SLASHES') b-or constant('JSON_UNESCAPED_UNICODE'))|raw }}
+            </script>
+        {% endfor %}
+
 
 
 		<link rel="stylesheet" href="/assets/css/animate.css">

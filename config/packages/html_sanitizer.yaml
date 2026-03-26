@@ -1,0 +1,33 @@
+framework:
+    html_sanitizer:
+        sanitizers:
+            # Sanitizer dédié au contenu riche saisi pour la description de catégorie.
+            #
+            # Objectif :
+            # - autoriser un sous-ensemble de balises utiles au SEO éditorial ;
+            # - bloquer les balises ou attributs non souhaités ;
+            # - forcer des liens plus sûrs.
+            #
+            # Remarque :
+            # la restructuration du HTML pour le rendu front n'est pas faite ici,
+            # mais dans le service EditorHtmlNormalizer.
+            app.category_description_sanitizer:
+                allow_safe_elements: false
+                allow_elements:
+                    p: '*'
+                    br: '*'
+                    strong: '*'
+                    em: '*'
+                    ul: '*'
+                    ol: '*'
+                    li: '*'
+                    h2: '*'
+                    h3: '*'
+                    h4: '*'
+                    a: ['href', 'title', 'target', 'rel']
+                block_elements:
+                    - div
+                force_attributes:
+                    a:
+                        rel: 'noopener noreferrer'
+                force_https_urls: true

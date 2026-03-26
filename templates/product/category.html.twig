@@ -5,7 +5,16 @@
 {% endblock %}
 
 {% block body %}
-	{% include "page_head/index.html.twig" with {'page_name': category.title } %}
+
+    {% include 'page_head/index.html.twig' with {
+        page_name: category.title,
+        breadcrumbs: [
+            {
+				label: category.title
+			}
+        ]
+    } %}
+
 
 	<main class="category-page">
 		<section class="container my-5" aria-labelledby="category-title">
@@ -13,9 +22,7 @@
 				<div class="col-lg-10 col-xl-8 text-center mb-4">
 					<h1 id="category-title">{{ category.title }}</h1>
 
-					<p class="lead">
-						{{ category.intro | raw}}
-					</p>
+                    {{ category.intro|normalize_editor_html|raw}}
 				</div>
 			</div>
 
@@ -35,10 +42,8 @@
 				<div class="col-lg-10 col-xl-8">
 					<h2 id="category-seo-title" class="text-center mb-4">
 						Acheter du miel naturel en ligne
-					</h2>
-                    
-                    {{ category.description|raw }}
-
+					</h2>     
+                    {{ category.description|normalize_editor_html|raw }}
 				</div>
 			</div>
 		</section>

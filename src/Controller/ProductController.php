@@ -24,9 +24,7 @@ final class ProductController extends AbstractController
 
 
         if (!$product) {
-            return $this->render('page/not-fount.html.twig', [
-                'controller_name' => 'PageController'
-            ]);
+            return $this->render('page/not-fount.html.twig');
         }
 
         $seo = $seoResolver->forProduct($product, $request);

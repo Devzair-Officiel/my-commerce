@@ -3,16 +3,27 @@
 {% block title %} {{globalSetting.website_name}} | Blog
 {% endblock %}
 
-{% block body %}
-	{% include "page_head/index.html.twig" with {'url': "/blog", page: 'Blog', 'page_name': blog.title } %}
+{% block body %}    
+    {% include 'page_head/index.html.twig' with {
+		page_name: blog.title,
+		breadcrumbs: [
+			{
+				label: 'Blog',
+				url: path('app_blog')
+			},
+			{
+				label: blog.title
+			}
+		]
+	} %}
 
 
 	<div class="container my-5">
 		<div id="arrival" role="tabpanel" aria-labelledby="arrival-tab" class="tab-pane fade show active">
 			<div class="row shop_container">
-				{{blog.title}}
+				<h1>{{blog.title}}</h1>
 				<div>
-					<p>{{blog.content | raw}}</p>
+					{{blog.content|normalize_editor_html|raw}}
 				</div>
 			</div>
 		</div>

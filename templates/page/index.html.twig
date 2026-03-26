@@ -10,7 +10,7 @@
 	<div class="main_content">
 		<div class="section">
 			<div class="container">
-				{{ page.content | raw }}
+				{{ page.content|normalize_editor_html|raw }}
 			</div>
 		</div>
 	</div>

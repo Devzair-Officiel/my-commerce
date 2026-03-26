@@ -7,8 +7,7 @@
 {% endblock %}
 
 {% block meta_description %}
-	Découvrez nos produits bio en ligne, limitrophe
-					et partout en France,
+	Découvrez nos produits bio en ligne, limitrophe et partout en France,
 	{# {{ product.metaDescription }} #}
 {% endblock %}
 
@@ -16,8 +15,19 @@
 
 {% block body %}
 
-	{% include "page_head/index.html.twig" with {'url': "/product/category/" ~ product.categories[0].slug, 'page':
-	product.categories[0].slug, 'page_name': product.title } %}
+    {% include 'page_head/index.html.twig' with {
+        page_name: product.title,
+        breadcrumbs: [
+            {
+                label: product.categories[0].title,
+                url: path('app_category', { categoryName: product.categories[0].slug})
+            },
+            {
+                label: product.title
+            }
+        ]
+    } %}
+
 
 	<div class="main_content">
 		<div class="section">
@@ -74,7 +84,7 @@
 									<span class="rating_num">({{ opinions|length }})</span>
 								</div> #}
 								<div class="pr_desc m-3">
-									<p>{{ product.description | raw}}
+									<p>{{ product.description|normalize_editor_html|raw}}
 									</p>
 								</div>
 								<div class="product_sort_info">
@@ -179,14 +189,14 @@
 							</ul>
 							<div class="tab-content shop_info_tab">
 								<div id="Description" role="tabpanel" aria-labelledby="Description-tab" class="tab-pane fade show active">
-									<div>{{ product.description | raw}}</div>
+									<div>{{ product.description|normalize_editor_html|raw}}</div>
 									<div style="border: 1px solid #e37e03; margin: 20px 25%"></div>
 									<p style="font-size: 20px; text-align: center">
 										Pour les achats de plusieurs kilos (Prix dégressif), appeler directement par téléphone.
 									</p>
 								</div>
 								<div id="Additional-info" role="tabpanel" aria-labelledby="Additional-info-tab" class="tab-pane fade">
-									{{ product.additionalInfos | raw }}
+									{{ product.additionalInfos|normalize_editor_html|raw }}
 								</div>
 								<div
 									id="Reviews" role="tabpanel" aria-labelledby="Reviews-tab" class="tab-pane fade">{# {% include "opinion/index.html.twig" %} #}

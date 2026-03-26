@@ -4,7 +4,16 @@
 {% endblock %}
 
 {% block body %}
-	{% include "page_head/index.html.twig" with {'page_name': "Blog" } %}
+
+    {% include 'page_head/index.html.twig' with {
+        'page_name': "blog",
+        breadcrumbs: [
+            {
+                label: 'Blog',
+                url: path('app_blog')
+            },
+        ]
+    } %}
 
 	<div class="container my-5">
 		<div id="arrival" role="tabpanel" aria-labelledby="arrival-tab" class="tab-pane fade show active">
@@ -19,9 +28,9 @@
 									</div>
 									<div class="card-body">
 										<h3 class="card-title text-center">{{blog.title}}</h3>
-										<p class="card-text">
-											{{blog.description | raw}}
-										</p>
+										<div class="card-text">
+											{{blog.description|normalize_editor_html|raw}}
+										</div>
 									</div>
 								</div>
 							</a>
