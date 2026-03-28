@@ -41,7 +41,7 @@ final class ProductCrudController extends AbstractCrudController
             ->setEntityLabelInSingular('Produit')
             ->setEntityLabelInPlural('Produits')
             ->setDefaultSort(['id' => 'DESC'])
-            ->setSearchFields(['id', 'title', 'slug', 'brand', 'catalog'])
+            ->setSearchFields(['id', 'title', 'slug', 'brand'])
             ->showEntityActionsInlined()
             ->setPaginatorPageSize(25);
     }
@@ -106,10 +106,10 @@ final class ProductCrudController extends AbstractCrudController
             ->setHelp('Mettre le poid net en gramme')
             ->setColumns(4);
 
-        yield TextField::new('catalog', 'Catalogue')
-            ->setColumns(4)
-            ->setHelp('il sera présent dans l\'url, (ex : /huiles/slug), par defaut miels');
+        
         yield CountryField::new('originCountry', 'Pays d’origine')->setColumns(4);
+
+
 
         // ----- TAB Contenu
         yield FormField::addTab('Contenu')->setIcon('fa fa-align-left');

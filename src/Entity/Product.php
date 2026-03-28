@@ -124,8 +124,7 @@ class Product
     #[ORM\ManyToMany(targetEntity: Wishlist::class, mappedBy: 'products')]
     private Collection $wishlists;
 
-    #[ORM\Column(length: 100, nullable: true)]
-    private ?string $catalog = 'miels';
+
 
     public function __construct()
     {
@@ -579,15 +578,4 @@ class Product
         return $this;
     }
 
-    public function getCatalog(): ?string
-    {
-        return $this->catalog;
-    }
-
-    public function setCatalog(?string $catalog): static
-    {
-        $this->catalog = $catalog;
-
-        return $this;
-    }
 }

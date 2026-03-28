@@ -25,7 +25,6 @@ class ProductRepository extends ServiceEntityRepository
             p.id AS id,
             p.title AS title,
             p.slug AS slug,
-            p.catalog AS catalog,
             p.regular_price AS price,
             c.id AS category_id
         ')

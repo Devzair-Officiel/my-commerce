@@ -106,7 +106,7 @@
 												{% for product in globalMegaProducts[category.id] %}
 													{% if loop.index < 6 %}
 														<li>
-															<a class="dropdown-item nav-link nav_item" href="/produits/{{product.catalog}}/{{ product.slug }}">{{ product.title }}</a>
+															<a class="dropdown-item nav-link nav_item" href="/produits/{{ product.slug }}">{{ product.title }}</a>
 														</li>
 													{% endif %}
 												{% endfor %}

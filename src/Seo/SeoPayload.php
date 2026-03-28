@@ -2,16 +2,24 @@
 
 namespace App\Seo;
 
+/**
+ * Représente les données SEO finales d’une page.
+ *
+ * Ce payload est construit par SeoResolver puis transmis au template Twig
+ * pour afficher les balises meta, Open Graph, canonical et JSON-LD.
+ */
 final class SeoPayload
 {
+    /**
+     * @param array<string, mixed> $og
+     * @param array<int, array<string, mixed>> $jsonLd
+     */
     public function __construct(
         public readonly string $title,
         public readonly string $description,
-        public readonly string $canonical,
+        public readonly ?string $canonical,
         public readonly string $robots,
-        /** @var array{title:string,description:string,url:string,type:string,image:?string} */
-        public readonly array $og,
-        /** @var array<int, array<string,mixed>> */
-        public readonly array $jsonLd,
+        public readonly array $og = [],
+        public readonly array $jsonLd = [],
     ) {}
 }

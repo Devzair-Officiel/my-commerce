@@ -271,7 +271,6 @@ final class CartService
                 'product' => [
                     'id' => (int) $product->getId(),
                     'title' => $product->getTitle(),
-                    'catalog' => $product->getCatalog(),
                     'description' => $product->getDescription(),
                     'slug' => $product->getSlug(),
                     'image' => $product->getMediaData(),

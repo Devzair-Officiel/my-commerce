@@ -166,7 +166,7 @@ export function displayCart(cart) {
             `
             <tr>
                 <td class="product-thumbnail">
-                    <a href="/${product.catalog}/${product.slug ?? ""}" >
+                    <a href="/${product.slug ?? ""}" >
                         <img width="50" alt="${alt}" src="${src}">
                     </a>
                 </td>
@@ -252,7 +252,7 @@ export async function updateHeaderCart(cart = null) {
             "beforeend",
             `
                 <li class="mini_cart_item">
-                    <a href="/${product.catalog}/${product.slug ?? ""}" class="mini_cart_link">
+                    <a href="/${product.slug ?? ""}" class="mini_cart_link">
                         <img width="50" height="50" alt="${alt}" src="${src}">
                         <span class="mini_cart_title">${product.title ?? ""}</span>
                     </a>

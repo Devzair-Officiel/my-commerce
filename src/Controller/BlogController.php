@@ -3,7 +3,9 @@
 namespace App\Controller;
 
 use App\Repository\BlogRepository;
+use App\Seo\SeoResolver;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
@@ -21,15 +23,17 @@ final class BlogController extends AbstractController
         ]);
     }
 
-    #[Route(path: '/blog/{slug}', name: 'app_show_blog')]
-    public function showArticle(string $slug): Response
+    #[Route(path: '/blog/{slug}', name: 'app_blog_show')]
+    public function showArticle(string $slug, SeoResolver $seoResolver, Request $request): Response
     {
 
         $blog = $this->blogRepo->findOneBy(['slug' => $slug]);
 
-        return $this->render('blog/show.html.twig', [
-            'blog' => $blog
+        $seo = $seoResolver->forBlog($blog, $request);
 
+        return $this->render('blog/show.html.twig', [
+            'blog' => $blog,
+            'seo' => $seo,
         ]);
     }
 }

@@ -116,7 +116,7 @@ export function displayWishlist(wishlist = []) {
       `
       <tr>
         <td class="product-thumbnail">
-          <a href="/${product.catalog}/${slug}">
+          <a href="/${slug}">
             ${
               imgSrc
                 ? `<img width="50" height="50" alt="${alt}" src="${imgSrc}">`
@@ -126,7 +126,7 @@ export function displayWishlist(wishlist = []) {
         </td>
 
         <td class="product-name">
-          <a href="/${product.catalog}/${slug}">${title}</a>
+          <a href="/${slug}">${title}</a>
         </td>
 
         <td data-title="Price" class="product-price">

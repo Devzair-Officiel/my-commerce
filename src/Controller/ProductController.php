@@ -2,26 +2,25 @@
 
 namespace App\Controller;
 
-use App\Seo\SeoResolver;
-use App\Repository\ProductRepository;
 use App\Repository\CategoryRepository;
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\Routing\Attribute\Route;
+use App\Repository\ProductRepository;
+use App\Seo\SeoResolver;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Routing\Attribute\Route;
 
 final class ProductController extends AbstractController
 {
 
     public function __construct(private ProductRepository $productRepo) {}
     
-    #[Route('/produits/{catalog}/{slug}', name: 'app_product_by_slug', requirements: [
-        'catalog' => '[a-z0-9-]+',
+    #[Route('/produits/{slug}', name: 'app_product_by_slug', requirements: [
         'slug' => '[a-z0-9-]+',
     ])]
-    public function showProduct(string $slug, string $catalog, SeoResolver $seoResolver, Request $request)
+    public function showProduct(string $slug, SeoResolver $seoResolver, Request $request): Response
     {
-        $product = $this->productRepo->findOneBy(['slug' => $slug, 'catalog' => $catalog]);
-
+        $product = $this->productRepo->findOneBy(['slug' => $slug]);
 
         if (!$product) {
             return $this->render('page/not-fount.html.twig');
@@ -72,7 +71,7 @@ final class ProductController extends AbstractController
     }
 
     #[Route('/category/{categoryName}', name: 'app_category')]
-    public function getProductByCategory(CategoryRepository $categoryRepository, string $categoryName)
+    public function getProductByCategory(CategoryRepository $categoryRepository, string $categoryName, SeoResolver $seoResolver, Request $request)
     {
 
         // Récupérez l'objet Category en fonction du nom de la catégorie
@@ -83,16 +82,14 @@ final class ProductController extends AbstractController
             throw $this->createNotFoundException('La catégorie demandée n\'existe pas');
         }
 
-        // Récupérez l'ID de la catégorie
-        $categoryId = $category->getId();
-
-        // Utilisez l'ID de la catégorie pour récupérer les product
-        $products = $this->productRepo->getByCategories($categoryId);
+        $products = $this->productRepo->getByCategories($category->getId());
+        $seo = $seoResolver->forCategory($category, $request);
 
         // Passez les product à votre vue
         return $this->render('product/category.html.twig', [
             'products' => $products,
             'category' => $category,
+            'seo' => $seo
         ]);
     }
 

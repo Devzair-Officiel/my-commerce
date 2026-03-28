@@ -84,9 +84,6 @@ final class CategoryCrudController extends AbstractCrudController
             ->hideOnIndex()
             ->setHelp('Généré automatiquement depuis le titre.');
 
-        
-
-        
 
         // ---------- COLONNE DROITE (AFFICHAGE) ----------
         yield FormField::addColumn(6);
