@@ -107,7 +107,7 @@ export function displayWishlist(wishlist = []) {
     const alt = escapeHtml(product.images?.[0]['alt']) ?? "";
 
     // prix : ton back semble renvoyer des centimes
-    const priceCents = Number(product?.soldePrice ?? 0);
+    const priceCents = Number((product.isOnSale ? product.soldePrice : product.regularPrice));
     const priceHtml = formatPrice(priceCents / 100);
 
     // 🔒 On évite d’injecter du HTML non échappé (title/slug/image)

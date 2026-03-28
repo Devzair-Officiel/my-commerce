@@ -108,7 +108,7 @@ export async function displayCompare(compare = null) {
       "beforeend",
       `
       <td class="product_price">
-        <span class="price">${formatPrice((product.soldePrice ?? 0) / 100)}</span>
+        <span class="price">${formatPrice((product.isOnSale ? product.soldePrice : product.regularPrice) / 100)}</span>
       </td>
       `
     );

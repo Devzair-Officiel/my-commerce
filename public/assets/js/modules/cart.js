@@ -166,7 +166,7 @@ export function displayCart(cart) {
             `
             <tr>
                 <td class="product-thumbnail">
-                    <a href="/${product.slug ?? ""}" >
+                    <a href="/produits/${product.slug ?? ""}" >
                         <img width="50" alt="${alt}" src="${src}">
                     </a>
                 </td>
@@ -174,7 +174,7 @@ export function displayCart(cart) {
                     <a>${product.title ?? ""}</a>
                 </td>
                 <td data-title="Price" class="product-price">
-                    ${formatPrice((product.soldePrice ?? 0) / 100)}
+                    ${formatPrice((product.isOnSale ? product.soldePrice : product.regularPrice) / 100)}
                 </td>
                 <td data-title="Quantity" class="product-quantity">
                     <div class="quantity">
@@ -252,7 +252,7 @@ export async function updateHeaderCart(cart = null) {
             "beforeend",
             `
                 <li class="mini_cart_item">
-                    <a href="/${product.slug ?? ""}" class="mini_cart_link">
+                    <a href="/produits/${product.slug ?? ""}" class="mini_cart_link">
                         <img width="50" height="50" alt="${alt}" src="${src}">
                         <span class="mini_cart_title">${product.title ?? ""}</span>
                     </a>

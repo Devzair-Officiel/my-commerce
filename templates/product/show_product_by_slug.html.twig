@@ -61,17 +61,21 @@
 								<h4 class="product_title">
 									{{ product.title }}
 								</h4>
-								<div class="product_price">
-									<span class="price">{{ (product.soldePrice/100) |format_currency('EUR') }}</span>
-									{# Ne pas afficher si le prix soldé est égale au prix régulier #}
-									{% if product.regularPrice != product.soldePrice %}
-										<del>{{ (product.regularPrice/100) | format_currency('EUR') }}</del>
-										<div class="on_sale">
-											<span>{{((product.regularPrice - product.soldePrice)*100/
-                                        product.regularPrice) |number_format(2, '.', ',') }}% Off</span>
-										</div>
-									{% endif %}
-								</div>
+                                <div class="product_price">
+                                    {% if product.isOnSale %}
+                                        <span class="price">{{ (product.soldePrice / 100)|number_format(2, ',', ' ') }}€</span>
+                                        <del>
+                                            {{ (product.regularPrice / 100)|number_format(2, ',', ' ') }}€
+                                        </del>
+                                        <div class="on_sale">
+                                            <span>-{{ product.discountPercentage }}%</span>
+                                        </div>
+                                    {% else %}
+                                        <span class="price">{{ (product.regularPrice / 100)|number_format(2, ',', ' ') }}
+                                            €</span>
+                                    {% endif %}
+                                </div>
+
 								{# <div class="rating_wrap">
 									{% set totalScoring = 0 %}
 									{% for opinion in opinions %}
