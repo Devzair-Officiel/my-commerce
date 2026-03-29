@@ -1,0 +1,71 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mot de passe oublié |
+	{{ globalSetting.website_name }}
+{% endblock %}
+
+{% block body %}
+
+	{% include "page_head/index.html.twig" with {'page_name' : 'Mot de passe oublié'} %}
+
+	<div class="main_content">
+		<div class="login_register_wrap section">
+			<div class="container">
+				<div class="row justify-content-center">
+					<div class="col-xl-6 col-md-10">
+						<div class="login_wrap">
+							<div class="padding_eight_all bg-white">
+
+								{% for flash_error in app.flashes('reset_password_error') %}
+									<div class="alert alert-danger mb-4" role="alert">
+										{{ flash_error }}
+									</div>
+								{% endfor %}
+
+								<div class="heading_s1">
+									<h3>Réinitialiser votre mot de passe</h3>
+								</div>
+
+								<p class="mb-4">
+									Saisissez l’adresse email associée à votre compte. Si elle existe,
+									nous vous enverrons un lien pour choisir un nouveau mot de passe.
+								</p>
+
+								{{ form_start(requestForm) }}
+								<div class="form-group mb-3">
+									{{ form_widget(requestForm.email, {
+                                            attr: {
+                                                class: 'form-control',
+                                                placeholder: 'Votre adresse email'
+                                            }
+                                        }) }}
+									{{ form_errors(requestForm.email) }}
+								</div>
+
+								<div class="form-group mb-4">
+									<small class="text-muted">
+										Pensez à vérifier vos courriers indésirables si vous ne recevez pas l’email.
+									</small>
+								</div>
+
+								<div class="form-group mb-3">
+									<button class="btn btn-fill-out btn-block" type="submit">
+										Envoyer le lien de réinitialisation
+									</button>
+								</div>
+								{{ form_end(requestForm) }}
+
+								<div class="form-note text-center mt-3">
+									Vous vous souvenez de votre mot de passe ?
+									<a href="{{ path('app_login') }}">Retour à la connexion</a>
+								</div>
+
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+{% endblock %}

@@ -417,7 +417,7 @@ namespace Symfony\Component\DependencyInjection\Loader\Configurator;
  *         resources?: array<string, scalar|null>,
  *     },
  *     messenger?: bool|array{ // Messenger configuration
- *         enabled?: bool, // Default: false
+ *         enabled?: bool, // Default: true
  *         routing?: array<string, array{ // Default: []
  *             senders?: list<scalar|null>,
  *         }>,
@@ -463,7 +463,7 @@ namespace Symfony\Component\DependencyInjection\Loader\Configurator;
  *     },
  *     disallow_search_engine_index?: bool, // Enabled by default when debug is enabled. // Default: true
  *     http_client?: bool|array{ // HTTP Client configuration
- *         enabled?: bool, // Default: false
+ *         enabled?: bool, // Default: true
  *         max_host_connections?: int, // The maximum number of connections to a single host.
  *         default_options?: array{
  *             headers?: array<string, mixed>,
@@ -1317,6 +1317,12 @@ namespace Symfony\Component\DependencyInjection\Loader\Configurator;
  *     },
  *     clients?: array<string, array<string, mixed>>,
  * }
+ * @psalm-type SymfonycastsResetPasswordConfig = array{
+ *     request_password_repository: scalar|null, // A class that implements ResetPasswordRequestRepositoryInterface - usually your ResetPasswordRequestRepository.
+ *     lifetime?: int, // The length of time in seconds that a password reset request is valid for after it is created. // Default: 3600
+ *     throttle_limit?: int, // Another password reset cannot be made faster than this throttle time in seconds. // Default: 3600
+ *     enable_garbage_collection?: bool, // Enable/Disable automatic garbage collection. // Default: true
+ * }
  * @psalm-type ConfigType = array{
  *     imports?: ImportsConfig,
  *     parameters?: ParametersConfig,
@@ -1331,6 +1337,7 @@ namespace Symfony\Component\DependencyInjection\Loader\Configurator;
  *     twig_component?: TwigComponentConfig,
  *     karser_recaptcha3?: KarserRecaptcha3Config,
  *     knpu_oauth2_client?: KnpuOauth2ClientConfig,
+ *     symfonycasts_reset_password?: SymfonycastsResetPasswordConfig,
  *     "when@dev"?: array{
  *         imports?: ImportsConfig,
  *         parameters?: ParametersConfig,
@@ -1347,6 +1354,7 @@ namespace Symfony\Component\DependencyInjection\Loader\Configurator;
  *         web_profiler?: WebProfilerConfig,
  *         karser_recaptcha3?: KarserRecaptcha3Config,
  *         knpu_oauth2_client?: KnpuOauth2ClientConfig,
+ *         symfonycasts_reset_password?: SymfonycastsResetPasswordConfig,
  *     },
  *     "when@prod"?: array{
  *         imports?: ImportsConfig,
@@ -1362,6 +1370,7 @@ namespace Symfony\Component\DependencyInjection\Loader\Configurator;
  *         twig_component?: TwigComponentConfig,
  *         karser_recaptcha3?: KarserRecaptcha3Config,
  *         knpu_oauth2_client?: KnpuOauth2ClientConfig,
+ *         symfonycasts_reset_password?: SymfonycastsResetPasswordConfig,
  *     },
  *     "when@test"?: array{
  *         imports?: ImportsConfig,
@@ -1378,6 +1387,7 @@ namespace Symfony\Component\DependencyInjection\Loader\Configurator;
  *         web_profiler?: WebProfilerConfig,
  *         karser_recaptcha3?: KarserRecaptcha3Config,
  *         knpu_oauth2_client?: KnpuOauth2ClientConfig,
+ *         symfonycasts_reset_password?: SymfonycastsResetPasswordConfig,
  *     },
  *     ...<string, ExtensionType|array{ // extra keys must follow the when@%env% pattern or match an extension alias
  *         imports?: ImportsConfig,

@@ -1,0 +1,67 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Nouveau mot de passe |
+	{{ globalSetting.website_name }}
+{% endblock %}
+
+{% block body %}
+
+	{% include "page_head/index.html.twig" with {'page_name' : 'Choisir un nouveau mot de passe'} %}
+
+	<div class="main_content">
+		<div class="login_register_wrap section">
+			<div class="container">
+				<div class="row justify-content-center">
+					<div class="col-xl-6 col-md-10">
+						<div class="login_wrap">
+							<div class="padding_eight_all bg-white">
+
+								<div class="heading_s1">
+									<h3>Choisir un nouveau mot de passe</h3>
+								</div>
+
+								<p class="mb-4">
+									Pour sécuriser votre compte, choisissez un mot de passe long, unique et difficile à deviner.
+								</p>
+
+								{{ form_start(resetForm) }}
+								<div class="form-group mb-3">
+									{{ form_label(resetForm.plainPassword.first) }}
+									{{ form_widget(resetForm.plainPassword.first, {
+                                            attr: {
+                                                class: 'form-control',
+                                                placeholder: 'Nouveau mot de passe'
+                                            }
+                                        }) }}
+									{{ form_errors(resetForm.plainPassword.first) }}
+								</div>
+
+								<div class="form-group mb-3">
+									{{ form_label(resetForm.plainPassword.second) }}
+									{{ form_widget(resetForm.plainPassword.second, {
+                                            attr: {
+                                                class: 'form-control',
+                                                placeholder: 'Confirmez votre mot de passe'
+                                            }
+                                        }) }}
+									{{ form_errors(resetForm.plainPassword.second) }}
+								</div>
+
+								{{ form_errors(resetForm.plainPassword) }}
+
+								<div class="form-group mb-3">
+									<button class="btn btn-fill-out btn-block" type="submit">
+										Enregistrer mon nouveau mot de passe
+									</button>
+								</div>
+								{{ form_end(resetForm) }}
+
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+{% endblock %}
