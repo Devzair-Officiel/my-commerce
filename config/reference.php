@@ -1308,6 +1308,15 @@ namespace Symfony\Component\DependencyInjection\Loader\Configurator;
  *     host?: scalar|null, // Default host is "www.google.com", if it is not reachable then use "www.recaptcha.net" instead. // Default: "www.google.com"
  *     enabled?: bool, // Default: true
  * }
+ * @psalm-type KnpuOauth2ClientConfig = array{
+ *     http_client?: scalar|null, // Service id of HTTP client to use (must implement GuzzleHttp\ClientInterface) // Default: null
+ *     http_client_options?: array{
+ *         timeout?: int,
+ *         proxy?: scalar|null,
+ *         verify?: bool, // Use only with proxy option set
+ *     },
+ *     clients?: array<string, array<string, mixed>>,
+ * }
  * @psalm-type ConfigType = array{
  *     imports?: ImportsConfig,
  *     parameters?: ParametersConfig,
@@ -1321,6 +1330,7 @@ namespace Symfony\Component\DependencyInjection\Loader\Configurator;
  *     symfonycasts_verify_email?: SymfonycastsVerifyEmailConfig,
  *     twig_component?: TwigComponentConfig,
  *     karser_recaptcha3?: KarserRecaptcha3Config,
+ *     knpu_oauth2_client?: KnpuOauth2ClientConfig,
  *     "when@dev"?: array{
  *         imports?: ImportsConfig,
  *         parameters?: ParametersConfig,
@@ -1336,6 +1346,7 @@ namespace Symfony\Component\DependencyInjection\Loader\Configurator;
  *         twig_component?: TwigComponentConfig,
  *         web_profiler?: WebProfilerConfig,
  *         karser_recaptcha3?: KarserRecaptcha3Config,
+ *         knpu_oauth2_client?: KnpuOauth2ClientConfig,
  *     },
  *     "when@prod"?: array{
  *         imports?: ImportsConfig,
@@ -1350,6 +1361,7 @@ namespace Symfony\Component\DependencyInjection\Loader\Configurator;
  *         symfonycasts_verify_email?: SymfonycastsVerifyEmailConfig,
  *         twig_component?: TwigComponentConfig,
  *         karser_recaptcha3?: KarserRecaptcha3Config,
+ *         knpu_oauth2_client?: KnpuOauth2ClientConfig,
  *     },
  *     "when@test"?: array{
  *         imports?: ImportsConfig,
@@ -1365,6 +1377,7 @@ namespace Symfony\Component\DependencyInjection\Loader\Configurator;
  *         twig_component?: TwigComponentConfig,
  *         web_profiler?: WebProfilerConfig,
  *         karser_recaptcha3?: KarserRecaptcha3Config,
+ *         knpu_oauth2_client?: KnpuOauth2ClientConfig,
  *     },
  *     ...<string, ExtensionType|array{ // extra keys must follow the when@%env% pattern or match an extension alias
  *         imports?: ImportsConfig,

@@ -29,6 +29,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(length: 180)]
     private ?string $email = null;
 
+    #[ORM\Column(length: 255, unique: true, nullable: true)]
+    private ?string $googleId = null;
+
     /**
      * @var list<string> The user roles
      */
@@ -38,7 +41,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     /**
      * @var string The hashed password
      */
-    #[ORM\Column]
+    #[ORM\Column(length: 255, nullable: true)]
     private ?string $password = null;
 
     #[ORM\Column(length: 255, nullable: true)]
@@ -90,7 +93,19 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function setEmail(string $email): static
     {
-        $this->email = $email;
+        $this->email = mb_strtolower(trim($email));
+
+        return $this;
+    }
+
+    public function getGoogleId(): ?string
+    {
+        return $this->googleId;
+    }
+
+    public function setGoogleId(?string $googleId): static
+    {
+        $this->googleId = $googleId;
 
         return $this;
     }
@@ -104,6 +119,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         return (string) $this->email;
     }
+
+    public function eraseCredentials(): void {}
 
     /**
      * @see UserInterface
@@ -135,7 +152,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this->password;
     }
 
-    public function setPassword(string $password): static
+    public function setPassword(?string $password): static
     {
         $this->password = $password;
 
@@ -145,13 +162,13 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     /**
      * Ensure the session doesn't contain actual password hashes by CRC32C-hashing them, as supported since Symfony 7.3.
      */
-    public function __serialize(): array
-    {
-        $data = (array) $this;
-        $data["\0" . self::class . "\0password"] = hash('crc32c', $this->password);
+    // public function __serialize(): array
+    // {
+    //     $data = (array) $this;
+    //     $data["\0" . self::class . "\0password"] = hash('crc32c', $this->password);
 
-        return $data;
-    }
+    //     return $data;
+    // }
 
     public function getFullName(): ?string
     {
@@ -324,4 +341,19 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         return (string) $this->lastname . " ( " . $this->email . " )";
     }
+
+    // ---------------------------------------------------------------------
+    // Helpers
+    // ---------------------------------------------------------------------
+
+    public function hasLocalPassword(): bool
+    {
+        return $this->password !== null && $this->password !== '';
+    }
+
+    public function hasGoogleLogin(): bool
+    {
+        return $this->googleId !== null && $this->googleId !== '';
+    }
+
 }

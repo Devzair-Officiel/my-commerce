@@ -135,40 +135,103 @@ class AccountController extends AbstractController
         UserPasswordHasherInterface $passwordHasher,
         EntityManagerInterface $em,
     ): JsonResponse {
+        
         $this->denyAccessUnlessGranted('ROLE_USER');
 
         $user = $this->getUser();
         if (!$user instanceof User) {
-            return new JsonResponse(['status' => 'error', 'message' => 'Unauthorized'], 401);
+            return new JsonResponse([
+                'status' => 'error',
+                'message' => 'Unauthorized',
+            ], 401);
         }
 
         $payload = json_decode($request->getContent() ?? '', true);
         if (!is_array($payload)) {
-            return new JsonResponse(['status' => 'error', 'message' => 'Invalid JSON'], 400);
+            return new JsonResponse([
+                'status' => 'error',
+                'message' => 'Invalid JSON',
+            ], 400);
+        }
+
+        $csrfToken = $request->headers->get('X-CSRF-TOKEN');
+
+        if (!is_string($csrfToken) || !$this->isCsrfTokenValid('change_password', $csrfToken)) {
+            return new JsonResponse([
+                'status' => 'error',
+                'message' => 'Jeton CSRF invalide.',
+            ], 419);
         }
 
         $currentPassword = $payload['currentPassword'] ?? null;
         $newPassword = $payload['newPassword'] ?? null;
+        $confirmPassword = $payload['confirmPassword'] ?? null;
 
-        if (!is_string($currentPassword) || !is_string($newPassword)) {
-            return new JsonResponse(['status' => 'error', 'message' => 'Invalid payload'], 400);
+        if (!is_string($newPassword) || !is_string($confirmPassword)) {
+            return new JsonResponse([
+                'status' => 'error',
+                'message' => 'Invalid payload',
+            ], 400);
         }
 
-        if (!$passwordHasher->isPasswordValid($user, $currentPassword)) {
-            return new JsonResponse(['status' => 'error', 'message' => 'Mot de passe actuel incorrect.'], 422);
+        $newPassword = trim($newPassword);
+        $confirmPassword = trim($confirmPassword);
+
+        if ($newPassword === '' || $confirmPassword === '') {
+            return new JsonResponse([
+                'status' => 'error',
+                'message' => 'Veuillez remplir tous les champs requis.',
+            ], 422);
         }
 
-        // ⚠️ Idéalement: utiliser les contraintes PasswordStrength / NotCompromisedPassword + validation formulaire
+        if ($newPassword !== $confirmPassword) {
+            return new JsonResponse([
+                'status' => 'error',
+                'message' => 'Les deux mots de passe ne correspondent pas.',
+            ], 422);
+        }
+
         if (mb_strlen($newPassword) < 8) {
-            return new JsonResponse(['status' => 'error', 'message' => 'Le nouveau mot de passe doit contenir au moins 8 caractères.'], 422);
+            return new JsonResponse([
+                'status' => 'error',
+                'message' => 'Le nouveau mot de passe doit contenir au moins 8 caractères.',
+            ], 422);
+        }
+
+        if (mb_strlen($newPassword) > 4096) {
+            return new JsonResponse([
+                'status' => 'error',
+                'message' => 'Le mot de passe est trop long.',
+            ], 422);
+        }
+
+        if ($user->hasLocalPassword()) {
+            if (!is_string($currentPassword) || $currentPassword === '') {
+                return new JsonResponse([
+                    'status' => 'error',
+                    'message' => 'Veuillez saisir votre mot de passe actuel.',
+                ], 422);
+            }
+
+            if (!$passwordHasher->isPasswordValid($user, $currentPassword)) {
+                return new JsonResponse([
+                    'status' => 'error',
+                    'message' => 'Mot de passe actuel incorrect.',
+                ], 422);
+            }
         }
 
         $user->setPassword($passwordHasher->hashPassword($user, $newPassword));
         $em->flush();
 
-        return new JsonResponse(['status' => 'success', 'message' => 'Mot de passe mis à jour avec succès.']);
+        return new JsonResponse([
+            'status' => 'success',
+            'message' => $user->hasGoogleLogin()
+                ? 'Mot de passe enregistré avec succès. Vous pouvez maintenant vous connecter avec Google ou avec votre email et mot de passe.'
+                : 'Mot de passe mis à jour avec succès.',
+        ]);
     }
-    
+
     #[Route('/account/orders/ajax', name: 'app_account_orders_ajax', methods: ['GET'])]
     public function ordersAjax(
         OrderRepository $orderRepo,

@@ -1,35 +1,48 @@
-function getCsrfToken() {
-  return document
-    .querySelector('meta[name="csrf-token-address"]')
-    ?.getAttribute("content");
+function getCsrfToken(metaName) {
+    return document
+        .querySelector(`meta[name="${metaName}"]`)
+        ?.getAttribute("content") ?? null;
 }
 
 export async function fetchJson(input, options = {}) {
-  const csrfToken = getCsrfToken();
+    const {
+        csrfMetaName = null,
+        headers = {},
+        ...fetchOptions
+    } = options;
 
-  const mergedHeaders = {
-    "Accept": "application/json",
-    ...(csrfToken ? { "X-CSRF-TOKEN": csrfToken } : {}),
-    ...(options.headers ?? {}),
-  };
+    const csrfToken = csrfMetaName ? getCsrfToken(csrfMetaName) : null;
 
-  const response = await fetch(input, {
-    credentials: "same-origin",
-    ...options,
-    headers: mergedHeaders, // IMPORTANT: après ...options pour ne pas être écrasé
-  });
+    const mergedHeaders = {
+        Accept: "application/json",
+        ...headers,
+    };
 
-  let data = null;
-  try {
-    data = await response.json();
-  } catch {}
+    if (csrfToken) {
+        mergedHeaders["X-CSRF-TOKEN"] = csrfToken;
+    }
 
-  if (!response.ok) {
-    const message =
-      (data && (data.error || data.message)) ||
-      `HTTP ${response.status} ${response.statusText}`;
-    throw new Error(message);
-  }
+    const response = await fetch(input, {
+        credentials: "same-origin",
+        ...fetchOptions,
+        headers: mergedHeaders,
+    });
 
-  return data;
+    let data = null;
+
+    try {
+        data = await response.json();
+    } catch {
+        data = null;
+    }
+
+    if (!response.ok) {
+        const message =
+            (data && (data.error || data.message)) ||
+            `HTTP ${response.status} ${response.statusText}`;
+
+        throw new Error(message);
+    }
+
+    return data;
 }
