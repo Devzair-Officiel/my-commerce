@@ -58,9 +58,6 @@ services:
             $appEnv: '%kernel.environment%'
             $stripePublicProd: '%env(string:default::STRIPE_PUBLIC_KEY)%'
             $stripeSecretProd: '%env(string:default::STRIPE_SECRET_KEY)%'
-            $paypalClientIdProd: '%env(string:default::PAYPAL_CLIENT_ID)%'
-            $paypalSecretProd: '%env(string:default::PAYPAL_SECRET)%'
-            $paypalBaseUrlProd: '%env(string:default::PAYPAL_BASE_URL)%'
 
     App\Service\CartService:
         arguments:

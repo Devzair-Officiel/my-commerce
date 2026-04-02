@@ -87,9 +87,6 @@ class Product
     #[ORM\ManyToMany(targetEntity: Category::class, inversedBy: 'products')]
     private Collection $categories;
 
-    // #[ORM\Column(length: 255, nullable: true)]
-    // private ?string $brand = null;
-
     #[ORM\Column(nullable: true)]
     private ?bool $isAvailable = true;
 
@@ -463,7 +460,7 @@ class Product
 
         foreach ($this->getMedias() as $media) {
             $name = $media?->getFilename();
-            if (is_string($name) && $name !== '') {
+            if (\is_string($name) && $name !== '') {
                 $filenames[] = $name;
             }
         }
@@ -477,7 +474,7 @@ class Product
         foreach ($this->getMedias() as $media) {
             if ($media->isCover() === true) {
                 $name = $media->getFilename();
-                if (is_string($name) && $name !== '') {
+                if (\is_string($name) && $name !== '') {
                     return $name;
                 }
             }
@@ -497,14 +494,14 @@ class Product
 
         foreach ($this->getMedias() as $media) {
             $filename = $media?->getFilename();
-            if (!is_string($filename) || $filename === '') {
+            if (!\is_string($filename) || $filename === '') {
                 continue;
             }
 
             $alt = $media?->getAlt();
             $data[] = [
                 'filename' => $filename,
-                'alt' => (is_string($alt) && $alt !== '') ? $alt : null,
+                'alt' => (\is_string($alt) && $alt !== '') ? $alt : null,
             ];
         }
 

@@ -20,7 +20,7 @@ final class ProductController extends AbstractController
     ])]
     public function showProduct(string $slug, SeoResolver $seoResolver, Request $request): Response
     {
-        $product = $this->productRepo->findOneBy(['slug' => $slug]);
+        $product = $this->productRepo->findOneBySlugWithRelations($slug);
 
         if (!$product) {
             return $this->render('page/not-fount.html.twig');
@@ -31,7 +31,7 @@ final class ProductController extends AbstractController
         return $this->render('product/show_product_by_slug.html.twig', [
             'product' => $product,
             'media' => $product->getMediaData(),
-            'productBestSeller' => $this->productRepo->findBy(['isBestSeller' => true]),
+            'productBestSeller' => $this->productRepo->findBestSellersWithMedias(),
             'relatedProducts' => $product->getRelatedProducts(),
             'seo' => $seo
         ]);
@@ -82,7 +82,7 @@ final class ProductController extends AbstractController
             throw $this->createNotFoundException('La catégorie demandée n\'existe pas');
         }
 
-        $products = $this->productRepo->getByCategories($category->getId());
+        $products = $this->productRepo->getByCategories((int) $category->getId());
         $seo = $seoResolver->forCategory($category, $request);
 
         // Passez les product à votre vue

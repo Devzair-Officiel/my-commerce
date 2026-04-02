@@ -125,13 +125,18 @@ final class CartService
             throw new \RuntimeException('Produit non trouvé.');
         }
 
-        $availableStock = (int) $product->getStock();
+        if ($product->isAvailable() === false) {
+            throw new \RuntimeException('Ce produit n\'est pas disponible.');
+        }
 
         $cart = $this->getCartRaw();
         $currentQty = (int) ($cart[$productId] ?? 0);
         $newQty = $currentQty + $count;
 
-        if ($availableStock > 0 && $newQty > $availableStock) {
+        // null = stock non géré (ex: produit numérique) → pas de limite
+        // 0   = épuisé → on bloque
+        $stock = $product->getStock();
+        if ($stock !== null && $newQty > $stock) {
             throw new \RuntimeException('Stock insuffisant pour le produit demandé.');
         }
 
@@ -394,13 +399,6 @@ final class CartService
         }
 
         return $rate;
-    }
-
-    private function getFreeShippingThresholdCents(): ?int
-    {
-        $v = $this->setting()->getFreeShippingThresholdCents();
-
-        return $v !== null ? max(0, (int) $v) : null;
     }
 
     private function setting(): Setting

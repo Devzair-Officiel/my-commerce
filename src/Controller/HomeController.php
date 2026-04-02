@@ -37,12 +37,10 @@ final class HomeController extends AbstractController
 
         return $this->render('home/index.html.twig', [
             'sliders' => $sliders,
-            'productBestSeller' => $this->product->findBy(['isBestSeller' => true], ['id' => 'DESC']),
-            'productNewArrival' => $this->product->findBy(['isNewArrival' => true], ['id' => 'DESC']),
-            'productAll' => $this->product->findBy(['isAvailable' => true], ['id' => 'DESC']),
-            // 'productSpecialOffer' => $this->product->findBy(['isSpecialOffer' => true]),
+            'productBestSeller' => $this->product->findFeaturedWithMedias('isBestSeller'),
+            'productNewArrival' => $this->product->findFeaturedWithMedias('isNewArrival'),
+            'productAll'        => $this->product->findFeaturedWithMedias('isAvailable'),
             'seo' => $seo,
-            
         ]);
     }
 }
