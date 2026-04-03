@@ -93,6 +93,9 @@
         ],
         "analyse": [
             "vendor/bin/phpstan analyse --memory-limit=512M"
+        ],
+        "test": [
+            "vendor/bin/phpunit --no-coverage --testdox"
         ]
     },
     "conflict": {
@@ -108,6 +111,9 @@
     "require-dev": {
         "phpstan/extension-installer": "*",
         "phpstan/phpstan": "*",
+        "phpunit/phpunit": "*",
+        "symfony/browser-kit": "8.0.*",
+        "symfony/css-selector": "8.0.*",
         "symfony/maker-bundle": "^1.65",
         "symfony/stopwatch": "8.0.*",
         "symfony/web-profiler-bundle": "8.0.*"

@@ -26,6 +26,12 @@ Ce projet est une application **e-commerce B2C** développée avec **Symfony** e
 
 ---
 
+Lancer des commande :
+  composer test      # lance les 24 tests
+  composer analyse   # PHPStan niveau 5
+
+---
+
 ## 🧭 Données globales du layout (header / footer)
 
 Les données communes au site public (header, footer, menus, paramètres généraux) sont fournies via des **variables globales Twig**, sans dépendre des controllers.
