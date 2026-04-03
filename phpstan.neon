@@ -1,0 +1,27 @@
+parameters:
+    level: 5
+    paths:
+        - src
+    # PHPDoc Doctrine : instanceof/nullsafe sur types issus des annotations
+    treatPhpDocTypesAsCertain: false
+    ignoreErrors:
+        # Doctrine assigne les IDs via l'ORM — PHPStan ne peut pas le détecter
+        - '#Property App\\Entity\\.+::\$id \(int\|null\) is never assigned int#'
+
+        # Propriétés d'entités lues par Doctrine via réflexion ou utilisées en Twig
+        - '#Property App\\Entity\\.+::\$.+ is never read, only written\.#'
+
+        # Méthodes de Authenticator/GoogleAuthenticator : return types hérités de Symfony
+        - '#Method App\\Security\\.+::.+ never returns .+#'
+
+        # method_exists sur Enum (label()) — toujours vrai en PHP 8.1+ backed enum
+        - '#Call to function method_exists\(\) with .+ will always evaluate to true#'
+
+        # ApiStripeController : PaymentReference est vérifié juste avant, PHPStan ne le sait pas
+        - { message: '#If condition is always true\.#', path: src/Controller/Api/ApiStripeController.php }
+
+        # CompareService : instanceof SessionInterface toujours vrai par design
+        - { message: '#Instanceof between .+ will always evaluate to true\.#', path: src/Service/CompareService.php }
+
+        # Order::$totalWeightGrams : utilisé en Twig et Doctrine, jamais lu via PHP pur
+        - { message: '#Property App\\Entity\\Order::\$totalWeightGrams#', path: src/Entity/Order.php }

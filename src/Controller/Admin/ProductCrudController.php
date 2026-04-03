@@ -16,7 +16,6 @@ use EasyCorp\Bundle\EasyAdminBundle\Field\SlugField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\ImageField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\MoneyField;
-use Symfony\Component\String\Slugger\SluggerInterface;
 use EasyCorp\Bundle\EasyAdminBundle\Field\BooleanField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\CountryField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\IntegerField;
@@ -28,7 +27,7 @@ use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
 
 final class ProductCrudController extends AbstractCrudController
 {
-    public function __construct(private readonly MediaFileManager $files, private readonly SluggerInterface $slugger,) {}
+    public function __construct(private readonly MediaFileManager $files) {}
 
     public static function getEntityFqcn(): string
     {

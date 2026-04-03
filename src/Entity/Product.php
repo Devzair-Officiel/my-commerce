@@ -447,7 +447,7 @@ class Product
         $filenames = [];
 
         foreach ($this->getMedias() as $media) {
-            $name = $media?->getFilename();
+            $name = $media->getFilename();
             if (\is_string($name) && $name !== '') {
                 $filenames[] = $name;
             }
@@ -481,12 +481,12 @@ class Product
         $data = [];
 
         foreach ($this->getMedias() as $media) {
-            $filename = $media?->getFilename();
+            $filename = $media->getFilename();
             if (!\is_string($filename) || $filename === '') {
                 continue;
             }
 
-            $alt = $media?->getAlt();
+            $alt = $media->getAlt();
             $data[] = [
                 'filename' => $filename,
                 'alt' => (\is_string($alt) && $alt !== '') ? $alt : null,

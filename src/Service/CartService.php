@@ -189,8 +189,8 @@ final class CartService
      *       regularPrice:mixed,
      *       displayPrice:int
      *     },
-     *     weight_grams: int
-     *     line_weight_grams: int
+     *     weight_grams: int,
+     *     line_weight_grams: int,
      *     quantity:int,
      *     sub_total_ht:int,
      *     taxe:int,

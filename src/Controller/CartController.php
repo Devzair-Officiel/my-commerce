@@ -40,7 +40,7 @@ class CartController extends AbstractController
     }
 
     #[Route('/cart/add/{productId}/{count}', name: 'app_add_cart')]
-    public function addToCart(string $productId, int $count = 1): Response
+    public function addToCart(int $productId, int $count = 1): Response
     {
         try {
             $this->cartService->addToCart($productId, $count);
@@ -53,7 +53,7 @@ class CartController extends AbstractController
     }
 
     #[Route('/cart/remove/{productId}/{count}', name: 'app_remove_cart')]
-    public function reomoveToCart(string $productId, int $count = 1): Response
+    public function removeToCart(int $productId, int $count = 1): Response
     {
         $this->cartService->removeToCart($productId, $count);
         $cart = $this->cartService->getCartDetails();
@@ -86,8 +86,5 @@ class CartController extends AbstractController
         ]);
 
         return $this->redirectToRoute("app_cart");
-
-        return $this->json($cart);
-
     }
 }

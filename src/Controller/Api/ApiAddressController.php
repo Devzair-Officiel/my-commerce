@@ -3,6 +3,7 @@
 namespace App\Controller\Api;
 
 use App\Entity\Address;
+use App\Entity\User;
 use App\Dto\AddressInput;
 use App\Security\AddressVoter;
 use App\Repository\AddressRepository;
@@ -37,7 +38,7 @@ class ApiAddressController extends AbstractController
         }
 
         $user = $this->getUser();
-        if (!$user) {
+        if (!$user instanceof User) {
             return $this->json([
                 'isSuccess' => false,
                 'message' => 'Vous devez être connecté',
@@ -94,7 +95,7 @@ class ApiAddressController extends AbstractController
         }
 
         $user = $this->getUser();
-        if (!$user) {
+        if (!$user instanceof User) {
             return $this->json([
                 'isSuccess' => false,
                 'message' => 'Vous devez être connecté',
@@ -158,7 +159,7 @@ class ApiAddressController extends AbstractController
         }
 
         $user = $this->getUser();
-        if (!$user) {
+        if (!$user instanceof User) {
             return $this->json([
                 'isSuccess' => false,
                 'message' => 'Vous devez être connecté',

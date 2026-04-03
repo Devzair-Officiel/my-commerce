@@ -133,7 +133,7 @@ final class StripeWebhookController extends AbstractController
 
                     // Stripe peut fournir cancellation_reason sur l'intent
                     $reason = null;
-                    if (isset($pi->cancellation_reason) && $pi->cancellation_reason !== null) {
+                    if (isset($pi->cancellation_reason)) {
                         $reason = 'Canceled: ' . (string) $pi->cancellation_reason;
                     } else {
                         $reason = 'Canceled';

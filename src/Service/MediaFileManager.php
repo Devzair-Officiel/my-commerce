@@ -61,7 +61,7 @@ final class MediaFileManager
             $paths[] = rtrim($this->uploadDirSettings, '/') . '/' . $filename;
         }
 
-        if ($media->getBlogs() !== null) {
+        if (!$media->getBlogs()->isEmpty()) {
             $paths[] = rtrim($this->uploadDirBlogs, '/') . '/' . $filename;
         }
 

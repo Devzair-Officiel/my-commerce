@@ -143,7 +143,7 @@ class Blog
         // Adapte le nom de la propriété: $this->medias / $this->media / etc.
         foreach ($this->getMedias() as $media) {
             // Adapte aussi getFilename() selon ton entité Media
-            $name = $media?->getFilename();
+            $name = $media->getFilename();
 
             if (is_string($name) && $name !== '') {
                 $filenames[] = $name;

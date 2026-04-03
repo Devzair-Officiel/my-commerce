@@ -146,7 +146,7 @@ class AccountController extends AbstractController
             ], 401);
         }
 
-        $payload = json_decode($request->getContent() ?? '', true);
+        $payload = json_decode($request->getContent(), true);
         if (!is_array($payload)) {
             return new JsonResponse([
                 'status' => 'error',
