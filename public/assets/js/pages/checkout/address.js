@@ -2,53 +2,84 @@ import { fetchJson } from "../../utils/fetch.js";
 import { showFlash } from "../../utils/flash.js";
 
 function getCsrfTokenAddress(root) {
-    // 1) priorite: data attribute (fiable)
     const fromData = root?.dataset?.addressCsrf;
-    if (typeof fromData === "string" && fromData.trim() !== "") return fromData.trim();
+    if (typeof fromData === "string" && fromData.trim() !== "") {
+        return fromData.trim();
+    }
 
-    // 2) fallback: meta (si ton layout le rend)
-    const fromMeta = document.querySelector('meta[name="csrf-token-address"]')?.getAttribute("content") || "";
+    const fromMeta = document
+        .querySelector('meta[name="csrf-token-address"]')
+        ?.getAttribute("content") || "";
+
     return String(fromMeta).trim();
 }
 
 async function initCountries(select, countriesUrl) {
     select.innerHTML = "";
+
     const countries = await fetchJson(countriesUrl, { headers: {} });
 
-    countries.forEach((c) => {
+    countries.forEach((country) => {
         const opt = document.createElement("option");
-        opt.value = c.alpha2Code;
-        opt.textContent = c.name;
+        opt.value = country.alpha2Code;
+        opt.textContent = country.name;
         select.appendChild(opt);
     });
 
-    if ([...select.options].some((o) => o.value === "FR")) select.value = "FR";
+    if ([...select.options].some((o) => o.value === "FR")) {
+        select.value = "FR";
+    }
 }
 
-function addOption(select, a) {
-    const opt = document.createElement("option");
-    opt.value = String(a.id);
-
-    const label = `${a.client_name ?? ""} (${a.street ?? ""} ${a.code_postal ?? ""} ${a.city ?? ""} ${a.state ?? ""})`
+function buildAddressLabel(address) {
+    return `${address.client_name ?? ""} (${address.street ?? ""} ${address.code_postal ?? ""} ${address.city ?? ""} ${address.state ?? ""})`
         .replace(/\s+/g, " ")
         .trim();
+}
 
-    opt.textContent = label;
+function addOption(select, address) {
+    const opt = document.createElement("option");
+    opt.value = String(address.id);
+    opt.textContent = buildAddressLabel(address);
     select.appendChild(opt);
+
     return opt;
 }
 
 function findLastAddress(addresses) {
-    // Ton API renvoie un tableau d'adresses: on prend la plus grande id (adresse la plus recente en pratique)
-    if (!Array.isArray(addresses) || addresses.length === 0) return null;
+    if (!Array.isArray(addresses) || addresses.length === 0) {
+        return null;
+    }
 
     let last = null;
-    for (const a of addresses) {
-        const id = Number(a?.id);
-        if (!Number.isFinite(id)) continue;
-        if (!last || id > Number(last.id)) last = a;
+
+    for (const address of addresses) {
+        const id = Number(address?.id);
+
+        if (!Number.isFinite(id)) {
+            continue;
+        }
+
+        if (!last || id > Number(last.id)) {
+            last = address;
+        }
     }
+
     return last;
+}
+
+function ensureOptionExists(select, address) {
+    const existing = [...select.options].find(
+        (option) => option.value === String(address.id)
+    );
+
+    if (existing) {
+        existing.textContent = buildAddressLabel(address);
+
+        return existing;
+    }
+
+    return addOption(select, address);
 }
 
 export function initCheckoutAddressInline() {
@@ -57,6 +88,7 @@ export function initCheckoutAddressInline() {
 
     const apiBase = root.dataset.addressApi;
     const countriesUrl = root.dataset.countriesUrl;
+
     if (!apiBase || !countriesUrl) return;
 
     const btn = document.getElementById("checkout-add-address-btn");
@@ -68,7 +100,9 @@ export function initCheckoutAddressInline() {
     const shippingSelect = document.getElementById("shipping_address");
     const billingSelect = document.getElementById("billing_address");
 
-    if (!btn || !card || !form || !cancel || !countrySelect || !shippingSelect || !billingSelect) return;
+    if (!btn || !card || !form || !cancel || !countrySelect || !shippingSelect || !billingSelect) {
+        return;
+    }
 
     initCountries(countrySelect, countriesUrl).catch(() => {
         showFlash("Impossible de charger la liste des pays.", "danger");
@@ -83,27 +117,44 @@ export function initCheckoutAddressInline() {
         card.classList.add("d-none");
         btn.classList.remove("d-none");
         form.reset();
-        if ([...countrySelect.options].some((o) => o.value === "FR")) countrySelect.value = "FR";
+
+        if ([...countrySelect.options].some((o) => o.value === "FR")) {
+            countrySelect.value = "FR";
+        }
     }
 
-    btn.addEventListener("click", (e) => {
-        e.preventDefault();
+    btn.addEventListener("click", (event) => {
+        event.preventDefault();
         open();
     });
 
-    cancel.addEventListener("click", () => close());
+    cancel.addEventListener("click", () => {
+        close();
+    });
 
-    form.addEventListener("submit", async (e) => {
-        e.preventDefault();
+    form.addEventListener("submit", async (event) => {
+        event.preventDefault();
 
         const formData = new FormData(form);
         const payload = Object.fromEntries(formData.entries());
 
-        for (const k of ["name", "client_name", "street", "code_postal", "city", "state", "more_details", "address_type"]) {
-            if (typeof payload[k] === "string") payload[k] = payload[k].trim();
+        for (const key of [
+            "name",
+            "client_name",
+            "street",
+            "code_postal",
+            "city",
+            "state",
+            "more_details",
+            "address_type",
+        ]) {
+            if (typeof payload[key] === "string") {
+                payload[key] = payload[key].trim();
+            }
         }
 
         const csrfToken = getCsrfTokenAddress(root);
+
         if (!csrfToken) {
             showFlash("CSRF token introuvable sur la page checkout.", "danger");
             return;
@@ -125,8 +176,9 @@ export function initCheckoutAddressInline() {
                 return;
             }
 
-            // Ton API renvoie un tableau: on prend la plus recente (id max)
-            const address = Array.isArray(result.data) ? findLastAddress(result.data) : result.data;
+            const address = Array.isArray(result.data)
+                ? findLastAddress(result.data)
+                : result.data;
 
             if (!address?.id) {
                 showFlash("Adresse enregistrée, mais réponse API inattendue.", "warning");
@@ -134,23 +186,39 @@ export function initCheckoutAddressInline() {
                 return;
             }
 
-            const exists = (sel) => [...sel.options].some((o) => o.value === String(address.id));
-            if (!exists(shippingSelect)) addOption(shippingSelect, address);
-            if (!exists(billingSelect)) addOption(billingSelect, address);
+            ensureOptionExists(shippingSelect, address);
+            ensureOptionExists(billingSelect, address);
 
-            if (address.address_type === "livraison") shippingSelect.value = String(address.id);
-            if (address.address_type === "facturation") billingSelect.value = String(address.id);
+            if (address.address_type === "livraison") {
+                shippingSelect.value = String(address.id);
+                if (!billingSelect.value) {
+                    billingSelect.value = String(address.id);
+                }
+            } else if (address.address_type === "facturation") {
+                billingSelect.value = String(address.id);
+                if (!shippingSelect.value) {
+                    shippingSelect.value = String(address.id);
+                }
+            } else {
+                if (!shippingSelect.value) {
+                    shippingSelect.value = String(address.id);
+                }
+                if (!billingSelect.value) {
+                    billingSelect.value = String(address.id);
+                }
+            }
 
-            if (!billingSelect.value) billingSelect.value = String(address.id);
-            if (!shippingSelect.value) shippingSelect.value = String(address.id);
-
-            showFlash(result.message ?? "Adresse ajoutée.", "success");
+            showFlash(result?.message ?? "Adresse ajoutée.", "success");
             close();
 
             shippingSelect.dispatchEvent(new Event("change", { bubbles: true }));
             billingSelect.dispatchEvent(new Event("change", { bubbles: true }));
-        } catch (err) {
-            showFlash(err?.message ?? "Erreur réseau.", "danger");
+        } catch (error) {
+            showFlash(error?.message ?? "Erreur réseau.", "danger");
         }
     });
 }
+
+document.addEventListener("DOMContentLoaded", () => {
+    initCheckoutAddressInline();
+});

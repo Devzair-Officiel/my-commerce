@@ -19,9 +19,6 @@ class OrderDetails
     #[ORM\Column]
     private ?int $id = null;
 
-    /**
-     * Référence produit interne (optionnel si tu veux supporter produit supprimé).
-     */
     #[ORM\Column(nullable: true)]
     #[Assert\Positive]
     private ?int $productId = null;
@@ -35,9 +32,14 @@ class OrderDetails
     #[Assert\Length(max: 4000)]
     private ?string $productDescription = null;
 
-    /**
-     * Prix unitaire appliqué (CENTIMES) au moment de l'achat.
-     */
+    #[ORM\Column(length: 2048, nullable: true)]
+    #[Assert\Length(max: 2048)]
+    private ?string $productImageUrl = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    #[Assert\Length(max: 255)]
+    private ?string $productImageAlt = null;
+
     #[ORM\Column]
     #[Assert\PositiveOrZero]
     private int $unitPriceCents = 0;
@@ -46,16 +48,10 @@ class OrderDetails
     #[Assert\Positive]
     private int $quantity = 1;
 
-    /**
-     * TVA ligne (CENTIMES) optionnelle.
-     */
     #[ORM\Column(nullable: true)]
     #[Assert\PositiveOrZero]
     private ?int $taxAmountCents = null;
 
-    /**
-     * Total ligne TTC (CENTIMES).
-     */
     #[ORM\Column]
     #[Assert\PositiveOrZero]
     private int $lineTotalCents = 0;
@@ -74,9 +70,11 @@ class OrderDetails
     {
         return $this->productId;
     }
+
     public function setProductId(?int $productId): static
     {
         $this->productId = $productId;
+
         return $this;
     }
 
@@ -84,9 +82,11 @@ class OrderDetails
     {
         return $this->productName;
     }
+
     public function setProductName(string $productName): static
     {
-        $this->productName = trim($productName);
+        $this->productName = $productName;
+
         return $this;
     }
 
@@ -94,9 +94,35 @@ class OrderDetails
     {
         return $this->productDescription;
     }
-    public function setProductDescription(?string $desc): static
+
+    public function setProductDescription(?string $productDescription): static
     {
-        $this->productDescription = $desc !== null ? trim($desc) : null;
+        $this->productDescription = $productDescription;
+
+        return $this;
+    }
+
+    public function getProductImageUrl(): ?string
+    {
+        return $this->productImageUrl;
+    }
+
+    public function setProductImageUrl(?string $productImageUrl): static
+    {
+        $this->productImageUrl = $productImageUrl;
+
+        return $this;
+    }
+
+    public function getProductImageAlt(): ?string
+    {
+        return $this->productImageAlt;
+    }
+
+    public function setProductImageAlt(?string $productImageAlt): static
+    {
+        $this->productImageAlt = $productImageAlt;
+
         return $this;
     }
 
@@ -104,9 +130,11 @@ class OrderDetails
     {
         return $this->unitPriceCents;
     }
-    public function setUnitPriceCents(int $cents): static
+
+    public function setUnitPriceCents(int $unitPriceCents): static
     {
-        $this->unitPriceCents = $cents;
+        $this->unitPriceCents = $unitPriceCents;
+
         return $this;
     }
 
@@ -114,9 +142,11 @@ class OrderDetails
     {
         return $this->quantity;
     }
+
     public function setQuantity(int $quantity): static
     {
         $this->quantity = $quantity;
+
         return $this;
     }
 
@@ -124,9 +154,11 @@ class OrderDetails
     {
         return $this->taxAmountCents;
     }
-    public function setTaxAmountCents(?int $cents): static
+
+    public function setTaxAmountCents(?int $taxAmountCents): static
     {
-        $this->taxAmountCents = $cents;
+        $this->taxAmountCents = $taxAmountCents;
+
         return $this;
     }
 
@@ -134,9 +166,11 @@ class OrderDetails
     {
         return $this->lineTotalCents;
     }
-    public function setLineTotalCents(int $cents): static
+
+    public function setLineTotalCents(int $lineTotalCents): static
     {
-        $this->lineTotalCents = $cents;
+        $this->lineTotalCents = $lineTotalCents;
+
         return $this;
     }
 
@@ -144,9 +178,11 @@ class OrderDetails
     {
         return $this->myOrder;
     }
+
     public function setMyOrder(?Order $myOrder): static
     {
         $this->myOrder = $myOrder;
+
         return $this;
     }
 }

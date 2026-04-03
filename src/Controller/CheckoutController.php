@@ -2,20 +2,23 @@
 
 namespace App\Controller;
 
-use App\Entity\User;
 use App\Entity\Order;
 use App\Entity\OrderDetails;
+use App\Entity\User;
 use App\Enum\FulfillmentStatus;
 use App\Enum\PaymentStatus;
+use App\Message\SendOrderConfirmationEmailMessage;
+use App\Repository\AddressRepository;
+use App\Repository\OrderRepository;
 use App\Service\CartService;
 use App\Service\StripeService;
-use App\Repository\OrderRepository;
-use App\Repository\AddressRepository;
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\RequestStack;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Messenger\MessageBusInterface;
+use Symfony\Component\Routing\Attribute\Route;
 
 class CheckoutController extends AbstractController
 {
@@ -23,6 +26,7 @@ class CheckoutController extends AbstractController
         private readonly CartService $cartService,
         private readonly EntityManagerInterface $em,
         private readonly OrderRepository $orderRepo,
+        private readonly RequestStack $requestStack,
     ) {}
 
     #[Route('/checkout', name: 'app_checkout', methods: ['GET'])]
@@ -56,8 +60,10 @@ class CheckoutController extends AbstractController
     }
 
     #[Route('/stripe/payment/success', name: 'app_stripe_payment_success', methods: ['GET'])]
-    public function stripePaymentSuccess(Request $request): Response
-    {
+    public function stripePaymentSuccess(
+        Request $request,
+        MessageBusInterface $messageBus,
+    ): Response {
         $this->denyAccessUnlessGranted('ROLE_USER');
 
         /** @var User $user */
@@ -84,10 +90,19 @@ class CheckoutController extends AbstractController
             ]);
         }
 
+        if (null === $order->getOrderReference()) {
+            $order->generateOrderReferenceIfMissing();
+        }
+
         if ($order->getCartClearedAt() === null) {
             $this->cartService->clearCart();
             $order->markCartCleared();
-            $this->em->flush();
+        }
+
+        $this->em->flush();
+
+        if (!$order->isConfirmationEmailSent()) {
+            $messageBus->dispatch(new SendOrderConfirmationEmailMessage($order->getId()));
         }
 
         return $this->render('payment/success.html.twig', [
@@ -95,12 +110,6 @@ class CheckoutController extends AbstractController
         ]);
     }
 
-    /**
-     * Crée une commande "draft" à partir du panier.
-     * - 1 commande draft active par user (on écrase son contenu si elle existe)
-     * - Montants en centimes
-     * - Lignes recréées à chaque /checkout
-     */
     private function createDraftOrderFromCart(User $user, array $cart): Order
     {
         $draft = $this->orderRepo->findOneBy([
@@ -116,6 +125,7 @@ class CheckoutController extends AbstractController
         $order = $draft ?? new Order();
         $order->setUser($user);
         $order->setFulfillmentStatus(FulfillmentStatus::Draft);
+        $order->generateOrderReferenceIfMissing();
 
         $itemsTotalHtCents = (int) ($cart['sub_total_ht'] ?? 0);
         $taxAmountCents = isset($cart['taxe']) ? (int) $cart['taxe'] : null;
@@ -126,6 +136,7 @@ class CheckoutController extends AbstractController
         $order->setTaxAmountCents($taxAmountCents);
         $order->setOrderTotalTtcCents($orderTotalTtcCents);
         $order->setTotalWeightGrams($totalWeightGrams);
+        $order->setCurrency('EUR');
 
         $carrierName = (string) (($cart['carrier']['name'] ?? '') ?: '');
         $carrierPriceCents = (int) ($cart['carrier']['price'] ?? 0);
@@ -136,6 +147,7 @@ class CheckoutController extends AbstractController
         if ($order->getBillingAddress() === null) {
             $order->setBillingAddress('');
         }
+
         if ($order->getShippingAddress() === null) {
             $order->setShippingAddress('');
         }
@@ -156,12 +168,24 @@ class CheckoutController extends AbstractController
             $lineTotalCents = (int) ($item['sub_total'] ?? ($unitPriceCents * $qty));
             $lineTaxCents = isset($item['taxe']) ? (int) $item['taxe'] : null;
 
+            $media = $product['image'][0] ?? null;
+            $imageFilename = is_array($media) ? ($media['filename'] ?? null) : null;
+            $imageAlt = is_array($media) ? ($media['alt'] ?? null) : null;
+
             $detail = new OrderDetails();
             $detail->setProductId(isset($product['id']) ? (int) $product['id'] : null);
             $detail->setProductName((string) ($product['title'] ?? ''));
             $detail->setProductDescription(
                 isset($product['description'])
                     ? mb_substr((string) $product['description'], 0, 2000)
+                    : null
+            );
+            $detail->setProductImageUrl($this->buildAbsoluteProductImageUrl(
+                is_string($imageFilename) && $imageFilename !== '' ? $imageFilename : null
+            ));
+            $detail->setProductImageAlt(
+                is_string($imageAlt) && $imageAlt !== ''
+                    ? mb_substr($imageAlt, 0, 255)
                     : null
             );
             $detail->setUnitPriceCents($unitPriceCents);
@@ -176,5 +200,19 @@ class CheckoutController extends AbstractController
         $this->em->flush();
 
         return $order;
+    }
+
+    private function buildAbsoluteProductImageUrl(?string $filename): ?string
+    {
+        if (!$filename) {
+            return null;
+        }
+
+        $request = $this->requestStack->getCurrentRequest();
+        if (null === $request) {
+            return null;
+        }
+
+        return $request->getSchemeAndHttpHost() . '/assets/images/products/' . ltrim($filename, '/');
     }
 }

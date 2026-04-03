@@ -1,41 +1,37 @@
-// assets/js/pages/checkout/stripe.js
 import { fetchJson } from "../../utils/fetch.js";
 import { showFlash } from "../../utils/flash.js";
 
 document.addEventListener("DOMContentLoaded", () => {
-    // ----------------
-    // DATA FROM DOM
-    // ----------------
     const mainContent = document.querySelector(".main_content");
+    if (!mainContent) return;
 
-    // IMPORTANT: dataset transforme data-stripe_public_key => stripePublicKey
-    const stripePublicKey = mainContent?.dataset?.stripePublicKey ?? "";
-    const orderId = mainContent?.dataset?.orderid ?? "";
+    const stripePublicKey = mainContent.dataset?.stripePublicKey ?? "";
+    const orderId = mainContent.dataset?.orderid ?? "";
 
     let cart = { items: [] };
-    try {
-        cart = JSON.parse(mainContent?.dataset?.cart ?? "{}");
-    } catch (e) {
-        console.error("Invalid cart JSON in data-cart", e);
-    }
-    const items = cart?.items ?? [];
 
-    // ----------------
-    // ADDRESS / COMMENT + SHOW PAY BUTTON
-    // ----------------
-    let billingAddress = "";
-    let shippingAddress = "";
-    let comment = "";
+    try {
+        cart = JSON.parse(mainContent.dataset?.cart ?? "{}");
+    } catch (error) {
+        console.error("Invalid cart JSON in data-cart", error);
+    }
+
+    const items = Array.isArray(cart?.items) ? cart.items : [];
 
     const billingAddressSelect = document.querySelector('select[name="billing_address"]');
     const shippingAddressSelect = document.querySelector('select[name="shipping_address"]');
-    const commentsTextarea = document.querySelector('textarea[name="comment"], textarea');
+    const commentsTextarea = document.querySelector('textarea[name="comment"]');
 
     const payBtnContainer = document.querySelector(".payment-button");
     const payBtnLink = document.getElementById("open-payment-modal");
 
+    let billingAddress = billingAddressSelect?.value ?? "";
+    let shippingAddress = shippingAddressSelect?.value ?? "";
+    let comment = commentsTextarea?.value ?? "";
+
     const updateButton = () => {
         if (!payBtnContainer) return;
+
         const displayPayBtn = Boolean(billingAddress) && Boolean(shippingAddress);
         payBtnContainer.classList.toggle("d-none", !displayPayBtn);
     };
@@ -50,13 +46,12 @@ document.addEventListener("DOMContentLoaded", () => {
         updateButton();
     });
 
-    commentsTextarea?.addEventListener("change", (event) => {
+    commentsTextarea?.addEventListener("input", (event) => {
         comment = event.target?.value ?? "";
     });
 
-    // ----------------
-    // STRIPE COMPONENT
-    // ----------------
+    updateButton();
+
     if (!stripePublicKey || !orderId) return;
     if (typeof Stripe === "undefined") return;
 
@@ -64,25 +59,28 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!paymentForm) return;
 
     const modalEl = document.getElementById("staticBackdrop");
+    if (!modalEl) return;
+
     const stripe = Stripe(stripePublicKey);
 
     let elements = null;
     let emailAddress = "";
     let stripeInitialized = false;
 
-    // Empêche l'ouverture de la modal si on ne peut pas sauvegarder l'ordre
     if (payBtnLink) {
-        payBtnLink.addEventListener("click", async (e) => {
-            e.preventDefault();
+        payBtnLink.addEventListener("click", async (event) => {
+            event.preventDefault();
 
             try {
-                if (!orderId) throw new Error("orderId manquant.");
+                if (!orderId) {
+                    throw new Error("orderId manquant.");
+                }
+
                 if (!billingAddressSelect?.value || !shippingAddressSelect?.value) {
                     throw new Error("Adresse de facturation et de livraison requises.");
                 }
 
-                // 1) Sauvegarde order (adresses + commentaire) AVANT paiement
-                await fetchJson(`/api/order/${orderId}`, {
+                const orderUpdate = await fetchJson(`/api/order/${orderId}`, {
                     method: "PATCH",
                     headers: {
                         "Content-Type": "application/json",
@@ -95,11 +93,12 @@ document.addEventListener("DOMContentLoaded", () => {
                     }),
                 });
 
-                // 2) Prépare Stripe Elements AVANT d’ouvrir la modale
+                if (!orderUpdate?.ok) {
+                    throw new Error("Impossible d'enregistrer la commande avant paiement.");
+                }
+
                 await ensureStripeReady();
 
-                // 3) Ouvre la modale quand tout est prêt
-                // Bootstrap 5 global "bootstrap" (dispo si bootstrap.min.js est chargé)
                 const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
                 modal.show();
             } catch (error) {
@@ -110,35 +109,37 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-
-    // Soumission du formulaire Stripe
     paymentForm.addEventListener("submit", handleSubmit);
 
-    // Optionnel : checkStatus si tu reviens sur une page avec payment_intent_client_secret
-    checkStatus().catch((e) => console.error(e));
+    checkStatus().catch((error) => console.error(error));
 
     async function ensureStripeReady() {
-        if (stripeInitialized && elements) return;
+        if (stripeInitialized && elements) {
+            return;
+        }
 
-        // reset visuel éventuel
-        const pe = document.querySelector("#payment-element");
-        const la = document.querySelector("#link-authentication-element");
-        if (pe) pe.innerHTML = "";
-        if (la) la.innerHTML = "";
+        const paymentElementContainer = document.querySelector("#payment-element");
+        const linkAuthContainer = document.querySelector("#link-authentication-element");
+
+        if (paymentElementContainer) {
+            paymentElementContainer.innerHTML = "";
+        }
+
+        if (linkAuthContainer) {
+            linkAuthContainer.innerHTML = "";
+        }
 
         await initializeStripeElements();
         stripeInitialized = true;
     }
 
     async function initializeStripeElements() {
-        // Optionnel mais utile : si l'utilisateur ouvre le modal sans avoir rempli les adresses,
-        // on bloque ici aussi.
         if (!billingAddressSelect?.value || !shippingAddressSelect?.value) {
             throw new Error("Sélectionnez les adresses avant de payer.");
         }
 
-        // Crée PaymentIntent côté serveur et récupère le clientSecret
         let data;
+
         try {
             data = await fetchJson(`/api/stripe/payment-intent/${orderId}`, {
                 method: "POST",
@@ -148,34 +149,25 @@ document.addEventListener("DOMContentLoaded", () => {
                 },
                 body: JSON.stringify({ items }),
             });
-        } catch (err) {
-            // fetchJson peut throw sur 4xx/5xx selon ton implémentation
-            throw new Error(err?.message ?? "Erreur lors de la création du paiement Stripe.");
+        } catch (error) {
+            throw new Error(error?.message ?? "Erreur lors de la création du paiement Stripe.");
         }
 
         const clientSecret = data?.clientSecret;
+
         if (!clientSecret) {
-            // affiche la réponse pour debug
             console.error("Stripe intent response:", data);
-            throw new Error("Impossible d'initialiser le paiement Stripe (clientSecret manquant).");
+            throw new Error("Impossible d'initialiser le paiement Stripe.");
         }
 
         elements = stripe.elements({ clientSecret });
 
-        // Link Authentication (email)
-        // const linkAuthenticationElement = elements.create("linkAuthentication");
-        // linkAuthenticationElement.mount("#link-authentication-element");
-        // linkAuthenticationElement.on("change", (event) => {
-        //     emailAddress = event?.value?.email ?? "";
-        // });
-
-        // Payment Element
         const paymentElement = elements.create("payment", { layout: "tabs" });
         paymentElement.mount("#payment-element");
     }
 
-    async function handleSubmit(e) {
-        e.preventDefault();
+    async function handleSubmit(event) {
+        event.preventDefault();
 
         if (!elements) {
             showMessage("Le formulaire de paiement n'est pas prêt. Réessayez.");
@@ -206,8 +198,12 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     async function checkStatus() {
-        const clientSecret = new URLSearchParams(window.location.search).get("payment_intent_client_secret");
-        if (!clientSecret) return;
+        const clientSecret = new URLSearchParams(window.location.search)
+            .get("payment_intent_client_secret");
+
+        if (!clientSecret) {
+            return;
+        }
 
         const { paymentIntent } = await stripe.retrievePaymentIntent(clientSecret);
 
@@ -234,7 +230,7 @@ document.addEventListener("DOMContentLoaded", () => {
         messageContainer.classList.remove("hidden");
         messageContainer.textContent = String(messageText ?? "");
 
-        setTimeout(() => {
+        window.setTimeout(() => {
             messageContainer.classList.add("hidden");
             messageContainer.textContent = "";
         }, 4000);

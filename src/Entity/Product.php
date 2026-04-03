@@ -286,18 +286,6 @@ class Product
         return $this;
     }
 
-    // public function getBrand(): ?string
-    // {
-    //     return $this->brand;
-    // }
-
-    // public function setBrand(?string $brand): static
-    // {
-    //     $this->brand = $brand;
-
-    //     return $this;
-    // }
-
     public function isAvailable(): ?bool
     {
         return $this->isAvailable;

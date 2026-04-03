@@ -2,7 +2,6 @@
 
 namespace App\Controller\Api;
 
-use App\Entity\Address;
 use App\Entity\User;
 use App\Repository\AddressRepository;
 use App\Repository\OrderRepository;
@@ -31,45 +30,57 @@ final class ApiOrderController extends AbstractController
             return $this->json(['error' => 'Unauthorized'], 401);
         }
 
-        // Ownership: empêche de modifier la commande d’un autre user
-        $order = $orderRepo->findOneBy(['id' => $id, 'user' => $user]);
+        $order = $orderRepo->findOneBy([
+            'id' => $id,
+            'user' => $user,
+        ]);
+
         if (!$order) {
             return $this->json(['error' => 'Order not found'], 404);
         }
 
         $payload = $request->toArray();
 
-        // ✅ On attend des IDs, pas des strings
         $shippingRaw = $payload['shipping_address'] ?? null;
-        $billingRaw  = $payload['billing_address'] ?? null;
+        $billingRaw = $payload['billing_address'] ?? null;
 
         $shippingId = is_numeric($shippingRaw) ? (int) $shippingRaw : null;
-        $billingId  = is_numeric($billingRaw) ? (int) $billingRaw : null;
+        $billingId = is_numeric($billingRaw) ? (int) $billingRaw : null;
 
         if ($shippingId !== null) {
-            $shippingAddress = $addressRepo->find($shippingId);
+            $shippingAddress = $addressRepo->findOneBy([
+                'id' => $shippingId,
+                'user' => $user,
+            ]);
 
-            if (!$shippingAddress instanceof Address || $shippingAddress->getUser() !== $user) {
+            if (!$shippingAddress) {
                 return $this->json(['error' => 'Invalid shipping address'], 403);
             }
 
-            // ✅ SNAPSHOT TEXTE
-            $order->setShippingAddress($shippingAddress->toSnapshotString());
+            $order->setShippingAddress($shippingAddress->toMultilineSnapshot());
+
+            if ($billingId === null && !$order->getBillingAddress()) {
+                $order->setBillingAddress($shippingAddress->toMultilineSnapshot());
+            }
         }
 
         if ($billingId !== null) {
-            $billingAddress = $addressRepo->find($billingId);
+            $billingAddress = $addressRepo->findOneBy([
+                'id' => $billingId,
+                'user' => $user,
+            ]);
 
-            if (!$billingAddress instanceof Address || $billingAddress->getUser() !== $user) {
+            if (!$billingAddress) {
                 return $this->json(['error' => 'Invalid billing address'], 403);
             }
 
-            $order->setBillingAddress($billingAddress->toSnapshotString());
+            $order->setBillingAddress($billingAddress->toMultilineSnapshot());
         }
 
         $violations = $validator->validate($order);
         if (count($violations) > 0) {
             $errors = [];
+
             foreach ($violations as $violation) {
                 $errors[] = [
                     'field' => $violation->getPropertyPath(),
@@ -77,7 +88,10 @@ final class ApiOrderController extends AbstractController
                 ];
             }
 
-            return $this->json(['error' => 'Validation failed', 'violations' => $errors], 422);
+            return $this->json([
+                'error' => 'Validation failed',
+                'violations' => $errors,
+            ], 422);
         }
 
         $em->flush();

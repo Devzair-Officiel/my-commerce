@@ -6,7 +6,6 @@ use App\Trait\DateTrait;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use App\Repository\AddressRepository;
-use DH\Auditor\Provider\Doctrine\Auditing\Annotation\Auditable;
 
 #[ORM\Entity(repositoryClass: AddressRepository::class)]
 #[ORM\HasLifecycleCallbacks]
@@ -59,7 +58,7 @@ class Address
 
     public function setName(string $name): static
     {
-        $this->name = $name;
+        $this->name = trim($name);
 
         return $this;
     }
@@ -71,7 +70,7 @@ class Address
 
     public function setClientName(string $client_name): static
     {
-        $this->client_name = $client_name;
+        $this->client_name = trim($client_name);
 
         return $this;
     }
@@ -83,7 +82,7 @@ class Address
 
     public function setStreet(string $street): static
     {
-        $this->street = $street;
+        $this->street = trim($street);
 
         return $this;
     }
@@ -95,7 +94,7 @@ class Address
 
     public function setCodePostal(?string $code_postal): static
     {
-        $this->code_postal = $code_postal;
+        $this->code_postal = null !== $code_postal ? trim($code_postal) : null;
 
         return $this;
     }
@@ -107,7 +106,7 @@ class Address
 
     public function setCity(string $city): static
     {
-        $this->city = $city;
+        $this->city = trim($city);
 
         return $this;
     }
@@ -119,7 +118,7 @@ class Address
 
     public function setState(string $state): static
     {
-        $this->state = $state;
+        $this->state = trim($state);
 
         return $this;
     }
@@ -131,7 +130,7 @@ class Address
 
     public function setMoreDetails(?string $more_details): static
     {
-        $this->more_details = $more_details;
+        $this->more_details = null !== $more_details ? trim($more_details) : null;
 
         return $this;
     }
@@ -148,28 +147,6 @@ class Address
         return $this;
     }
 
-    public function __toString(): string
-    {
-        return sprintf('Adresse #%d', $this->id ?? 0);
-    }
-
-    public function toSnapshotString(): string
-    {
-        $parts = [
-            $this->client_name,
-            $this->name ? '(' . $this->name . ')' : null,
-            $this->street,
-            $this->code_postal,
-            $this->city,
-            $this->state,
-        ];
-
-        $parts = array_filter($parts, static fn($v) => is_string($v) && trim($v) !== '');
-
-        return implode(' ', array_map('trim', $parts));
-    }
-
-
     public function getAddressType(): ?string
     {
         return $this->address_type;
@@ -177,8 +154,39 @@ class Address
 
     public function setAddressType(?string $address_type): static
     {
-        $this->address_type = $address_type;
+        $this->address_type = null !== $address_type ? trim($address_type) : null;
 
         return $this;
+    }
+
+    public function __toString(): string
+    {
+        return sprintf('Adresse #%d', $this->id ?? 0);
+    }
+
+    public function toMultilineSnapshot(): string
+    {
+        $lines = array_filter([
+            $this->getClientName(),
+            $this->getName() ? '(' . trim($this->getName()) . ')' : null,
+            $this->getStreet(),
+            trim(sprintf(
+                '%s %s',
+                (string) $this->getCodePostal(),
+                (string) $this->getCity()
+            )),
+            $this->getState(),
+            $this->getMoreDetails(),
+        ], static fn($value): bool => is_string($value) && trim($value) !== '');
+
+        return implode("\n", array_map(
+            static fn(string $value): string => trim($value),
+            $lines
+        ));
+    }
+
+    public function toSnapshotString(): string
+    {
+        return str_replace("\n", ' ', $this->toMultilineSnapshot());
     }
 }

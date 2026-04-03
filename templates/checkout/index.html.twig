@@ -1,7 +1,6 @@
 {% extends 'checkout.html.twig' %}
 
-{% block title %}Miel World | check!
-{% endblock %}
+{% block title %}Miel World | check!{% endblock %}
 
 {% block stylesheets %}
 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" integrity="sha512-z3gLpd7yknf1YoNbCzqRKc4qyor8gaKU1qmn+CShxbuBusANI9QpRohGBreCFkKxLhei6S9CQXFEbbKuqLg0DA==" crossorigin="anonymous" referrerpolicy="no-referrer"/>
@@ -9,22 +8,25 @@
 	<script src="https://js.stripe.com/v3/"></script>
 {% endblock %}
 
-
 {% block csrf_meta %}
 	<meta name="csrf-token-address" content="{{ csrf_token('address_api') }}">
 {% endblock %}
 
-
 {% block body %}
-
-	{# Total produits (somme des quantités) #}
 	{% set total_products = 0 %}
 	{% for item in cart.items %}
 		{% set total_products = total_products + (item.quantity ?? 0) %}
 	{% endfor %}
 
-	<div class="main_content" data-stripe-public-key="{{ stripe_public_key }}" data-cart="{{ cart_json|e('html_attr') }}" data-orderid="{{ orderId }}" data-address-api="{{ address_api }}" data-address-csrf="{{ csrf_token('address_api') }}" data-countries-url="{{ asset('assets/data/countries.json') }}">
-
+	<div
+		class="main_content"
+		data-stripe-public-key="{{ stripe_public_key }}"
+		data-cart="{{ cart_json|e('html_attr') }}"
+		data-orderid="{{ orderId }}"
+		data-address-api="{{ address_api }}"
+		data-address-csrf="{{ csrf_token('address_api') }}"
+		data-countries-url="{{ asset('assets/data/countries.json') }}"
+	>
 		<div class="section">
 			<div class="container">
 				<div class="row">
@@ -32,44 +34,37 @@
 						<div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
 							<a href="{{ path('app_cart') }}" class="btn btn-outline-secondary btn-sm" aria-label="Revenir au panier">
 								<i class="fa-solid fa-arrow-left me-1" aria-hidden="true"></i>
-								Revenir au Panier
+								Revenir au panier
 							</a>
+
 							<div class="d-flex align-items-center gap-2 flex-wrap">
 								<h3 class="mb-0">Checkout</h3>
 							</div>
 
 							<div class="badge bg-light text-dark border">
-								{{ total_products }}
-								produit
-								{% if total_products > 1 %}s
-								{% endif %}
-								dans le panier
+								{{ total_products }} produit{% if total_products > 1 %}s{% endif %} dans le panier
 							</div>
 						</div>
 						<hr>
 					</div>
 				</div>
 
-				<div
-					class="row">
-					{# COL GAUCHE #}
+				<div class="row">
 					<div class="col-md-6">
 						<div class="heading_s1 mb-3">
 							<h4>Adresse de livraison</h4>
+
 							<label class="visually-hidden" for="shipping_address">Adresse de livraison</label>
 							<select id="shipping_address" name="shipping_address" class="form-control" required>
 								<option value="">--- Choisir l'adresse de livraison ---</option>
 								{% for address in addresses %}
-									{# IMPORTANT: on met une value stable (id) plutôt qu'un texte #}
 									<option value="{{ address.id }}">
 										{{ address.clientName }}
-										({{ address.street }}
-										{{ address.codePostal }}
-										{{ address.city }}
-										{{ address.state }})
+										({{ address.street }} {{ address.codePostal }} {{ address.city }} {{ address.state }})
 									</option>
 								{% endfor %}
 							</select>
+
 							{% if addresses|length == 0 %}
 								<div class="alert alert-warning mt-2" role="status">
 									Vous n’avez aucune adresse enregistrée. Ajoutez-en une pour continuer.
@@ -89,8 +84,7 @@
 									<form id="checkoutAddressForm">
 										<div class="row">
 											<div class="form-group col-md-12 mb-3">
-												<label>Type de l'adresse<span class="required">*</span>
-												</label>
+												<label>Type de l'adresse<span class="required">*</span></label>
 												<select name="address_type" class="form-control" required>
 													<option value="livraison">Livraison</option>
 													<option value="facturation">Facturation</option>
@@ -98,38 +92,32 @@
 											</div>
 
 											<div class="form-group col-md-12 mb-3">
-												<label>Nom de l'adresse<span class="required">*</span>
-												</label>
+												<label>Nom de l'adresse<span class="required">*</span></label>
 												<input required class="form-control" name="name" type="text">
 											</div>
 
 											<div class="form-group col-md-12 mb-3">
-												<label>Nom du destinataire<span class="required">*</span>
-												</label>
+												<label>Nom du destinataire<span class="required">*</span></label>
 												<input required class="form-control" name="client_name" type="text">
 											</div>
 
 											<div class="form-group col-md-6 mb-3">
-												<label>Rue<span class="required">*</span>
-												</label>
+												<label>Rue<span class="required">*</span></label>
 												<input required class="form-control" name="street" type="text">
 											</div>
 
 											<div class="form-group col-md-6 mb-3">
-												<label>Ville<span class="required">*</span>
-												</label>
+												<label>Ville<span class="required">*</span></label>
 												<input required class="form-control" name="city" type="text">
 											</div>
 
 											<div class="form-group col-md-6 mb-3">
-												<label>Code postal<span class="required">*</span>
-												</label>
-												<input required class="form-control" name="code_postal" type="text" inputmode="numeric" maxlength="5">
+												<label>Code postal<span class="required">*</span></label>
+												<input required class="form-control" name="code_postal" type="text" inputmode="numeric" maxlength="10">
 											</div>
 
 											<div class="form-group col-md-6 mb-3">
-												<label>Pays<span class="required">*</span>
-												</label>
+												<label>Pays<span class="required">*</span></label>
 												<select class="form-control" name="state" id="checkout-state" required></select>
 											</div>
 
@@ -152,16 +140,14 @@
 
 						<div class="heading_s1 mb-3">
 							<h4>Adresse de facturation</h4>
+
 							<label class="visually-hidden" for="billing_address">Adresse de facturation</label>
 							<select id="billing_address" name="billing_address" class="form-control" required>
 								<option value="">--- Choisir l'adresse de facturation ---</option>
 								{% for address in addresses %}
 									<option value="{{ address.id }}">
 										{{ address.clientName }}
-										({{ address.street }}
-										{{ address.codePostal }}
-										{{ address.city }}
-										{{ address.state }})
+										({{ address.street }} {{ address.codePostal }} {{ address.city }} {{ address.state }})
 									</option>
 								{% endfor %}
 							</select>
@@ -170,20 +156,25 @@
 						<div class="heading_s1 mb-3">
 							<h4>Commentaire</h4>
 							<label class="visually-hidden" for="comment">Commentaire</label>
-							<textarea class="form-control" name="comment" id="comment" cols="30" rows="6" maxlength="2000" placeholder="(Optionnel) Indications pour la livraison..."></textarea>
+							<textarea
+								class="form-control"
+								name="comment"
+								id="comment"
+								cols="30"
+								rows="6"
+								maxlength="2000"
+								placeholder="(Optionnel) Indications pour la livraison..."
+							></textarea>
 							<small class="text-muted">2000 caractères max.</small>
 						</div>
 					</div>
 
-					{# COL DROITE #}
 					<div class="col-md-6">
 						<div class="order_review">
 							<div class="heading_s1 d-flex justify-content-between align-items-center">
 								<h4 class="mb-0">Votre commande</h4>
-								<span class="text-muted small">{{ total_products }}
-									article
-									{% if total_products > 1 %}s
-									{% endif %}
+								<span class="text-muted small">
+									{{ total_products }} article{% if total_products > 1 %}s{% endif %}
 								</span>
 							</div>
 
@@ -201,7 +192,13 @@
 											<tr>
 												<td>
 													<div class="d-flex align-items-center gap-2">
-														<img src="/assets/images/products/{{ item.product.image[0].filename }}" width="36" height="36" loading="lazy" alt="{{ item.product.image[0].alt }}"/>
+														<img
+															src="/assets/images/products/{{ item.product.image[0].filename }}"
+															width="36"
+															height="36"
+															loading="lazy"
+															alt="{{ item.product.image[0].alt }}"
+														/>
 														<div>
 															<div class="fw-semibold">{{ item.product.title }}</div>
 															<div class="small text-muted">
@@ -229,21 +226,20 @@
 											<td class="text-end">{{ (cart.taxe / 100)|format_currency('EUR') }}</td>
 										</tr>
 										<tr>
-											{% if cart.carrier.free_shipping %}
-												<th>Livraison offerte</th>
-												<td class="text-end">Offert</td>
-											{% else %}
-												<th>Frais de livraison</th>
-												<td class="text-end">{{ (cart.carrier.price / 100)|format_currency('EUR') }}</td>
-											{% endif %}
-											{% if not cart.carrier.free_shipping %}
-												{% if cart.free_shipping_remaining > 0 %}
-													<div class="alert alert-info mt-2 mb-0" role="status">
-														🎁 Livraison offerte dès 100 € d'achat — encore
-														<strong>{{ (cart.free_shipping_remaining / 100)|format_currency('EUR') }}</strong>
-													</div>
+											<th>
+												{% if cart.carrier.free_shipping %}
+													Livraison offerte
+												{% else %}
+													Frais de livraison
 												{% endif %}
-											{% endif %}
+											</th>
+											<td class="text-end">
+												{% if cart.carrier.free_shipping %}
+													Offert
+												{% else %}
+													{{ (cart.carrier.price / 100)|format_currency('EUR') }}
+												{% endif %}
+											</td>
 										</tr>
 										<tr>
 											<th>Total TTC</th>
@@ -255,34 +251,43 @@
 								</table>
 							</div>
 
-							{# Zone message #}
+							{% if not cart.carrier.free_shipping and cart.free_shipping_remaining > 0 %}
+								<div class="alert alert-info mt-2" role="status">
+									🎁 Livraison offerte dès 100 € d'achat — encore
+									<strong>{{ (cart.free_shipping_remaining / 100)|format_currency('EUR') }}</strong>
+								</div>
+							{% endif %}
+
 							<div class="alert alert-info mt-2 mb-0" role="status">
 								Sélectionne une adresse de livraison et de facturation pour afficher le bouton de paiement.
 							</div>
 
 							<div class="payment-button d-none m-2">
 								<button id="open-payment-modal" class="btn btn-fill-out btn-block" type="button">
-									Payer maintenant —
-									{{ (cart.sub_total_with_carrier / 100)|format_currency('EUR') }}
-								</a>
+									Payer maintenant — {{ (cart.sub_total_with_carrier / 100)|format_currency('EUR') }}
+								</button>
 							</div>
 						</div>
 					</div>
 				</div>
-				{# /row #}
 			</div>
-			{# /container #}
 		</div>
-		{# /section #}
 	</div>
-	{# /main_content #}
 
-	<div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+	<div
+		class="modal fade"
+		id="staticBackdrop"
+		data-bs-backdrop="static"
+		data-bs-keyboard="false"
+		tabindex="-1"
+		aria-labelledby="staticBackdropLabel"
+		aria-hidden="true"
+	>
 		<div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
 			<div class="modal-content">
 				<div class="modal-header">
 					<h5 class="modal-title visually-hidden" id="staticBackdropLabel">Paiement</h5>
-					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
 				</div>
 
 				<div class="modal-body">
@@ -299,15 +304,14 @@
 							<div id="payment-message" class="hidden" aria-live="polite"></div>
 						</form>
 					</div>
-
 				</div>
 			</div>
 		</div>
 	</div>
-
 {% endblock %}
 
 {% block javascripts %}
 	{{ parent() }}
+	<script src="{{ asset('assets/js/pages/checkout/address.js') }}" type="module" defer></script>
 	<script src="{{ asset('assets/js/pages/checkout/stripe.js') }}" type="module" defer></script>
 {% endblock %}

@@ -107,6 +107,10 @@ class Order
     #[Assert\Length(max: 255)]
     private ?string $paymentMethodNameSnapshot = null;
 
+    #[ORM\Column(length: 50, unique: true, nullable: true)]
+    #[Assert\Length(max: 50)]
+    private ?string $orderReference = null;
+
     /**
      * Référence provider (ex: Stripe payment_intent id / PayPal order id).
      */
@@ -122,6 +126,9 @@ class Order
 
     #[ORM\Column(nullable: true)]
     private ?\DateTimeImmutable $cartClearedAt = null;
+
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
+    private ?\DateTimeImmutable $confirmationEmailSentAt = null;
 
     #[ORM\OneToMany(
         mappedBy: 'myOrder',
@@ -304,6 +311,18 @@ class Order
         return $this;
     }
 
+    public function getOrderReference(): ?string
+    {
+        return $this->orderReference;
+    }
+
+    public function setOrderReference(?string $orderReference): static
+    {
+        $this->orderReference = $orderReference;
+
+        return $this;
+    }
+
     public function getPaymentReference(): ?string
     {
         return $this->paymentReference;
@@ -340,6 +359,30 @@ class Order
         $this->cartClearedAt = new \DateTimeImmutable();
     }
 
+    public function getConfirmationEmailSentAt(): ?\DateTimeImmutable
+    {
+        return $this->confirmationEmailSentAt;
+    }
+
+    public function setConfirmationEmailSentAt(?\DateTimeImmutable $confirmationEmailSentAt): static
+    {
+        $this->confirmationEmailSentAt = $confirmationEmailSentAt;
+
+        return $this;
+    }
+
+    public function markConfirmationEmailSent(): static
+    {
+        $this->confirmationEmailSentAt = new \DateTimeImmutable();
+
+        return $this;
+    }
+
+    public function isConfirmationEmailSent(): bool
+    {
+        return null !== $this->confirmationEmailSentAt;
+    }
+
     /** @return Collection<int, OrderDetails> */
     public function getOrderDetails(): Collection
     {
@@ -362,6 +405,20 @@ class Order
                 $orderDetail->setMyOrder(null);
             }
         }
+        return $this;
+    }
+
+    public function generateOrderReferenceIfMissing(): static
+    {
+        if (null !== $this->orderReference) {
+            return $this;
+        }
+
+        $date = new \DateTimeImmutable();
+        $random = strtoupper(bin2hex(random_bytes(3)));
+
+        $this->orderReference = sprintf('CMD-%s-%s', $date->format('Ymd'), $random);
+
         return $this;
     }
 

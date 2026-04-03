@@ -18,6 +18,9 @@ parameters:
 
     app.free_shipping_threshold_cents: 10000
 
+    app.mail_from_address: 'contact@nidemiel.com'
+    app.mail_from_name: 'Nidemiel'
+
 services:
     # default configuration for services in *this* file
     _defaults:
@@ -68,4 +71,9 @@ services:
             $stripeWebhookSecret: '%stripe.webhook_secret%'
     
     App\Admin\Dashboard\DashboardMetricsProvider: ~
+
+    App\MessageHandler\SendOrderConfirmationEmailMessageHandler:
+        arguments:
+            $mailFromAddress: '%app.mail_from_address%'
+            $mailFromName: '%app.mail_from_name%'
 
