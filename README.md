@@ -30,6 +30,8 @@ Lancer des commande :
   composer test      # lance les 24 tests
   composer analyse   # PHPStan niveau 5
 
+
+Taille idéale à uploader : 1200 * 1200 px minimum, format carré ou proche du carré
 ---
 
 ## 🧭 Données globales du layout (header / footer)

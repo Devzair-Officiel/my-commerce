@@ -27,9 +27,9 @@ final class RegistrationInput
 
     #[Assert\NotBlank(message: 'Entrer un mot de passe')]
     #[Assert\Length(
-        min: 6,
+        min: 8,
         max: 4096,
-        minMessage: 'Votre mot de passe doit contenir minimum {{ limit }} caractère',
+        minMessage: 'Votre mot de passe doit contenir minimum {{ limit }} caractères',
     )]
     public string $password = '';
 }

@@ -36,8 +36,8 @@
 					<div class="col-lg-6 col-md-11 mb-4 mb-md-3">
 						<div class="product-image">
 							<div class="product_img_box">
-								<img id="product_img" alt="{{ product.medias[0].alt }}" src="/assets/images/products/{{ product.medias[0].filename }}">
-								<a title="Zoom" class="product_img_zoom">
+								<img id="product_img" alt="{{ product.medias[0].alt }}" src="/assets/images/products/{{ product.medias[0].mediumFilename }}">
+								<a href="/assets/images/products/{{ product.medias[0].filename }}" title="Zoom" class="product_img_zoom">
 									<span class="linearicons-zoom-in"></span>
 								</a>
 							</div>
@@ -46,8 +46,8 @@
 
 								{% for image in product.medias %}
 									<div class="item">
-										<a href="#" class="product_gallery_item {% if loop.first %}active{% endif %}" data-image="/assets/images/products/{{ image.filename }}" data-zoom-image="/assets/images/products/{{ image.filename }}">
-											<img alt="image small - {{ image.alt }}" src="/assets/images/products/{{ image.filename }}">
+										<a href="#" class="product_gallery_item {% if loop.first %}active{% endif %}" data-image="/assets/images/products/{{ image.mediumFilename }}" data-zoom-image="/assets/images/products/{{ image.filename }}">
+											<img alt="image small - {{ image.alt }}" src="/assets/images/products/{{ image.thumbnailFilename }}">
 										</a>
 									</div>
 								{% endfor %}

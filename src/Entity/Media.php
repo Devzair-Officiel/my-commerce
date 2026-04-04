@@ -166,9 +166,27 @@ class Media
         return $this;
     }
 
-    public function __toString()
+    public function getThumbnailFilename(): string
     {
-        return $this->filename;
+        if ($this->filename === null) {
+            return '';
+        }
+        $info = \pathinfo($this->filename);
+        return ($info['filename'] ?? '') . '-thumb.' . ($info['extension'] ?? '');
+    }
+
+    public function getMediumFilename(): string
+    {
+        if ($this->filename === null) {
+            return '';
+        }
+        $info = \pathinfo($this->filename);
+        return ($info['filename'] ?? '') . '-medium.' . ($info['extension'] ?? '');
+    }
+
+    public function __toString(): string
+    {
+        return $this->filename ?? '';
     }
 
     public function getSliders(): ?Sliders

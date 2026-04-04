@@ -58,7 +58,7 @@ class CartServiceTest extends TestCase
             $this->settingRepo,
             $this->productRepo,
             $this->carrierRepo,
-            freeShippingThresholdCents: 10000, // 100 EUR
+            freeShippingThresholdCents: 5000, // 50 EUR
         );
     }
 
@@ -254,7 +254,7 @@ class CartServiceTest extends TestCase
 
     public function testLivraisonOfferteSeuiAtteint(): void
     {
-        // seuil = 10000 centimes (100 EUR), panier = 10000 → livraison offerte
+        // seuil = 5000 centimes (50 EUR), panier = 5000 → livraison offerte
         $this->setupGetCartDetailsEnv(
             productId: 5,
             priceCents: 5000,
@@ -267,15 +267,15 @@ class CartServiceTest extends TestCase
 
         $this->assertSame(0, $details['carrier']['price']);
         $this->assertTrue($details['carrier']['free_shipping']);
-        $this->assertSame(10000, $details['sub_total_with_carrier']);
+        $this->assertSame(5000, $details['sub_total_with_carrier']);
     }
 
     public function testLivraisonPayanteSeuiNonAtteint(): void
     {
-        // panier = 9999 < 10000 → transporteur facturé
+        // panier = 4999 < 5000 → transporteur facturé
         $this->setupGetCartDetailsEnv(
             productId: 6,
-            priceCents: 9999,
+            priceCents: 4999,
             qty: 1,
             taxRate: 0,
             carrierPrice: 500,
@@ -285,7 +285,7 @@ class CartServiceTest extends TestCase
 
         $this->assertSame(500, $details['carrier']['price']);
         $this->assertFalse($details['carrier']['free_shipping']);
-        $this->assertSame(10499, $details['sub_total_with_carrier']);
+        $this->assertSame(5499, $details['sub_total_with_carrier']);
     }
 
     // -------------------------------------------------------------------------
