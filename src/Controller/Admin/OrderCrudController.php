@@ -3,13 +3,19 @@
 namespace App\Controller\Admin;
 
 use App\Entity\Order;
-use App\Enum\PaymentStatus;
 use App\Enum\FulfillmentStatus;
+use App\Enum\PaymentStatus;
+use App\Repository\OrderRepository;
+use App\Service\RefundService;
+use Doctrine\ORM\EntityManagerInterface;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Filters;
+use EasyCorp\Bundle\EasyAdminBundle\Context\AdminContext;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
+use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGenerator;
+use Symfony\Component\HttpFoundation\Response;
 use EasyCorp\Bundle\EasyAdminBundle\Field\ChoiceField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\DateTimeField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\FormField;
@@ -23,6 +29,12 @@ use EasyCorp\Bundle\EasyAdminBundle\Filter\EntityFilter;
 
 final class OrderCrudController extends AbstractCrudController
 {
+    public function __construct(
+        private readonly RefundService $refundService,
+        private readonly EntityManagerInterface $em,
+        private readonly OrderRepository $orderRepository,
+    ) {}
+
     public static function getEntityFqcn(): string
     {
         return Order::class;
@@ -49,9 +61,51 @@ final class OrderCrudController extends AbstractCrudController
 
     public function configureActions(Actions $actions): Actions
     {
+        $refundAction = Action::new('refund', 'Rembourser', 'fa fa-rotate-left')
+            ->linkToCrudAction('processRefund')
+            ->addCssClass('btn btn-sm btn-danger')
+            ->displayIf(static fn (Order $order): bool => $order->getPaymentStatus() === PaymentStatus::Paid);
+
         return $actions
             ->disable(Action::NEW, Action::DELETE)
-            ->add(Crud::PAGE_INDEX, Action::DETAIL);
+            ->add(Crud::PAGE_INDEX, Action::DETAIL)
+            ->add(Crud::PAGE_INDEX, $refundAction)
+            ->add(Crud::PAGE_DETAIL, $refundAction);
+    }
+
+    public function processRefund(AdminContext $context, AdminUrlGenerator $urlGenerator): Response
+    {
+        $entityId = $context->getRequest()->query->getInt('entityId');
+        $order = $this->orderRepository->find($entityId);
+
+        if (!$order instanceof Order) {
+            $this->addFlash('danger', 'Commande introuvable.');
+            return $this->redirect(
+                $urlGenerator->setController(self::class)->setAction(Action::INDEX)->generateUrl()
+            );
+        }
+
+        try {
+            $this->refundService->refundOrder($order);
+            $this->em->flush();
+            $this->addFlash('success', \sprintf(
+                'Commande #%d remboursée avec succès.',
+                (int) $order->getId(),
+            ));
+        } catch (\Throwable $e) {
+            $this->addFlash('danger', \sprintf(
+                'Erreur lors du remboursement : %s',
+                $e->getMessage(),
+            ));
+        }
+
+        return $this->redirect(
+            $urlGenerator
+                ->setController(self::class)
+                ->setAction(Action::DETAIL)
+                ->setEntityId($order->getId())
+                ->generateUrl()
+        );
     }
 
     public function configureFilters(Filters $filters): Filters
@@ -106,6 +160,7 @@ final class OrderCrudController extends AbstractCrudController
         $carrierName = TextField::new('carrierNameSnapshot', 'Transporteur (snapshot)');
         $paymentMethodName = TextField::new('paymentMethodNameSnapshot', 'Moyen de paiement (snapshot)');
         $paymentReference = TextField::new('paymentReference', 'Référence paiement')->setRequired(false);
+        $orderReference = TextField::new('orderReference', 'Référence commande')->setRequired(false);
 
         $paidAt = DateTimeField::new('paidAt', 'Payée le')->setRequired(false);
         $cartClearedAt = DateTimeField::new('cartClearedAt', 'Panier vidé le')->setRequired(false);
@@ -120,7 +175,6 @@ final class OrderCrudController extends AbstractCrudController
                 $weight,
                 $orderTotal,
                 $paidAt,
-                $paymentReference,
             ];
         }
 
@@ -156,7 +210,9 @@ final class OrderCrudController extends AbstractCrudController
             $carrierName,
             $paymentMethodName,
             $paymentReference,
+            $orderReference,
             $paidAt,
+            
 
             FormField::addTab('Tech'),
             $cartClearedAt,

@@ -30,9 +30,6 @@ class CartController extends AbstractController
             ];
         }
 
-        $cart_json = json_encode($cart);
-        $carriers_json = json_encode($carriers);
-
         return $this->render('cart/index.html.twig', [
             'cart' => $cart,
             'carriers' => $carriers,

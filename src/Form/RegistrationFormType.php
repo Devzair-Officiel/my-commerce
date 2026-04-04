@@ -2,15 +2,12 @@
 
 namespace App\Form;
 
-use App\Entity\User;
+use App\Dto\RegistrationInput;
 use App\Enum\Civility;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Validator\Constraints\IsTrue;
-use Symfony\Component\Validator\Constraints\Length;
-use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\OptionsResolver\OptionsResolver;
-use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\Extension\Core\Type\EmailType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
@@ -44,13 +41,10 @@ class RegistrationFormType extends AbstractType
                 'row_attr' => [
                     'class' => 'form-group mb-3',
                 ],
-                'constraints' => [
-                    new NotBlank(message: 'Veuillez choisir une civilité.'),
-                ],
             ])
             ->add('agreeTerms', CheckboxType::class, [
                 'mapped' => false,
-                'label'=> 'Accepter les conditions',
+                'label' => 'Accepter les conditions',
                 'attr' => [
                     'class' => 'form-check-input'
                 ],
@@ -62,17 +56,8 @@ class RegistrationFormType extends AbstractType
                 ]
             ])
             ->add('password', RepeatedType::class, [
-                'type'=> PasswordType::class,
-                'mapped' => false,
+                'type' => PasswordType::class,
                 'attr' => ['autocomplete' => 'new-password'],
-                'constraints' => [
-                    new NotBlank(message: 'Entrer un mot de passe'),
-                    new Length(
-                        min: 6,
-                        max: 4096,
-                        minMessage: 'Votre mot de passe doit contenir minimum {{ limit }} caractère',
-                    ),
-                ],
                 'first_options' => [
                     'label' => false,
                     'attr' => [
@@ -100,7 +85,7 @@ class RegistrationFormType extends AbstractType
     public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([
-            'data_class' => User::class,
+            'data_class' => RegistrationInput::class,
         ]);
     }
 }

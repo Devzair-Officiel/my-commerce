@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Dto\RegistrationInput;
 use App\Entity\User;
 use App\Form\RegistrationFormType;
 use App\Repository\UserRepository;
@@ -29,16 +30,15 @@ class RegistrationController extends AbstractController
             return $this->redirectToRoute('app_account');
         }
 
-        $user = new User();
-        $form = $this->createForm(RegistrationFormType::class, $user);
+        $input = new RegistrationInput();
+        $form = $this->createForm(RegistrationFormType::class, $input);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            /** @var string $plainPassword */
-            $plainPassword = $form->get('password')->getData();
-
-            // encode the plain password
-            $user->setPassword($userPasswordHasher->hashPassword($user, $plainPassword));
+            $user = new User();
+            $user->setEmail($input->email);
+            $user->setCivility($input->civility);
+            $user->setPassword($userPasswordHasher->hashPassword($user, $input->password));
 
             $entityManager->persist($user);
             $entityManager->flush();

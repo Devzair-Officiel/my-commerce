@@ -2,7 +2,7 @@
 
 namespace App\Form;
 
-use App\Entity\User;
+use App\Dto\EditUserInput;
 use App\Enum\Civility;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
@@ -64,7 +64,7 @@ class EditUserFormType extends AbstractType
                 ]
             ])
             ->add('phone', TextType::class, [
-                'required' => false,  // Rendre ce champ optionnel
+                'required' => false,
                 'label' => false,
                 'attr' => [
                     "placeholder" => 'Entrer votre numéro de téléphone (optionnelle)',
@@ -80,7 +80,7 @@ class EditUserFormType extends AbstractType
     public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([
-            'data_class' => User::class,
+            'data_class' => EditUserInput::class,
         ]);
     }
 }

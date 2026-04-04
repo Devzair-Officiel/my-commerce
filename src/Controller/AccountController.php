@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Dto\EditUserInput;
 use App\Entity\Order;
 use App\Entity\User;
 use App\Form\EditUserFormType;
@@ -26,7 +27,6 @@ class AccountController extends AbstractController
         ContactRepository $contactRepo,
         Request $request,
         EntityManagerInterface $em,
-        UserPasswordHasherInterface $passwordHasher,
     ): Response {
         $this->denyAccessUnlessGranted('ROLE_USER');
 
@@ -47,12 +47,18 @@ class AccountController extends AbstractController
         $addresses = $addressRepo->findBy(['user' => $user], ['id' => 'DESC']);
         $contacts = $contactRepo->findBy(['user' => $user], ['createdAt' => 'DESC'], 10);
 
-        $form = $this->createForm(EditUserFormType::class, $user);
+        $input = EditUserInput::fromUser($user);
+        $form = $this->createForm(EditUserFormType::class, $input);
         $form->handleRequest($request);
 
         // AJAX update profil
         if ($request->isXmlHttpRequest()) {
             if ($form->isSubmitted() && $form->isValid()) {
+                $user->setLastname($input->lastname);
+                $user->setFirstname($input->firstname);
+                $user->setCivility($input->civility);
+                $user->setEmail($input->email);
+                $user->setPhone($input->phone);
                 $em->flush();
 
                 return new JsonResponse([
@@ -147,7 +153,7 @@ class AccountController extends AbstractController
         }
 
         $payload = json_decode($request->getContent(), true);
-        if (!is_array($payload)) {
+        if (!\is_array($payload)) {
             return new JsonResponse([
                 'status' => 'error',
                 'message' => 'Invalid JSON',
@@ -156,7 +162,7 @@ class AccountController extends AbstractController
 
         $csrfToken = $request->headers->get('X-CSRF-TOKEN');
 
-        if (!is_string($csrfToken) || !$this->isCsrfTokenValid('change_password', $csrfToken)) {
+        if (!\is_string($csrfToken) || !$this->isCsrfTokenValid('change_password', $csrfToken)) {
             return new JsonResponse([
                 'status' => 'error',
                 'message' => 'Jeton CSRF invalide.',
@@ -167,7 +173,7 @@ class AccountController extends AbstractController
         $newPassword = $payload['newPassword'] ?? null;
         $confirmPassword = $payload['confirmPassword'] ?? null;
 
-        if (!is_string($newPassword) || !is_string($confirmPassword)) {
+        if (!\is_string($newPassword) || !\is_string($confirmPassword)) {
             return new JsonResponse([
                 'status' => 'error',
                 'message' => 'Invalid payload',
@@ -206,7 +212,7 @@ class AccountController extends AbstractController
         }
 
         if ($user->hasLocalPassword()) {
-            if (!is_string($currentPassword) || $currentPassword === '') {
+            if (!\is_string($currentPassword) || $currentPassword === '') {
                 return new JsonResponse([
                     'status' => 'error',
                     'message' => 'Veuillez saisir votre mot de passe actuel.',
