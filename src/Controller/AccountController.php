@@ -10,13 +10,18 @@ use App\Repository\AddressRepository;
 use App\Entity\Contact;
 use App\Repository\ContactRepository;
 use App\Repository\OrderRepository;
+use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Mailer\MailerInterface;
+use Symfony\Component\Mime\Address;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 class AccountController extends AbstractController
 {
@@ -27,6 +32,7 @@ class AccountController extends AbstractController
         ContactRepository $contactRepo,
         Request $request,
         EntityManagerInterface $em,
+        MailerInterface $mailer,
     ): Response {
         $this->denyAccessUnlessGranted('ROLE_USER');
 
@@ -57,8 +63,49 @@ class AccountController extends AbstractController
                 $user->setLastname($input->lastname);
                 $user->setFirstname($input->firstname);
                 $user->setCivility($input->civility);
-                $user->setEmail($input->email);
                 $user->setPhone($input->phone);
+
+                $newEmail = mb_strtolower(trim($input->email));
+                $emailChanged = $newEmail !== mb_strtolower(trim((string) $user->getEmail()));
+
+                if ($emailChanged) {
+                    // Vérifier que le nouvel email n'est pas déjà utilisé
+                    $existing = $em->getRepository(User::class)->findOneBy(['email' => $newEmail]);
+                    if ($existing !== null && $existing->getId() !== $user->getId()) {
+                        return new JsonResponse([
+                            'status' => 'error',
+                            'errors' => ['email' => 'Cet email est déjà associé à un autre compte.'],
+                        ], 422);
+                    }
+
+                    $token = $user->setPendingEmailChange($newEmail);
+                    $em->flush();
+
+                    $confirmUrl = $this->generateUrl(
+                        'app_confirm_email_change',
+                        ['token' => $token],
+                        UrlGeneratorInterface::ABSOLUTE_URL,
+                    );
+
+                    $mailer->send(
+                        (new TemplatedEmail())
+                            ->from(new Address('contact@nidemiel.com', 'Nidemiel'))
+                            ->to($newEmail)
+                            ->subject('Confirmez votre nouvelle adresse e-mail')
+                            ->htmlTemplate('emails/email_change_confirmation.html.twig')
+                            ->context([
+                                'user'       => $user,
+                                'newEmail'   => $newEmail,
+                                'confirmUrl' => $confirmUrl,
+                            ])
+                    );
+
+                    return new JsonResponse([
+                        'status'  => 'email_pending',
+                        'message' => 'Vos informations ont été mises à jour. Un e-mail de confirmation a été envoyé à ' . $newEmail . '. Cliquez sur le lien pour valider votre nouvelle adresse.',
+                    ]);
+                }
+
                 $em->flush();
 
                 return new JsonResponse([
@@ -236,6 +283,33 @@ class AccountController extends AbstractController
                 ? 'Mot de passe enregistré avec succès. Vous pouvez maintenant vous connecter avec Google ou avec votre email et mot de passe.'
                 : 'Mot de passe mis à jour avec succès.',
         ]);
+    }
+
+    #[Route('/account/confirm-email/{token}', name: 'app_confirm_email_change', methods: ['GET'])]
+    public function confirmEmailChange(string $token, UserRepository $userRepo, EntityManagerInterface $em): Response
+    {
+        $user = $userRepo->findOneBy(['pendingEmailToken' => $token]);
+
+        if ($user === null || !$user->isPendingEmailTokenValid($token)) {
+            $this->addFlash('error', 'Ce lien de confirmation est invalide ou a expiré.');
+            return $this->redirectToRoute('app_account');
+        }
+
+        // Vérifier que le nouvel email n'est pas entre-temps pris par quelqu'un d'autre
+        $newEmail = $user->getPendingEmail();
+        $existing = $userRepo->findOneBy(['email' => $newEmail]);
+        if ($existing !== null && $existing->getId() !== $user->getId()) {
+            $user->clearPendingEmail();
+            $em->flush();
+            $this->addFlash('error', 'Cette adresse e-mail est désormais associée à un autre compte.');
+            return $this->redirectToRoute('app_account');
+        }
+
+        $user->applyPendingEmail();
+        $em->flush();
+
+        $this->addFlash('success', 'Votre adresse e-mail a bien été mise à jour.');
+        return $this->redirectToRoute('app_account');
     }
 
     #[Route('/account/orders/ajax', name: 'app_account_orders_ajax', methods: ['GET'])]

@@ -65,6 +65,15 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $phone = null;
 
+    #[ORM\Column(length: 180, nullable: true)]
+    private ?string $pendingEmail = null;
+
+    #[ORM\Column(length: 64, nullable: true)]
+    private ?string $pendingEmailToken = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?\DateTimeImmutable $pendingEmailTokenExpiresAt = null;
+
     #[ORM\OneToMany(mappedBy: 'user', targetEntity: Address::class)]
     private Collection $addresses;
 
@@ -340,6 +349,50 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function __toString(): string
     {
         return (string) $this->lastname . " ( " . $this->email . " )";
+    }
+
+    public function getPendingEmail(): ?string
+    {
+        return $this->pendingEmail;
+    }
+
+    public function getPendingEmailToken(): ?string
+    {
+        return $this->pendingEmailToken;
+    }
+
+    public function setPendingEmailChange(string $newEmail): string
+    {
+        $token = bin2hex(random_bytes(32));
+        $this->pendingEmail = mb_strtolower(trim($newEmail));
+        $this->pendingEmailToken = $token;
+        $this->pendingEmailTokenExpiresAt = new \DateTimeImmutable('+24 hours');
+
+        return $token;
+    }
+
+    public function applyPendingEmail(): void
+    {
+        if ($this->pendingEmail !== null) {
+            $this->email = $this->pendingEmail;
+        }
+        $this->pendingEmail = null;
+        $this->pendingEmailToken = null;
+        $this->pendingEmailTokenExpiresAt = null;
+    }
+
+    public function isPendingEmailTokenValid(string $token): bool
+    {
+        return $this->pendingEmailToken === $token
+            && $this->pendingEmailTokenExpiresAt !== null
+            && $this->pendingEmailTokenExpiresAt > new \DateTimeImmutable();
+    }
+
+    public function clearPendingEmail(): void
+    {
+        $this->pendingEmail = null;
+        $this->pendingEmailToken = null;
+        $this->pendingEmailTokenExpiresAt = null;
     }
 
     // ---------------------------------------------------------------------
