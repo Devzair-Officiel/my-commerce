@@ -253,7 +253,7 @@
 
 							{% if not cart.carrier.free_shipping and cart.free_shipping_remaining > 0 %}
 								<div class="alert alert-info mt-2" role="status">
-									🎁 Livraison offerte dès 100 € d'achat — encore
+									🎁 Livraison offerte dès 50 € d'achat — encore
 									<strong>{{ (cart.free_shipping_remaining / 100)|format_currency('EUR') }}</strong>
 								</div>
 							{% endif %}

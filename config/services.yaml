@@ -16,7 +16,7 @@ parameters:
 
     stripe.webhook_secret: '%env(STRIPE_WEBHOOK_SECRET)%'
 
-    app.free_shipping_threshold_cents: 10000
+    app.free_shipping_threshold_cents: 5000
 
     app.mail_from_address: 'contact@nidemiel.com'
     app.mail_from_name: 'Nidemiel'

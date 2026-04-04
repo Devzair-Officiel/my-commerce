@@ -257,7 +257,7 @@ class CartServiceTest extends TestCase
         // seuil = 10000 centimes (100 EUR), panier = 10000 → livraison offerte
         $this->setupGetCartDetailsEnv(
             productId: 5,
-            priceCents: 10000,
+            priceCents: 5000,
             qty: 1,
             taxRate: 0,
             carrierPrice: 500,

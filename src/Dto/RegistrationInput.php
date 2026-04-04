@@ -4,9 +4,17 @@ declare(strict_types=1);
 
 namespace App\Dto;
 
+use App\Entity\User;
 use App\Enum\Civility;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Validator\Constraints as Assert;
 
+#[UniqueEntity(
+    fields: ['email'],
+    entityClass: User::class,
+    message: 'Cet email est déjà associé à un autre compte.',
+    errorPath: 'email'
+)]
 final class RegistrationInput
 {
     #[Assert\NotBlank(message: 'Veuillez saisir votre e-mail.')]

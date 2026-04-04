@@ -70,7 +70,15 @@
 
 			{% include("header/index.html.twig") %}
 
-			<div class="notification" style="position: fixed; top: 20px; right: 20px; z-index: 9999;"></div>
+            <div class="notification" id="notification-container" aria-live="polite" aria-atomic="true"></div>
+
+            <div id="server-flashes" class="d-none" aria-hidden="true">
+                {% for label, messages in app.flashes %}
+                    {% for message in messages %}
+                        <div class="server-flash" data-label="{{ label }}" data-message="{{ message }}"></div>
+                    {% endfor %}
+                {% endfor %}
+            </div>
 
 			{% block body %}{% endblock %}
 
@@ -90,6 +98,7 @@
 			<script src="/assets/js/slick.min.js"></script>
 			<script src="/assets/js/jquery.elevatezoom.js"></script>
 			<script src="/assets/js/scripts.js"></script>
+            <script src="{{ asset('assets/js/utils/server-flashes.js') }}" type="module" defer></script>
 			<script type="module" src="/assets/js/main.js?v=1.0.3"></script>
 		</body>
 	</html>

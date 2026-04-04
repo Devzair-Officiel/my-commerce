@@ -1,11 +1,207 @@
-<h1>Hi! Please confirm your email!</h1>
+<!DOCTYPE html>
+<html lang="fr">
+	<head>
+		<meta charset="UTF-8">
+		<title>Confirmation de votre email</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<style>
+			body {
+				margin: 0;
+				padding: 0;
+				background-color: #f4f4f5;
+				font-family: Arial, Helvetica, sans-serif;
+				color: #18181b;
+			}
 
-<p>
-    Please confirm your email address by clicking the following link: <br><br>
-    <a href="{{ signedUrl|raw }}">Confirm my Email</a>.
-    This link will expire in {{ expiresAtMessageKey|trans(expiresAtMessageData, 'VerifyEmailBundle') }}.
-</p>
+			table {
+				border-spacing: 0;
+				border-collapse: collapse;
+			}
 
-<p>
-    Cheers!
-</p>
+			img {
+				border: 0;
+				display: block;
+				max-width: 100%;
+			}
+
+			.wrapper {
+				width: 100%;
+				background-color: #f4f4f5;
+				padding: 32px 16px;
+			}
+
+			.container {
+				width: 100%;
+				max-width: 600px;
+				background-color: #ffffff;
+				border-radius: 16px;
+				overflow: hidden;
+				box-shadow: 0 8px 30px rgba(0, 0, 0, 0.06);
+			}
+
+			.header {
+				background: linear-gradient(135deg, #111827 0%, #1f2937 100%);
+				padding: 40px 32px;
+				text-align: center;
+			}
+
+			.header h1 {
+				margin: 0;
+				font-size: 28px;
+				line-height: 1.2;
+				color: #ffffff;
+			}
+
+			.header p {
+				margin: 12px 0 0;
+				font-size: 15px;
+				line-height: 1.6;
+				color: #e5e7eb;
+			}
+
+			.content {
+				padding: 32px;
+			}
+
+			.content p {
+				margin: 0 0 18px;
+				font-size: 15px;
+				line-height: 1.7;
+				color: #3f3f46;
+			}
+
+			.button-wrap {
+				padding: 8px 0 24px;
+				text-align: center;
+			}
+
+			.button {
+				display: inline-block;
+				background-color: #111827;
+				color: #ffffff !important;
+				text-decoration: none;
+				font-size: 15px;
+				font-weight: bold;
+				padding: 14px 24px;
+				border-radius: 10px;
+			}
+
+			.info-box {
+				margin-top: 8px;
+				padding: 16px 18px;
+				background-color: #f9fafb;
+				border: 1px solid #e5e7eb;
+				border-radius: 12px;
+			}
+
+			.info-box p {
+				margin: 0;
+				font-size: 14px;
+				line-height: 1.7;
+				color: #52525b;
+			}
+
+			.footer {
+				padding: 0 32px 32px;
+			}
+
+			.footer p {
+				margin: 0;
+				font-size: 14px;
+				line-height: 1.7;
+				color: #71717a;
+			}
+
+			.fallback-link {
+				word-break: break-all;
+			}
+
+			@media only screen and(max-width: 600px) {
+				.header,
+				.content,
+				.footer {
+					padding-left: 20px !important;
+					padding-right: 20px !important;
+				}
+
+				.header {
+					padding-top: 32px !important;
+					padding-bottom: 32px !important;
+				}
+
+				.content {
+					padding-top: 24px !important;
+					padding-bottom: 24px !important;
+				}
+
+				.header h1 {
+					font-size: 24px !important;
+				}
+
+				.button {
+					display: block !important;
+					width: 100% !important;
+					box-sizing: border-box;
+				}
+			}
+		</style>
+	</head>
+	<body>
+		<table role="presentation" width="100%" class="wrapper">
+			<tr>
+				<td align="center">
+					<table role="presentation" width="100%" class="container">
+						<tr>
+							<td class="header">
+								<h1>Confirmez votre adresse email</h1>
+								<p>
+									Une dernière étape pour activer votre compte.
+								</p>
+							</td>
+						</tr>
+
+						<tr>
+							<td class="content">
+								<p>Bonjour,</p>
+
+								<p>
+									Merci pour votre inscription. Pour confirmer votre adresse email,
+									                                cliquez sur le bouton ci-dessous.
+								</p>
+
+								<div class="button-wrap">
+									<a href="{{ signedUrl|raw }}" class="button">Confirmer mon adresse email</a>
+								</div>
+
+								<div class="info-box">
+									<p>
+										Ce lien expirera dans
+										<strong>{{ expiresAtMessageKey|trans(expiresAtMessageData, 'VerifyEmailBundle') }}</strong>.
+									</p>
+								</div>
+
+								<p style="margin-top: 24px;">
+									Si le bouton ne fonctionne pas, copiez et collez ce lien dans votre navigateur :
+								</p>
+
+								<p class="fallback-link">
+									<a href="{{ signedUrl|raw }}" style="color:#111827;">{{ signedUrl|raw }}</a>
+								</p>
+							</td>
+						</tr>
+
+						<tr>
+							<td class="footer">
+								<p>
+									À bientôt,<br>
+									L’équipe
+									{{ globalSetting.website_name|default('de la boutique') }}
+								</p>
+							</td>
+						</tr>
+					</table>
+				</td>
+			</tr>
+		</table>
+	</body>
+</html>
