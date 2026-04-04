@@ -14,7 +14,7 @@ use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
  *
  * Rôle :
  * centraliser la logique SEO des pages indexables
- * (produit, catégorie, blog, page statique), afin d’éviter
+ * (produit, catégorie, blog, page statique), afin d'éviter
  * de disperser les règles SEO dans les contrôleurs et les templates.
  *
  * Objectifs :
@@ -28,7 +28,7 @@ final class SeoResolver
     public function __construct(
         private readonly UrlGeneratorInterface $urlGenerator,
         private readonly string $brandName = 'Nidemiel',
-        private readonly string $defaultOgImage = '/images/og-default.jpg',
+        private readonly string $defaultOgImage = '/assets/images/setting/nidemiel.png',
     ) {}
 
     /**
@@ -211,7 +211,7 @@ final class SeoResolver
     }
 
     /**
-     * Construit le SEO d’une page statique sans dépendre d’une entité dédiée.
+     * Construit le SEO d'une page statique sans dépendre d'une entité dédiée.
      *
      * Exemple :
      * livraison, contact, paiement, CGV, à propos...
@@ -259,11 +259,15 @@ final class SeoResolver
             $jsonLd[] = $this->breadcrumbJsonLd($data['breadcrumbs']);
         }
 
+        if (!empty($data['organization'])) {
+            $jsonLd[] = $this->organizationJsonLd($data['organization']);
+        }
+
         return new SeoPayload($title, $description, $canonical, $robots, $og, $jsonLd);
     }
 
     /**
-     * Génère un fil d’Ariane structuré en JSON-LD.
+     * Génère un fil d'Ariane structuré en JSON-LD.
      *
      * Objectif :
      * aider les moteurs à comprendre la hiérarchie logique de la page.
@@ -292,7 +296,7 @@ final class SeoResolver
     }
 
     /**
-     * Génère les données structurées d’un produit simple.
+     * Génère les données structurées d'un produit simple.
      */
     private function productJsonLd(Product $product, string $canonical, ?string $image): array
     {
@@ -337,10 +341,15 @@ final class SeoResolver
                 'url' => $canonical,
                 'priceCurrency' => 'EUR',
                 'price' => $price,
+                'priceValidUntil' => (new \DateTimeImmutable('+1 year'))->format('Y-m-d'),
                 'availability' => $isAvailable
                     ? 'https://schema.org/InStock'
                     : 'https://schema.org/OutOfStock',
                 'itemCondition' => 'https://schema.org/NewCondition',
+                'seller' => [
+                    '@type' => 'Organization',
+                    'name' => $this->brandName,
+                ],
             ];
         }
 
@@ -348,7 +357,7 @@ final class SeoResolver
     }
 
     /**
-     * Génère les données structurées d’une page de collection.
+     * Génère les données structurées d'une page de collection.
      */
     private function collectionPageJsonLd(string $name, string $description, string $canonical): array
     {
@@ -362,7 +371,7 @@ final class SeoResolver
     }
 
     /**
-     * Génère les données structurées d’un article de blog.
+     * Génère les données structurées d'un article de blog.
      */
     private function blogPostingJsonLd(Blog $blog, string $canonical, ?string $image): array
     {
@@ -396,7 +405,103 @@ final class SeoResolver
     }
 
     /**
-     * Génère les données structurées d’une page statique simple.
+     * Construit le SEO de la page d'accueil avec Organisation + WebSite JSON-LD.
+     */
+    public function forHome(Request $request): SeoPayload
+    {
+        $homeUrl = $this->absoluteRoute('app_home');
+        $searchUrl = rtrim($request->getSchemeAndHttpHost(), '/') . '/product/search?term={search_term_string}';
+
+        $canonical = $homeUrl;
+        $title = 'Miel naturel en ligne | Miels authentiques du monde | ' . $this->brandName;
+        $description = 'Nidemiel vous propose des miels naturels et authentiques, sélectionnés pour leur origine, leur goût et leur qualité.';
+        $robots = 'index,follow';
+        $image = $this->toAbsoluteIfNeeded($this->defaultOgImage, $request);
+
+        $og = $this->buildOg(
+            title: $title,
+            description: $description,
+            canonical: $canonical,
+            image: $image,
+            type: 'website'
+        );
+
+        $jsonLd = [
+            $this->webPageJsonLd($title, $description, $canonical),
+            $this->webSiteJsonLd($homeUrl, $searchUrl),
+            $this->organizationJsonLd([
+                'name' => $this->brandName,
+                'url' => $homeUrl,
+                'logo' => rtrim($request->getSchemeAndHttpHost(), '/') . '/assets/images/setting/nidemiel.png',
+            ]),
+            $this->breadcrumbJsonLd([
+                ['name' => 'Accueil', 'url' => $homeUrl],
+            ]),
+        ];
+
+        return new SeoPayload($title, $description, $canonical, $robots, $og, $jsonLd);
+    }
+
+    /**
+     * Génère les données structurées WebSite avec SearchAction.
+     * Permet à Google d'afficher un champ de recherche directement dans ses résultats.
+     */
+    private function webSiteJsonLd(string $homeUrl, string $searchUrlTemplate): array
+    {
+        return [
+            '@context' => 'https://schema.org',
+            '@type' => 'WebSite',
+            'url' => $homeUrl,
+            'potentialAction' => [
+                '@type' => 'SearchAction',
+                'target' => [
+                    '@type' => 'EntryPoint',
+                    'urlTemplate' => $searchUrlTemplate,
+                ],
+                'query-input' => 'required name=search_term_string',
+            ],
+        ];
+    }
+
+    /**
+     * Génère les données structurées d'une organisation.
+     *
+     * @param array{name: string, url: string, logo?: string, email?: string, phone?: string, address?: string} $data
+     */
+    private function organizationJsonLd(array $data): array
+    {
+        $schema = [
+            '@context' => 'https://schema.org',
+            '@type' => 'Organization',
+            'name' => $data['name'],
+            'url' => $data['url'],
+        ];
+
+        if (!empty($data['logo'])) {
+            $schema['logo'] = $data['logo'];
+        }
+
+        if (!empty($data['email'])) {
+            $schema['email'] = $data['email'];
+        }
+
+        if (!empty($data['phone'])) {
+            $schema['telephone'] = $data['phone'];
+        }
+
+        if (!empty($data['address'])) {
+            $schema['address'] = [
+                '@type' => 'PostalAddress',
+                'streetAddress' => $data['address'],
+                'addressCountry' => 'FR',
+            ];
+        }
+
+        return $schema;
+    }
+
+    /**
+     * Génère les données structurées d'une page statique simple.
      */
     private function webPageJsonLd(string $title, string $description, string $canonical): array
     {
@@ -431,7 +536,7 @@ final class SeoResolver
     }
 
     /**
-     * Génère une URL absolue à partir d’une route Symfony.
+     * Génère une URL absolue à partir d'une route Symfony.
      *
      * @param array<string, scalar> $params
      */
@@ -441,7 +546,7 @@ final class SeoResolver
     }
 
     /**
-     * Récupère l’image principale d’un produit.
+     * Récupère l'image principale d'un produit.
      */
     private function resolveProductImage(Product $product, Request $request): ?string
     {
@@ -460,7 +565,7 @@ final class SeoResolver
     }
 
     /**
-     * Récupère l’image principale d’une catégorie.
+     * Récupère l'image principale d'une catégorie.
      */
     private function resolveCategoryImage(Category $category, Request $request): ?string
     {
@@ -480,7 +585,7 @@ final class SeoResolver
     }
 
     /**
-     * Récupère l’image principale d’un article de blog.
+     * Récupère l'image principale d'un article de blog.
      */
     private function resolveBlogImage(Blog $blog, Request $request): ?string
     {
@@ -499,11 +604,11 @@ final class SeoResolver
     }
 
     /**
-     * Extrait le chemin exploitable d’un média.
+     * Extrait le chemin exploitable d'un média.
      *
      * Important :
      * cette méthode dépend de ta classe Media.
-     * Si ton champ fichier ne s’appelle pas "filename",
+     * Si ton champ fichier ne s'appelle pas "filename",
      * adapte cette méthode.
      */
     private function extractMediaPath(Media $media): ?string

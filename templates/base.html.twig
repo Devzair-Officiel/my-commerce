@@ -36,8 +36,16 @@
 			<meta property="og:description" content="{{ s.og.description }}">
 			<meta property="og:url" content="{{ s.og.url }}">
 			<meta property="og:type" content="{{ s.og.type ?? 'website' }}">
-			{% if s.og.image %}<meta property="og:image" content="{{ s.og.image }}">
+			{% if s.og.image %}
+				<meta property="og:image" content="{{ s.og.image }}">
+				<meta property="og:image:width" content="1200">
+				<meta property="og:image:height" content="630">
+				<meta property="og:image:alt" content="{{ s.og.title }}">
 			{% endif %}
+			<meta name="twitter:card" content="summary_large_image">
+			<meta name="twitter:title" content="{{ s.og.title }}">
+			<meta name="twitter:description" content="{{ s.og.description }}">
+			{% if s.og.image %}<meta name="twitter:image" content="{{ s.og.image }}">{% endif %}
 		{% endif %}
 
         {% for schema in s.jsonLd|default([]) %}

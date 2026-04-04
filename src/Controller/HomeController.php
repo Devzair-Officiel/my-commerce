@@ -9,7 +9,6 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
-use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 final class HomeController extends AbstractController
 {
@@ -21,19 +20,7 @@ final class HomeController extends AbstractController
     {
         $sliders = $slider->findAll();
 
-        $seo = $seoResolver->forStaticPage([
-            'title' => 'Miel naturel en ligne | Miels authentiques du monde | Nidemiel',
-            'description' => 'Nidemiel vous propose des miels naturels et authentiques, sélectionnés pour leur origine, leur goût et leur qualité.',
-            'canonical' => $this->generateUrl('app_home', [], UrlGeneratorInterface::ABSOLUTE_URL),
-            'robots' => 'index,follow',
-            'ogType' => 'website',
-            'breadcrumbs' => [
-                [
-                    'name' => 'Accueil',
-                    'url' => $this->generateUrl('app_home', [], UrlGeneratorInterface::ABSOLUTE_URL),
-                ],
-            ],
-        ], $request);
+        $seo = $seoResolver->forHome($request);
 
         return $this->render('home/index.html.twig', [
             'sliders' => $sliders,

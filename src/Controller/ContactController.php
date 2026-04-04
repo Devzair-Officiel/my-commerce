@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\Contact;
 use App\Entity\User;
 use App\Repository\SettingRepository;
+use App\Seo\SeoResolver;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Component\HttpFoundation\Request;
@@ -13,6 +14,7 @@ use Symfony\Component\HttpKernel\Exception\TooManyRequestsHttpException;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\RateLimiter\RateLimiterFactory;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 
@@ -24,6 +26,7 @@ class ContactController extends AbstractController
         EntityManagerInterface $em,
         MailerInterface $mailer,
         SettingRepository $settingRepository,
+        SeoResolver $seoResolver,
         #[Autowire(service: 'limiter.contact_form')]
         RateLimiterFactory $contactFormLimiter, // doit matcher "contact_form"
     ): Response {
@@ -87,8 +90,20 @@ class ContactController extends AbstractController
             return $this->redirectToRoute('app_contact');
         }
 
+        $seo = $seoResolver->forStaticPage([
+            'title' => 'Contactez-nous | Nidemiel',
+            'description' => 'Une question sur nos miels naturels ? Contactez l\'équipe Nidemiel, nous vous répondrons dans les plus brefs délais.',
+            'route' => 'app_contact',
+            'robots' => 'noindex,follow',
+            'breadcrumbs' => [
+                ['name' => 'Accueil', 'url' => $this->generateUrl('app_home', [], UrlGeneratorInterface::ABSOLUTE_URL)],
+                ['name' => 'Contact', 'url' => $this->generateUrl('app_contact', [], UrlGeneratorInterface::ABSOLUTE_URL)],
+            ],
+        ], $request);
+
         return $this->render('contact/index.html.twig', [
             'form' => $form,
+            'seo' => $seo,
         ]);
     }
 }
