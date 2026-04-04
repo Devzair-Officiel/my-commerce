@@ -198,12 +198,7 @@ export function displayCart(cart) {
         );
     }
 
-    // règle shipping gratuite
-    const subTotalTtc = (cart.sub_total ?? 0) / 100;
-    if (subTotalTtc > 50 && cart.carrier && typeof cart.carrier.price === "number") {
-        cart.carrier.price = 0;
-    }
-
+    // La règle livraison gratuite est appliquée côté serveur — on utilise directement cart.carrier.price
     if (cartSubTotalHt) cartSubTotalHt.textContent = formatPrice((cart.sub_total_ht ?? 0) / 100);
     if (cartTaxe) cartTaxe.textContent = formatPrice((cart.taxe ?? 0) / 100);
     if (cartShipping) cartShipping.textContent = formatPrice((cart.carrier?.price ?? 0) / 100);

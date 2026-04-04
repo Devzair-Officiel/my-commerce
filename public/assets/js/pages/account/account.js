@@ -39,6 +39,8 @@ function initAccountInfoForm() {
 
       if (data.status === "success") {
         showFlash(data.message ?? "Opération réussie.", "success");
+      } else if (data.status === "email_pending") {
+        showFlash(data.message, "info", { duration: 10000 });
       } else {
         setHtml("messageInfo", `<div class="alert alert-danger">${data.message ?? "Erreur."}</div>`);
       }

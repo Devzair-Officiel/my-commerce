@@ -346,71 +346,9 @@
 		});
 	})();
 
-	// -----------------------------
-	// 08. PARALLAX
-	// -----------------------------
-	$win.on('load', function () {
-		if ($.fn.parallaxBackground) $('.parallax_bg').parallaxBackground();
-	});
+	// 08. PARALLAX — lib non chargée, skip
 
-	// -----------------------------
-	// 09. MASONRY (Isotope)
-	// -----------------------------
-	(function initMasonry() {
-		const $grid = $('.grid_container');
-		if (!$grid.length || !$.fn.isotope) return;
-
-		const filterSelector = '.grid_filter > li > a';
-
-		const initIsotope = () => {
-			const isMasonry = $grid.hasClass('masonry');
-			$grid.isotope({
-				itemSelector: '.grid_item',
-				percentPosition: true,
-				layoutMode: isMasonry ? 'masonry' : 'fitRows',
-				masonry: isMasonry ? { columnWidth: '.grid-sizer' } : undefined,
-			});
-		};
-
-		if ($.fn.imagesLoaded) {
-			$grid.imagesLoaded(initIsotope);
-		} else {
-			initIsotope();
-		}
-
-		$doc.on('click', filterSelector, function (e) {
-			e.preventDefault();
-
-			$(filterSelector).removeClass('current');
-			$(this).addClass('current');
-
-			const df = $(this).data('filter');
-			$grid.isotope({ filter: df });
-		});
-
-		$doc.on('change', '.portfolio_filter', function () {
-			$grid.isotope({ filter: this.value });
-		});
-
-		$win.on('resize', function () {
-			window.setTimeout(function () {
-				$grid.find('.grid_item').removeClass('animation animated');
-				$grid.isotope('layout');
-			}, 300);
-		});
-	})();
-
-	// Magnific gallery (link_container)
-	$('.link_container').each(function () {
-		if (!$.fn.magnificPopup) return;
-		$(this).magnificPopup({
-			delegate: '.image_popup',
-			type: 'image',
-			mainClass: 'mfp-zoom-in',
-			removalDelay: 500,
-			gallery: { enabled: true },
-		});
-	});
+	// 09. MASONRY (Isotope) — lib non chargée sur cette page, skip
 
 	// -----------------------------
 	// 10. SLIDERS (Owl + Slick)
@@ -475,85 +413,9 @@
 		slick_slider();
 	});
 
-	// -----------------------------
-	// 11. CONTACT FORM (garde ta logique, mais évite d’attraper "form" globalement)
-	// -----------------------------
-	$doc.on('click', '#submitButton', function (event) {
-		event.preventDefault();
+	// 11. Contact form géré côté Symfony — pas de JS nécessaire ici
 
-		const $form = $(this).closest('form');
-		if (!$form.length) return;
-
-		$.ajax({
-			type: 'POST',
-			dataType: 'json',
-			url: 'contact.php',
-			data: $form.serialize(),
-			success: function (data) {
-				const $alert = $('#alert-msg');
-				if (!$alert.length) return;
-
-				$alert.removeClass('alert-success alert-danger').addClass('alert');
-
-				if (data && data.type === 'error') {
-					$alert.addClass('alert-danger');
-				} else {
-					$alert.addClass('alert-success');
-					// Si tu veux vraiment "reset", mieux: $form[0].reset()
-					// Ici je garde tes valeurs par défaut, mais c’est fragile.
-					$('#first-name').val('Enter Name');
-					$('#email').val('Enter Email');
-					$('#phone').val('Enter Phone Number');
-					$('#subject').val('Enter Subject');
-					$('#description').val('Enter Message');
-				}
-
-				$alert.html(data && data.msg ? data.msg : '').show();
-			},
-			error: function (_xhr, textStatus) {
-				alert(textStatus);
-			},
-		});
-	});
-
-	// -----------------------------
-	// 12. POPUPS (Magnific)
-	// -----------------------------
-	(function initPopups() {
-		if (!$.fn.magnificPopup) return;
-
-		$('.content-popup').magnificPopup({
-			type: 'inline',
-			preloader: true,
-			mainClass: 'mfp-zoom-in',
-		});
-
-		$('.image_gallery').each(function () {
-			$(this).magnificPopup({
-				delegate: 'a',
-				type: 'image',
-				gallery: { enabled: true },
-			});
-		});
-
-		$('.popup-ajax').magnificPopup({
-			type: 'ajax',
-			callbacks: {
-				ajaxContentAdded: function () {
-					carousel_slider(this.content);
-					slick_slider(this.content);
-				},
-			},
-		});
-
-		$('.video_popup, .iframe_popup').magnificPopup({
-			type: 'iframe',
-			removalDelay: 160,
-			mainClass: 'mfp-zoom-in',
-			preloader: false,
-			fixedContentPos: false,
-		});
-	})();
+	// 12. POPUPS (Magnific) — chargé uniquement sur la page produit via block page_scripts
 
 	// -----------------------------
 	// 13. Select dropdown states
@@ -569,73 +431,10 @@
 		});
 	});
 
-	// -----------------------------
-	// 14. FITVIDS
-	// -----------------------------
-	if ($.fn.fitVids && $('.fit-videos').length) {
-		$('.fit-videos').fitVids({
-			customSelector: "iframe[src^='https://w.soundcloud.com']",
-		});
-	}
-
-	// -----------------------------
-	// 15. msDropdown
-	// -----------------------------
-	if ($.fn.msDropdown && $('.custome_select').length) {
-		$('.custome_select').msDropdown();
-	}
-
-	// -----------------------------
-	// 16. MAP (Google)
-	// -----------------------------
-	(function initMap() {
-		const $map = $('#map');
-		if (!$map.length) return;
-		if (!window.google || !google.maps || !google.maps.event) return;
-
-		google.maps.event.addDomListener(window, 'load', function () {
-			const zoom = $map.data('zoom');
-			const lat = $map.data('latitude');
-			const lng = $map.data('longitude');
-			if (lat == null || lng == null) return;
-
-			const mapOptions = {
-				zoom: zoom,
-				mapTypeControl: false,
-				center: new google.maps.LatLng(lat, lng),
-			};
-
-			const map = new google.maps.Map($map[0], mapOptions);
-
-			const marker = new google.maps.Marker({
-				position: new google.maps.LatLng(lat, lng),
-				map: map,
-				icon: $map.data('icon'),
-				title: $map.data('title'),
-			});
-
-			marker.setAnimation(google.maps.Animation.BOUNCE);
-		});
-	})();
-
-	// -----------------------------
-	// 17. COUNTDOWN
-	// -----------------------------
-	if ($.fn.countdown) {
-		$('.countdown_time').each(function () {
-			const endTime = $(this).data('time');
-			$(this).countdown(endTime, function (tm) {
-				$(this).html(
-					tm.strftime(
-						'<div class="countdown_box"><div class="countdown-wrap"><span class="countdown days">%D </span><span class="cd_text">Days</span></div></div>' +
-						'<div class="countdown_box"><div class="countdown-wrap"><span class="countdown hours">%H</span><span class="cd_text">Hours</span></div></div>' +
-						'<div class="countdown_box"><div class="countdown-wrap"><span class="countdown minutes">%M</span><span class="cd_text">Minutes</span></div></div>' +
-						'<div class="countdown_box"><div class="countdown-wrap"><span class="countdown seconds">%S</span><span class="cd_text">Seconds</span></div></div>'
-					)
-				);
-			});
-		});
-	}
+	// 14. FITVIDS — lib non chargée, skip
+	// 15. msDropdown — lib non chargée, skip
+	// 16. MAP — lib non chargée, skip
+	// 17. COUNTDOWN — lib non chargée, skip
 
 	// -----------------------------
 	// 18. List/Grid (attention: $container doit exister)
@@ -774,33 +573,7 @@
 		updateAddToCartHref($('a.btn-addtocart'), next);
 	});
 
-	// -----------------------------
-	// 22. PRICE FILTER (jQuery UI slider)
-	// -----------------------------
-	if ($.fn.slider) {
-		$('#price_filter').each(function () {
-			const $el = $(this);
-			const minVal = $el.data('min-value');
-			const maxVal = $el.data('max-value');
-			const sign = $el.data('price-sign') || '';
-
-			$el.slider({
-				range: true,
-				min: $el.data('min'),
-				max: $el.data('max'),
-				values: [minVal, maxVal],
-				slide: function (_event, ui) {
-					$('#flt_price').html(`${sign}${ui.values[0]} - ${sign}${ui.values[1]}`);
-					$('#price_first').val(ui.values[0]);
-					$('#price_second').val(ui.values[1]);
-				},
-			});
-
-			$('#flt_price').html(
-				`${sign}${$el.slider('values', 0)} - ${sign}${$el.slider('values', 1)}`
-			);
-		});
-	}
+	// 22. PRICE FILTER (jQuery UI slider) — lib non chargée, skip
 
 	// -----------------------------
 	// 23. RATING STAR

@@ -1,33 +1,11 @@
 import { showFlash } from "./flash.js";
 
-function normalizeLabel(label) {
-    switch (label) {
-        case "error":
-        case "danger":
-        case "verify_email_error":
-            return "danger";
-        case "success":
-            return "success";
-        case "warning":
-            return "warning";
-        case "info":
-            return "info";
-        default:
-            return "info";
-    }
-}
-
+// normalizeType est déjà dans flash.js — on lui délègue directement
 document.addEventListener("DOMContentLoaded", () => {
-    const flashNodes = document.querySelectorAll(".server-flash");
-
-    flashNodes.forEach((node) => {
+    document.querySelectorAll(".server-flash").forEach((node) => {
         const message = node.dataset.message?.trim();
-        const label = normalizeLabel(node.dataset.label?.trim());
+        if (!message) return;
 
-        if (!message) {
-            return;
-        }
-
-        showFlash(message, label);
+        showFlash(message, node.dataset.label?.trim() ?? "info");
     });
 });

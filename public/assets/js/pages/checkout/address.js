@@ -219,6 +219,4 @@ export function initCheckoutAddressInline() {
     });
 }
 
-document.addEventListener("DOMContentLoaded", () => {
-    initCheckoutAddressInline();
-});
+// Initialisé depuis main.js via window.addEventListener("load")
