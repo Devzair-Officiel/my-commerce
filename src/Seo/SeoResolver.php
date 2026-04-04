@@ -58,7 +58,7 @@ final class SeoResolver
         if (!$description) {
             $sourceDescription = $product->getDescription()
                 ?: $product->getMoreDescription()
-                ?: sprintf('Découvrez %s chez %s.', $product->getTitle(), $this->brandName);
+                ?: sprintf('Achetez %s, un miel naturel 100%% authentique. Livraison rapide en France. Qualité artisanale garantie chez %s.', $product->getTitle(), $this->brandName);
 
             $description = $this->truncateText($sourceDescription, 160);
         }
@@ -117,7 +117,7 @@ final class SeoResolver
         if (!$description) {
             $sourceDescription = $category->getDescription()
                 ?: $category->getIntro()
-                ?: sprintf('Découvrez notre sélection %s chez %s.', $category->getTitle(), $this->brandName);
+                ?: sprintf('Découvrez notre sélection de %s : miels naturels, artisanaux, d\'origine contrôlée. Livraison offerte dès 50€ chez %s.', $category->getTitle(), $this->brandName);
 
             $description = $this->truncateText($sourceDescription, 160);
         }
@@ -173,7 +173,7 @@ final class SeoResolver
         if (!$description) {
             $sourceDescription = $blog->getDescription()
                 ?: $blog->getContent()
-                ?: sprintf('Découvrez notre article %s.', $blog->getTitle());
+                ?: sprintf('Tout savoir sur %s : conseils d\'experts, bienfaits et utilisation du miel naturel. Par les apiculteurs de %s.', $blog->getTitle(), $this->brandName);
 
             $description = $this->truncateText($sourceDescription, 160);
         }
@@ -413,8 +413,8 @@ final class SeoResolver
         $searchUrl = rtrim($request->getSchemeAndHttpHost(), '/') . '/product/search?term={search_term_string}';
 
         $canonical = $homeUrl;
-        $title = 'Miel naturel en ligne | Miels authentiques du monde | ' . $this->brandName;
-        $description = 'Nidemiel vous propose des miels naturels et authentiques, sélectionnés pour leur origine, leur goût et leur qualité.';
+        $title = 'Acheter du Miel Naturel en Ligne | Miels Artisanaux du Monde | ' . $this->brandName;
+        $description = 'Achetez en ligne des miels naturels et artisanaux sélectionnés à la source : miel de thym, manuka, jujubier… Livraison offerte dès 50€ en France.';
         $robots = 'index,follow';
         $image = $this->toAbsoluteIfNeeded($this->defaultOgImage, $request);
 

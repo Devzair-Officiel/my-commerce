@@ -70,8 +70,8 @@ final class ProductController extends AbstractController
                 ? sprintf('Recherche "%s" | Nidemiel', $term)
                 : 'Recherche | Nidemiel',
             'description' => $term !== ''
-                ? sprintf('Résultats de recherche pour "%s" sur Nidemiel. Découvrez nos produits naturels.', $term)
-                : 'Recherchez parmi nos produits naturels sur Nidemiel.',
+                ? sprintf('Résultats pour "%s" : miels naturels, artisanaux et d\'origine contrôlée disponibles sur Nidemiel.', $term)
+                : 'Recherchez parmi notre sélection de miels naturels artisanaux du monde entier sur Nidemiel.',
             'canonical'   => $request->getUri(),
             'robots'      => 'noindex,follow',
             'breadcrumbs' => [

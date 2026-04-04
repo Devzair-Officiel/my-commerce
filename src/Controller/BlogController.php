@@ -19,8 +19,8 @@ final class BlogController extends AbstractController
         $blogs = $this->blogRepo->findBy(['isPublished' => true]);
 
         $seo = $seoResolver->forStaticPage([
-            'title' => 'Blog miel naturel – Conseils, recettes & apiculture | Nidemiel',
-            'description' => 'Découvrez nos articles sur le miel naturel : bienfaits, recettes, conseils d\'utilisation et actualités de l\'apiculture.',
+            'title' => 'Blog Miel Naturel – Bienfaits, Recettes & Conseils Apiculture | Nidemiel',
+            'description' => 'Bienfaits du miel, recettes naturelles, guide d\'achat et actus apiculture : le blog Nidemiel pour tout savoir sur les miels artisanaux du monde.',
             'route' => 'app_blog',
             'robots' => 'index,follow',
             'ogType' => 'website',
