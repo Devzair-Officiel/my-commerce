@@ -14,3 +14,8 @@ framework:
       policy: sliding_window
       limit: 5
       interval: '1 minute'
+
+    search:
+      policy: sliding_window
+      limit: 60
+      interval: '1 minute'

@@ -6,8 +6,11 @@ use App\Repository\CategoryRepository;
 use App\Repository\ProductRepository;
 use App\Seo\SeoResolver;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\RateLimiter\RateLimiterFactory;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\Routing\Attribute\Route;
 
 final class ProductController extends AbstractController
@@ -57,17 +60,57 @@ final class ProductController extends AbstractController
     }
 
     #[Route('/product/search', name: 'app_search')]
-    public function searchProduct(Request $request)
+    public function searchProduct(Request $request): Response
     {
-        $search = $request->query->get('term');
-
-        $products = $this->productRepo->search($search);
-
+        $term = trim((string) $request->query->get('term', ''));
+        $products = $term !== '' ? $this->productRepo->search($term) : [];
 
         return $this->render('product/search.html.twig', [
             'products' => $products,
-            'search' => $search,
+            'search'   => $term,
         ]);
+    }
+
+    #[Route('/api/search', name: 'api_search', methods: ['GET'])]
+    public function searchAutocomplete(
+        Request $request,
+        #[Autowire(service: 'limiter.search')] RateLimiterFactory $limiter,
+    ): JsonResponse {
+        $limit = $limiter->create($request->getClientIp() ?? 'anon');
+        if (!$limit->consume(1)->isAccepted()) {
+            return $this->json(['results' => []], 429);
+        }
+
+        $term = trim((string) $request->query->get('term', ''));
+
+        if (mb_strlen($term) < 2) {
+            return $this->json(['results' => []]);
+        }
+
+        $products = $this->productRepo->search($term, 6);
+
+        $results = array_map(function ($product) {
+            $mediaData = $product->getMediaData();
+            $filename  = $mediaData[0]['filename'] ?? null;
+            $info      = $filename ? pathinfo($filename) : null;
+            $thumb     = $info
+                ? ($info['filename'] . '-thumb.' . ($info['extension'] ?? 'jpg'))
+                : null;
+
+            return [
+                'id'    => $product->getId(),
+                'title' => $product->getTitle(),
+                'slug'  => $product->getSlug(),
+                'price' => $product->isOnSale()
+                    ? $product->getSoldePrice()
+                    : $product->getRegularPrice(),
+                'isOnSale'   => $product->isOnSale(),
+                'thumb'      => $thumb,
+                'thumbAlt'   => $mediaData[0]['alt'] ?? null,
+            ];
+        }, $products);
+
+        return $this->json(['results' => $results]);
     }
 
     #[Route('/category/{categoryName}', name: 'app_category')]

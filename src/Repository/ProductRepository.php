@@ -80,7 +80,7 @@ class ProductRepository extends ServiceEntityRepository
      * Recherche textuelle sur titre et description.
      * Méthode manquante appelée dans ProductController::searchProduct().
      */
-    public function search(?string $term): array
+    public function search(?string $term, int $limit = 50): array
     {
         if ($term === null || trim($term) === '') {
             return [];
@@ -89,9 +89,10 @@ class ProductRepository extends ServiceEntityRepository
         return $this->createQueryBuilder('p')
             ->leftJoin('p.medias', 'm')->addSelect('m')
             ->where('p.title LIKE :term OR p.description LIKE :term')
+            ->andWhere('p.isAvailable = true')
             ->setParameter('term', '%' . $term . '%')
             ->orderBy('p.title', 'ASC')
-            ->setMaxResults(50)
+            ->setMaxResults($limit)
             ->getQuery()
             ->getResult();
     }

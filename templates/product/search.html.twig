@@ -1,0 +1,59 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ globalSetting.website_name }} | Recherche "{{ search }}"{% endblock %}
+
+{% block body %}
+
+    {% include 'page_head/index.html.twig' with {
+        page_name: 'Résultats pour "' ~ search ~ '"',
+        breadcrumbs: [
+            { label: 'Recherche' }
+        ]
+    } %}
+
+    <div class="main_content">
+        <div class="section">
+            <div class="container">
+
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <form action="/product/search" method="get" class="d-flex gap-2" role="search">
+                            <input
+                                type="text"
+                                name="term"
+                                value="{{ search|e }}"
+                                placeholder="Rechercher un produit..."
+                                class="form-control"
+                                aria-label="Rechercher"
+                                autofocus
+                            >
+                            <button type="submit" class="btn btn-fill-out">Rechercher</button>
+                        </form>
+                    </div>
+                </div>
+
+                {% if search is empty %}
+                    <p class="text-muted">Saisissez un terme pour lancer la recherche.</p>
+
+                {% elseif products is empty %}
+                    <p class="text-muted">Aucun résultat pour <strong>« {{ search }} »</strong>.</p>
+                    <p>Essayez avec d'autres mots-clés ou <a href="/">parcourez notre catalogue</a>.</p>
+
+                {% else %}
+                    <p class="mb-4 text-muted">
+                        {{ products|length }} résultat{{ products|length > 1 ? 's' : '' }}
+                        pour <strong>« {{ search }} »</strong>
+                    </p>
+
+                    <div class="row shop_container">
+                        {% for product in products %}
+                            {% include "product/display_product.html.twig" with { product: product } only %}
+                        {% endfor %}
+                    </div>
+                {% endif %}
+
+            </div>
+        </div>
+    </div>
+
+{% endblock %}

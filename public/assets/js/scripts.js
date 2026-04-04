@@ -297,12 +297,14 @@
 
 		if (!$('.search_overlay').length) $searchWrap.after('<div class="search_overlay"></div>');
 
-		$doc.on('click', '.close-search', function () {
+		$doc.on('click', '.close-search', function (e) {
+			e.stopPropagation();
 			$('.search_wrap,.search_overlay').removeClass('open');
 			$('body').removeClass('search_open');
 		});
 
-		$doc.on('click', '.search_trigger', function () {
+		$doc.on('click', '.search_trigger', function (e) {
+			e.stopPropagation();
 			$('.search_wrap,.search_overlay').toggleClass('open');
 			$('body').toggleClass('search_open');
 
