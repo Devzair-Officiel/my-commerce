@@ -130,6 +130,9 @@ class Order
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
     private ?\DateTimeImmutable $confirmationEmailSentAt = null;
 
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
+    private ?\DateTimeImmutable $refundEmailSentAt = null;
+
     #[ORM\OneToMany(
         mappedBy: 'myOrder',
         targetEntity: OrderDetails::class,
@@ -381,6 +384,18 @@ class Order
     public function isConfirmationEmailSent(): bool
     {
         return null !== $this->confirmationEmailSentAt;
+    }
+
+    public function isRefundEmailSent(): bool
+    {
+        return null !== $this->refundEmailSentAt;
+    }
+
+    public function markRefundEmailSent(): static
+    {
+        $this->refundEmailSentAt = new \DateTimeImmutable();
+
+        return $this;
     }
 
     /** @return Collection<int, OrderDetails> */

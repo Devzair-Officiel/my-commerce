@@ -34,3 +34,5 @@ framework:
 
         routing:
             App\Message\SendOrderConfirmationEmailMessage: async
+            App\Message\SendRefundEmailMessage: async
+            App\Message\SendShippedEmailMessage: async

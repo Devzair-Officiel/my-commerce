@@ -48,6 +48,17 @@ services:
       - host.docker.internal:host-gateway
     tty: true
 
+  messenger-worker:
+    user: "${UID:-1000}:${GID:-1000}"
+    build:
+      context: .
+      target: frankenphp_dev
+    volumes:
+      - ./:/app
+      - app_var:/app/var
+    environment:
+      APP_ENV: "${APP_ENV:-dev}"
+
   database:
     ports:
       - "5432:5432"

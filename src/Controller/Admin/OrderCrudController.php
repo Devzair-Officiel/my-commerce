@@ -5,6 +5,7 @@ namespace App\Controller\Admin;
 use App\Entity\Order;
 use App\Enum\FulfillmentStatus;
 use App\Enum\PaymentStatus;
+use App\Message\SendRefundEmailMessage;
 use App\Repository\OrderRepository;
 use App\Service\RefundService;
 use Doctrine\ORM\EntityManagerInterface;
@@ -16,6 +17,7 @@ use EasyCorp\Bundle\EasyAdminBundle\Context\AdminContext;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
 use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGenerator;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Messenger\MessageBusInterface;
 use EasyCorp\Bundle\EasyAdminBundle\Field\ChoiceField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\DateTimeField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\FormField;
@@ -33,6 +35,7 @@ final class OrderCrudController extends AbstractCrudController
         private readonly RefundService $refundService,
         private readonly EntityManagerInterface $em,
         private readonly OrderRepository $orderRepository,
+        private readonly MessageBusInterface $bus,
     ) {}
 
     public static function getEntityFqcn(): string
@@ -66,11 +69,33 @@ final class OrderCrudController extends AbstractCrudController
             ->addCssClass('btn btn-sm btn-danger')
             ->displayIf(static fn (Order $order): bool => $order->getPaymentStatus() === PaymentStatus::Paid);
 
+        $sendRefundEmailAction = Action::new('sendRefundEmail', 'Envoyer email remboursement', 'fa fa-envelope')
+            ->linkToCrudAction('sendRefundEmail')
+            ->addCssClass('btn btn-sm btn-outline-danger')
+            ->setHtmlAttributes([
+                'onclick' => 'return confirm("Envoyer un email de confirmation de remboursement au client ?")',
+            ])
+            ->displayIf(static fn (Order $order): bool => $order->getPaymentStatus() === PaymentStatus::Refunded && !$order->isRefundEmailSent());
+
+        $refundEmailSentAction = Action::new('refundEmailSent', 'Email remboursement envoyé ✓', 'fa fa-check')
+            ->linkToCrudAction('sendRefundEmail')
+            ->addCssClass('btn btn-sm btn-outline-secondary')
+            ->setHtmlAttributes([
+                'onclick' => 'return false;',
+                'style' => 'opacity:.5; pointer-events:none; cursor:default;',
+                'aria-disabled' => 'true',
+            ])
+            ->displayIf(static fn (Order $order): bool => $order->isRefundEmailSent());
+
         return $actions
             ->disable(Action::NEW, Action::DELETE)
             ->add(Crud::PAGE_INDEX, Action::DETAIL)
             ->add(Crud::PAGE_INDEX, $refundAction)
-            ->add(Crud::PAGE_DETAIL, $refundAction);
+            ->add(Crud::PAGE_DETAIL, $refundAction)
+            ->add(Crud::PAGE_INDEX, $sendRefundEmailAction)
+            ->add(Crud::PAGE_DETAIL, $sendRefundEmailAction)
+            ->add(Crud::PAGE_INDEX, $refundEmailSentAction)
+            ->add(Crud::PAGE_DETAIL, $refundEmailSentAction);
     }
 
     public function processRefund(AdminContext $context, AdminUrlGenerator $urlGenerator): Response
@@ -95,6 +120,50 @@ final class OrderCrudController extends AbstractCrudController
         } catch (\Throwable $e) {
             $this->addFlash('danger', \sprintf(
                 'Erreur lors du remboursement : %s',
+                $e->getMessage(),
+            ));
+        }
+
+        return $this->redirect(
+            $urlGenerator
+                ->setController(self::class)
+                ->setAction(Action::DETAIL)
+                ->setEntityId($order->getId())
+                ->generateUrl()
+        );
+    }
+
+    public function sendRefundEmail(AdminContext $context, AdminUrlGenerator $urlGenerator): Response
+    {
+        $entityId = $context->getRequest()->query->getInt('entityId');
+        $order = $this->orderRepository->find($entityId);
+
+        if (!$order instanceof Order) {
+            $this->addFlash('danger', 'Commande introuvable.');
+            return $this->redirect(
+                $urlGenerator->setController(self::class)->setAction(Action::INDEX)->generateUrl()
+            );
+        }
+
+        if ($order->isRefundEmailSent()) {
+            $this->addFlash('warning', 'L\'email de remboursement a déjà été envoyé pour cette commande.');
+            return $this->redirect(
+                $urlGenerator->setController(self::class)->setAction(Action::DETAIL)->setEntityId($order->getId())->generateUrl()
+            );
+        }
+
+        try {
+            // Marquer comme envoyé immédiatement pour que le bouton se désactive dès le rechargement
+            $order->markRefundEmailSent();
+            $this->em->flush();
+            $this->bus->dispatch(new SendRefundEmailMessage((int) $order->getId()));
+            $this->addFlash('success', \sprintf(
+                'Email de remboursement envoyé pour la commande #%d.',
+                (int) $order->getId(),
+            ));
+        } catch (\Throwable $e) {
+            $this->addFlash('danger', \sprintf(
+                'Erreur lors de l\'envoi de l\'email : %s',
                 $e->getMessage(),
             ));
         }

@@ -1,0 +1,87 @@
+{% set totalTtc = order.orderTotalTtcCents ?? 0 %}
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Remboursement de commande</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body { margin: 0; padding: 0; background-color: #f4f4f4; font-family: Arial, Helvetica, sans-serif; color: #1f2937; }
+        table { border-spacing: 0; }
+        .wrapper { width: 100%; background-color: #f4f4f4; padding: 24px 0; }
+        .container { width: 100%; max-width: 700px; background-color: #ffffff; border-radius: 12px; overflow: hidden; }
+        .section-padding { padding: 24px; }
+        .box { border: 1px solid #e5e7eb; border-radius: 10px; overflow: hidden; }
+        .box-title { background-color: #f9fafb; padding: 14px 16px; font-size: 16px; font-weight: bold; color: #111827; border-bottom: 1px solid #e5e7eb; }
+        .cell { padding: 12px 16px; font-size: 14px; color: #111827; border-bottom: 1px solid #e5e7eb; }
+        .cell-muted { color: #6b7280; }
+        .text-right { text-align: right; }
+    </style>
+</head>
+<body>
+<table role="presentation" width="100%" class="wrapper">
+    <tr>
+        <td align="center">
+            <table role="presentation" width="100%" class="container">
+                <tr>
+                    <td style="background-color:#991b1b; padding:32px 24px; text-align:center;">
+                        <h1 style="margin:0; font-size:28px; line-height:1.2; color:#ffffff;">Votre remboursement a été traité</h1>
+                        <p style="margin:12px 0 0; font-size:16px; color:#fecaca;">
+                            Commande {{ order.orderReference ?? '#' ~ order.id }}
+                        </p>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td class="section-padding">
+                        <p style="margin:0 0 16px; font-size:16px; line-height:1.6;">
+                            Bonjour {{ user.firstname ?? user.email }},
+                        </p>
+                        <p style="margin:0; font-size:15px; line-height:1.7; color:#374151;">
+                            Nous vous confirmons que votre commande a bien été remboursée.
+                            Le montant sera recrédité sur votre moyen de paiement d'origine dans un délai de <strong>5 à 10 jours ouvrés</strong>, selon votre banque.
+                        </p>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td class="section-padding" style="padding-top:0; padding-bottom:32px;">
+                        <table role="presentation" width="100%" class="box">
+                            <tr>
+                                <td colspan="2" class="box-title">Récapitulatif du remboursement</td>
+                            </tr>
+                            <tr>
+                                <td class="cell cell-muted" style="width:45%;">Référence commande</td>
+                                <td class="cell"><strong>{{ order.orderReference ?? '-' }}</strong></td>
+                            </tr>
+                            {% if order.paymentMethodNameSnapshot %}
+                            <tr>
+                                <td class="cell cell-muted">Moyen de paiement</td>
+                                <td class="cell">{{ order.paymentMethodNameSnapshot }}</td>
+                            </tr>
+                            {% endif %}
+                            <tr>
+                                <td class="cell" style="font-size:16px; font-weight:bold;">Montant remboursé</td>
+                                <td class="cell text-right" style="font-size:18px; font-weight:bold; color:#991b1b;">
+                                    {{ (totalTtc / 100)|number_format(2, ',', ' ') }} €
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td style="padding:0 24px 32px;">
+                        <p style="margin:0; font-size:14px; line-height:1.7; color:#6b7280;">
+                            Pour toute question, n'hésitez pas à nous contacter.<br>
+                            L'équipe {{ globalSetting.website_name }}
+                        </p>
+                    </td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+</table>
+</body>
+</html>
