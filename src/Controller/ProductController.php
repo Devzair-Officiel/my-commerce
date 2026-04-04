@@ -60,14 +60,30 @@ final class ProductController extends AbstractController
     }
 
     #[Route('/product/search', name: 'app_search')]
-    public function searchProduct(Request $request): Response
+    public function searchProduct(Request $request, SeoResolver $seoResolver): Response
     {
-        $term = trim((string) $request->query->get('term', ''));
+        $term     = trim((string) $request->query->get('term', ''));
         $products = $term !== '' ? $this->productRepo->search($term) : [];
+
+        $seo = $seoResolver->forStaticPage([
+            'title'       => $term !== ''
+                ? sprintf('Recherche "%s" | Nidemiel', $term)
+                : 'Recherche | Nidemiel',
+            'description' => $term !== ''
+                ? sprintf('Résultats de recherche pour "%s" sur Nidemiel. Découvrez nos produits naturels.', $term)
+                : 'Recherchez parmi nos produits naturels sur Nidemiel.',
+            'canonical'   => $request->getUri(),
+            'robots'      => 'noindex,follow',
+            'breadcrumbs' => [
+                ['name' => 'Accueil', 'url' => $this->generateUrl('app_home', [], \Symfony\Component\Routing\Generator\UrlGeneratorInterface::ABSOLUTE_URL)],
+                ['name' => $term !== '' ? 'Recherche : ' . $term : 'Recherche', 'url' => $request->getUri()],
+            ],
+        ], $request);
 
         return $this->render('product/search.html.twig', [
             'products' => $products,
             'search'   => $term,
+            'seo'      => $seo,
         ]);
     }
 

@@ -304,6 +304,7 @@
 		});
 
 		$doc.on('click', '.search_trigger', function (e) {
+			e.preventDefault();
 			e.stopPropagation();
 			$('.search_wrap,.search_overlay').toggleClass('open');
 			$('body').toggleClass('search_open');
