@@ -24,7 +24,14 @@
 							<a href="/blog/{{blog.slug}}" class="blog_card">
 								<div class="card h-100 blog_card">
 									<div class="image-container">
-										<img src="/assets/images/blogs/{{ blog.medias[0].thumbnailFilename }}" class="card-img-top" alt="{{blog.medias[0].alt}}">
+										<img
+											src="/assets/images/blogs/{{ blog.medias[0].thumbnailFilename }}"
+											class="card-img-top"
+											alt="{{ blog.medias[0].alt }}"
+											width="600" height="600"
+											loading="lazy"
+											decoding="async"
+										>
 									</div>
 									<div class="card-body">
 										<h3 class="card-title text-center">{{blog.title}}</h3>

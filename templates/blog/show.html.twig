@@ -24,7 +24,14 @@
 				<h1>{{blog.title}}</h1>
 				{% if blog.medias[0] is defined %}
 					<div class="mb-4">
-						<img src="/assets/images/blogs/{{ blog.medias[0].mediumFilename }}" alt="{{ blog.medias[0].alt }}" class="img-fluid rounded">
+						<img
+						src="/assets/images/blogs/{{ blog.medias[0].mediumFilename }}"
+						alt="{{ blog.medias[0].alt }}"
+						class="img-fluid rounded"
+						width="800" height="450"
+						fetchpriority="high"
+						decoding="async"
+					>
 					</div>
 				{% endif %}
 				<div>
