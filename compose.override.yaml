@@ -72,5 +72,15 @@ services:
       MP_SMTP_AUTH_ACCEPT_ANY: "1"
       MP_SMTP_AUTH_ALLOW_INSECURE: "1"
 
+  stripe-cli:
+    image: stripe/stripe-cli:latest
+    restart: unless-stopped
+    command: listen --forward-to https://php/webhooks/stripe --skip-verify
+    environment:
+      STRIPE_API_KEY: ${STRIPE_SECRET_KEY}
+      STRIPE_DEVICE_NAME: my-commerce-dev
+    depends_on:
+      - php
+
 volumes:
   app_var:

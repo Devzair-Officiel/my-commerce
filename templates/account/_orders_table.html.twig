@@ -10,25 +10,19 @@
                 <th>Actions</th>
             </tr>
         </thead>
+        <tbody>
         {% for order in orders %}
-            <tbody>
-                <tr>
-                    <td>
-                        #{{order.id}}
-                    </td>
-                    <td>
-                        {{order.createdAt | date('d/m/Y')}}
-                    </td>
+            <tr>
+                    <td>{{ order.orderReference ?? '#' ~ order.id }}</td>
+                    <td>{{ order.createdAt|date('d/m/Y') }}</td>
                     <td>{{ order.paymentStatus.label() }}</td>
-                    <td>
-                        <td>{{ (order.orderTotalTtcCents / 100) | format_currency(order.currency) }}</td>
-                    </td>
+                    <td>{{ (order.orderTotalTtcCents / 100)|format_currency(order.currency) }}</td>
                     <td>
                         <a href="/account/order/{{order.id}}" class="btn btn-fill-out btn-sm">Détail</a>
                     </td>
-                </tr>
-            </tbody>
+            </tr>
         {% endfor %}
+        </tbody>
     </table>
 </div>
 {% if ordersPages is defined and ordersPage is defined and ordersPages > 1 %}

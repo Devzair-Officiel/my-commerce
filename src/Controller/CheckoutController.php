@@ -94,15 +94,12 @@ class CheckoutController extends AbstractController
             $order->generateOrderReferenceIfMissing();
         }
 
+        // Toujours vider la session, quelle que soit la situation en base
+        $this->cartService->clearCart();
+
         if ($order->getCartClearedAt() === null) {
-            $this->cartService->clearCart();
             $order->markCartCleared();
-        }
-
-        $this->em->flush();
-
-        if (!$order->isConfirmationEmailSent()) {
-            $messageBus->dispatch(new SendOrderConfirmationEmailMessage($order->getId()));
+            $this->em->flush();
         }
 
         return $this->render('payment/success.html.twig', [

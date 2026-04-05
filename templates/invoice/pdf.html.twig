@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: DejaVu Sans, sans-serif; font-size: 11px; color: #222; }
+
+        .page { padding: 30px 40px; }
+
+        /* En-tête */
+        .header { display: table; width: 100%; margin-bottom: 30px; }
+        .header-left, .header-right { display: table-cell; vertical-align: top; width: 50%; }
+        .header-right { text-align: right; }
+        .logo { font-size: 22px; font-weight: bold; color: #e37e03; }
+        .invoice-title { font-size: 26px; font-weight: bold; color: #333; margin-bottom: 4px; }
+        .invoice-number { font-size: 13px; color: #555; }
+        .invoice-date { font-size: 11px; color: #777; margin-top: 4px; }
+
+        /* Infos vendeur / client */
+        .parties { display: table; width: 100%; margin-bottom: 24px; }
+        .party { display: table-cell; width: 50%; vertical-align: top; padding-right: 20px; }
+        .party-title { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: #999; margin-bottom: 6px; }
+        .party-name { font-weight: bold; font-size: 12px; margin-bottom: 3px; }
+        .party-line { font-size: 11px; color: #444; line-height: 1.5; }
+
+        /* Référence commande */
+        .ref-bar { background: #f7f7f7; border-left: 3px solid #e37e03; padding: 8px 12px; margin-bottom: 24px; font-size: 11px; color: #555; }
+
+        /* Tableau des lignes */
+        table.items { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+        table.items thead th { background: #e37e03; color: #fff; padding: 8px 10px; text-align: left; font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; }
+        table.items thead th.right { text-align: right; }
+        table.items tbody tr:nth-child(even) { background: #fafafa; }
+        table.items tbody td { padding: 7px 10px; border-bottom: 1px solid #eee; font-size: 11px; }
+        table.items tbody td.right { text-align: right; }
+        table.items tfoot td { padding: 7px 10px; font-size: 11px; }
+
+        /* Totaux */
+        .totals { float: right; width: 260px; margin-bottom: 30px; }
+        .total-row { display: table; width: 100%; padding: 5px 0; border-bottom: 1px solid #eee; }
+        .total-label { display: table-cell; color: #555; }
+        .total-value { display: table-cell; text-align: right; font-weight: bold; }
+        .total-row.grand { border-top: 2px solid #e37e03; border-bottom: none; margin-top: 4px; padding-top: 8px; }
+        .total-row.grand .total-label,
+        .total-row.grand .total-value { font-size: 14px; color: #e37e03; }
+
+        /* Mentions légales */
+        .clearfix { clear: both; }
+        .legal { margin-top: 30px; padding-top: 16px; border-top: 1px solid #ddd; font-size: 9.5px; color: #888; line-height: 1.6; }
+        .legal strong { color: #555; }
+    </style>
+</head>
+<body>
+<div class="page">
+
+    {# ── En-tête ── #}
+    <div class="header">
+        <div class="header-left">
+            <div class="logo">{{ seller.website_name }}</div>
+            <div style="margin-top: 6px; font-size: 11px; color: #555; line-height: 1.6;">
+                {{ seller.name }}<br>
+                {{ seller.street }}<br>
+                {{ seller.code_postal }} {{ seller.city }}{% if seller.state %}, {{ seller.state }}{% endif %}<br>
+                {% if seller.siret %}SIRET : {{ seller.siret }}<br>{% endif %}
+                {% if seller.phone %}Tél : {{ seller.phone }}<br>{% endif %}
+                {% if seller.email %}{{ seller.email }}{% endif %}
+            </div>
+        </div>
+        <div class="header-right">
+            <div class="invoice-title">FACTURE</div>
+            <div class="invoice-number">N° {{ invoice.invoiceNumber }}</div>
+            <div class="invoice-date">
+                Date : {{ invoice.issuedAt ? invoice.issuedAt|date('d/m/Y') : 'N/A' }}
+            </div>
+        </div>
+    </div>
+
+    {# ── Vendeur / Client ── #}
+    <div class="parties">
+        <div class="party" style="padding-right: 40px;">
+            <div class="party-title">Émetteur</div>
+            <div class="party-name">{{ seller.name }}</div>
+            <div class="party-line">
+                {{ seller.street }}<br>
+                {{ seller.code_postal }} {{ seller.city }}<br>
+                {% if seller.siret %}SIRET : {{ seller.siret }}{% endif %}
+            </div>
+        </div>
+        <div class="party">
+            <div class="party-title">Facturé à</div>
+            {% if billingAddress %}
+                <div class="party-name">{{ billingAddress.client_name ?? (billingAddress.name ?? '') }}</div>
+                <div class="party-line">
+                    {{ billingAddress.street ?? '' }}<br>
+                    {{ billingAddress.code_postal ?? '' }} {{ billingAddress.city ?? '' }}<br>
+                    {% if billingAddress.state is defined and billingAddress.state %}{{ billingAddress.state }}<br>{% endif %}
+                </div>
+            {% else %}
+                <div class="party-line">{{ order.user.email }}</div>
+            {% endif %}
+        </div>
+    </div>
+
+    {# ── Référence commande ── #}
+    <div class="ref-bar">
+        Référence commande : <strong>{{ order.orderReference }}</strong>
+        &nbsp;|&nbsp;
+        Payée le : <strong>{{ seller.paid_at ?? '—' }}</strong>
+        &nbsp;|&nbsp;
+        Mode de paiement : <strong>{{ seller.payment_method_name ?? '—' }}</strong>
+    </div>
+
+    {# ── Lignes de commande ── #}
+    <table class="items">
+        <thead>
+            <tr>
+                <th style="width: 45%;">Désignation</th>
+                <th class="right" style="width: 20%;">Prix unitaire</th>
+                <th class="right" style="width: 10%;">Qté</th>
+                <th class="right" style="width: 25%;">Total</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for line in order.orderDetails %}
+            <tr>
+                <td>{{ line.productName }}</td>
+                <td class="right">{{ (line.unitPriceCents / 100)|number_format(2, ',', ' ') }} €</td>
+                <td class="right">{{ line.quantity }}</td>
+                <td class="right">{{ (line.lineTotalCents / 100)|number_format(2, ',', ' ') }} €</td>
+            </tr>
+            {% endfor %}
+            {% if order.carrierPriceSnapshotCents > 0 %}
+            <tr>
+                <td>Frais de livraison — {{ order.carrierNameSnapshot }}</td>
+                <td class="right">{{ (order.carrierPriceSnapshotCents / 100)|number_format(2, ',', ' ') }} €</td>
+                <td class="right">1</td>
+                <td class="right">{{ (order.carrierPriceSnapshotCents / 100)|number_format(2, ',', ' ') }} €</td>
+            </tr>
+            {% endif %}
+        </tbody>
+    </table>
+
+    {# ── Totaux ── #}
+    <div class="totals">
+        <div class="total-row">
+            <span class="total-label">Sous-total HT</span>
+            <span class="total-value">{{ (order.itemsTotalHtCents / 100)|number_format(2, ',', ' ') }} €</span>
+        </div>
+        {% if order.carrierPriceSnapshotCents > 0 %}
+        <div class="total-row">
+            <span class="total-label">Livraison</span>
+            <span class="total-value">{{ (order.carrierPriceSnapshotCents / 100)|number_format(2, ',', ' ') }} €</span>
+        </div>
+        {% endif %}
+        {% if taxAmountCents > 0 %}
+        <div class="total-row">
+            <span class="total-label">TVA</span>
+            <span class="total-value">{{ (taxAmountCents / 100)|number_format(2, ',', ' ') }} €</span>
+        </div>
+        {% else %}
+        <div class="total-row">
+            <span class="total-label">TVA</span>
+            <span class="total-value">Non applicable</span>
+        </div>
+        {% endif %}
+        <div class="total-row grand">
+            <span class="total-label">Total TTC</span>
+            <span class="total-value">{{ (order.orderTotalTtcCents / 100)|number_format(2, ',', ' ') }} €</span>
+        </div>
+    </div>
+
+    <div class="clearfix"></div>
+
+    {# ── Mentions légales ── #}
+    <div class="legal">
+        {% if invoice.notes %}
+            {% for line in invoice.notes|split("\n") %}
+                {{ line }}<br>
+            {% endfor %}
+        {% endif %}
+        {% if seller.legal_mentions %}
+            <br>{{ seller.legal_mentions }}
+        {% endif %}
+    </div>
+
+</div>
+</body>
+</html>

@@ -6,19 +6,24 @@ namespace App\MessageHandler;
 
 use App\Message\SendOrderConfirmationEmailMessage;
 use App\Repository\OrderRepository;
+use App\Service\Invoice\InvoiceBuilder;
+use App\Service\Invoice\InvoicePdfRenderer;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 use Symfony\Component\Mime\Address;
+use Symfony\Component\Mime\Part\DataPart;
 
 #[AsMessageHandler]
 final readonly class SendOrderConfirmationEmailMessageHandler
 {
     public function __construct(
-        private OrderRepository $orderRepository,
+        private OrderRepository        $orderRepository,
         private EntityManagerInterface $em,
-        private MailerInterface $mailer,
+        private MailerInterface        $mailer,
+        private InvoiceBuilder         $invoiceBuilder,
+        private InvoicePdfRenderer     $pdfRenderer,
         private string $mailFromAddress = 'contact@nidemiel.com',
         private string $mailFromName = 'Nidemiel',
     ) {}
@@ -42,17 +47,24 @@ final readonly class SendOrderConfirmationEmailMessageHandler
         }
 
         $order->generateOrderReferenceIfMissing();
-        $this->em->flush();
+
+        // Créer et émettre la facture avant l'envoi de l'email
+        $invoice = $this->invoiceBuilder->createAndIssueForOrder($order);
+
+        $pdfContent = $this->pdfRenderer->render($invoice);
+        $filename   = $this->pdfRenderer->getFilename($invoice);
 
         $email = (new TemplatedEmail())
             ->from(new Address($this->mailFromAddress, $this->mailFromName))
             ->to(new Address($user->getEmail()))
-            ->subject(sprintf('Confirmation de votre commande %s', $order->getOrderReference() ?? ''))
+            ->subject('Confirmation de votre commande ' . ($order->getOrderReference() ?? ''))
             ->htmlTemplate('emails/order_confirmation.html.twig')
             ->context([
-                'order' => $order,
-                'user' => $user,
-            ]);
+                'order'   => $order,
+                'user'    => $user,
+                'invoice' => $invoice,
+            ])
+            ->addPart(new DataPart($pdfContent, $filename, 'application/pdf'));
 
         $this->mailer->send($email);
 

@@ -62,6 +62,18 @@ class Setting
     #[ORM\Column(nullable: true)]
     private ?int $freeShippingThresholdCents = null;
 
+    /**
+     * Informations du micro-entrepreneur pour les factures.
+     */
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $ownerName = null;
+
+    #[ORM\Column(length: 20, nullable: true)]
+    private ?string $siret = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $legalMentions = null;
+
     #[ORM\OneToOne(mappedBy: 'setting', cascade: ['persist', 'remove'], orphanRemoval: true)]
     private ?Media $logoMedia = null;
 
@@ -274,6 +286,39 @@ class Setting
             $media->setSetting($this);
         }
 
+        return $this;
+    }
+
+    public function getOwnerName(): ?string
+    {
+        return $this->ownerName;
+    }
+
+    public function setOwnerName(?string $ownerName): static
+    {
+        $this->ownerName = $ownerName;
+        return $this;
+    }
+
+    public function getSiret(): ?string
+    {
+        return $this->siret;
+    }
+
+    public function setSiret(?string $siret): static
+    {
+        $this->siret = $siret;
+        return $this;
+    }
+
+    public function getLegalMentions(): ?string
+    {
+        return $this->legalMentions;
+    }
+
+    public function setLegalMentions(?string $legalMentions): static
+    {
+        $this->legalMentions = $legalMentions;
         return $this;
     }
 

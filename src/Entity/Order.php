@@ -2,6 +2,7 @@
 
 namespace App\Entity;
 
+use App\Entity\Invoice;
 use App\Trait\DateTrait;
 use App\Enum\PaymentStatus;
 use Doctrine\DBAL\Types\Types;
@@ -142,6 +143,9 @@ class Order
     
     #[Assert\Valid] // valide aussi les lignes
     private Collection $orderDetails;
+
+    #[ORM\OneToOne(mappedBy: 'customerOrder', targetEntity: Invoice::class, cascade: ['persist', 'remove'])]
+    private ?Invoice $invoice = null;
 
     /**
      * @var Collection<int, Shipment>
@@ -464,6 +468,17 @@ class Order
             }
         }
 
+        return $this;
+    }
+
+    public function getInvoice(): ?Invoice
+    {
+        return $this->invoice;
+    }
+
+    public function setInvoice(?Invoice $invoice): static
+    {
+        $this->invoice = $invoice;
         return $this;
     }
 

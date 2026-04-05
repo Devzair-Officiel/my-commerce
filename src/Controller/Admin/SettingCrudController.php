@@ -192,6 +192,20 @@ final class SettingCrudController extends AbstractCrudController
             $facebook,
             $insta,
             $youtube,
+
+            FormField::addTab('Facturation')->setIcon('fa fa-file-invoice'),
+            FormField::addFieldset('Micro-entrepreneur')->setIcon('fa fa-user-tie'),
+            TextField::new('ownerName', 'Nom du propriétaire')
+                ->setHelp('Nom complet du micro-entrepreneur, apparaît sur les factures')
+                ->setColumns(6),
+            TextField::new('siret', 'SIRET')
+                ->setHelp('14 chiffres sans espaces')
+                ->setColumns(6),
+            TextareaField::new('legalMentions', 'Mentions légales complémentaires')
+                ->setHelp('Apparaît en bas de chaque facture (ex: conditions de paiement spécifiques)')
+                ->setColumns(12)
+                ->setFormTypeOption('attr', ['rows' => 4])
+                ->setRequired(false),
         ];
     }
 

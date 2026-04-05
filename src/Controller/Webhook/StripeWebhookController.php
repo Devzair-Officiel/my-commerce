@@ -8,12 +8,15 @@ use App\Enum\PaymentStatus;
 use Doctrine\DBAL\LockMode;
 use Psr\Log\LoggerInterface;
 use App\Enum\FulfillmentStatus;
+use App\Message\SendOrderConfirmationEmailMessage;
+use App\Repository\PaymentMethodRepository;
 use App\Service\StockAllocator;
 use App\Entity\StripeWebhookEvent;
 use App\Repository\OrderRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Routing\Attribute\Route;
 use Stripe\Exception\SignatureVerificationException;
 use Symfony\Component\RateLimiter\RateLimiterFactory;
@@ -27,7 +30,9 @@ final class StripeWebhookController extends AbstractController
         private readonly string $stripeWebhookSecret,
         private readonly EntityManagerInterface $em,
         private readonly OrderRepository $orderRepository,
+        private readonly PaymentMethodRepository $paymentMethodRepository,
         private readonly StockAllocator $stockAllocator,
+        private readonly MessageBusInterface $messageBus,
         #[Autowire(service: 'limiter.stripe_webhook')]
         private readonly RateLimiterFactory $stripeWebhookLimiter,
         private readonly LoggerInterface $logger,
@@ -113,9 +118,29 @@ final class StripeWebhookController extends AbstractController
                     $this->stockAllocator->decrementStockForPaidOrder($order);
 
                     $order->setPaymentStatus(PaymentStatus::Paid);
-                    $order->setFulfillmentStatus(FulfillmentStatus::Preparing); // ✅ SORT DU DRAFT
+                    $order->setFulfillmentStatus(FulfillmentStatus::Preparing);
                     $order->setPaidAt(new \DateTimeImmutable());
                     $order->setPaymentFailureReason(null);
+
+                    // Renseigner le moyen de paiement s'il n'est pas encore défini
+                    if ($order->getPaymentMethodNameSnapshot() === null) {
+                        $pm = $this->paymentMethodRepository->findOneBy(['name' => 'stripe']);
+                        if ($pm !== null) {
+                            $order->setPaymentMethod($pm);
+                            $order->setPaymentMethodNameSnapshot($pm->getName());
+                        } else {
+                            $order->setPaymentMethodNameSnapshot('Stripe');
+                        }
+                    }
+
+                    // Dispatcher l'email depuis le webhook garantit qu'il part
+                    // toujours, même si le client ferme l'onglet après paiement.
+                    // Le handler est idempotent (vérifie isConfirmationEmailSent).
+                    if (!$order->isConfirmationEmailSent()) {
+                        $this->messageBus->dispatch(
+                            new SendOrderConfirmationEmailMessage($order->getId())
+                        );
+                    }
                 }
 
                 if ($event->type === 'payment_intent.payment_failed') {

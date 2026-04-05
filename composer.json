@@ -12,6 +12,7 @@
         "doctrine/doctrine-bundle": "^3.2",
         "doctrine/doctrine-migrations-bundle": "^4.0",
         "doctrine/orm": "^3.6",
+        "dompdf/dompdf": "^2.0",
         "easycorp/easyadmin-bundle": "^4.27",
         "intervention/image": "^4.0",
         "karser/karser-recaptcha3-bundle": "^0.3.0",
