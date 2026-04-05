@@ -1,4 +1,5 @@
 import { fetchJson } from "../../utils/fetch.js";
+import { escapeHtml } from "../../utils/html.js";
 
 document.addEventListener("DOMContentLoaded", () => {
     if (!window.paypal) return;
@@ -91,13 +92,5 @@ document.addEventListener("DOMContentLoaded", () => {
         container.innerHTML = message;
     }
 
-    // Sécurise l'injection HTML dans resultMessage()
-    function escapeHtml(str) {
-        return String(str)
-            .replaceAll("&", "&amp;")
-            .replaceAll("<", "&lt;")
-            .replaceAll(">", "&gt;")
-            .replaceAll('"', "&quot;")
-            .replaceAll("'", "&#039;");
-    }
+
 });

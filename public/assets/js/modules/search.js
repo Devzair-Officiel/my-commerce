@@ -1,4 +1,5 @@
 import { fetchJson } from "../utils/fetch.js";
+import { escapeHtml } from "../utils/html.js";
 
 const DEBOUNCE_MS  = 280;
 const MIN_CHARS    = 2;
@@ -7,13 +8,6 @@ function formatPrice(cents) {
     return Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR" }).format(cents / 100);
 }
 
-function escapeHtml(str) {
-    return String(str ?? "")
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;");
-}
 
 function buildDropdown() {
     const el = document.createElement("ul");

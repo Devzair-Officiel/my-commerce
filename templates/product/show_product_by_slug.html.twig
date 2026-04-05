@@ -65,8 +65,8 @@
 
 								{% for image in product.medias %}
 									<div class="item">
-										<a href="#" class="product_gallery_item {% if loop.first %}active{% endif %}" data-image="/assets/images/products/{{ image.mediumFilename }}" data-zoom-image="/assets/images/products/{{ image.filename }}">
-											<img alt="{{ image.alt }}" src="/assets/images/products/{{ image.thumbnailFilename }}" width="600" height="600" loading="lazy" decoding="async">
+										<a href="javascript:void(0)" class="product_gallery_item {% if loop.first %}active{% endif %}" data-image="/assets/images/products/{{ image.mediumFilename }}" data-zoom-image="/assets/images/products/{{ image.filename }}">
+											<img alt="{{ image.alt }}" src="/assets/images/products/{{ image.thumbnailFilename }}" width="90" height="90" loading="lazy" decoding="async">
 										</a>
 									</div>
 								{% endfor %}

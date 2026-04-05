@@ -1,14 +1,6 @@
 import { fetchJson } from "../../utils/fetch.js";
 import { showFlash } from "../../utils/flash.js";
-
-function escapeHtml(str) {
-  return String(str)
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#039;");
-}
+import { escapeHtml } from "../../utils/html.js";
 
 function renderRow(a) {
   // a est en snake_case (API stable)

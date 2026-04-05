@@ -1,5 +1,6 @@
 import { fetchJson } from "../utils/fetch.js";
 import { addFlashMessage, formatPrice } from "../utils/ui.js";
+import { escapeHtml, getThumbFilename } from "../utils/html.js";
 
 export function initWishlist() {
   document.addEventListener("click", onDocumentClick, { passive: false });
@@ -8,7 +9,7 @@ export function initWishlist() {
 function isWishlistLink(link) {
   return (
     link.matches(".add-to-wishlist") ||
-    link.matches(".wishlist_table .remove-to-wishlist")
+    link.matches(".wishlist-grid .remove-to-wishlist")
   );
 }
 
@@ -18,15 +19,6 @@ function getWishlistAction(pathname) {
   return null;
 }
 
-function escapeHtml(value) {
-  const str = String(value ?? "");
-  return str
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#039;");
-}
 
 async function onDocumentClick(event) {
   const link = event.target.closest("a");
@@ -44,7 +36,6 @@ async function onDocumentClick(event) {
 
   event.preventDefault();
 
-  // ✅ Appelle le backend avec la bonne méthode HTTP
   await manageWishlistRequest({ url, action });
 }
 
@@ -55,8 +46,6 @@ async function manageWishlistRequest({ url, action }) {
   try {
     wishlist = await fetchJson(url.toString(), { method });
   } catch (e) {
-    console.error(e);
-
     addFlashMessage(e?.message || "Erreur favoris", "danger");
     return;
   }
@@ -72,79 +61,109 @@ async function manageWishlistRequest({ url, action }) {
   }
 
   if (action === "add") addFlashMessage("Ajouté aux favoris !");
-  if (action === "remove") addFlashMessage("Supprimé des favoris !", "danger");
+  if (action === "remove") addFlashMessage("Supprimé des favoris !");
 
   displayWishlist(wishlist);
 }
 
 export function displayWishlist(wishlist = []) {
-  const tbody = document.querySelector(".wishlist_table tbody");
-  if (!tbody) return;
+  const grid = document.querySelector(".wishlist-grid");
+  if (!grid) return;
 
-  if (!Array.isArray(wishlist)) return;
-
-  // Si tu veux afficher un message “Aucun favori”
-  if (wishlist.length === 0) {
-    tbody.innerHTML = `
-      <tr>
-        <td colspan="5" class="text-center">
-          Aucun favori pour le moment.
-        </td>
-      </tr>
+  if (!Array.isArray(wishlist) || wishlist.length === 0) {
+    grid.innerHTML = `
+      <div class="col-12 text-center py-5">
+        <i class="ti-heart" style="font-size:3rem; color:#ddd;"></i>
+        <p class="mt-3 text-muted">Votre liste de favoris est vide.</p>
+        <a href="/category/miels-du-monde" class="btn btn-fill-out mt-2">Découvrir nos miels</a>
+      </div>
     `;
     return;
   }
 
-  tbody.innerHTML = "";
+  grid.innerHTML = "";
 
   for (const product of wishlist) {
     const id = Number(product?.id ?? 0);
     const title = escapeHtml(product?.title ?? "");
     const slug = escapeHtml(product?.slug ?? "");
-    
-    const imgFile = escapeHtml(product.images?.[0]['filename']);
-    const imgSrc = imgFile ? `/assets/images/products/${imgFile}` : "";
-    const alt = escapeHtml(product.images?.[0]['alt']) ?? "";
+    const description = escapeHtml(product?.description ?? "");
 
-    // prix : ton back semble renvoyer des centimes
-    const priceCents = Number((product.isOnSale ? product.soldePrice : product.regularPrice));
+    const imgFile = product.images?.[0]?.filename
+      ? escapeHtml(product.images[0].filename)
+      : null;
+    const imgThumb = imgFile ? getThumbFilename(imgFile) : null;
+    const imgSrc = imgThumb
+      ? `/assets/images/products/${imgThumb}`
+      : "/assets/images/placeholder.png";
+    const alt = escapeHtml(product.images?.[0]?.alt ?? title);
+
+    const isOnSale = !!product.isOnSale;
+    const priceCents = Number(isOnSale ? product.soldePrice : product.regularPrice);
+    const regularCents = Number(product.regularPrice);
     const priceHtml = formatPrice(priceCents / 100);
+    const regularHtml = isOnSale ? formatPrice(regularCents / 100) : "";
 
-    // 🔒 On évite d’injecter du HTML non échappé (title/slug/image)
-    tbody.insertAdjacentHTML(
+    const inStock = Number(product.stock ?? 0) > 0;
+    const stockBadge = inStock
+      ? `<span class="wishlist-card__badge wishlist-card__badge--stock">En stock</span>`
+      : `<span class="wishlist-card__badge wishlist-card__badge--out">Rupture</span>`;
+
+    const saleBadge = isOnSale
+      ? `<span class="wishlist-card__badge wishlist-card__badge--sale">Promo</span>`
+      : "";
+
+    grid.insertAdjacentHTML(
       "beforeend",
       `
-      <tr>
-        <td class="product-thumbnail">
-          <a href="/${slug}">
-            ${
-              imgSrc
-                ? `<img width="50" height="50" alt="${alt}" src="${imgSrc}">`
-                : ""
-            }
+      <div class="col-lg-3 col-md-4 col-sm-6" data-product-id="${id}">
+        <div class="wishlist-card">
+          <a href="/produits/${slug}" class="wishlist-card__img-wrap">
+            <img
+              src="${imgSrc}"
+              alt="${alt}"
+              width="300" height="300"
+              loading="lazy"
+              decoding="async"
+            >
+            <div class="wishlist-card__badges">
+              ${saleBadge}
+              ${stockBadge}
+            </div>
           </a>
-        </td>
 
-        <td class="product-name">
-          <a href="/${slug}">${title}</a>
-        </td>
+          <div class="wishlist-card__body">
+            <h3 class="wishlist-card__title">
+              <a href="/produits/${slug}">${title}</a>
+            </h3>
 
-        <td data-title="Price" class="product-price">
-          ${priceHtml}
-        </td>
+            ${description ? `<p class="wishlist-card__desc">${description}</p>` : ""}
 
-        <td class="product add-to-cart">
-          <a href="/cart/add/${id}" class="btn btn-fill-out add-to-cart">
-            <i class="icon-basket-loaded"></i> Ajouter au panier
-          </a>
-        </td>
+            <div class="wishlist-card__price">
+              <span class="wishlist-card__price--current">${priceHtml}</span>
+              ${isOnSale ? `<span class="wishlist-card__price--old">${regularHtml}</span>` : ""}
+            </div>
 
-        <td>
-          <a href="/wishlist/remove/${id}" class="remove-to-wishlist">
-            <i class="ti-close"></i>
-          </a>
-        </td>
-      </tr>
+            <div class="wishlist-card__actions">
+              <a
+                href="/cart/add/${id}"
+                class="btn btn-fill-out btn-sm add-to-cart ${!inStock ? "disabled" : ""}"
+                ${!inStock ? 'aria-disabled="true"' : ""}
+              >
+                <i class="icon-basket-loaded"></i> Panier
+              </a>
+              <a
+                href="/wishlist/remove/${id}"
+                class="wishlist-card__remove remove-to-wishlist"
+                aria-label="Retirer des favoris"
+                title="Retirer des favoris"
+              >
+                <i class="ti-trash"></i>
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
       `
     );
   }

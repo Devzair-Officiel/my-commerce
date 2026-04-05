@@ -92,16 +92,30 @@ final class SitemapController extends AbstractController
         User-agent: *
         Allow: /
 
+        # Espace privé
         Disallow: /admin
         Disallow: /account
-        Disallow: /cart
-        Disallow: /checkout
         Disallow: /login
         Disallow: /register
         Disallow: /logout
         Disallow: /reset-password
+
+        # Tunnel d'achat
+        Disallow: /cart
+        Disallow: /checkout
+        Disallow: /stripe/
+
+        # Pages utilitaires sans valeur SEO
+        Disallow: /compare
+        Disallow: /wishlist
+        Disallow: /verify/
+        Disallow: /connect/
+
+        # Endpoints API & techniques
         Disallow: /api/
+        Disallow: /product/get/
         Disallow: /product/search
+        Disallow: /webhooks/
 
         Sitemap: {$sitemap}
         TXT;

@@ -487,55 +487,123 @@
 	// 21. Quickview zoom + gallery
 	// -----------------------------
 	(function initZoomAndGallery() {
-		if (!$.fn.magnificPopup) return;
-
 		const $image = $('#product_img');
-		if ($image.length && $.fn.elevateZoom) {
+		if (!$image.length) return;
+
+		function switchGalleryImage($thumb) {
+			const newSrc     = $thumb.attr('data-image');
+			const newZoomSrc = $thumb.attr('data-zoom-image') || newSrc;
+			if (!newSrc) return;
+
+			$image.attr('src', newSrc);
+
+			if ($.fn.elevateZoom) {
+				const ez = $image.data('elevateZoom');
+				if (ez) ez.swaptheimage(newSrc, newZoomSrc);
+			}
+
+			$('#pr_item_gallery .product_gallery_item').removeClass('active');
+			$thumb.addClass('active');
+			$('.product_img_zoom').attr('href', newZoomSrc);
+		}
+
+		// ── Clic sur une vignette galerie ────────────────────────────────
+		// On utilise mousedown/mouseup sur le document pour contourner
+		// l'interception de slick (draggable) qui annule parfois les clicks.
+		var galleryDragging = false;
+
+		$doc.on('mousedown touchstart', '#pr_item_gallery .product_gallery_item', function () {
+			galleryDragging = false;
+		});
+		$doc.on('mousemove touchmove', '#pr_item_gallery', function () {
+			galleryDragging = true;
+		});
+		$doc.on('mouseup touchend', '#pr_item_gallery .product_gallery_item', function (e) {
+			e.preventDefault();
+			if (!galleryDragging) {
+				switchGalleryImage($(this));
+			}
+			galleryDragging = false;
+		});
+
+		// ── Initialisation elevateZoom ────────────────────────────────────
+		if ($.fn.elevateZoom) {
 			$image.elevateZoom({
 				cursor: 'crosshair',
 				easing: true,
-				gallery: 'pr_item_gallery',
 				zoomType: 'inner',
-				galleryActiveClass: 'active',
 			});
 		}
 
-		$.magnificPopup.defaults.callbacks = {
-			open: function () {
-				$('body').addClass('zoom_image');
-			},
-			close: function () {
-				window.setTimeout(function () {
-					$('body').removeClass('zoom_image zoom_gallery_image');
-					$('.zoomContainer').slice(1).remove();
-				}, 100);
-			},
-		};
+		// ── Lightbox custom (simple, fiable, sans dépendance) ────────────
+		var $lightbox = null;
 
-		const $galleryZoom = $('#pr_item_gallery');
-		if ($galleryZoom.length) {
-			$galleryZoom.magnificPopup({
-				delegate: 'a',
-				type: 'image',
-				gallery: { enabled: true },
-				callbacks: {
-					elementParse: function (item) {
-						item.src = item.el.attr('data-zoom-image');
-					},
-				},
+		function buildLightbox() {
+			if ($lightbox) return;
+			$lightbox = $('<div id="nm-lightbox" role="dialog" aria-modal="true" aria-label="Image agrandie">' +
+				'<button class="nm-lightbox__close" aria-label="Fermer">&#x2715;</button>' +
+				'<div class="nm-lightbox__prev" aria-label="Précédent">&#8249;</div>' +
+				'<div class="nm-lightbox__next" aria-label="Suivant">&#8250;</div>' +
+				'<img class="nm-lightbox__img" src="" alt="">' +
+			'</div>');
+			$('body').append($lightbox);
+
+			// Fermer sur clic du fond (pas sur l'image)
+			$lightbox.on('click', function (e) {
+				if ($(e.target).is('#nm-lightbox')) closeLightbox();
 			});
+			$lightbox.on('click', '.nm-lightbox__close', closeLightbox);
+			$lightbox.on('click', '.nm-lightbox__prev', function () { navigateLightbox(-1); });
+			$lightbox.on('click', '.nm-lightbox__next', function () { navigateLightbox(1); });
 		}
 
-		$doc.on('click', '.product_img_zoom', function () {
-			const current = $('#pr_item_gallery a').attr('data-zoom-image');
-			$('body').addClass('zoom_gallery_image');
+		var lightboxImages = [];
+		var lightboxIndex  = 0;
 
-			$('#pr_item_gallery .item').each(function () {
-				const src = $(this).find('.product_gallery_item').attr('data-zoom-image');
-				if (src && src === current) {
-					return $galleryZoom.magnificPopup('open', $(this).index());
-				}
-			});
+		function openLightbox(index) {
+			buildLightbox();
+			lightboxImages = $('#pr_item_gallery .product_gallery_item').map(function () {
+				return { src: $(this).attr('data-zoom-image'), alt: $(this).find('img').attr('alt') || '' };
+			}).get();
+			lightboxIndex = index ?? 0;
+			renderLightbox();
+			$lightbox.addClass('nm-lightbox--open');
+			$('.zoomContainer').css('visibility', 'hidden');
+			$('body').css('overflow', 'hidden');
+			// Focus sur le bouton fermer pour l'accessibilité
+			$lightbox.find('.nm-lightbox__close').focus();
+		}
+
+		function closeLightbox() {
+			if ($lightbox) $lightbox.removeClass('nm-lightbox--open');
+			$('.zoomContainer').css('visibility', '');
+			$('body').css('overflow', '');
+		}
+
+		function navigateLightbox(dir) {
+			lightboxIndex = (lightboxIndex + dir + lightboxImages.length) % lightboxImages.length;
+			renderLightbox();
+		}
+
+		function renderLightbox() {
+			var item = lightboxImages[lightboxIndex];
+			if (!item) return;
+			$lightbox.find('.nm-lightbox__img').attr('src', item.src).attr('alt', item.alt);
+			$lightbox.find('.nm-lightbox__prev, .nm-lightbox__next').toggle(lightboxImages.length > 1);
+		}
+
+		// Touche Échap
+		$doc.on('keydown', function (e) {
+			if (!$lightbox || !$lightbox.hasClass('nm-lightbox--open')) return;
+			if (e.key === 'Escape')     closeLightbox();
+			if (e.key === 'ArrowLeft')  navigateLightbox(-1);
+			if (e.key === 'ArrowRight') navigateLightbox(1);
+		});
+
+		$doc.on('click', '.product_img_zoom', function (e) {
+			e.preventDefault();
+			var activeIndex = $('#pr_item_gallery .product_gallery_item.active').closest('.item').index();
+			openLightbox(Math.max(0, activeIndex));
 		});
 	})();
 

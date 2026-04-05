@@ -75,13 +75,23 @@ final class CompareService
                 continue;
             }
 
+            $rawDescription = strip_tags((string) ($product->getDescription() ?: $product->getMoreDescription() ?: ''));
+            $description = mb_strlen($rawDescription) > 160
+                ? rtrim(mb_substr($rawDescription, 0, 160)) . '…'
+                : $rawDescription;
+
             $result[] = [
-                'id' => $product->getId(),
-                'title' => $product->getTitle(),
-                'slug' => $product->getSlug(),
-                'images' => $product->getMediaData(),
-                'soldePrice' => $product->getSoldePrice(),
+                'id'           => $product->getId(),
+                'title'        => $product->getTitle(),
+                'slug'         => $product->getSlug(),
+                'description'  => $description,
+                'images'       => $product->getMediaData(),
+                'isOnSale'     => $product->getSoldePrice() !== null,
+                'soldePrice'   => $product->getSoldePrice(),
                 'regularPrice' => $product->getRegularPrice(),
+                'stock'        => $product->getStock(),
+                'weight'       => $product->getWeightGrams(),
+                'origin'       => $product->getOriginCountry(),
             ];
         }
 

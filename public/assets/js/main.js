@@ -23,13 +23,17 @@ window.addEventListener("load", async () => {
 
   // Compare dataset
   const compareContainer = document.querySelector(".compare_container");
-  const compare = safeJsonParse(compareContainer?.dataset?.compare, null);
-  await displayCompare(compare);
+  if (compareContainer) {
+    const compare = safeJsonParse(compareContainer.dataset?.compare, []);
+    await displayCompare(Array.isArray(compare) ? compare : []);
+  }
 
   // Wishlist dataset
   const wishlistContainer = document.querySelector(".wishlist_content");
-  const wishlist = safeJsonParse(wishlistContainer?.dataset?.wishlist, null);
-  displayWishlist(wishlist);
+  if (wishlistContainer) {
+    const wishlist = safeJsonParse(wishlistContainer.dataset?.wishlist, []);
+    displayWishlist(Array.isArray(wishlist) ? wishlist : []);
+  }
 
   // Cart dataset + carriers
   const cartContainer = document.querySelector(".cart_content");

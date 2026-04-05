@@ -1,7 +1,6 @@
-// public/assets/js/compare.js
-
 import { fetchJson } from "../utils/fetch.js";
 import { addFlashMessage, formatPrice } from "../utils/ui.js";
+import { escapeHtml, getThumbFilename } from "../utils/html.js";
 
 function isComparePath(pathname) {
   return pathname.startsWith("/compare/add/") || pathname.startsWith("/compare/remove/");
@@ -15,10 +14,9 @@ async function onDocumentClick(event) {
   const link = event.target.closest("a");
   if (!link) return;
 
-  // Tes sélecteurs existants
   const isCompareLink =
     link.matches(".add-to-compare") ||
-    link.matches(".compare_table .remove_compare_item");
+    link.matches(".compare-card__remove");
 
   if (!isCompareLink) return;
 
@@ -38,9 +36,8 @@ async function onDocumentClick(event) {
 async function manageCompareUrl(url) {
   let compare;
   try {
-    compare = await fetchJson(url.toString()); // ton endpoint retourne probablement la liste
+    compare = await fetchJson(url.toString());
   } catch (e) {
-    console.error(e);
     addFlashMessage(e?.message || "Erreur comparatif", "danger");
     return;
   }
@@ -49,90 +46,131 @@ async function manageCompareUrl(url) {
   const isRemove = url.pathname.startsWith("/compare/remove/");
 
   if (isAdd) addFlashMessage("Ajouté au comparatif !");
-  if (isRemove) addFlashMessage("Supprimé du comparatif !", "danger");
+  if (isRemove) addFlashMessage("Supprimé du comparatif !");
 
-  await displayCompare(compare);
+  displayCompare(compare);
 }
 
-export async function displayCompare(compare = null) {
-  const tbody = document.querySelector("table.compare_table tbody");
-  if (!tbody) return;
+export function displayCompare(compare = []) {
+  const grid = document.querySelector(".compare-grid");
+  if (!grid) return;
 
-  if (!compare) {
-    try {
-      compare = await fetchJson("/compare/get");
-    } catch (e) {
-      console.error(e);
-      return;
+  if (!Array.isArray(compare) || compare.length === 0) {
+    grid.innerHTML = `
+      <div class="text-center py-5">
+        <i class="ti-control-shuffle" style="font-size:3rem; color:#ddd;"></i>
+        <p class="mt-3 text-muted">Aucun produit à comparer pour le moment.</p>
+        <a href="/" class="btn btn-fill-out mt-2">Découvrir nos produits</a>
+      </div>
+    `;
+    return;
+  }
+
+  // Lignes de comparaison à afficher
+  const rows = [
+    { key: "image",       label: null },
+    { key: "title",       label: null },
+    { key: "price",       label: "Prix" },
+    { key: "description", label: "Description" },
+    { key: "origin",      label: "Origine" },
+    { key: "weight",      label: "Poids" },
+    { key: "stock",       label: "Disponibilité" },
+    { key: "actions",     label: null },
+  ];
+
+  // Pre-compute per-product data once (not once per row)
+  const products = compare.map((product) => {
+    const id    = Number(product?.id ?? 0);
+    const title = escapeHtml(product?.title ?? "");
+    const slug  = escapeHtml(product?.slug ?? "");
+
+    const imgFile  = product.images?.[0]?.filename ?? null;
+    const imgThumb = imgFile ? getThumbFilename(imgFile) : null;
+    const imgSrc   = imgThumb
+      ? `/assets/images/products/${imgThumb}`
+      : "/assets/images/placeholder.png";
+    const alt      = escapeHtml(product.images?.[0]?.alt ?? title);
+
+    const isOnSale     = !!product.isOnSale;
+    const priceCents   = Number(isOnSale ? product.soldePrice : product.regularPrice);
+    const regularCents = Number(product.regularPrice);
+    const inStock      = Number(product.stock ?? 0) > 0;
+
+    return { id, title, slug, imgSrc, alt, isOnSale, priceCents, regularCents, inStock, product };
+  });
+
+  let html = `<div class="compare-table">`;
+
+  for (const row of rows) {
+    const isImage   = row.key === "image";
+    const isTitle   = row.key === "title";
+    const isActions = row.key === "actions";
+    const hasLabel  = row.label !== null;
+
+    html += `<div class="compare-row compare-row--${row.key}">`;
+
+    if (hasLabel) {
+      html += `<div class="compare-row__label">${escapeHtml(row.label)}</div>`;
+    } else {
+      html += `<div class="compare-row__label compare-row__label--empty"></div>`;
     }
+
+    for (const { id, title, slug, imgSrc, alt, isOnSale, priceCents, regularCents, inStock, product } of products) {
+      let cell = "";
+
+      if (isImage) {
+        const saleBadge = isOnSale
+          ? `<span class="compare-badge compare-badge--sale">Promo</span>`
+          : "";
+        cell = `
+          <div class="compare-cell compare-cell--image">
+            <a href="/produits/${slug}" class="compare-cell__img-wrap">
+              <img src="${imgSrc}" alt="${alt}" width="260" height="260" loading="lazy" decoding="async">
+              ${saleBadge}
+            </a>
+          </div>`;
+      } else if (isTitle) {
+        cell = `
+          <div class="compare-cell compare-cell--title">
+            <h3><a href="/produits/${slug}">${title}</a></h3>
+          </div>`;
+      } else if (row.key === "price") {
+        const priceHtml   = formatPrice(priceCents / 100);
+        const regularHtml = isOnSale ? formatPrice(regularCents / 100) : "";
+        cell = `
+          <div class="compare-cell">
+            <span class="compare-price">${priceHtml}</span>
+            ${isOnSale ? `<span class="compare-price--old">${regularHtml}</span>` : ""}
+          </div>`;
+      } else if (row.key === "description") {
+        cell = `<div class="compare-cell compare-cell--desc">${escapeHtml(product.description ?? "—")}</div>`;
+      } else if (row.key === "origin") {
+        cell = `<div class="compare-cell">${escapeHtml(product.origin ?? "—")}</div>`;
+      } else if (row.key === "weight") {
+        cell = `<div class="compare-cell">${product.weight ? escapeHtml(product.weight) + " g" : "—"}</div>`;
+      } else if (row.key === "stock") {
+        cell = inStock
+          ? `<div class="compare-cell"><span class="compare-badge compare-badge--stock">En stock</span></div>`
+          : `<div class="compare-cell"><span class="compare-badge compare-badge--out">Rupture</span></div>`;
+      } else if (isActions) {
+        cell = `
+          <div class="compare-cell compare-cell--actions">
+            <a href="/cart/add/${id}" class="btn btn-fill-out btn-sm add-to-cart ${!inStock ? "disabled" : ""}">
+              <i class="icon-basket-loaded"></i> Panier
+            </a>
+            <a href="/compare/remove/${id}" class="compare-card__remove" aria-label="Retirer">
+              <i class="ti-trash"></i>
+            </a>
+          </div>`;
+      }
+
+      html += cell;
+    }
+
+    html += `</div>`; // .compare-row
   }
 
-  const imageRow = tbody.querySelector("tr.pr_image");
-  const titleRow = tbody.querySelector("tr.pr_title");
-  const priceRow = tbody.querySelector("tr.pr_price");
-  const addToCartRow = tbody.querySelector("tr.pr_add_to_cart");
-  const removeRow = tbody.querySelector("tr.pr_remove");
+  html += `</div>`; // .compare-table
 
-  if (!imageRow || !titleRow || !priceRow || !addToCartRow || !removeRow) return;
-
-  imageRow.innerHTML = "";
-  titleRow.innerHTML = "";
-  priceRow.innerHTML = "";
-  addToCartRow.innerHTML = "";
-  removeRow.innerHTML = "";
-
-  for (const product of compare ?? []) {
-    const firstImage = product.images?.[0];
-    const src = firstImage?.filename ? `/assets/images/products/${firstImage.filename}` : "";
-    const alt = firstImage?.alt ?? "";
-    
-    imageRow.insertAdjacentHTML(
-      "beforeend",
-      `
-      <td class="row_img">
-        <img src="${src}" width="500" alt="${alt}">
-      </td>
-      `
-    );
-
-    titleRow.insertAdjacentHTML(
-      "beforeend",
-      `
-      <td class="product_name">
-        <a href="/${product.slug ?? ""}">${product.title ?? ""}</a>
-      </td>
-      `
-    );
-
-    priceRow.insertAdjacentHTML(
-      "beforeend",
-      `
-      <td class="product_price">
-        <span class="price">${formatPrice((product.isOnSale ? product.soldePrice : product.regularPrice) / 100)}</span>
-      </td>
-      `
-    );
-
-    addToCartRow.insertAdjacentHTML(
-      "beforeend",
-      `
-      <td class="row_btn">
-        <a href="/cart/add/${product.id}" class="btn btn-fill-out add-to-cart">
-          <i class="icon-basket-loaded"></i> Ajouter au panier
-        </a>
-      </td>
-      `
-    );
-
-    removeRow.insertAdjacentHTML(
-      "beforeend",
-      `
-      <td class="row_remove">
-        <a href="/compare/remove/${product.id}" class="remove_compare_item">
-          <span>Retirer de la liste </span> <i class="fa fa-times"></i>
-        </a>
-      </td>
-      `
-    );
-  }
+  grid.innerHTML = html;
 }

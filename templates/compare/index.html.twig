@@ -1,8 +1,6 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}
-	{{globalSetting.website_name}} | Comparaison
-{% endblock %}
+{% block title %}{{ globalSetting.website_name }} | Comparaison{% endblock %}
 
 {% block body %}
 
@@ -10,26 +8,11 @@
 
 	<div class="section compare_container" data-compare="{{ compare|json_encode|e('html_attr') }}">
 		<div class="container">
-			<div class="row">
-				<div class="col-md-12">
-					<div class="compare_box">
-						<div class="table-responsive">
-							<table class="table table-bordered text-center compare_table">
-								<tbody>
-									<tr class="pr_image"></tr>
-									<tr class="pr_title"></tr>
-									<tr class="pr_price"></tr>
-
-									<tr class="pr_add_to_cart"></tr>
-
-									<tr class="pr_remove"></tr>
-								</tbody>
-							</table>
-						</div>
-					</div>
-				</div>
+			<div class="compare-grid">
+				{# Injecté par compare.js #}
 			</div>
 		</div>
 	</div>
+
 {% endblock %}
 
