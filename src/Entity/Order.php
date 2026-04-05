@@ -125,6 +125,12 @@ class Order
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
     private ?\DateTimeImmutable $paidAt = null;
 
+    /**
+     * Horodatage du décrément de stock. Sert de guard contre les doubles décréments.
+     */
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
+    private ?\DateTimeImmutable $stockDecrementedAt = null;
+
     #[ORM\Column(nullable: true)]
     private ?\DateTimeImmutable $cartClearedAt = null;
 
@@ -344,6 +350,22 @@ class Order
     {
         $this->paymentFailureReason = $reason;
         return $this;
+    }
+
+    public function getStockDecrementedAt(): ?\DateTimeImmutable
+    {
+        return $this->stockDecrementedAt;
+    }
+
+    public function markStockDecremented(): static
+    {
+        $this->stockDecrementedAt = new \DateTimeImmutable();
+        return $this;
+    }
+
+    public function isStockDecremented(): bool
+    {
+        return $this->stockDecrementedAt !== null;
     }
 
     public function getPaidAt(): ?\DateTimeImmutable

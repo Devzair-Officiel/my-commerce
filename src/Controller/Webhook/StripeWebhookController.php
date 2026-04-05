@@ -3,6 +3,7 @@
 namespace App\Controller\Webhook;
 
 use Stripe\Event;
+use Stripe\Refund;
 use Stripe\Webhook;
 use App\Enum\PaymentStatus;
 use Doctrine\DBAL\LockMode;
@@ -112,10 +113,33 @@ final class StripeWebhookController extends AbstractController
                 if ($event->type === 'payment_intent.succeeded') {
                     $amountReceived = isset($pi->amount_received) ? (int) $pi->amount_received : null;
                     if ($amountReceived !== null && $amountReceived !== (int) $order->getOrderTotalTtcCents()) {
+                        $this->logger->error('Stripe amount mismatch', [
+                            'order_id'        => $order->getId(),
+                            'expected_cents'  => $order->getOrderTotalTtcCents(),
+                            'received_cents'  => $amountReceived,
+                            'payment_intent'  => $piId,
+                        ]);
                         throw new \RuntimeException('Amount mismatch.');
                     }
 
-                    $this->stockAllocator->decrementStockForPaidOrder($order);
+                    // Guard: décrémenter le stock une seule fois même si le webhook est rejoué
+                    if (!$order->isStockDecremented()) {
+                        try {
+                            $this->stockAllocator->decrementStockForPaidOrder($order);
+                            $order->markStockDecremented();
+                        } catch (\RuntimeException $e) {
+                            // Stock insuffisant après paiement → remboursement automatique
+                            $this->logger->critical('Stock insuffisant après paiement, remboursement déclenché', [
+                                'order_id'       => $order->getId(),
+                                'payment_intent' => $piId,
+                                'reason'         => $e->getMessage(),
+                            ]);
+                            Refund::create(['payment_intent' => $piId]);
+                            $order->setPaymentStatus(PaymentStatus::Refunded);
+                            $order->setPaymentFailureReason('Stock insuffisant — remboursement automatique : ' . $e->getMessage());
+                            return;
+                        }
+                    }
 
                     $order->setPaymentStatus(PaymentStatus::Paid);
                     $order->setFulfillmentStatus(FulfillmentStatus::Preparing);
@@ -133,9 +157,15 @@ final class StripeWebhookController extends AbstractController
                         }
                     }
 
-                    // Dispatcher l'email depuis le webhook garantit qu'il part
-                    // toujours, même si le client ferme l'onglet après paiement.
-                    // Le handler est idempotent (vérifie isConfirmationEmailSent).
+                    $this->logger->info('Paiement confirmé', [
+                        'order_id'       => $order->getId(),
+                        'order_ref'      => $order->getOrderReference(),
+                        'amount_cents'   => $amountReceived,
+                        'payment_intent' => $piId,
+                    ]);
+
+                    // Email dispatché depuis le webhook pour garantir l'envoi
+                    // même si le client ferme l'onglet. Idempotent.
                     if (!$order->isConfirmationEmailSent()) {
                         $this->messageBus->dispatch(
                             new SendOrderConfirmationEmailMessage($order->getId())
@@ -144,26 +174,35 @@ final class StripeWebhookController extends AbstractController
                 }
 
                 if ($event->type === 'payment_intent.payment_failed') {
-                    $order->setPaymentStatus(PaymentStatus::Failed);
-
                     $reason = null;
                     if (isset($pi->last_payment_error) && isset($pi->last_payment_error->message)) {
                         $reason = (string) $pi->last_payment_error->message;
                     }
+                    $order->setPaymentStatus(PaymentStatus::Failed);
                     $order->setPaymentFailureReason($reason);
+
+                    $this->logger->warning('Paiement échoué', [
+                        'order_id'       => $order->getId(),
+                        'order_ref'      => $order->getOrderReference(),
+                        'payment_intent' => $piId,
+                        'reason'         => $reason,
+                    ]);
                 }
 
                 if ($event->type === 'payment_intent.canceled') {
-                    $order->setPaymentStatus(PaymentStatus::Failed);
+                    $reason = isset($pi->cancellation_reason)
+                        ? 'Canceled: ' . (string) $pi->cancellation_reason
+                        : 'Canceled';
 
-                    // Stripe peut fournir cancellation_reason sur l'intent
-                    $reason = null;
-                    if (isset($pi->cancellation_reason)) {
-                        $reason = 'Canceled: ' . (string) $pi->cancellation_reason;
-                    } else {
-                        $reason = 'Canceled';
-                    }
+                    $order->setPaymentStatus(PaymentStatus::Failed);
                     $order->setPaymentFailureReason($reason);
+
+                    $this->logger->warning('Paiement annulé', [
+                        'order_id'       => $order->getId(),
+                        'order_ref'      => $order->getOrderReference(),
+                        'payment_intent' => $piId,
+                        'reason'         => $reason,
+                    ]);
                 }
 
                 $this->em->flush();
