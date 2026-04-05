@@ -9634,3 +9634,86 @@ select {
     .compare-cell { padding: 10px 10px; font-size: 13px; }
     .compare-cell__img-wrap { height: 180px; }
 }
+
+/* ==========================================================
+   COOKIE CONSENT BANNER
+   ========================================================== */
+#cookie-banner {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 9999;
+    background: #fff;
+    border-top: 3px solid #e37e03;
+    box-shadow: 0 -4px 24px rgba(0,0,0,.12);
+    padding: 20px 24px;
+    font-size: 13px;
+    color: #333;
+}
+
+#cookie-banner-main,
+#cookie-banner-detail {
+    max-width: 1100px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    flex-wrap: wrap;
+}
+
+.cookie-banner__text { flex: 1; min-width: 260px; }
+.cookie-banner__text p { margin: 6px 0 0; color: #555; line-height: 1.5; }
+.cookie-banner__link { color: #e37e03; text-decoration: underline; }
+
+.cookie-banner__actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+.cookie-btn {
+    padding: 9px 18px;
+    border-radius: 4px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    border: 2px solid #e37e03;
+    transition: background .2s, color .2s;
+    white-space: nowrap;
+}
+.cookie-btn--primary  { background: #e37e03; color: #fff; }
+.cookie-btn--primary:hover { background: #c96e02; }
+.cookie-btn--outline  { background: transparent; color: #e37e03; }
+.cookie-btn--outline:hover { background: #fff8f0; }
+
+/* Détail */
+.cookie-list { list-style: none; padding: 0; margin: 10px 0 0; }
+.cookie-list li { margin-bottom: 10px; }
+
+.cookie-toggle { display: flex; align-items: flex-start; gap: 10px; cursor: pointer; }
+.cookie-toggle input[type="checkbox"] { margin-top: 3px; accent-color: #e37e03; width: 16px; height: 16px; flex-shrink: 0; }
+.cookie-toggle input[disabled] { opacity: .5; cursor: not-allowed; }
+.cookie-toggle__label { display: flex; flex-direction: column; }
+.cookie-toggle__label small { color: #888; font-size: 12px; margin-top: 2px; }
+
+@media (max-width: 576px) {
+    #cookie-banner-main,
+    #cookie-banner-detail { flex-direction: column; align-items: flex-start; }
+    .cookie-banner__actions { width: 100%; }
+    .cookie-btn { flex: 1; text-align: center; }
+}
+
+.btn-cookie-manage {
+    background: none;
+    border: none;
+    color: #aaa;
+    font-size: 12px;
+    cursor: pointer;
+    padding: 0;
+    text-decoration: underline;
+    white-space: nowrap;
+}
+.btn-cookie-manage:hover { color: #e37e03; }

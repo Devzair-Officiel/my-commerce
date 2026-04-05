@@ -3,6 +3,7 @@ import { displayWishlist, initWishlist } from "./modules/wishlist.js";
 import { initCart, displayCart, initCarrierSelector, updateHeaderCart } from "./modules/cart.js";
 import { initCheckoutAddressInline } from "./pages/checkout/address.js";
 import { initSearch } from "./modules/search.js";
+import { initCookieConsent, reopenCookieConsent } from "./modules/cookie-consent.js";
 
 function safeJsonParse(value, fallback = null) {
   if (!value || typeof value !== "string") return fallback;
@@ -13,6 +14,9 @@ function safeJsonParse(value, fallback = null) {
   }
 }
 
+// Exposer globalement pour le lien "Gérer mes cookies" du footer
+window.reopenCookieConsent = reopenCookieConsent;
+
 window.addEventListener("load", async () => {
   // Init listeners (1 fois chacun)
   initCart();
@@ -20,6 +24,7 @@ window.addEventListener("load", async () => {
   initWishlist();
   initCheckoutAddressInline();
   initSearch();
+  initCookieConsent();
 
   // Compare dataset
   const compareContainer = document.querySelector(".compare_container");

@@ -99,8 +99,14 @@
 	<div class="bottom_footer border-top-tran">
 		<div class="container">
 			<div class="row">
-				<div class="col-md-6">
-					<p class="mb-md-0 text-center text-md-start">{{globalSetting.copyright}}</p>
+				<div class="col-md-6 d-flex align-items-center gap-3 flex-wrap">
+                <pre>
+                    {{ dump(globalSetting.copyright) }}
+                </pre>
+					<a href="">
+                        <p class="mb-0 text-center text-md-start">{{globalSetting.copyright}}</p>
+                    </a>
+					<button onclick="window.reopenCookieConsent?.()" class="btn-cookie-manage">🍪 Gérer mes cookies</button>
 				</div>
 				<div class="col-md-6">
 					<ul class="footer_payment text-center text-lg-end d-flex gap-2 justify-content-end">
