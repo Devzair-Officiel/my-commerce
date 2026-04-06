@@ -1,6 +1,6 @@
 import { displayCompare, initCompare } from "./modules/compare.js";
 import { displayWishlist, initWishlist } from "./modules/wishlist.js";
-import { initCart, displayCart, initCarrierSelector, updateHeaderCart } from "./modules/cart.js";
+import { initCart, displayCart, updateHeaderCart } from "./modules/cart.js";
 import { initCheckoutAddressInline } from "./pages/checkout/address.js";
 import { initSearch } from "./modules/search.js";
 import { initCookieConsent, reopenCookieConsent } from "./modules/cookie-consent.js";
@@ -40,12 +40,10 @@ window.addEventListener("load", async () => {
     displayWishlist(Array.isArray(wishlist) ? wishlist : []);
   }
 
-  // Cart dataset + carriers
+  // Cart dataset
   const cartContainer = document.querySelector(".cart_content");
   const cart = safeJsonParse(cartContainer?.dataset?.cart, null);
-  const carriers = safeJsonParse(cartContainer?.dataset?.carriers, []);
 
-  initCarrierSelector({ cart, carriers });
   displayCart(cart);
 
   // Si tu veux être sûr que le mini-cart est à jour même sans dataset :

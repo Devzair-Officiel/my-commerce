@@ -9,6 +9,7 @@ use App\Enum\FulfillmentStatus;
 use App\Enum\PaymentStatus;
 use App\Message\SendOrderConfirmationEmailMessage;
 use App\Repository\AddressRepository;
+use App\Repository\CarrierRepository;
 use App\Repository\OrderRepository;
 use App\Service\CartService;
 use App\Service\StripeService;
@@ -32,6 +33,7 @@ class CheckoutController extends AbstractController
     #[Route('/checkout', name: 'app_checkout', methods: ['GET'])]
     public function index(
         AddressRepository $addressRepo,
+        CarrierRepository $carrierRepo,
         StripeService $stripeService,
     ): Response {
         $this->denyAccessUnlessGranted('ROLE_USER');
@@ -46,16 +48,18 @@ class CheckoutController extends AbstractController
         }
 
         $addresses = $addressRepo->findBy(['user' => $user], ['id' => 'DESC']);
-        $order = $this->createDraftOrderFromCart($user, $cart);
+        $carriers  = $carrierRepo->findAll();
+        $order     = $this->createDraftOrderFromCart($user, $cart);
 
         return $this->render('checkout/index.html.twig', [
-            'cart' => $cart,
-            'orderId' => $order->getId(),
-            'cart_json' => json_encode($cart, JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR),
-            'stripe_public_key' => $stripeService->getPublicKey(),
-            'addresses' => $addresses,
-            'address_api' => $this->generateUrl('api_address_create'),
-            'csrf_token_address' => $this->container->get('security.csrf.token_manager')->getToken('address_api')->getValue(),
+            'cart'                   => $cart,
+            'orderId'                => $order->getId(),
+            'cart_json'              => json_encode($cart, JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR),
+            'stripe_public_key'      => $stripeService->getPublicKey(),
+            'addresses'              => $addresses,
+            'carriers'               => $carriers,
+            'address_api'            => $this->generateUrl('api_address_create'),
+            'csrf_token_address'     => $this->container->get('security.csrf.token_manager')->getToken('address_api')->getValue(),
         ]);
     }
 

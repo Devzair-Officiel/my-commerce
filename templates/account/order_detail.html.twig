@@ -4,7 +4,14 @@
 {% endblock %}
 
 {% block body %}
-	{% include "page_head/index.html.twig" with {'page':'Mon compte', 'url': '/account', 'page_name': 'Détail Commande'} %}
+
+	{% include "page_head/index.html.twig" with {
+        page_name: 'Détail Commande',
+        breadcrumbs: [
+            { label: 'Mon compte', url: path('app_account') },
+            { label: 'Détail Commande' }
+        ]
+    } %}
 
 	<div class="main_content">
 		<div class="section">
@@ -45,6 +52,61 @@
 						{% endfor %}
 					</tbody>
 				</table>
+
+				{# ── Suivi d'expédition ─────────────────────────────────── #}
+				{% set shipments = order.shipments %}
+				{% if shipments|length > 0 %}
+					{% for shipment in shipments %}
+					<div class="card mt-4">
+						<div class="card-header d-flex justify-content-between align-items-center">
+							<span class="fw-semibold">
+								<i class="fa fa-truck me-2"></i>Expédition
+								{% if shipment.carrier %}— {{ shipment.carrier.name }}{% endif %}
+							</span>
+							{% if shipment.shippedAt %}
+								<small class="text-muted">Expédié le {{ shipment.shippedAt|date('d/m/Y') }}</small>
+							{% endif %}
+						</div>
+						<div class="card-body">
+
+							{% if shipment.trackingNumber and shipment.trackingNumber != 'À renseigner' %}
+							<div class="d-flex align-items-center gap-3 mb-3">
+								<div>
+									<div class="text-muted small">N° de suivi</div>
+									<div class="fw-semibold">{{ shipment.trackingNumber }}</div>
+								</div>
+								{% if shipment.trackingUrl %}
+								<a href="{{ shipment.trackingUrl }}" target="_blank" rel="noopener"
+								   class="btn btn-sm btn-outline-primary">
+									Suivre mon colis <i class="fa fa-external-link ms-1"></i>
+								</a>
+								{% endif %}
+							</div>
+							{% endif %}
+
+							{% set pp = order.pickupPoint %}
+							{% if pp %}
+							<div class="border rounded p-3 bg-light">
+								<div class="fw-semibold mb-1"><i class="fa fa-map-pin me-2 text-primary"></i>Point relais</div>
+								<div>{{ pp.name }}</div>
+								<div class="text-muted small">{{ pp.address }}, {{ pp.postalCode }} {{ pp.city }}</div>
+							</div>
+							{% elseif order.shippingAddress %}
+							<div class="text-muted small">
+								<i class="fa fa-location-dot me-1"></i>
+								{{ order.shippingAddress|nl2br }}
+							</div>
+							{% endif %}
+
+						</div>
+					</div>
+					{% endfor %}
+				{% elseif order.fulfillmentStatus.value in ['shipped', 'delivered'] %}
+					<div class="alert alert-info mt-4">
+						<i class="fa fa-truck me-2"></i>
+						Votre commande a été expédiée. Les informations de suivi seront disponibles prochainement.
+					</div>
+				{% endif %}
 
 			</div>
 		</div>

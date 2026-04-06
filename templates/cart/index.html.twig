@@ -7,8 +7,7 @@
 	{% include "page_head/index.html.twig" with {'page_name': 'Panier'} %}
 
 	<div class="main_content cart_content"
-     data-cart='{{ cart|json_encode|e("html_attr") }}'
-     data-carriers='{{ carriers|json_encode|e("html_attr") }}'>
+     data-cart='{{ cart|json_encode|e("html_attr") }}'>
 		<div class="section">
 			<div class="container">
 				<div class="row">
@@ -42,17 +41,7 @@
 					</div>
 				</div>
 				<div class="row">
-					<div class="col-md-6">
-						<div class="border p-3 p-md-4 carrier_form">
-							<div class="heading_s1 mb-3">
-								<h6>Transporteur</h6>
-							</div>
-							<form action="/cart/carrier" method="post">
-								<select name="carrierId" value="{{cart.carrier.id}}" id="carrier" class="form-control"></select>
-							</form>
-						</div>
-					</div>
-					<div class="col-md-6">
+					<div class="col-md-6 offset-md-6">
 						<div class="border p-3 p-md-4">
 							<div class="heading_s1 mb-3">
 								<h6>Total du panier</h6>
@@ -71,7 +60,7 @@
 											</tr>
 											<tr>
 												<td class="cart_total_label">Frais de livraison</td>
-												<td class="cart_shipping_total_amount"></td>
+												<td class="text-muted fst-italic">Calculés à l'étape suivante</td>
 											</tr>
 											<tr>
 												<td class="cart_total_label">Total TTC</td>

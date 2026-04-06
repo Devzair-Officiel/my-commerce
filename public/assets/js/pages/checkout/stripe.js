@@ -1,5 +1,6 @@
 import { fetchJson } from "../../utils/fetch.js";
 import { showFlash } from "../../utils/flash.js";
+import { initPickupPointSelector, getSelectedPickupPoint } from "./pickup-point.js";
 
 document.addEventListener("DOMContentLoaded", () => {
     const mainContent = document.querySelector(".main_content");
@@ -25,29 +26,97 @@ document.addEventListener("DOMContentLoaded", () => {
     const payBtnContainer = document.querySelector(".payment-button");
     const payBtnLink = document.getElementById("open-payment-modal");
 
-    let billingAddress = billingAddressSelect?.value ?? "";
+    let billingAddress  = billingAddressSelect?.value ?? "";
     let shippingAddress = shippingAddressSelect?.value ?? "";
-    let comment = commentsTextarea?.value ?? "";
+    let comment         = commentsTextarea?.value ?? "";
+    let isPickupMode    = false;
+
+    const getSelectedCarrierId = () => {
+        const checked = document.querySelector(".carrier-radio:checked");
+        return checked?.value ?? null;
+    };
 
     const updateButton = () => {
         if (!payBtnContainer) return;
 
-        const displayPayBtn = Boolean(billingAddress) && Boolean(shippingAddress);
-        payBtnContainer.classList.toggle("d-none", !displayPayBtn);
+        // Mode point relais : pas besoin d'adresse de livraison, mais le point doit être sélectionné
+        const shippingOk = isPickupMode ? Boolean(getSelectedPickupPoint()) : Boolean(shippingAddress);
+        const ready      = Boolean(billingAddress) && shippingOk;
+
+        payBtnContainer.classList.toggle("d-none", !ready);
+
+        const hint = document.getElementById("checkout-hint");
+        if (hint) {
+            if (!billingAddress) {
+                hint.textContent = "Choisissez une adresse de facturation pour continuer.";
+                hint.classList.remove("d-none");
+            } else if (!shippingOk) {
+                hint.textContent = isPickupMode
+                    ? "Choisissez un point relais pour continuer."
+                    : "Choisissez une adresse de livraison pour continuer.";
+                hint.classList.remove("d-none");
+            } else {
+                hint.classList.add("d-none");
+            }
+        }
     };
 
-    billingAddressSelect?.addEventListener("change", (event) => {
-        billingAddress = event.target?.value ?? "";
+    billingAddressSelect?.addEventListener("change", (e) => {
+        billingAddress = e.target?.value ?? "";
         updateButton();
     });
 
-    shippingAddressSelect?.addEventListener("change", (event) => {
-        shippingAddress = event.target?.value ?? "";
+    shippingAddressSelect?.addEventListener("change", (e) => {
+        shippingAddress = e.target?.value ?? "";
         updateButton();
     });
 
-    commentsTextarea?.addEventListener("input", (event) => {
-        comment = event.target?.value ?? "";
+    commentsTextarea?.addEventListener("input", (e) => {
+        comment = e.target?.value ?? "";
+    });
+
+    // ── Mise à jour dynamique des totaux selon le carrier sélectionné ──────
+    const updateShippingTotals = () => {
+        const checkedLabel = document.querySelector(".carrier-radio:checked")?.closest(".carrier-option");
+        if (!checkedLabel) return;
+
+        const priceCents    = parseInt(checkedLabel.dataset.price ?? "0", 10);
+        const isFree        = priceCents === 0;
+        const subTotal      = cart.sub_total ?? 0;
+        const totalWithShip = subTotal + priceCents;
+
+        const shippingLabel = document.getElementById("checkout-shipping-label");
+        const shippingPrice = document.getElementById("checkout-shipping-price");
+        const totalEl       = document.getElementById("checkout-total");
+        const payTotalEl    = document.getElementById("checkout-pay-total");
+
+        const fmt = (cents) =>
+            new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR" }).format(cents / 100);
+
+        if (shippingLabel) shippingLabel.textContent = isFree ? "Livraison offerte" : "Frais de livraison";
+        if (shippingPrice) shippingPrice.textContent = isFree ? "Offert" : fmt(priceCents);
+        if (totalEl)       totalEl.textContent       = fmt(totalWithShip);
+        if (payTotalEl)    payTotalEl.textContent     = fmt(totalWithShip);
+    };
+
+    // On écoute le click sur le label (pas change sur le radio) car pickup-point.js
+    // fait radio.checked = true manuellement, ce qui ne déclenche pas l'event "change".
+    document.querySelectorAll(".carrier-option").forEach((label) => {
+        label.addEventListener("click", () => {
+            // Légère attente pour que pickup-point.js ait coché le radio en premier
+            requestAnimationFrame(updateShippingTotals);
+        });
+    });
+
+    // Initialiser avec le carrier déjà coché au chargement
+    updateShippingTotals();
+
+    initPickupPointSelector({
+        onPickupPointChange: (_point) => updateButton(),
+        onShippingModeChange: (isPickup) => {
+            isPickupMode = isPickup;
+            updateButton();
+        },
     });
 
     updateButton();
@@ -76,8 +145,18 @@ document.addEventListener("DOMContentLoaded", () => {
                     throw new Error("orderId manquant.");
                 }
 
-                if (!billingAddressSelect?.value || !shippingAddressSelect?.value) {
-                    throw new Error("Adresse de facturation et de livraison requises.");
+                if (!billingAddressSelect?.value) {
+                    throw new Error("Adresse de facturation requise.");
+                }
+
+                const pickupPoint = getSelectedPickupPoint();
+
+                if (isPickupMode && !pickupPoint) {
+                    throw new Error("Veuillez choisir un point relais.");
+                }
+
+                if (!isPickupMode && !shippingAddressSelect?.value) {
+                    throw new Error("Adresse de livraison requise.");
                 }
 
                 const orderUpdate = await fetchJson(`/api/order/${orderId}`, {
@@ -87,9 +166,12 @@ document.addEventListener("DOMContentLoaded", () => {
                         "X-Requested-With": "XMLHttpRequest",
                     },
                     body: JSON.stringify({
-                        billing_address: billingAddressSelect.value,
-                        shipping_address: shippingAddressSelect.value,
+                        billing_address:  billingAddressSelect.value,
+                        // En mode point relais, on envoie null pour l'adresse de livraison
+                        shipping_address: isPickupMode ? null : (shippingAddressSelect?.value ?? null),
                         comment,
+                        pickup_point: pickupPoint ?? null,
+                        carrier_id: getSelectedCarrierId(),
                     }),
                 });
 
@@ -134,7 +216,8 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     async function initializeStripeElements() {
-        if (!billingAddressSelect?.value || !shippingAddressSelect?.value) {
+        const shippingOk = isPickupMode ? Boolean(getSelectedPickupPoint()) : Boolean(shippingAddressSelect?.value);
+        if (!billingAddressSelect?.value || !shippingOk) {
             throw new Error("Sélectionnez les adresses avant de payer.");
         }
 

@@ -46,6 +46,26 @@ class Shipment
     #[ORM\Column(type: 'string', length: 255, nullable: true)]
     private ?string $pickupPointCity = null;
 
+    /** URL du bon de transport PDF (généré par l'API transporteur) */
+    #[ORM\Column(length: 512, nullable: true)]
+    private ?string $labelUrl = null;
+
+    /** Poids réel du colis en grammes */
+    #[ORM\Column(nullable: true)]
+    private ?int $weightGrams = null;
+
+    /** Code statut transporteur (ex: Colissimo "LIVCFM", MR "80") */
+    #[ORM\Column(length: 50, nullable: true)]
+    private ?string $statusCode = null;
+
+    /** Dernière synchronisation statut avec l'API transporteur */
+    #[ORM\Column(nullable: true)]
+    private ?\DateTimeImmutable $syncedAt = null;
+
+    /** Message d'erreur si la création de l'étiquette a échoué */
+    #[ORM\Column(type: 'text', nullable: true)]
+    private ?string $errorMessage = null;
+
     // Quand tu as expédié
     #[ORM\Column(nullable: true)]
     private ?\DateTimeImmutable $shippedAt = null;
@@ -181,6 +201,21 @@ class Shipment
 
         return $this;
     }
+
+    public function getLabelUrl(): ?string { return $this->labelUrl; }
+    public function setLabelUrl(?string $labelUrl): static { $this->labelUrl = $labelUrl; return $this; }
+
+    public function getWeightGrams(): ?int { return $this->weightGrams; }
+    public function setWeightGrams(?int $weightGrams): static { $this->weightGrams = $weightGrams; return $this; }
+
+    public function getStatusCode(): ?string { return $this->statusCode; }
+    public function setStatusCode(?string $statusCode): static { $this->statusCode = $statusCode; return $this; }
+
+    public function getSyncedAt(): ?\DateTimeImmutable { return $this->syncedAt; }
+    public function setSyncedAt(?\DateTimeImmutable $syncedAt): static { $this->syncedAt = $syncedAt; return $this; }
+
+    public function getErrorMessage(): ?string { return $this->errorMessage; }
+    public function setErrorMessage(?string $errorMessage): static { $this->errorMessage = $errorMessage; return $this; }
 
     public function getShippedAt(): ?\DateTimeImmutable
     {

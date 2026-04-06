@@ -3,10 +3,14 @@
 namespace App\Controller\Admin;
 
 use App\Entity\Order;
+use App\Entity\Shipment;
+use App\Enum\CarrierType;
 use App\Enum\FulfillmentStatus;
 use App\Enum\PaymentStatus;
 use App\Message\SendRefundEmailMessage;
+use App\Message\SendShippedEmailMessage;
 use App\Repository\OrderRepository;
+use App\Service\Carrier\ShipmentService;
 use App\Service\RefundService;
 use Doctrine\ORM\EntityManagerInterface;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
@@ -36,6 +40,7 @@ final class OrderCrudController extends AbstractCrudController
         private readonly EntityManagerInterface $em,
         private readonly OrderRepository $orderRepository,
         private readonly MessageBusInterface $bus,
+        private readonly ShipmentService $shipmentService,
     ) {}
 
     public static function getEntityFqcn(): string
@@ -64,6 +69,15 @@ final class OrderCrudController extends AbstractCrudController
 
     public function configureActions(Actions $actions): Actions
     {
+        $shipAction = Action::new('shipOrder', 'Expédier', 'fa fa-truck')
+            ->linkToCrudAction('shipOrder')
+            ->addCssClass('btn btn-sm btn-primary')
+            ->displayIf(static fn (Order $order): bool =>
+                $order->getPaymentStatus() === PaymentStatus::Paid
+                && $order->getFulfillmentStatus() !== FulfillmentStatus::Shipped
+                && $order->getCarrier() !== null
+            );
+
         $refundAction = Action::new('refund', 'Rembourser', 'fa fa-rotate-left')
             ->linkToCrudAction('processRefund')
             ->addCssClass('btn btn-sm btn-danger')
@@ -90,6 +104,8 @@ final class OrderCrudController extends AbstractCrudController
         return $actions
             ->disable(Action::NEW, Action::DELETE)
             ->add(Crud::PAGE_INDEX, Action::DETAIL)
+            ->add(Crud::PAGE_INDEX, $shipAction)
+            ->add(Crud::PAGE_DETAIL, $shipAction)
             ->add(Crud::PAGE_INDEX, $refundAction)
             ->add(Crud::PAGE_DETAIL, $refundAction)
             ->add(Crud::PAGE_INDEX, $sendRefundEmailAction)
@@ -328,5 +344,57 @@ final class OrderCrudController extends AbstractCrudController
             FulfillmentStatus::Delivered->value => 'success',
             FulfillmentStatus::Cancelled->value => 'danger',
         ];
+    }
+
+    /**
+     * Action : crée une expédition + étiquette pour la commande.
+     * Le poids par défaut est 500 g ; modifiable via l'édition du Shipment ensuite.
+     */
+    public function shipOrder(AdminContext $context, AdminUrlGenerator $urlGenerator): Response
+    {
+        $entityId = $context->getRequest()->query->getInt('entityId');
+        $order = $this->orderRepository->find($entityId);
+
+        if (!$order instanceof Order) {
+            $this->addFlash('danger', 'Commande introuvable.');
+            return $this->redirect($urlGenerator->setController(self::class)->setAction(Action::INDEX)->generateUrl());
+        }
+
+        // Poids par défaut 500 g — l'admin peut ajuster via l'édition du Shipment
+        $weightGrams = $context->getRequest()->query->getInt('weight', 500);
+
+        try {
+            $carrier = $order->getCarrier();
+            if ($carrier?->getType() === CarrierType::Manual) {
+                // Pour un transporteur manuel on crée juste le Shipment sans appel API
+                $shipment = new Shipment();
+                $shipment->setCustomerOrder($order);
+                $shipment->setCarrier($carrier);
+                $shipment->setWeightGrams($weightGrams);
+                $shipment->setTrackingNumber('À renseigner');
+                $shipment->setTrackingUrl('');
+                $shipment->setCreatedAt(new \DateTimeImmutable());
+                $shipment->setShippedAt(new \DateTimeImmutable());
+                $this->em->persist($shipment);
+            } else {
+                $this->shipmentService->createLabel($order, $weightGrams);
+            }
+
+            $order->setFulfillmentStatus(FulfillmentStatus::Shipped);
+            $this->em->flush();
+
+            $this->bus->dispatch(new SendShippedEmailMessage($order->getId()));
+
+            $this->addFlash('success', \sprintf(
+                'Commande %s marquée comme expédiée.',
+                $order->getOrderReference() ?? '#' . $order->getId()
+            ));
+        } catch (\RuntimeException $e) {
+            $this->addFlash('danger', 'Erreur lors de l\'expédition : ' . $e->getMessage());
+        }
+
+        return $this->redirect(
+            $urlGenerator->setController(self::class)->setAction(Action::DETAIL)->setEntityId($entityId)->generateUrl()
+        );
     }
 }

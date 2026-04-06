@@ -4,8 +4,10 @@
 
 {% block stylesheets %}
 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" integrity="sha512-z3gLpd7yknf1YoNbCzqRKc4qyor8gaKU1qmn+CShxbuBusANI9QpRohGBreCFkKxLhei6S9CQXFEbbKuqLg0DA==" crossorigin="anonymous" referrerpolicy="no-referrer"/>
+	<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin=""/>
 	<link rel="stylesheet" href="/assets/css/stripe.css">
 	<script src="https://js.stripe.com/v3/"></script>
+	<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
 {% endblock %}
 
 {% block csrf_meta %}
@@ -51,12 +53,45 @@
 
 				<div class="row">
 					<div class="col-md-6">
-						<div class="heading_s1 mb-3">
+
+						{# ── Mode de livraison ─────────────────────────────────
+						   Les radios sont TOUJOURS rendus (même si 1 seul carrier)
+						   pour que le JS puisse lire data-price et mettre à jour les totaux.
+						   L'UI de sélection n'est affichée que s'il y a plusieurs choix.
+						#}
+						{% if carriers|length > 0 %}
+						<div class="heading_s1 mb-3 {% if carriers|length == 1 %}d-none{% endif %}">
+							<h4>Mode de livraison</h4>
+						</div>
+						<div class="carrier-list {% if carriers|length == 1 %}d-none{% endif %}" role="radiogroup" aria-label="Mode de livraison">
+                            {% for carrier in carriers %}
+                                <label class="carrier-option d-flex align-items-center gap-3 p-3 border rounded mb-2" style="cursor:pointer" data-carrier-id="{{ carrier.id }}" data-has-pickup="{{ carrier.hasPickupPoints() ? 'true' : 'false' }}" data-price="{{ carrier.price }}">
+                                    <input type="radio" name="carrier" value="{{ carrier.id }}" class="carrier-radio" {% if loop.first %} checked {% endif %}>
+                                    <div class="flex-grow-1">
+                                        <div class="fw-semibold">{{ carrier.name }}</div>
+                                        {% if carrier.deliveryDelay %}
+                                            <div class="text-muted small">{{ carrier.deliveryDelay }}</div>
+                                        {% endif %}
+                                    </div>
+                                    <div class="fw-bold">
+                                        {% if carrier.price == 0 %}
+                                            Offert
+                                        {% else %}
+                                            {{ (carrier.price / 100)|format_currency('EUR') }}
+                                        {% endif %}
+                                    </div>
+                                </label>
+                            {% endfor %}
+						</div>
+						{% endif %}
+
+						{# ── Adresse de livraison (domicile uniquement) ───────── #}
+						<div id="shipping-address-section" class="heading_s1 mb-3">
 							<h4>Adresse de livraison</h4>
 
 							<label class="visually-hidden" for="shipping_address">Adresse de livraison</label>
-							<select id="shipping_address" name="shipping_address" class="form-control" required>
-								<option value="">--- Choisir l'adresse de livraison ---</option>
+							<select id="shipping_address" name="shipping_address" class="form-control">
+								<option value="">--- Choisir l’adresse de livraison ---</option>
 								{% for address in addresses %}
 									<option value="{{ address.id }}">
 										{{ address.clientName }}
@@ -136,8 +171,63 @@
 									</form>
 								</div>
 							</div>
+						</div>{# fin shipping-address-section #}
+
+						{# ── Point relais (sélecteur maison) ─────────────────── #}
+						<div id="pickup-point-section" class="heading_s1 mb-3 d-none">
+							<h4>Point relais</h4>
+
+							<div id="pickup-selected" class="alert alert-success d-none" aria-live="polite">
+								<div class="fw-semibold mb-1">
+									<i class="fa fa-check-circle me-2"></i>Point relais sélectionné
+								</div>
+								<div id="pickup-selected-label" class="mt-1"></div>
+								<button type="button" id="pickup-change-btn" class="btn btn-sm btn-outline-secondary mt-2">
+									Changer de point relais
+								</button>
+							</div>
+
+							<div id="pickup-search-box">
+								<label for="pickup-postal-code" class="form-label">
+									Saisissez votre code postal pour trouver les points relais proches
+								</label>
+								<div class="input-group">
+									<input
+										type="text"
+										id="pickup-postal-code"
+										class="form-control"
+										inputmode="numeric"
+										pattern="[0-9]{5}"
+										maxlength="5"
+										placeholder="Ex. 75001"
+										aria-describedby="pickup-search-help"
+									>
+									<button type="button" id="pickup-search-btn" class="btn btn-primary">
+										<i class="fa fa-search me-1"></i>Rechercher
+									</button>
+								</div>
+							</div>
+
+							<div id="pickup-loader" class="mt-3 d-none text-muted small" aria-live="polite">
+								<span class="spinner-border spinner-border-sm me-2"></span>Recherche en cours…
+							</div>
+
+							<div id="pickup-error" class="alert alert-warning mt-3 d-none" aria-live="assertive"></div>
+
+							<div id="pickup-results" class="mt-3 d-none">
+								<div class="row g-2">
+									<div class="col-12">
+										<div id="pickup-map" style="height:300px; border-radius:8px; z-index:0;"></div>
+									</div>
+									<div class="col-12">
+										<div class="fw-semibold mb-2 small text-muted">Points relais disponibles</div>
+										<div id="pickup-results-list" class="d-grid gap-2" style="max-height:300px; overflow-y:auto;"></div>
+									</div>
+								</div>
+							</div>
 						</div>
 
+						{# ── Adresse de facturation (toujours visible) ─────────── #}
 						<div class="heading_s1 mb-3">
 							<h4>Adresse de facturation</h4>
 
@@ -151,8 +241,73 @@
 									</option>
 								{% endfor %}
 							</select>
+
+							{% if addresses|length == 0 %}
+								<div class="alert alert-warning mt-2" role="status">
+									Vous n'avez aucune adresse enregistrée. Ajoutez-en une pour continuer.
+								</div>
+							{% endif %}
+
+							<div class="mt-2">
+								<a href="#" class="btn btn-outline-primary btn-sm" id="checkout-add-billing-btn">
+									Ajouter une adresse de facturation
+								</a>
+							</div>
+
+							<div id="checkout-add-billing-form" class="card mt-3 d-none">
+								<div class="card-body">
+									<h5 class="card-title mb-3">Nouvelle adresse de facturation</h5>
+
+									<form id="checkoutBillingAddressForm">
+										<div class="row">
+											<div class="form-group col-md-12 mb-3">
+												<label>Nom de l'adresse<span class="required">*</span></label>
+												<input required class="form-control" name="name" type="text">
+											</div>
+
+											<div class="form-group col-md-12 mb-3">
+												<label>Nom du destinataire<span class="required">*</span></label>
+												<input required class="form-control" name="client_name" type="text">
+											</div>
+
+											<div class="form-group col-md-6 mb-3">
+												<label>Rue<span class="required">*</span></label>
+												<input required class="form-control" name="street" type="text">
+											</div>
+
+											<div class="form-group col-md-6 mb-3">
+												<label>Ville<span class="required">*</span></label>
+												<input required class="form-control" name="city" type="text">
+											</div>
+
+											<div class="form-group col-md-6 mb-3">
+												<label>Code postal<span class="required">*</span></label>
+												<input required class="form-control" name="code_postal" type="text" inputmode="numeric" maxlength="10">
+											</div>
+
+											<div class="form-group col-md-6 mb-3">
+												<label>Pays<span class="required">*</span></label>
+												<select class="form-control" name="state" id="checkout-billing-state" required></select>
+											</div>
+
+											<div class="form-group col-md-12 mb-3">
+												<label>Complément (optionnel)</label>
+												<input class="form-control" name="more_details" type="text" maxlength="500">
+											</div>
+
+											<div class="col-md-12 d-flex gap-2">
+												<button type="submit" class="btn btn-fill-out">Enregistrer</button>
+												<button type="button" class="btn btn-outline-secondary" id="checkout-cancel-billing">
+													Annuler
+												</button>
+											</div>
+										</div>
+									</form>
+								</div>
+							</div>
 						</div>
 
+						{# ── Commentaire ──────────────────────────────────────── #}
 						<div class="heading_s1 mb-3">
 							<h4>Commentaire</h4>
 							<label class="visually-hidden" for="comment">Commentaire</label>
@@ -226,14 +381,14 @@
 											<td class="text-end">{{ (cart.taxe / 100)|format_currency('EUR') }}</td>
 										</tr>
 										<tr>
-											<th>
+											<th id="checkout-shipping-label">
 												{% if cart.carrier.free_shipping %}
 													Livraison offerte
 												{% else %}
 													Frais de livraison
 												{% endif %}
 											</th>
-											<td class="text-end">
+											<td class="text-end" id="checkout-shipping-price">
 												{% if cart.carrier.free_shipping %}
 													Offert
 												{% else %}
@@ -243,7 +398,7 @@
 										</tr>
 										<tr>
 											<th>Total TTC</th>
-											<td class="text-end fw-bold">
+											<td class="text-end fw-bold" id="checkout-total">
 												{{ (cart.sub_total_with_carrier / 100)|format_currency('EUR') }}
 											</td>
 										</tr>
@@ -258,13 +413,13 @@
 								</div>
 							{% endif %}
 
-							<div class="alert alert-info mt-2 mb-0" role="status">
-								Sélectionne une adresse de livraison et de facturation pour afficher le bouton de paiement.
+							<div class="alert alert-info mt-2 mb-0" id="checkout-hint" role="status">
+								Complète les informations de livraison et de facturation pour afficher le bouton de paiement.
 							</div>
 
 							<div class="payment-button d-none m-2">
 								<button id="open-payment-modal" class="btn btn-fill-out btn-block" type="button">
-									Payer maintenant — {{ (cart.sub_total_with_carrier / 100)|format_currency('EUR') }}
+									Payer maintenant — <span id="checkout-pay-total">{{ (cart.sub_total_with_carrier / 100)|format_currency('EUR') }}</span>
 								</button>
 							</div>
 						</div>

@@ -16,6 +16,13 @@ parameters:
 
     stripe.webhook_secret: '%env(STRIPE_WEBHOOK_SECRET)%'
 
+    colissimo.login:    '%env(string:default::COLISSIMO_LOGIN)%'
+    colissimo.password: '%env(string:default::COLISSIMO_PASSWORD)%'
+
+    mondial_relay.enseigne:    '%env(string:default::MONDIAL_RELAY_ENSEIGNE)%'
+    mondial_relay.private_key: '%env(string:default::MONDIAL_RELAY_PRIVATE_KEY)%'
+    mondial_relay.code_marque: '%env(string:default::MONDIAL_RELAY_CODE_MARQUE)%'
+
     app.free_shipping_threshold_cents: 5000
 
     app.mail_from_address: 'contact@nidemiel.com'
@@ -72,6 +79,16 @@ services:
             $stripeWebhookSecret: '%stripe.webhook_secret%'
     
     App\Admin\Dashboard\DashboardMetricsProvider: ~
+
+    App\Service\Carrier\ColissimoClient:
+        arguments:
+            $login:    '%colissimo.login%'
+            $password: '%colissimo.password%'
+
+    App\Service\Carrier\MondialRelayClient:
+        arguments:
+            $enseigne:   '%mondial_relay.enseigne%'
+            $privateKey: '%mondial_relay.private_key%'
 
     App\MessageHandler\SendOrderConfirmationEmailMessageHandler:
         arguments:

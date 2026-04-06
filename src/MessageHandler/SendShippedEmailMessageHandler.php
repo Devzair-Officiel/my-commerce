@@ -35,14 +35,19 @@ final readonly class SendShippedEmailMessageHandler
             return;
         }
 
+        // On prend le dernier shipment (le plus récent)
+        $shipments = $order->getShipments();
+        $shipment  = $shipments->last() ?: null;
+
         $email = (new TemplatedEmail())
             ->from(new Address($this->mailFromAddress, $this->mailFromName))
             ->to(new Address($user->getEmail()))
             ->subject(\sprintf('Votre commande %s a été expédiée', $order->getOrderReference() ?? ''))
             ->htmlTemplate('emails/order_shipped.html.twig')
             ->context([
-                'order' => $order,
-                'user' => $user,
+                'order'    => $order,
+                'user'     => $user,
+                'shipment' => $shipment,
             ]);
 
         $this->mailer->send($email);

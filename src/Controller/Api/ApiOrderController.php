@@ -4,6 +4,7 @@ namespace App\Controller\Api;
 
 use App\Entity\User;
 use App\Repository\AddressRepository;
+use App\Repository\CarrierRepository;
 use App\Repository\OrderRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -20,6 +21,7 @@ final class ApiOrderController extends AbstractController
         Request $request,
         OrderRepository $orderRepo,
         AddressRepository $addressRepo,
+        CarrierRepository $carrierRepo,
         EntityManagerInterface $em,
         ValidatorInterface $validator,
     ): JsonResponse {
@@ -77,21 +79,53 @@ final class ApiOrderController extends AbstractController
             $order->setBillingAddress($billingAddress->toMultilineSnapshot());
         }
 
-        $violations = $validator->validate($order);
-        if (count($violations) > 0) {
-            $errors = [];
+        // Transporteur sélectionné — mise à jour du snapshot nom/prix + recalcul du total
+        $carrierId = isset($payload['carrier_id']) && is_numeric($payload['carrier_id'])
+            ? (int) $payload['carrier_id']
+            : null;
 
-            foreach ($violations as $violation) {
-                $errors[] = [
-                    'field' => $violation->getPropertyPath(),
-                    'message' => $violation->getMessage(),
-                ];
+        if ($carrierId !== null) {
+            $carrier = $carrierRepo->find($carrierId);
+            if ($carrier) {
+                $oldCarrierPrice = $order->getCarrierPriceSnapshotCents();
+                $newCarrierPrice = $carrier->getPrice();
+
+                $order->setCarrierNameSnapshot($carrier->getName());
+                $order->setCarrierPriceSnapshotCents($newCarrierPrice);
+
+                // Recalculer le total TTC : soustraire l'ancien carrier, ajouter le nouveau
+                $newTotal = $order->getOrderTotalTtcCents() - $oldCarrierPrice + $newCarrierPrice;
+                $order->setOrderTotalTtcCents(max(0, $newTotal));
             }
+        }
 
-            return $this->json([
-                'error' => 'Validation failed',
-                'violations' => $errors,
-            ], 422);
+        // Point relais (Mondial Relay) — stocké en snapshot JSON sur la commande
+        // L'adresse du point relais devient aussi l'adresse de livraison snapshot
+        if (\array_key_exists('pickup_point', $payload)) {
+            $pp = $payload['pickup_point'];
+            if ($pp === null) {
+                $order->setPickupPointSnapshot(null);
+            } elseif (\is_array($pp) && !empty($pp['id'])) {
+                $order->setPickupPointSnapshot(json_encode($pp, JSON_UNESCAPED_UNICODE));
+
+                // Adresse de livraison = adresse du point relais (pour cohérence et paiement)
+                $pickupShippingSnapshot = implode("\n", array_filter([
+                    $pp['name'] ?? '',
+                    $pp['address'] ?? '',
+                    trim(($pp['postalCode'] ?? '') . ' ' . ($pp['city'] ?? '')),
+                    'Point relais Mondial Relay',
+                ]));
+                $order->setShippingAddress($pickupShippingSnapshot);
+            }
+        }
+
+        $violations = $validator->validate($order);
+        if (\count($violations) > 0) {
+            $errors = [];
+            foreach ($violations as $violation) {
+                $errors[] = ['field' => $violation->getPropertyPath(), 'message' => $violation->getMessage()];
+            }
+            return $this->json(['error' => 'Validation failed', 'violations' => $errors], 422);
         }
 
         $em->flush();

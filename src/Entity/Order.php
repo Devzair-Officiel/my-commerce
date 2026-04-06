@@ -45,6 +45,13 @@ class Order
     private ?string $billingAddress = null;
 
     /**
+     * Point relais choisi (JSON snapshot) — non null uniquement si le transporteur est Mondial Relay.
+     * Exemple : {"id":"004100","name":"Tabac Presse","address":"10 rue du Général De Gaulle","city":"Paris","postalCode":"75001"}
+     */
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    private ?string $pickupPointSnapshot = null;
+
+    /**
      * Montants en CENTIMES.
      */
     #[ORM\Column]
@@ -198,6 +205,19 @@ class Order
     {
         $this->billingAddress = $billingAddress !== null ? trim($billingAddress) : null;
         return $this;
+    }
+
+    public function getPickupPointSnapshot(): ?string { return $this->pickupPointSnapshot; }
+    public function setPickupPointSnapshot(?string $json): static { $this->pickupPointSnapshot = $json; return $this; }
+
+    /** @return array{id:string,name:string,address:string,city:string,postalCode:string}|null */
+    public function getPickupPoint(): ?array
+    {
+        if ($this->pickupPointSnapshot === null) {
+            return null;
+        }
+        $data = json_decode($this->pickupPointSnapshot, true);
+        return is_array($data) ? $data : null;
     }
 
     public function getItemsTotalHtCents(): int

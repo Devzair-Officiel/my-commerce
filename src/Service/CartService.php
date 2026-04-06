@@ -16,8 +16,9 @@ use Symfony\Component\HttpFoundation\Session\SessionInterface;
  */
 final class CartService
 {
-    private const SESSION_CART = 'cart';
-    private const SESSION_CARRIER = 'carrier';
+    private const SESSION_CART         = 'cart';
+    private const SESSION_CARRIER      = 'carrier';
+    private const SESSION_PICKUP_POINT = 'pickup_point';
 
     private ?Setting $cachedSetting = null;
 
@@ -98,6 +99,7 @@ final class CartService
 
         $session->remove(self::SESSION_CART);
         $session->remove(self::SESSION_CARRIER);
+        $session->remove(self::SESSION_PICKUP_POINT);
 
         $session->save();
     }
@@ -105,6 +107,30 @@ final class CartService
     public function updateCarrier(array $carrier): void
     {
         $this->update(self::SESSION_CARRIER, $carrier);
+    }
+
+    /**
+     * Stocke le point relais choisi (Mondial Relay) en session.
+     *
+     * @param array{id: string, name: string, address: string, city: string, postalCode: string} $point
+     */
+    public function setPickupPoint(array $point): void
+    {
+        $this->session()->set(self::SESSION_PICKUP_POINT, $point);
+    }
+
+    public function clearPickupPoint(): void
+    {
+        $this->session()->remove(self::SESSION_PICKUP_POINT);
+    }
+
+    /**
+     * @return array{id: string, name: string, address: string, city: string, postalCode: string}|null
+     */
+    public function getPickupPoint(): ?array
+    {
+        $data = $this->session()->get(self::SESSION_PICKUP_POINT);
+        return is_array($data) ? $data : null;
     }
 
     /**

@@ -58,6 +58,33 @@
                                 <td class="cell">{{ order.carrierNameSnapshot }}</td>
                             </tr>
                             {% endif %}
+
+                            {% if shipment and shipment.trackingNumber and shipment.trackingNumber != 'À renseigner' %}
+                            <tr>
+                                <td class="cell cell-muted">N° de suivi</td>
+                                <td class="cell">
+                                    <strong>{{ shipment.trackingNumber }}</strong>
+                                    {% if shipment.trackingUrl %}
+                                        <br>
+                                        <a href="{{ shipment.trackingUrl }}" style="color:#1d4ed8; font-size:13px;">
+                                            Suivre mon colis →
+                                        </a>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endif %}
+
+                            {% set pp = order.pickupPoint %}
+                            {% if pp %}
+                            <tr>
+                                <td class="cell cell-muted">Point relais</td>
+                                <td class="cell" style="line-height:1.6;">
+                                    <strong>{{ pp.name }}</strong><br>
+                                    {{ pp.address }}<br>
+                                    {{ pp.postalCode }} {{ pp.city }}
+                                </td>
+                            </tr>
+                            {% else %}
                             <tr>
                                 <td class="cell cell-muted">Adresse de livraison</td>
                                 <td class="cell" style="line-height:1.6;">
@@ -68,6 +95,7 @@
                                     {% endif %}
                                 </td>
                             </tr>
+                            {% endif %}
                         </table>
                     </td>
                 </tr>
