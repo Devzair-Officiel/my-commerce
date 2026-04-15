@@ -16,12 +16,8 @@ parameters:
 
     stripe.webhook_secret: '%env(STRIPE_WEBHOOK_SECRET)%'
 
-    colissimo.login:    '%env(string:default::COLISSIMO_LOGIN)%'
-    colissimo.password: '%env(string:default::COLISSIMO_PASSWORD)%'
-
-    mondial_relay.enseigne:    '%env(string:default::MONDIAL_RELAY_ENSEIGNE)%'
-    mondial_relay.private_key: '%env(string:default::MONDIAL_RELAY_PRIVATE_KEY)%'
-    mondial_relay.code_marque: '%env(string:default::MONDIAL_RELAY_CODE_MARQUE)%'
+    colissimo.login:    '%env(COLISSIMO_LOGIN)%'
+    colissimo.password: '%env(COLISSIMO_PASSWORD)%'
 
     app.free_shipping_threshold_cents: 5000
 
@@ -84,11 +80,6 @@ services:
         arguments:
             $login:    '%colissimo.login%'
             $password: '%colissimo.password%'
-
-    App\Service\Carrier\MondialRelayClient:
-        arguments:
-            $enseigne:   '%mondial_relay.enseigne%'
-            $privateKey: '%mondial_relay.private_key%'
 
     App\MessageHandler\SendOrderConfirmationEmailMessageHandler:
         arguments:

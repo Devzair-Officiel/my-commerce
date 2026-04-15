@@ -82,6 +82,108 @@ function ensureOptionExists(select, address) {
     return addOption(select, address);
 }
 
+// ── Address cards ────────────────────────────────────────────────────────────
+
+function escapeHtml(str) {
+    return String(str ?? "").replace(/[&<>"']/g, (c) =>
+        ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;" }[c])
+    );
+}
+
+function createAddressCard(address) {
+    const div = document.createElement("div");
+    div.className = "address-card-item";
+    div.dataset.addressId = String(address.id);
+    div.setAttribute("role", "button");
+    div.setAttribute("tabindex", "0");
+
+    const details = [
+        address.street,
+        address.more_details,
+        `${address.code_postal ?? ""} ${address.city ?? ""}`.trim(),
+        address.state,
+    ]
+        .filter(Boolean)
+        .join("<br>");
+
+    div.innerHTML =
+        `<div class="address-card-icon"><i class="fa fa-check" style="font-size:11px;"></i></div>` +
+        `<div>` +
+        `<div class="address-card-name">${escapeHtml(address.client_name ?? "")}</div>` +
+        `<div class="address-card-details">${details}</div>` +
+        `</div>`;
+
+    return div;
+}
+
+function activateCard(containerId, addressId) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+
+    container.querySelectorAll(".address-card-item").forEach((c) =>
+        c.classList.remove("address-card-item--active")
+    );
+
+    const card = container.querySelector(`[data-address-id="${addressId}"]`);
+    card?.classList.add("address-card-item--active");
+}
+
+function ensureCardExists(containerId, address) {
+    const container = document.getElementById(containerId);
+    if (!container) return null;
+
+    let card = container.querySelector(`[data-address-id="${address.id}"]`);
+    if (!card) {
+        card = createAddressCard(address);
+        container.appendChild(card);
+        // Attach click/keyboard handler to the new card
+        attachCardHandler(container, card, document.getElementById(
+            containerId === "shipping-address-cards" ? "shipping_address" : "billing_address"
+        ));
+    }
+    return card;
+}
+
+function attachCardHandler(container, card, select) {
+    const activate = () => {
+        container.querySelectorAll(".address-card-item").forEach((c) =>
+            c.classList.remove("address-card-item--active")
+        );
+        card.classList.add("address-card-item--active");
+        if (select) {
+            select.value = card.dataset.addressId;
+            select.dispatchEvent(new Event("change", { bubbles: true }));
+        }
+    };
+
+    card.addEventListener("click", activate);
+    card.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            activate();
+        }
+    });
+}
+
+function initCardSelectors(shippingSelect, billingSelect) {
+    const shippingContainer = document.getElementById("shipping-address-cards");
+    const billingContainer  = document.getElementById("billing-address-cards");
+
+    if (shippingContainer && shippingSelect) {
+        shippingContainer.querySelectorAll(".address-card-item").forEach((card) => {
+            attachCardHandler(shippingContainer, card, shippingSelect);
+        });
+    }
+
+    if (billingContainer && billingSelect) {
+        billingContainer.querySelectorAll(".address-card-item").forEach((card) => {
+            attachCardHandler(billingContainer, card, billingSelect);
+        });
+    }
+}
+
+// ── Main init ────────────────────────────────────────────────────────────────
+
 export function initCheckoutAddressInline() {
     const root = document.querySelector(".main_content");
     if (!root) return;
@@ -95,6 +197,9 @@ export function initCheckoutAddressInline() {
     const billingSelect  = document.getElementById("billing_address");
 
     if (!shippingSelect || !billingSelect) return;
+
+    // Attach click handlers to pre-rendered address cards
+    initCardSelectors(shippingSelect, billingSelect);
 
     // ── Formulaire livraison ────────────────────────────────────────────────
     const shippingBtn      = document.getElementById("checkout-add-address-btn");
@@ -222,19 +327,35 @@ async function submitAddressForm({ root, apiBase, form, addressType = null, clos
             return;
         }
 
+        // Update hidden selects
         ensureOptionExists(shippingSelect, address);
         ensureOptionExists(billingSelect, address);
+
+        // Update / create visual cards
+        ensureCardExists("shipping-address-cards", address);
+        ensureCardExists("billing-address-cards", address);
 
         const type = payload.address_type;
 
         if (type === "facturation") {
             billingSelect.value = String(address.id);
+            activateCard("billing-address-cards", String(address.id));
         } else if (type === "livraison") {
             shippingSelect.value = String(address.id);
-            if (!billingSelect.value) billingSelect.value = String(address.id);
+            activateCard("shipping-address-cards", String(address.id));
+            if (!billingSelect.value) {
+                billingSelect.value = String(address.id);
+                activateCard("billing-address-cards", String(address.id));
+            }
         } else {
-            if (!shippingSelect.value) shippingSelect.value = String(address.id);
-            if (!billingSelect.value)  billingSelect.value  = String(address.id);
+            if (!shippingSelect.value) {
+                shippingSelect.value = String(address.id);
+                activateCard("shipping-address-cards", String(address.id));
+            }
+            if (!billingSelect.value) {
+                billingSelect.value = String(address.id);
+                activateCard("billing-address-cards", String(address.id));
+            }
         }
 
         showFlash(result?.message ?? "Adresse ajoutée.", "success");

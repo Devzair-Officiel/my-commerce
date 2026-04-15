@@ -82,14 +82,6 @@ body {
 	font-size: 16px;
 }
 
-.payment-button {
-	position: fixed;
-	bottom: 0;
-	left: 0;
-	right: 0;
-	padding: 10px;
-}
-
 h1,
 h2,
 h3,
@@ -9717,3 +9709,7 @@ select {
     white-space: nowrap;
 }
 .btn-cookie-manage:hover { color: #e37e03; }
+
+.address-card-item--active {
+    cursor: auto !important;
+}

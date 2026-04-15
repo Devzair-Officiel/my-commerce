@@ -4,10 +4,230 @@
 
 {% block stylesheets %}
 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" integrity="sha512-z3gLpd7yknf1YoNbCzqRKc4qyor8gaKU1qmn+CShxbuBusANI9QpRohGBreCFkKxLhei6S9CQXFEbbKuqLg0DA==" crossorigin="anonymous" referrerpolicy="no-referrer"/>
-	<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin=""/>
 	<link rel="stylesheet" href="/assets/css/stripe.css">
+	<link href="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css" rel="stylesheet">
 	<script src="https://js.stripe.com/v3/"></script>
-	<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+	<script src="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js"></script>
+	<style>
+		/* ── Address cards ──────────────────────────────────── */
+		.address-card-item {
+			border: 2px solid #e5e7eb;
+			border-radius: 10px;
+			padding: 14px 16px;
+			cursor: pointer;
+			display: flex;
+			align-items: flex-start;
+			gap: 12px;
+			transition: border-color .15s, background .15s, box-shadow .15s;
+			background: #fff;
+			margin-bottom: 10px;
+			outline: none;
+		}
+		.address-card-item:hover {
+			border-color: #adb5bd;
+			box-shadow: 0 2px 8px rgba(0,0,0,.08);
+		}
+		.address-card-item--active {
+			border-color: #0d6efd;
+			background: #f0f5ff;
+			box-shadow: 0 0 0 3px rgba(13,110,253,.12);
+		}
+		.address-card-icon {
+			width: 26px;
+			height: 26px;
+			border-radius: 50%;
+			border: 2px solid #dee2e6;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			flex-shrink: 0;
+			margin-top: 2px;
+			color: transparent;
+			transition: all .15s;
+		}
+		.address-card-item--active .address-card-icon {
+			background: #0d6efd;
+			border-color: #0d6efd;
+			color: #fff;
+		}
+		.address-card-name {
+			font-weight: 600;
+			font-size: 14px;
+			color: #1a1a1a;
+		}
+		.address-card-details {
+			font-size: 13px;
+			color: #6b7280;
+			line-height: 1.5;
+			margin-top: 3px;
+		}
+
+		/* ── Colissimo modal ────────────────────────────────── */
+		/*
+		 * Le widget injecte .widget_colissimo_contenu { width:1000px; height:574px; box-sizing:content-box }
+		 * La modal doit faire ≥ 1002px. Sur écrans plus étroits : scroll horizontal.
+		 */
+		#colissimo-modal .modal-dialog {
+			width: 1040px;
+			max-width: 98vw;
+			margin: 10px auto;
+		}
+		#colissimo-modal .modal-content {
+			border: none;
+			border-radius: 10px;
+			overflow: hidden;
+			box-shadow: 0 20px 60px rgba(0,0,0,.22);
+		}
+		#colissimo-modal .modal-header {
+			background: #fff;
+			border-bottom: 1px solid #e8e8e8;
+			padding: 10px 16px;
+			flex-shrink: 0;
+		}
+		#colissimo-modal .modal-header .modal-title {
+			font-size: 14px;
+			font-weight: 700;
+		}
+		#colissimo-modal .modal-body {
+			padding: 0 !important;
+			overflow-x: auto;
+			overflow-y: hidden;
+			height: 576px;
+			background: #fff;
+		}
+		#colissimo-widget-container {
+			min-width: 1000px;
+			line-height: normal;
+		}
+
+		/*
+		 * ── Personnalisation officielle Colissimo (doc §2.9) ──────────────────
+		 * .couleur1 → markers, bouton validation, bordure gauche point sélectionné
+		 * .couleur2 → filtres accessibilité
+		 * .police   → police de caractères
+		 * Le widget lit ces classes CSS au démarrage via colissimo(".couleur1").css('color')
+		 */
+		.couleur1 { color: #E87722; }
+		.couleur2 { color: #E87722; }
+		.police   { font-family: inherit; }
+
+		/*
+		 * ── Overrides CSS widget — on préfixe avec #colissimo-widget-container
+		 *    pour avoir une spécificité supérieure au <style> injecté par le plugin
+		 * ─────────────────────────────────────────────────────────────────────
+		 */
+
+		/* Supprime la bordure externe (déjà dans la modal Bootstrap) */
+		#colissimo-widget-container .widget_colissimo_contenu {
+			border: none !important;
+			margin: 0 !important;
+		}
+
+		/* Bouton "Me livrer à cette adresse" — texte centré, taille correcte */
+		#colissimo-widget-container .widget_colissimo_bouton_validation {
+			width: 240px !important;
+			height: 36px !important;
+			border-radius: 20px !important;
+			padding-left: 0 !important;
+			padding-right: 0 !important;
+			padding-top: 0 !important;
+			display: flex !important;
+			align-items: center !important;
+			justify-content: center !important;
+			margin: 16px auto !important;
+			cursor: pointer !important;
+		}
+		#colissimo-widget-container .widget_colissimo_text_bouton {
+			text-align: center !important;
+			font-size: 13px !important;
+			font-weight: 600 !important;
+			padding: 0 !important;
+			margin: 0 !important;
+			line-height: 1 !important;
+			white-space: nowrap !important;
+		}
+
+		/* Markers sur la carte — remplacés par l'image locale */
+		#colissimo-widget-container .widget_colissimo_marker,
+		#colissimo-widget-container .widget_colissimo_marker_S,
+		#colissimo-widget-container .widget_colissimo_marker_relais,
+		#colissimo-widget-container .widget_colissimo_marker_bureau-de-poste,
+		#colissimo-widget-container .widget_colissimo_marker_consigne,
+		#colissimo-widget-container .widget_colissimo_marker_voisin-relais {
+			background-image: url('/assets/images/colissimo.png') !important;
+			background-size: contain !important;
+			background-repeat: no-repeat !important;
+		}
+
+		/* Masque le bouton close interne du widget (on a déjà le btn-close Bootstrap) */
+		#colissimo-widget-container .widget_colissimo_close {
+			display: none !important;
+		}
+
+		/* ── Bouton "Choisir un point relais" ───────────────── */
+		#pickup-open-btn {
+			background: none;
+			border: 2px dashed #ccc;
+			border-radius: 12px;
+			cursor: pointer;
+			width: 100%;
+			padding: 16px;
+			display: flex;
+			align-items: center;
+			gap: 14px;
+			transition: border-color .25s ease, background .25s ease, box-shadow .25s ease, transform .15s ease;
+		}
+		#pickup-open-btn:hover {
+			border-color: #E87722;
+			background: #fff8f3;
+			box-shadow: 0 4px 16px rgba(232,119,34,.12);
+			transform: translateY(-1px);
+		}
+		#pickup-open-btn:active {
+			transform: translateY(0);
+			box-shadow: none;
+		}
+		#pickup-open-btn .pickup-btn-chevron {
+			transition: transform .25s ease;
+		}
+		#pickup-open-btn:hover .pickup-btn-chevron {
+			transform: translateX(4px);
+		}
+
+		/* ── Adresse point relais sélectionné ───────────────── */
+		.pickup-selected {
+            margin: auto;
+            padding: 7px 14px;
+		}
+
+
+		/* ── Carrier options ────────────────────────────────── */
+		.carrier-option {
+			transition: border-color .15s, background .15s;
+		}
+		.carrier-option--active {
+			border-color: #0d6efd !important;
+			background: #f0f5ff;
+		}
+
+		/* ── Section headings ───────────────────────────────── */
+		.checkout-section-title {
+			font-size: 15px;
+			font-weight: 700;
+			color: #374151;
+			margin-bottom: 12px;
+			display: flex;
+			align-items: center;
+			gap: 8px;
+		}
+		.checkout-section-title::after {
+			content: '';
+			flex: 1;
+			height: 1px;
+			background: #e5e7eb;
+		}
+        
+	</style>
 {% endblock %}
 
 {% block csrf_meta %}
@@ -25,6 +245,9 @@
 		data-stripe-public-key="{{ stripe_public_key }}"
 		data-cart="{{ cart_json|e('html_attr') }}"
 		data-orderid="{{ orderId }}"
+		data-colissimo-token="{{ colissimo_token }}"
+		data-colissimo-zipcode="{{ addresses|first ? addresses|first.codePostal : '' }}"
+		data-colissimo-city="{{ addresses|first ? addresses|first.city : '' }}"
 		data-address-api="{{ address_api }}"
 		data-address-csrf="{{ csrf_token('address_api') }}"
 		data-countries-url="{{ asset('assets/data/countries.json') }}"
@@ -54,191 +277,104 @@
 				<div class="row">
 					<div class="col-md-6">
 
-						{# ── Mode de livraison ─────────────────────────────────
-						   Les radios sont TOUJOURS rendus (même si 1 seul carrier)
-						   pour que le JS puisse lire data-price et mettre à jour les totaux.
-						   L'UI de sélection n'est affichée que s'il y a plusieurs choix.
-						#}
+						{# ── Mode de livraison ──────────────────────────────── #}
 						{% if carriers|length > 0 %}
-						<div class="heading_s1 mb-3 {% if carriers|length == 1 %}d-none{% endif %}">
-							<h4>Mode de livraison</h4>
-						</div>
-						<div class="carrier-list {% if carriers|length == 1 %}d-none{% endif %}" role="radiogroup" aria-label="Mode de livraison">
-                            {% for carrier in carriers %}
-                                <label class="carrier-option d-flex align-items-center gap-3 p-3 border rounded mb-2" style="cursor:pointer" data-carrier-id="{{ carrier.id }}" data-has-pickup="{{ carrier.hasPickupPoints() ? 'true' : 'false' }}" data-price="{{ carrier.price }}">
-                                    <input type="radio" name="carrier" value="{{ carrier.id }}" class="carrier-radio" {% if loop.first %} checked {% endif %}>
-                                    <div class="flex-grow-1">
-                                        <div class="fw-semibold">{{ carrier.name }}</div>
-                                        {% if carrier.deliveryDelay %}
-                                            <div class="text-muted small">{{ carrier.deliveryDelay }}</div>
-                                        {% endif %}
-                                    </div>
-                                    <div class="fw-bold">
-                                        {% if carrier.price == 0 %}
-                                            Offert
-                                        {% else %}
-                                            {{ (carrier.price / 100)|format_currency('EUR') }}
-                                        {% endif %}
-                                    </div>
-                                </label>
-                            {% endfor %}
+						<div class="mb-4">
+							<div class="checkout-section-title {% if carriers|length == 1 %}d-none{% endif %}">
+								<i class="fa fa-truck" style="color:#6b7280; font-size:13px;"></i>
+								Mode de livraison
+							</div>
+							<div class="carrier-list {% if carriers|length == 1 %}d-none{% endif %}" role="radiogroup" aria-label="Mode de livraison">
+								{% for carrier in carriers %}
+									<label class="carrier-option d-flex align-items-center gap-3 p-3 border rounded mb-2"
+										   style="cursor:pointer"
+										   data-carrier-id="{{ carrier.id }}"
+										   data-has-pickup="{{ carrier.hasPickupPoints() ? 'true' : 'false' }}"
+										   data-price="{{ carrier.price }}">
+										<input type="radio" name="carrier" value="{{ carrier.id }}" class="carrier-radio">
+										<div class="flex-grow-1 d-flex align-items-center gap-2">
+											{% if carrier.hasPickupPoints() %}
+												<img src="https://www.colissimo.fr/favicon.ico" alt="Colissimo" width="20" height="20" style="flex-shrink:0;">
+											{% endif %}
+											<div>
+												<div class="fw-semibold">{{ carrier.name }}</div>
+												{% if carrier.deliveryDelay %}
+													<div class="text-muted small">{{ carrier.deliveryDelay }}</div>
+												{% endif %}
+											</div>
+										</div>
+										<div class="fw-bold text-nowrap">
+											{% if carrier.price == 0 %}
+												Offert
+											{% else %}
+												{{ (carrier.price / 100)|format_currency('EUR') }}
+											{% endif %}
+										</div>
+									</label>
+								{% endfor %}
+							</div>
+
+							{# ── Point relais — juste sous la liste des transporteurs ── #}
+							<div id="pickup-point-section" class="mt-2 d-none">
+
+								{# Bouton d'ouverture du widget #}
+								<div id="pickup-open-btn-wrapper">
+									<button type="button" id="pickup-open-btn">
+										<img src="https://www.colissimo.fr/favicon.ico" alt="Colissimo" width="30" height="30" style="flex-shrink:0;">
+										<div style="text-align:left; flex:1;">
+											<div style="font-weight:600; font-size:14px; color:#222;">Choisir un point relais Colissimo</div>
+											<div style="font-size:12px; color:#888; margin-top:2px;">Bureaux de poste, relais commerçants…</div>
+										</div>
+										<i class="fa fa-chevron-right pickup-btn-chevron" style="color:#aaa; font-size:12px; flex-shrink:0;"></i>
+									</button>
+								</div>
+
+								{# Récapitulatif du point relais choisi #}
+								<div id="pickup-selected" class="d-none">
+									<div class="address-card-item address-card-item--active">
+										<div id="pickup-selected-label"></div>
+										<div type="button"  class="btn btn-fill-line pickup-selected">
+											<i class="fa fa-pen" ></i> Changer de point de retrait
+										</div>
+									</div>
+								</div>
+							</div>
 						</div>
 						{% endif %}
 
-						{# ── Adresse de livraison (domicile uniquement) ───────── #}
-						<div id="shipping-address-section" class="heading_s1 mb-3">
-							<h4>Adresse de livraison</h4>
-
-							<label class="visually-hidden" for="shipping_address">Adresse de livraison</label>
-							<select id="shipping_address" name="shipping_address" class="form-control">
-								<option value="">--- Choisir l’adresse de livraison ---</option>
-								{% for address in addresses %}
-									<option value="{{ address.id }}">
-										{{ address.clientName }}
-										({{ address.street }} {{ address.codePostal }} {{ address.city }} {{ address.state }})
-									</option>
-								{% endfor %}
-							</select>
-
-							{% if addresses|length == 0 %}
-								<div class="alert alert-warning mt-2" role="status">
-									Vous n’avez aucune adresse enregistrée. Ajoutez-en une pour continuer.
-								</div>
-							{% endif %}
-
-							<div class="mt-2">
-								<a href="#" class="btn btn-outline-primary btn-sm" id="checkout-add-address-btn">
-									Ajouter une adresse
-								</a>
-							</div>
-
-							<div id="checkout-add-address-form" class="card mt-3 d-none">
-								<div class="card-body">
-									<h5 class="card-title mb-3">Nouvelle adresse</h5>
-
-									<form id="checkoutAddressForm">
-										<div class="row">
-											<div class="form-group col-md-12 mb-3">
-												<label>Type de l'adresse<span class="required">*</span></label>
-												<select name="address_type" class="form-control" required>
-													<option value="livraison">Livraison</option>
-													<option value="facturation">Facturation</option>
-												</select>
-											</div>
-
-											<div class="form-group col-md-12 mb-3">
-												<label>Nom de l'adresse<span class="required">*</span></label>
-												<input required class="form-control" name="name" type="text">
-											</div>
-
-											<div class="form-group col-md-12 mb-3">
-												<label>Nom du destinataire<span class="required">*</span></label>
-												<input required class="form-control" name="client_name" type="text">
-											</div>
-
-											<div class="form-group col-md-6 mb-3">
-												<label>Rue<span class="required">*</span></label>
-												<input required class="form-control" name="street" type="text">
-											</div>
-
-											<div class="form-group col-md-6 mb-3">
-												<label>Ville<span class="required">*</span></label>
-												<input required class="form-control" name="city" type="text">
-											</div>
-
-											<div class="form-group col-md-6 mb-3">
-												<label>Code postal<span class="required">*</span></label>
-												<input required class="form-control" name="code_postal" type="text" inputmode="numeric" maxlength="10">
-											</div>
-
-											<div class="form-group col-md-6 mb-3">
-												<label>Pays<span class="required">*</span></label>
-												<select class="form-control" name="state" id="checkout-state" required></select>
-											</div>
-
-											<div class="form-group col-md-12 mb-3">
-												<label>Complément (optionnel)</label>
-												<input class="form-control" name="more_details" type="text" maxlength="500">
-											</div>
-
-											<div class="col-md-12 d-flex gap-2">
-												<button type="submit" class="btn btn-fill-out">Enregistrer</button>
-												<button type="button" class="btn btn-outline-secondary" id="checkout-cancel-address">
-													Annuler
-												</button>
+						{# ── Modale widget Colissimo ──────────────────────── #}
+						<div class="modal fade" id="colissimo-modal" tabindex="-1" aria-labelledby="colissimoModalLabel" aria-hidden="true">
+							<div class="modal-dialog modal-dialog-centered">
+								<div class="modal-content">
+									<div class="modal-header">
+										<div class="d-flex align-items-center gap-2">
+											<img src="https://www.colissimo.fr/favicon.ico" alt="Colissimo" width="22" height="22">
+											<div>
+												<h5 class="modal-title mb-0" id="colissimoModalLabel">Choisir un point relais</h5>
+												<div class="text-muted" style="font-size:11px; line-height:1.2;">Colissimo — La Poste</div>
 											</div>
 										</div>
-									</form>
-								</div>
-							</div>
-						</div>{# fin shipping-address-section #}
-
-						{# ── Point relais (sélecteur maison) ─────────────────── #}
-						<div id="pickup-point-section" class="heading_s1 mb-3 d-none">
-							<h4>Point relais</h4>
-
-							<div id="pickup-selected" class="alert alert-success d-none" aria-live="polite">
-								<div class="fw-semibold mb-1">
-									<i class="fa fa-check-circle me-2"></i>Point relais sélectionné
-								</div>
-								<div id="pickup-selected-label" class="mt-1"></div>
-								<button type="button" id="pickup-change-btn" class="btn btn-sm btn-outline-secondary mt-2">
-									Changer de point relais
-								</button>
-							</div>
-
-							<div id="pickup-search-box">
-								<label for="pickup-postal-code" class="form-label">
-									Saisissez votre code postal pour trouver les points relais proches
-								</label>
-								<div class="input-group">
-									<input
-										type="text"
-										id="pickup-postal-code"
-										class="form-control"
-										inputmode="numeric"
-										pattern="[0-9]{5}"
-										maxlength="5"
-										placeholder="Ex. 75001"
-										aria-describedby="pickup-search-help"
-									>
-									<button type="button" id="pickup-search-btn" class="btn btn-primary">
-										<i class="fa fa-search me-1"></i>Rechercher
-									</button>
-								</div>
-							</div>
-
-							<div id="pickup-loader" class="mt-3 d-none text-muted small" aria-live="polite">
-								<span class="spinner-border spinner-border-sm me-2"></span>Recherche en cours…
-							</div>
-
-							<div id="pickup-error" class="alert alert-warning mt-3 d-none" aria-live="assertive"></div>
-
-							<div id="pickup-results" class="mt-3 d-none">
-								<div class="row g-2">
-									<div class="col-12">
-										<div id="pickup-map" style="height:300px; border-radius:8px; z-index:0;"></div>
+										<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
 									</div>
-									<div class="col-12">
-										<div class="fw-semibold mb-2 small text-muted">Points relais disponibles</div>
-										<div id="pickup-results-list" class="d-grid gap-2" style="max-height:300px; overflow-y:auto;"></div>
+									<div class="modal-body">
+										<div id="colissimo-widget-container"></div>
 									</div>
 								</div>
 							</div>
 						</div>
 
-						{# ── Adresse de facturation (toujours visible) ─────────── #}
-						<div class="heading_s1 mb-3">
-							<h4>Adresse de facturation</h4>
+						{# ── Adresse de livraison (mode domicile) ─────────── #}
+						<div id="shipping-address-section" class="mb-4">
+							<div class="checkout-section-title">
+								<i class="fa fa-location-dot" style="color:#6b7280; font-size:13px;"></i>
+								Adresse de livraison
+							</div>
 
-							<label class="visually-hidden" for="billing_address">Adresse de facturation</label>
-							<select id="billing_address" name="billing_address" class="form-control" required>
-								<option value="">--- Choisir l'adresse de facturation ---</option>
+							{# Select caché — utilisé par le JS pour lire la valeur #}
+							<select id="shipping_address" name="shipping_address" class="d-none" aria-hidden="true">
+								<option value=""></option>
 								{% for address in addresses %}
-									<option value="{{ address.id }}">
-										{{ address.clientName }}
-										({{ address.street }} {{ address.codePostal }} {{ address.city }} {{ address.state }})
-									</option>
+									<option value="{{ address.id }}">{{ address.clientName }}</option>
 								{% endfor %}
 							</select>
 
@@ -248,56 +384,182 @@
 								</div>
 							{% endif %}
 
+							{# Cartes adresses #}
+							<div id="shipping-address-cards">
+								{% for address in addresses %}
+									<div class="address-card-item" data-address-id="{{ address.id }}" role="button" tabindex="0" aria-label="{{ address.clientName }}, {{ address.street }}, {{ address.codePostal }} {{ address.city }}">
+										<div class="address-card-icon">
+											<i class="fa fa-check" style="font-size:11px;"></i>
+										</div>
+										<div>
+											<div class="address-card-name">{{ address.clientName }}</div>
+											<div class="address-card-details">
+												{{ address.street }}{% if address.moreDetails %}, {{ address.moreDetails }}{% endif %}<br>
+												{{ address.codePostal }} {{ address.city }}<br>
+												{{ address.state }}
+											</div>
+										</div>
+									</div>
+								{% endfor %}
+							</div>
+
 							<div class="mt-2">
-								<a href="#" class="btn btn-outline-primary btn-sm" id="checkout-add-billing-btn">
-									Ajouter une adresse de facturation
+								<a href="#" class="btn btn-outline-secondary btn-sm" id="checkout-add-address-btn">
+									<i class="fa fa-plus me-1"></i>Ajouter une adresse
 								</a>
 							</div>
 
-							<div id="checkout-add-billing-form" class="card mt-3 d-none">
+							<div id="checkout-add-address-form" class="card mt-3 d-none border-0 shadow-sm">
 								<div class="card-body">
-									<h5 class="card-title mb-3">Nouvelle adresse de facturation</h5>
+									<h6 class="card-title mb-3 fw-bold">Nouvelle adresse</h6>
 
-									<form id="checkoutBillingAddressForm">
-										<div class="row">
-											<div class="form-group col-md-12 mb-3">
-												<label>Nom de l'adresse<span class="required">*</span></label>
-												<input required class="form-control" name="name" type="text">
+									<form id="checkoutAddressForm">
+										<div class="row g-3">
+											<div class="form-group col-md-12">
+												<label class="form-label small fw-semibold">Type de l'adresse <span class="text-danger">*</span></label>
+												<select name="address_type" class="form-select form-select-sm" required>
+													<option value="livraison">Livraison</option>
+													<option value="facturation">Facturation</option>
+												</select>
 											</div>
 
-											<div class="form-group col-md-12 mb-3">
-												<label>Nom du destinataire<span class="required">*</span></label>
-												<input required class="form-control" name="client_name" type="text">
+											<div class="form-group col-md-12">
+												<label class="form-label small fw-semibold">Nom de l'adresse <span class="text-danger">*</span></label>
+												<input required class="form-control form-control-sm" name="name" type="text">
 											</div>
 
-											<div class="form-group col-md-6 mb-3">
-												<label>Rue<span class="required">*</span></label>
-												<input required class="form-control" name="street" type="text">
+											<div class="form-group col-md-12">
+												<label class="form-label small fw-semibold">Nom du destinataire <span class="text-danger">*</span></label>
+												<input required class="form-control form-control-sm" name="client_name" type="text">
 											</div>
 
-											<div class="form-group col-md-6 mb-3">
-												<label>Ville<span class="required">*</span></label>
-												<input required class="form-control" name="city" type="text">
+											<div class="form-group col-md-8">
+												<label class="form-label small fw-semibold">Rue <span class="text-danger">*</span></label>
+												<input required class="form-control form-control-sm" name="street" type="text">
 											</div>
 
-											<div class="form-group col-md-6 mb-3">
-												<label>Code postal<span class="required">*</span></label>
-												<input required class="form-control" name="code_postal" type="text" inputmode="numeric" maxlength="10">
+											<div class="form-group col-md-4">
+												<label class="form-label small fw-semibold">Code postal <span class="text-danger">*</span></label>
+												<input required class="form-control form-control-sm" name="code_postal" type="text" inputmode="numeric" maxlength="10">
 											</div>
 
-											<div class="form-group col-md-6 mb-3">
-												<label>Pays<span class="required">*</span></label>
-												<select class="form-control" name="state" id="checkout-billing-state" required></select>
+											<div class="form-group col-md-8">
+												<label class="form-label small fw-semibold">Ville <span class="text-danger">*</span></label>
+												<input required class="form-control form-control-sm" name="city" type="text">
 											</div>
 
-											<div class="form-group col-md-12 mb-3">
-												<label>Complément (optionnel)</label>
-												<input class="form-control" name="more_details" type="text" maxlength="500">
+											<div class="form-group col-md-4">
+												<label class="form-label small fw-semibold">Pays <span class="text-danger">*</span></label>
+												<select class="form-select form-select-sm" name="state" id="checkout-state" required></select>
+											</div>
+
+											<div class="form-group col-md-12">
+												<label class="form-label small fw-semibold">Complément (optionnel)</label>
+												<input class="form-control form-control-sm" name="more_details" type="text" maxlength="500">
 											</div>
 
 											<div class="col-md-12 d-flex gap-2">
-												<button type="submit" class="btn btn-fill-out">Enregistrer</button>
-												<button type="button" class="btn btn-outline-secondary" id="checkout-cancel-billing">
+												<button type="submit" class="btn btn-fill-out btn-sm">Enregistrer</button>
+												<button type="button" class="btn btn-outline-secondary btn-sm" id="checkout-cancel-address">
+													Annuler
+												</button>
+											</div>
+										</div>
+									</form>
+								</div>
+							</div>
+						</div>{# fin shipping-address-section #}
+
+						{# ── Adresse de facturation ──────────────────────── #}
+						<div class="mb-4">
+							<div class="checkout-section-title">
+								<i class="fa fa-file-invoice" style="color:#6b7280; font-size:13px;"></i>
+								Adresse de facturation
+							</div>
+
+							{# Select caché — utilisé par le JS pour lire la valeur #}
+							<select id="billing_address" name="billing_address" class="d-none" aria-hidden="true">
+								<option value=""></option>
+								{% for address in addresses %}
+									<option value="{{ address.id }}">{{ address.clientName }}</option>
+								{% endfor %}
+							</select>
+
+							{% if addresses|length == 0 %}
+								<div class="alert alert-warning mt-2" role="status">
+									Vous n'avez aucune adresse enregistrée. Ajoutez-en une pour continuer.
+								</div>
+							{% endif %}
+
+							{# Cartes adresses #}
+							<div id="billing-address-cards">
+								{% for address in addresses %}
+									<div class="address-card-item" data-address-id="{{ address.id }}" role="button" tabindex="0" aria-label="{{ address.clientName }}, {{ address.street }}, {{ address.codePostal }} {{ address.city }}">
+										<div class="address-card-icon">
+											<i class="fa fa-check" style="font-size:11px;"></i>
+										</div>
+										<div>
+											<div class="address-card-name">{{ address.clientName }}</div>
+											<div class="address-card-details">
+												{{ address.street }}{% if address.moreDetails %}, {{ address.moreDetails }}{% endif %}<br>
+												{{ address.codePostal }} {{ address.city }}<br>
+												{{ address.state }}
+											</div>
+										</div>
+									</div>
+								{% endfor %}
+							</div>
+
+							<div class="mt-2">
+								<a href="#" class="btn btn-outline-secondary btn-sm" id="checkout-add-billing-btn">
+									<i class="fa fa-plus me-1"></i>Ajouter une adresse de facturation
+								</a>
+							</div>
+
+							<div id="checkout-add-billing-form" class="card mt-3 d-none border-0 shadow-sm">
+								<div class="card-body">
+									<h6 class="card-title mb-3 fw-bold">Nouvelle adresse de facturation</h6>
+
+									<form id="checkoutBillingAddressForm">
+										<div class="row g-3">
+											<div class="form-group col-md-12">
+												<label class="form-label small fw-semibold">Nom de l'adresse <span class="text-danger">*</span></label>
+												<input required class="form-control form-control-sm" name="name" type="text">
+											</div>
+
+											<div class="form-group col-md-12">
+												<label class="form-label small fw-semibold">Nom du destinataire <span class="text-danger">*</span></label>
+												<input required class="form-control form-control-sm" name="client_name" type="text">
+											</div>
+
+											<div class="form-group col-md-8">
+												<label class="form-label small fw-semibold">Rue <span class="text-danger">*</span></label>
+												<input required class="form-control form-control-sm" name="street" type="text">
+											</div>
+
+											<div class="form-group col-md-4">
+												<label class="form-label small fw-semibold">Code postal <span class="text-danger">*</span></label>
+												<input required class="form-control form-control-sm" name="code_postal" type="text" inputmode="numeric" maxlength="10">
+											</div>
+
+											<div class="form-group col-md-8">
+												<label class="form-label small fw-semibold">Ville <span class="text-danger">*</span></label>
+												<input required class="form-control form-control-sm" name="city" type="text">
+											</div>
+
+											<div class="form-group col-md-4">
+												<label class="form-label small fw-semibold">Pays <span class="text-danger">*</span></label>
+												<select class="form-select form-select-sm" name="state" id="checkout-billing-state" required></select>
+											</div>
+
+											<div class="form-group col-md-12">
+												<label class="form-label small fw-semibold">Complément (optionnel)</label>
+												<input class="form-control form-control-sm" name="more_details" type="text" maxlength="500">
+											</div>
+
+											<div class="col-md-12 d-flex gap-2">
+												<button type="submit" class="btn btn-fill-out btn-sm">Enregistrer</button>
+												<button type="button" class="btn btn-outline-secondary btn-sm" id="checkout-cancel-billing">
 													Annuler
 												</button>
 											</div>
@@ -307,18 +569,20 @@
 							</div>
 						</div>
 
-						{# ── Commentaire ──────────────────────────────────────── #}
-						<div class="heading_s1 mb-3">
-							<h4>Commentaire</h4>
+						{# ── Commentaire ──────────────────────────────────── #}
+						<div class="mb-4">
+							<div class="checkout-section-title">
+								<i class="fa fa-comment" style="color:#6b7280; font-size:13px;"></i>
+								Commentaire
+							</div>
 							<label class="visually-hidden" for="comment">Commentaire</label>
 							<textarea
 								class="form-control"
 								name="comment"
 								id="comment"
-								cols="30"
-								rows="6"
+								rows="4"
 								maxlength="2000"
-								placeholder="(Optionnel) Indications pour la livraison..."
+								placeholder="(Optionnel) Indications pour la livraison…"
 							></textarea>
 							<small class="text-muted">2000 caractères max.</small>
 						</div>
@@ -417,7 +681,7 @@
 								Complète les informations de livraison et de facturation pour afficher le bouton de paiement.
 							</div>
 
-							<div class="payment-button d-none m-2">
+							<div class="payment-button d-none">
 								<button id="open-payment-modal" class="btn btn-fill-out btn-block" type="button">
 									Payer maintenant — <span id="checkout-pay-total">{{ (cart.sub_total_with_carrier / 100)|format_currency('EUR') }}</span>
 								</button>
@@ -469,4 +733,8 @@
 	{{ parent() }}
 	<script src="{{ asset('assets/js/pages/checkout/address.js') }}" type="module" defer></script>
 	<script src="{{ asset('assets/js/pages/checkout/stripe.js') }}" type="module" defer></script>
+{% endblock %}
+
+{% block body_scripts %}
+	<script src="https://ws.colissimo.fr/widget-colissimo/js/jquery.plugin.colissimo.js"></script>
 {% endblock %}

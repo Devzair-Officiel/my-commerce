@@ -9,7 +9,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 
 /**
- * Orchestre la création d'étiquettes d'expédition via Colissimo ou Mondial Relay.
+ * Orchestre la création d'étiquettes d'expédition via Colissimo (domicile ou point relais).
  *
  * Utilisation depuis l'admin :
  *   $shipment = $shipmentService->createLabel($order, weightGrams: 500);
@@ -17,16 +17,13 @@ use Psr\Log\LoggerInterface;
 final class ShipmentService
 {
     public function __construct(
-        private readonly ColissimoClient     $colissimoClient,
-        private readonly MondialRelayClient  $mondialRelayClient,
+        private readonly ColissimoClient        $colissimoClient,
         private readonly EntityManagerInterface $em,
-        private readonly LoggerInterface     $logger,
+        private readonly LoggerInterface        $logger,
     ) {}
 
     /**
      * Crée une étiquette d'expédition pour la commande et persiste le Shipment.
-     *
-     * @param int $weightGrams Poids du colis en grammes (saisi par l'admin)
      *
      * @throws \RuntimeException si le transporteur n'est pas configuré ou si l'API échoue
      */
@@ -45,9 +42,8 @@ final class ShipmentService
 
         try {
             match ($carrier->getType()) {
-                CarrierType::Colissimo    => $this->fillColissimo($shipment, $order, $weightGrams),
-                CarrierType::MondialRelay => $this->fillMondialRelay($shipment, $order, $weightGrams),
-                CarrierType::Manual       => $this->fillManual($shipment),
+                CarrierType::Colissimo => $this->fillColissimo($shipment, $order, $weightGrams),
+                CarrierType::Manual    => $this->fillManual($shipment),
             };
         } catch (\RuntimeException $e) {
             $shipment->setErrorMessage($e->getMessage());
@@ -72,67 +68,48 @@ final class ShipmentService
 
     private function fillColissimo(Shipment $shipment, Order $order, int $weightGrams): void
     {
-        $recipient = $this->extractRecipient($order);
+        $pickupPoint = $order->getPickupPoint();
 
-        $result = $this->colissimoClient->generateLabel([
-            'weight'         => round($weightGrams / 1000, 3),
-            'recipient'      => $recipient,
-            'orderReference' => $order->getOrderReference() ?? (string) $order->getId(),
-        ]);
+        if ($pickupPoint && !empty($pickupPoint['id'])) {
+            // Livraison en point relais Colissimo
+            $recipient = $this->extractRecipient($order);
+
+            $shipment->setPickupPointId($pickupPoint['id']);
+            $shipment->setPickupPointName($pickupPoint['name'] ?? '');
+            $shipment->setPickupPointAddress($pickupPoint['address'] ?? '');
+            $shipment->setPickupPointCity($pickupPoint['city'] ?? '');
+
+            $result = $this->colissimoClient->generateLabelPickupPoint([
+                'weight'         => round($weightGrams / 1000, 3),
+                'pickupPointId'  => $pickupPoint['id'],
+                'recipient'      => $recipient,
+                'orderReference' => $order->getOrderReference() ?? (string) $order->getId(),
+            ]);
+        } else {
+            // Livraison à domicile
+            $recipient = $this->extractRecipient($order);
+
+            $result = $this->colissimoClient->generateLabel([
+                'weight'         => round($weightGrams / 1000, 3),
+                'recipient'      => $recipient,
+                'orderReference' => $order->getOrderReference() ?? (string) $order->getId(),
+            ]);
+        }
 
         $trackingNumber = $result['trackingNumber'];
-
-        // Stocker le PDF base64 comme data-URL pour accès depuis l'admin
         $shipment->setLabelUrl('data:application/pdf;base64,' . $result['labelBase64']);
         $shipment->setTrackingNumber($trackingNumber);
         $shipment->setTrackingUrl($this->colissimoClient->getTrackingUrl($trackingNumber));
     }
 
-    private function fillMondialRelay(Shipment $shipment, Order $order, int $weightGrams): void
-    {
-        $recipient = $this->extractRecipient($order);
-        $recipient['phone'] = $order->getUser()?->getPhone() ?? '';
-        $recipient['email'] = $order->getUser()?->getEmail() ?? '';
-
-        // Le point relais est snapshot sur la commande au moment du checkout
-        $pickupPoint = $order->getPickupPoint();
-        if (!$pickupPoint || empty($pickupPoint['id'])) {
-            throw new \RuntimeException('Mondial Relay : aucun point relais sélectionné pour cette commande.');
-        }
-        $pickupPointId = $pickupPoint['id'];
-
-        // Copier les infos du point relais sur le Shipment pour historisation
-        $shipment->setPickupPointId($pickupPointId);
-        $shipment->setPickupPointName($pickupPoint['name'] ?? '');
-        $shipment->setPickupPointAddress($pickupPoint['address'] ?? '');
-        $shipment->setPickupPointCity($pickupPoint['city'] ?? '');
-
-        $result = $this->mondialRelayClient->createParcel([
-            'weight'         => $weightGrams,
-            'pickupPointId'  => $pickupPointId,
-            'recipient'      => $recipient,
-            'orderReference' => $order->getOrderReference() ?? (string) $order->getId(),
-        ]);
-
-        $trackingNumber = $result['trackingNumber'];
-
-        $shipment->setLabelUrl($result['labelUrl']);
-        $shipment->setTrackingNumber($trackingNumber);
-        $shipment->setTrackingUrl($this->mondialRelayClient->getTrackingUrl($trackingNumber));
-    }
-
     private function fillManual(Shipment $shipment): void
     {
-        // Pour un transporteur manuel, l'admin saisit le numéro de suivi directement
-        // On ne fait rien ici — les champs seront remplis via EasyAdmin
         $shipment->setTrackingNumber('À renseigner');
         $shipment->setTrackingUrl('');
     }
 
     /**
-     * Extrait les informations destinataire depuis l'adresse de livraison JSON de la commande.
-     *
-     * @return array{lastName: string, firstName: string, line2: string, city: string, postalCode: string, countryCode: string}
+     * @return array{lastName: string, firstName: string, line2: string, address: string, city: string, postalCode: string, countryCode: string}
      */
     private function extractRecipient(Order $order): array
     {
@@ -142,7 +119,7 @@ final class ShipmentService
         }
 
         $addr = json_decode($raw, true);
-        if (!is_array($addr)) {
+        if (!\is_array($addr)) {
             throw new \RuntimeException('Adresse de livraison invalide (JSON malformé).');
         }
 

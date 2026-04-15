@@ -118,6 +118,122 @@ final class ColissimoClient
     }
 
     /**
+     * Obtient un token JWT pour le widget Colissimo point retrait (valide ~28 min).
+     *
+     * @throws \RuntimeException
+     */
+    public function getWidgetToken(): string
+    {
+        try {
+            $response = $this->httpClient->request('POST', 'https://ws.colissimo.fr/widget-colissimo/rest/authenticate.rest', [
+                'json' => [
+                    'login'    => $this->login,
+                    'password' => $this->password,
+                ],
+            ]);
+
+            $data = $response->toArray(false);
+        } catch (\Throwable $e) {
+            $this->logger->error('[Colissimo] Erreur authentification widget', ['exception' => $e->getMessage()]);
+            throw new \RuntimeException('Colissimo widget auth failed: ' . $e->getMessage(), 0, $e);
+        }
+
+        $token = $data['token'] ?? null;
+        if (!$token) {
+            throw new \RuntimeException('Colissimo widget: token absent de la réponse.');
+        }
+
+        return $token;
+    }
+
+    /**
+     * Génère une étiquette Colissimo pour une livraison en point relais.
+     *
+     * @param array{
+     *   weight: float,
+     *   pickupPointId: string,
+     *   recipient: array{lastName: string, firstName: string, line2: string, countryCode: string, city: string, postalCode: string},
+     *   orderReference: string,
+     * } $params
+     *
+     * @return array{trackingNumber: string, labelBase64: string}
+     * @throws \RuntimeException
+     */
+    public function generateLabelPickupPoint(array $params): array
+    {
+        $payload = [
+            'contractNumber' => $this->login,
+            'password'       => $this->password,
+            'outputFormat'   => [
+                'x'                  => 0,
+                'y'                  => 0,
+                'outputPrintingType' => 'PDF_10x15_300dpi',
+            ],
+            'letter' => [
+                'service' => [
+                    'productCode'  => 'A2P', // Livraison point relais Colissimo
+                    'depositDate'  => (new \DateTimeImmutable())->format('d/m/Y'),
+                    'orderNumber'  => $params['orderReference'],
+                ],
+                'parcel' => [
+                    'weight' => $params['weight'],
+                ],
+                'sender' => [
+                    'address' => [
+                        'companyName' => 'Nidemiel',
+                        'countryCode' => 'FR',
+                    ],
+                ],
+                'addressee' => [
+                    'address' => [
+                        'lastName'    => $params['recipient']['lastName'],
+                        'firstName'   => $params['recipient']['firstName'],
+                        'line2'       => $params['recipient']['line2'],
+                        'countryCode' => $params['recipient']['countryCode'] ?? 'FR',
+                        'city'        => $params['recipient']['city'],
+                        'zipCode'     => $params['recipient']['postalCode'],
+                    ],
+                    'codeCountry'    => $params['recipient']['countryCode'] ?? 'FR',
+                    'noDestADelivrer' => $params['pickupPointId'],
+                ],
+            ],
+        ];
+
+        try {
+            $response = $this->httpClient->request('POST', self::BASE_URL . '/generateLabel', [
+                'json' => $payload,
+            ]);
+            $data = $response->toArray(false);
+        } catch (\Throwable $e) {
+            $this->logger->error('[Colissimo] Erreur HTTP generateLabelPickupPoint', ['exception' => $e->getMessage()]);
+            throw new \RuntimeException('Colissimo API unreachable: ' . $e->getMessage(), 0, $e);
+        }
+
+        if (!empty($data['messages'])) {
+            foreach ($data['messages'] as $msg) {
+                if (($msg['type'] ?? '') === 'ERROR') {
+                    $this->logger->error('[Colissimo] Erreur API pickup', ['message' => $msg]);
+                    throw new \RuntimeException(\sprintf('Colissimo error %s: %s', $msg['id'] ?? '?', $msg['messageContent'] ?? '?'));
+                }
+            }
+        }
+
+        $trackingNumber = $data['labelResponse']['parcelNumber'] ?? null;
+        $labelBase64    = $data['labelResponse']['label']        ?? null;
+
+        if (!$trackingNumber || !$labelBase64) {
+            throw new \RuntimeException('Colissimo: réponse inattendue (parcelNumber ou label manquant)');
+        }
+
+        $this->logger->info('[Colissimo] Étiquette point relais générée', ['tracking' => $trackingNumber]);
+
+        return [
+            'trackingNumber' => $trackingNumber,
+            'labelBase64'    => $labelBase64,
+        ];
+    }
+
+    /**
      * Retourne l'URL de suivi publique Colissimo pour un numéro de colis.
      */
     public function getTrackingUrl(string $trackingNumber): string

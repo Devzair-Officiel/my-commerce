@@ -11,6 +11,7 @@ use App\Message\SendOrderConfirmationEmailMessage;
 use App\Repository\AddressRepository;
 use App\Repository\CarrierRepository;
 use App\Repository\OrderRepository;
+use App\Service\Carrier\ColissimoClient;
 use App\Service\CartService;
 use App\Service\StripeService;
 use Doctrine\ORM\EntityManagerInterface;
@@ -35,6 +36,7 @@ class CheckoutController extends AbstractController
         AddressRepository $addressRepo,
         CarrierRepository $carrierRepo,
         StripeService $stripeService,
+        ColissimoClient $colissimoClient,
     ): Response {
         $this->denyAccessUnlessGranted('ROLE_USER');
 
@@ -51,11 +53,20 @@ class CheckoutController extends AbstractController
         $carriers  = $carrierRepo->findAll();
         $order     = $this->createDraftOrderFromCart($user, $cart);
 
+        // Token widget Colissimo pour la sélection de point relais
+        $colissimoToken = '';
+        try {
+            $colissimoToken = $colissimoClient->getWidgetToken();
+        } catch (\Throwable) {
+            // Le widget ne sera pas disponible si le token échoue
+        }
+
         return $this->render('checkout/index.html.twig', [
             'cart'                   => $cart,
             'orderId'                => $order->getId(),
             'cart_json'              => json_encode($cart, JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR),
             'stripe_public_key'      => $stripeService->getPublicKey(),
+            'colissimo_token'        => $colissimoToken,
             'addresses'              => $addresses,
             'carriers'               => $carriers,
             'address_api'            => $this->generateUrl('api_address_create'),

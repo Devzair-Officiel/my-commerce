@@ -30,7 +30,7 @@ class Carrier
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $description = null;
 
-    /** Type de transporteur (manuel, colissimo, mondial_relay) */
+    /** Type de transporteur (manuel, colissimo) */
     #[ORM\Column(type: 'string', length: 50, enumType: CarrierType::class, options: ['default' => 'manual'])]
     private CarrierType $type = CarrierType::Manual;
 

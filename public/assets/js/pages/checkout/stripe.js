@@ -39,15 +39,18 @@ document.addEventListener("DOMContentLoaded", () => {
     const updateButton = () => {
         if (!payBtnContainer) return;
 
-        // Mode point relais : pas besoin d'adresse de livraison, mais le point doit être sélectionné
-        const shippingOk = isPickupMode ? Boolean(getSelectedPickupPoint()) : Boolean(shippingAddress);
-        const ready      = Boolean(billingAddress) && shippingOk;
+        const carrierSelected = Boolean(getSelectedCarrierId());
+        const shippingOk      = isPickupMode ? Boolean(getSelectedPickupPoint()) : Boolean(shippingAddress);
+        const ready           = carrierSelected && Boolean(billingAddress) && shippingOk;
 
         payBtnContainer.classList.toggle("d-none", !ready);
 
         const hint = document.getElementById("checkout-hint");
         if (hint) {
-            if (!billingAddress) {
+            if (!carrierSelected) {
+                hint.textContent = "Choisissez un mode de livraison pour continuer.";
+                hint.classList.remove("d-none");
+            } else if (!billingAddress) {
                 hint.textContent = "Choisissez une adresse de facturation pour continuer.";
                 hint.classList.remove("d-none");
             } else if (!shippingOk) {
@@ -104,7 +107,10 @@ document.addEventListener("DOMContentLoaded", () => {
     document.querySelectorAll(".carrier-option").forEach((label) => {
         label.addEventListener("click", () => {
             // Légère attente pour que pickup-point.js ait coché le radio en premier
-            requestAnimationFrame(updateShippingTotals);
+            requestAnimationFrame(() => {
+                updateShippingTotals();
+                updateButton();
+            });
         });
     });
 

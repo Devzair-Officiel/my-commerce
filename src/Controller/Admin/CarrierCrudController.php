@@ -69,7 +69,7 @@ final class CarrierCrudController extends AbstractCrudController
             yield ChoiceField::new('type', 'Type')
                 ->setChoices($typeChoices)
                 ->formatValue(fn ($v) => $v instanceof CarrierType ? $v->label() : (string) $v)
-                ->renderAsBadges(['manual' => 'secondary', 'colissimo' => 'primary', 'mondial_relay' => 'success']);
+                ->renderAsBadges(['manual' => 'secondary', 'colissimo' => 'primary']);
             yield MoneyField::new('price', 'Prix')->setCurrency('EUR');
             yield BooleanField::new('hasPickupPoints', 'Points relais')->renderAsSwitch(false);
 
@@ -91,7 +91,7 @@ final class CarrierCrudController extends AbstractCrudController
 
         yield $typeFormField('Type API')
             ->setColumns(6)
-            ->setHelp('Manuel = suivi saisi à la main. Colissimo / Mondial Relay = génération automatique étiquette.');
+            ->setHelp('Manuel = suivi saisi à la main. Colissimo = génération automatique étiquette (domicile + points relais).');
 
         yield MoneyField::new('price', 'Prix')
             ->setColumns(4)
