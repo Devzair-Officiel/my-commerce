@@ -8,7 +8,6 @@ export function initPickupPointSelector({ onPickupPointChange, onShippingModeCha
     const pickupSection    = document.getElementById("pickup-point-section");
     const selectedEl       = document.getElementById("pickup-selected");
     const selectedLabel    = document.getElementById("pickup-selected-label");
-    const changeBtn        = document.getElementById("pickup-change-btn");
     const openBtnWrapper   = document.getElementById("pickup-open-btn-wrapper");
     const openBtn          = document.getElementById("pickup-open-btn");
     const carrierOptions   = document.querySelectorAll(".carrier-option");
@@ -57,10 +56,11 @@ export function initPickupPointSelector({ onPickupPointChange, onShippingModeCha
     // Bouton "Choisir un point relais" → ouvre la modale
     openBtn?.addEventListener("click", () => openModal());
 
-    // Bouton "Modifier" → rouvre la modale
-    changeBtn?.addEventListener("click", async () => {
+    // Bouton "Changer de point de retrait" — délégation d'événement (le bouton peut être recréé par le DOM)
+    selectedEl?.addEventListener("click", async (e) => {
+        if (!e.target.closest(".pickup-selected")) return;
         await clearPickupPoint(onPickupPointChange);
-        selectedEl?.classList.add("d-none");
+        selectedEl.classList.add("d-none");
         openBtnWrapper?.classList.remove("d-none");
         openModal();
     });
@@ -114,9 +114,9 @@ export function initPickupPointSelector({ onPickupPointChange, onShippingModeCha
             return;
         }
 
-        // Ouvrir la modale Bootstrap
+        // Ouvrir la modale Bootstrap (réutilise l'instance si elle existe)
         if (modalEl && window.bootstrap) {
-            const modal = new bootstrap.Modal(modalEl);
+            const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
             modal.show();
         }
 

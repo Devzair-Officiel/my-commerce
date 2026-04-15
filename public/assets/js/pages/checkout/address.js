@@ -136,10 +136,10 @@ function ensureCardExists(containerId, address) {
     if (!card) {
         card = createAddressCard(address);
         container.appendChild(card);
-        // Attach click/keyboard handler to the new card
-        attachCardHandler(container, card, document.getElementById(
-            containerId === "shipping-address-cards" ? "shipping_address" : "billing_address"
-        ));
+
+        const selectId = containerId === "shipping-address-cards" ? "shipping_address" : "billing_address";
+        const select = document.getElementById(selectId);
+        if (select) attachCardHandler(container, card, select);
     }
     return card;
 }
