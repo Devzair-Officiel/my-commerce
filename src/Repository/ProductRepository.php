@@ -86,11 +86,13 @@ class ProductRepository extends ServiceEntityRepository
             return [];
         }
 
+        $safeTerm = str_replace(['\\', '%', '_'], ['\\\\', '\\%', '\\_'], $term);
+
         return $this->createQueryBuilder('p')
             ->leftJoin('p.medias', 'm')->addSelect('m')
             ->where('p.title LIKE :term OR p.description LIKE :term')
             ->andWhere('p.isAvailable = true')
-            ->setParameter('term', '%' . $term . '%')
+            ->setParameter('term', '%' . $safeTerm . '%')
             ->orderBy('p.title', 'ASC')
             ->setMaxResults($limit)
             ->getQuery()

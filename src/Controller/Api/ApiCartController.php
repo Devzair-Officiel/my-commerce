@@ -7,11 +7,13 @@ use App\Repository\CarrierRepository;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
+#[IsGranted('ROLE_USER')]
 class ApiCartController extends AbstractController
 {
     #[Route('/api/cart/update/carrier/{id}', name: 'app_api_cart', methods: ['GET'])]
-    public function index($id, CartService $cartService, CarrierRepository $carrierRepo): Response
+    public function index(int $id, CartService $cartService, CarrierRepository $carrierRepo): Response
     {
         $carrier = $carrierRepo->findOneById($id);
 
