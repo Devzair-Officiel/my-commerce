@@ -58,6 +58,7 @@ final class OrderCrudController extends AbstractCrudController
             ->setPaginatorPageSize(30)
             ->setSearchFields([
                 'id',
+                'orderReference',
                 'user.email',
                 'shippingAddress',
                 'billingAddress',

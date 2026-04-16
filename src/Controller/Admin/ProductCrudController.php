@@ -8,6 +8,7 @@ use App\Form\MediaType;
 use App\Service\MediaFileManager;
 use Doctrine\ORM\EntityManagerInterface;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
+use EasyCorp\Bundle\EasyAdminBundle\Field\Field;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use EasyCorp\Bundle\EasyAdminBundle\Field\IdField;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
@@ -70,7 +71,21 @@ final class ProductCrudController extends AbstractCrudController
             yield MoneyField::new('regular_price', 'Prix normal')->setCurrency('EUR');
             yield MoneyField::new('solde_price', 'Prix promo')->setCurrency('EUR');
 
-            yield IntegerField::new('stock', 'Stock');
+            yield Field::new('stock', 'Stock')
+                ->formatValue(function ($value) {
+                    if ($value === null) {
+                        return '<span class="badge bg-secondary">—</span>';
+                    }
+                    $v = (int) $value;
+                    if ($v === 0) {
+                        return '<span class="badge bg-danger">Rupture</span>';
+                    }
+                    if ($v <= 5) {
+                        return sprintf('<span class="badge bg-warning text-dark">%d</span>', $v);
+                    }
+                    return sprintf('<span class="badge bg-success">%d</span>', $v);
+                })
+                ->setSortable(true);
 
             yield BooleanField::new('isAvailable', 'Disponible');
             yield BooleanField::new('isBestSeller', 'Incontournable');

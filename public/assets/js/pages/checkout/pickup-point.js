@@ -154,6 +154,11 @@ export function initPickupPointSelector({ onPickupPointChange, onShippingModeCha
 
         const shippingSelect = document.getElementById("shipping_address");
         if (shippingSelect) shippingSelect.required = !isPickup;
+
+        const phoneSection = document.getElementById("pickup-phone-section");
+        const phoneInput   = document.getElementById("pickup-phone");
+        if (phoneSection) phoneSection.classList.toggle("d-none", !isPickup);
+        if (phoneInput)   phoneInput.required = isPickup;
     }
 
     function updateCarrierActiveState(activeLabel) {

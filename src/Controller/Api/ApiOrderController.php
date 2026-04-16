@@ -120,6 +120,14 @@ final class ApiOrderController extends AbstractController
             }
         }
 
+        // Téléphone portable — requis pour point relais, sauvegardé sur le User
+        if (\array_key_exists('phone', $payload) && $payload['phone'] !== null) {
+            $phone = trim((string) $payload['phone']);
+            if ($phone !== '') {
+                $order->getUser()?->setPhone($phone);
+            }
+        }
+
         $violations = $validator->validate($order);
         if (\count($violations) > 0) {
             $errors = [];

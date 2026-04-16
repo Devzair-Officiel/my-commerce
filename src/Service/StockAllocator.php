@@ -48,4 +48,42 @@ final class StockAllocator
             $product->setStock($stock - $qty);
         }
     }
+
+    /**
+     * Réapprovisionne le stock lorsqu'une commande payée est annulée ou remboursée.
+     *
+     * - Ne réapprovisionne que si le stock a bien été décrémenté (guard stockDecrementedAt).
+     * - Ne démarre pas de transaction, ne flush pas.
+     * - Les produits supprimés sont ignorés silencieusement (log recommandé côté appelant).
+     */
+    public function restoreStockForCancelledOrder(Order $order): void
+    {
+        if (!$order->isStockDecremented()) {
+            // Stock jamais décrémenté (paiement échoué avant webhook, etc.) → rien à faire
+            return;
+        }
+
+        foreach ($order->getOrderDetails() as $line) {
+            $productId = $line->getProductId();
+            $qty = (int) $line->getQuantity();
+
+            if (!$productId || $qty <= 0) {
+                continue;
+            }
+
+            /** @var Product|null $product */
+            $product = $this->em->find(Product::class, (int) $productId, LockMode::PESSIMISTIC_WRITE);
+            if (!$product) {
+                // Produit supprimé → on ignore, le stock n'existe plus
+                continue;
+            }
+
+            // null = stock non géré → pas de réapprovisionnement
+            if ($product->getStock() === null) {
+                continue;
+            }
+
+            $product->setStock((int) $product->getStock() + $qty);
+        }
+    }
 }

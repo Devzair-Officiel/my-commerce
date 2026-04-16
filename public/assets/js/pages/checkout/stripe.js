@@ -117,13 +117,31 @@ document.addEventListener("DOMContentLoaded", () => {
     // Initialiser avec le carrier déjà coché au chargement
     updateShippingTotals();
 
+    const togglePhoneSection = (isPickup) => {
+        const phoneSection = document.getElementById("pickup-phone-section");
+        const phoneInput   = document.getElementById("pickup-phone");
+        if (phoneSection) phoneSection.classList.toggle("d-none", !isPickup);
+        if (phoneInput)   phoneInput.required = isPickup;
+    };
+
     initPickupPointSelector({
         onPickupPointChange: (_point) => updateButton(),
         onShippingModeChange: (isPickup) => {
             isPickupMode = isPickup;
+            togglePhoneSection(isPickup);
             updateButton();
         },
     });
+
+    // Appliquer l'état initial si un carrier avec pickup est déjà sélectionné
+    const checkedCarrier = document.querySelector(".carrier-radio:checked");
+    if (checkedCarrier) {
+        const initialIsPickup = checkedCarrier.closest(".carrier-option")?.dataset?.hasPickup === "true";
+        if (initialIsPickup) {
+            isPickupMode = true;
+            togglePhoneSection(true);
+        }
+    }
 
     updateButton();
 
@@ -161,6 +179,17 @@ document.addEventListener("DOMContentLoaded", () => {
                     throw new Error("Veuillez choisir un point relais.");
                 }
 
+                const phoneInput = document.getElementById("pickup-phone");
+                const phoneValue = phoneInput?.value?.trim() ?? "";
+                if (isPickupMode && !phoneValue) {
+                    phoneInput?.focus();
+                    document.getElementById("pickup-phone-error")?.classList.remove("d-none");
+                    throw new Error("Veuillez saisir votre numéro de portable pour la livraison en point relais.");
+                }
+                if (isPickupMode) {
+                    document.getElementById("pickup-phone-error")?.classList.add("d-none");
+                }
+
                 if (!isPickupMode && !shippingAddressSelect?.value) {
                     throw new Error("Adresse de livraison requise.");
                 }
@@ -178,6 +207,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         comment,
                         pickup_point: pickupPoint ?? null,
                         carrier_id: getSelectedCarrierId(),
+                        phone: isPickupMode ? (document.getElementById("pickup-phone")?.value?.trim() ?? null) : null,
                     }),
                 });
 

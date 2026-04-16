@@ -187,12 +187,21 @@ final class ColissimoClient
         $e    = fn(string $v): string => htmlspecialchars($v, \ENT_XML1, 'UTF-8');
         $date = (new \DateTimeImmutable())->format('Y-m-d');
 
-        $addresseExtra = '';
+        $pickupLocationXml = '';
         if ($pickupPointId !== null) {
-            $addresseExtra = <<<XML
-                    <noDestADelivrer>{$e($pickupPointId)}</noDestADelivrer>
-                    <codeCountry>{$e($recipient['countryCode'] ?? 'FR')}</codeCountry>
-            XML;
+            $pickupLocationXml = "<pickupLocationId>{$e($pickupPointId)}</pickupLocationId>";
+        }
+
+        $mobileXml = '';
+        $mobile = $recipient['mobileNumber'] ?? '';
+        if ($mobile !== '') {
+            $mobileXml = "<mobileNumber>{$e($mobile)}</mobileNumber>";
+        }
+
+        $serviceExtra = '';
+        if ($pickupPointId !== null) {
+            $serviceExtra = "<commercialName>{$e($this->senderName)}</commercialName>"
+                . "<returnTypeChoice>2</returnTypeChoice>";
         }
 
         return <<<XML
@@ -212,9 +221,11 @@ final class ColissimoClient
                     <productCode>{$e($productCode)}</productCode>
                     <depositDate>{$e($date)}</depositDate>
                     <orderNumber>{$e($orderReference)}</orderNumber>
+                    {$serviceExtra}
                   </service>
                   <parcel>
                     <weight>{$e((string) $weight)}</weight>
+                    {$pickupLocationXml}
                   </parcel>
                   <sender>
                     <address>
@@ -233,8 +244,8 @@ final class ColissimoClient
                       <countryCode>{$e($recipient['countryCode'] ?? 'FR')}</countryCode>
                       <city>{$e($recipient['city'] ?? '')}</city>
                       <zipCode>{$e($recipient['zipCode'] ?? '')}</zipCode>
+                      {$mobileXml}
                     </address>
-                    {$addresseExtra}
                   </addressee>
                 </letter>
               </generateLabelRequest>
@@ -306,8 +317,8 @@ final class ColissimoClient
         }
 
         if (!$trackingNumber) {
-            $this->logger->error('[Colissimo] parcelNumber manquant ' . $context, ['response' => substr($xmlStr, 0, 1000)]);
-            throw new \RuntimeException('Colissimo: numéro de suivi absent de la réponse.');
+            $this->logger->error('[Colissimo] parcelNumber manquant ' . $context, ['response' => substr($xmlStr, 0, 2000), 'raw_body' => substr($body, 0, 2000)]);
+            throw new \RuntimeException('Colissimo: numéro de suivi absent de la réponse. Réponse API: ' . substr($xmlStr, 0, 500));
         }
 
         if (!$labelBase64) {

@@ -67,14 +67,24 @@ final class StripeWebhookController extends AbstractController
             'payment_intent.succeeded',
             'payment_intent.payment_failed',
             'payment_intent.canceled',
+            'charge.refunded',
         ];
 
         if (!\in_array($event->type, $handled, true)) {
             return new Response('ignored', 200, ['Content-Type' => 'text/plain; charset=utf-8']);
         }
 
-        $pi = $event->data->object;
-        $piId = (string) ($pi->id ?? '');
+        $obj = $event->data->object;
+
+        // charge.refunded → l'objet est un Charge, le payment_intent est dans ->payment_intent
+        if ($event->type === 'charge.refunded') {
+            $piId = (string) ($obj->payment_intent ?? '');
+        } else {
+            $piId = (string) ($obj->id ?? '');
+        }
+
+        $pi = $obj; // alias pour compatibilité avec le code existant
+
         if ($piId === '') {
             return new Response('Missing payment_intent id', 400, ['Content-Type' => 'text/plain; charset=utf-8']);
         }
@@ -202,6 +212,29 @@ final class StripeWebhookController extends AbstractController
                         'order_ref'      => $order->getOrderReference(),
                         'payment_intent' => $piId,
                         'reason'         => $reason,
+                    ]);
+                }
+
+                if ($event->type === 'charge.refunded') {
+                    $wasAlreadyRefunded = $order->getPaymentStatus() === PaymentStatus::Refunded;
+
+                    $order->setPaymentStatus(PaymentStatus::Refunded);
+                    $order->setFulfillmentStatus(FulfillmentStatus::Cancelled);
+
+                    // Restaurer le stock uniquement si ce n'est pas un double remboursement
+                    if (!$wasAlreadyRefunded) {
+                        $this->stockAllocator->restoreStockForCancelledOrder($order);
+                        $this->logger->info('Stock restauré suite au remboursement', [
+                            'order_id'       => $order->getId(),
+                            'order_ref'      => $order->getOrderReference(),
+                            'payment_intent' => $piId,
+                        ]);
+                    }
+
+                    $this->logger->info('Commande remboursée', [
+                        'order_id'       => $order->getId(),
+                        'order_ref'      => $order->getOrderReference(),
+                        'payment_intent' => $piId,
                     ]);
                 }
 

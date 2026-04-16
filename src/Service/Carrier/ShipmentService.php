@@ -74,6 +74,16 @@ final class ShipmentService
             // Livraison en point relais Colissimo
             $recipient = $this->extractRecipient($order);
 
+            // Colissimo A2P exige le numéro de portable pour notifier le client par SMS
+            $phone = $order->getUser()?->getPhone();
+            if (!$phone || trim($phone) === '') {
+                throw new \RuntimeException(
+                    'Le numéro de téléphone portable du client est requis pour une livraison en point relais Colissimo. '
+                    . 'Veuillez demander au client de renseigner son numéro dans son profil.'
+                );
+            }
+            $recipient['mobileNumber'] = preg_replace('/\D/', '', $phone);
+
             $shipment->setPickupPointId($pickupPoint['id']);
             $shipment->setPickupPointName($pickupPoint['name'] ?? '');
             $shipment->setPickupPointAddress($pickupPoint['address'] ?? '');

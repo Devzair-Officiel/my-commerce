@@ -130,12 +130,21 @@
 									</ul>
 								</div>
 							</div>
+							{% set inStock = product.stock is null or product.stock > 0 %}
+							<div class="my-2">
+								{% if inStock %}
+									<span class="badge bg-success"><i class="ti-check me-1"></i>En stock{% if product.stock is not null %} ({{ product.stock }}){% endif %}</span>
+								{% else %}
+									<span class="badge bg-danger"><i class="ti-close me-1"></i>Rupture de stock</span>
+								{% endif %}
+							</div>
 							<hr>
 							<div class="">
+								{% if inStock %}
 								<div class="cart-product-quantity">
 									<div class="quantity">
 										<input type="button" value="-" class="minus">
-										<input type="text" name="quantity" value="1" title="Qty" size="4" class="qty">
+										<input type="text" name="quantity" value="1" title="Qty" size="4" class="qty" {% if product.stock is not null %}data-max="{{ product.stock }}"{% endif %}>
 										<input type="button" value="+" class="plus">
 									</div>
 								</div>
@@ -149,6 +158,14 @@
 										Payer maintenant
 									</a>
 								</div>
+								{% else %}
+								<div class="cart_btn my-2">
+									<button class="btn btn-light btn-no-margin" disabled>
+										<i class="icon-basket-loaded"></i>
+										Indisponible
+									</button>
+								</div>
+								{% endif %}
 								<div class="cart_btn">
 									<a href="/compare/add/{{product.id}}" class="add-to-compare">
 										<i class="icon-shuffle"></i>
@@ -257,4 +274,38 @@
 			</div>
 		</div>
 	</div>
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const qtyInput = document.querySelector('input.qty');
+    if (!qtyInput) return;
+
+    const max = qtyInput.dataset.max ? parseInt(qtyInput.dataset.max, 10) : null;
+    const min = 1;
+
+    document.querySelector('.plus')?.addEventListener('click', function () {
+        let val = parseInt(qtyInput.value, 10) || 1;
+        if (max !== null && val >= max) return;
+        qtyInput.value = val + 1;
+        syncCartLink(val + 1);
+    });
+
+    document.querySelector('.minus')?.addEventListener('click', function () {
+        let val = parseInt(qtyInput.value, 10) || 1;
+        if (val <= min) return;
+        qtyInput.value = val - 1;
+        syncCartLink(val - 1);
+    });
+
+    function syncCartLink(qty) {
+        const link = document.querySelector('.btn-addtocart');
+        if (link) {
+            link.href = '/cart/add/{{ product.id }}/' + qty;
+        }
+    }
+});
+</script>
 {% endblock %}
