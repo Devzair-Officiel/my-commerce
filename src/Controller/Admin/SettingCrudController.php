@@ -6,7 +6,6 @@ use App\Entity\Media;
 use App\Entity\Setting;
 use Doctrine\ORM\EntityManagerInterface;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
-use EasyCorp\Bundle\EasyAdminBundle\Field\Field;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use EasyCorp\Bundle\EasyAdminBundle\Field\IdField;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
@@ -17,7 +16,7 @@ use EasyCorp\Bundle\EasyAdminBundle\Field\ImageField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\IntegerField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextareaField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TelephoneField;
-use EasyCorp\Bundle\EasyAdminBundle\Field\AssociationField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\UrlField;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
 
 final class SettingCrudController extends AbstractCrudController
@@ -59,20 +58,25 @@ final class SettingCrudController extends AbstractCrudController
 
         $currency = TextField::new('currency', 'Devise')
             ->setHelp('Ex: EUR, USD')
-            ->setColumns(3)
+            ->setColumns(5)
             ->setFormTypeOption('attr', ['maxlength' => 10]);
 
         $taxRate = IntegerField::new('taxe_rate', 'TVA (%)')
             ->setHelp('Ex: 20 pour 20%')
-            ->setColumns(3);
+            ->setColumns(5);
 
         $description = TextareaField::new('description', 'Description')
             ->setColumns(12)
             ->setFormTypeOption('attr', ['rows' => 4]);
 
         $copyright = TextField::new("copyright", "Droits d'auteur")
-            ->setColumns(3)
-            ->setHelp('Ex: © 2020 - 2025 Agence web Hypedesign - Mentions Légales - CGV');
+            ->setColumns(4)
+            ->setHelp('Ex: © 2025 Nidemiel — Tous droits réservés');
+
+        $copyrightUrl = UrlField::new("copyrightUrl", "Lien droits d'auteur")
+            ->setColumns(4)
+            ->setHelp('URL vers laquelle pointe le texte de copyright (ex: page mentions légales, site officiel…)')
+            ->setRequired(false);
 
 
         $logo = ImageField::new('logoMedia.filename', 'Image')
@@ -166,6 +170,7 @@ final class SettingCrudController extends AbstractCrudController
             FormField::addFieldset('Identité du site')->setIcon('fa fa-globe'),
             $websiteName,
             $copyright,
+            $copyrightUrl,
             $currency,
             $taxRate,
             $description,

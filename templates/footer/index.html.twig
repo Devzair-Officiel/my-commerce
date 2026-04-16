@@ -98,31 +98,25 @@
 	</div>
 	<div class="bottom_footer border-top-tran">
 		<div class="container">
-			<div class="row">
-				<div class="col-md-6 d-flex align-items-center gap-3 flex-wrap">
-					<a href="">
-                        <p class="mb-0 text-center text-md-start">{{globalSetting.copyright}}</p>
-                    </a>
-					<button onclick="window.reopenCookieConsent?.()" class="btn-cookie-manage">🍪 Gérer mes cookies</button>
+			<div class="row mb-2">
+				<div class="col-12 text-center">
+					<a href="{{ path('app_page', {slug: 'mentions-legales'}) }}" class="text-muted small me-3">Mentions légales</a>
+					<a href="{{ path('app_page', {slug: 'politique-de-confidentialite'}) }}" class="text-muted small me-3">Politique de confidentialité</a>
+					<a href="{{ path('app_page', {slug: 'cgv'}) }}" class="text-muted small">Conditions générales de vente</a>
 				</div>
-				<div class="col-md-6">
-					<ul class="footer_payment text-center text-lg-end d-flex gap-2 justify-content-end">
-						<li>
-							<a href="#"><img src="assets/images/visa.png" alt="Paiement par Visa" width="38" height="24" loading="lazy" decoding="async"></a>
-						</li>
-						<li>
-							<a href="#"><img src="assets/images/discover.png" alt="Paiement par Discover" width="38" height="24" loading="lazy" decoding="async"></a>
-						</li>
-						<li>
-							<a href="#"><img src="assets/images/master_card.png" alt="Paiement par Mastercard" width="38" height="24" loading="lazy" decoding="async"></a>
-						</li>
-						<li>
-							<a href="#"><img src="assets/images/paypal.png" alt="Paiement par PayPal" width="38" height="24" loading="lazy" decoding="async"></a>
-						</li>
-						<li>
-							<a href="#"><img src="assets/images/amarican_express.png" alt="Paiement par American Express" width="38" height="24" loading="lazy" decoding="async"></a>
-						</li>
-					</ul>
+			</div>
+			<div class="row">
+				<div class="col-md-6 d-flex align-items-center">
+					{% if globalSetting.copyrightUrl %}
+						<a href="{{ globalSetting.copyrightUrl }}" target="_blank" rel="noopener">
+							<p class="mb-0 text-center text-md-start">{{ globalSetting.copyright }}</p>
+						</a>
+					{% else %}
+						<p class="mb-0 text-center text-md-start">{{ globalSetting.copyright }}</p>
+					{% endif %}
+				</div>
+				<div class="col-md-6 d-flex justify-content-end">
+					<button onclick="window.reopenCookieConsent?.()" class="btn-cookie-manage">🍪 Gérer mes cookies</button>
 				</div>
 			</div>
 		</div>

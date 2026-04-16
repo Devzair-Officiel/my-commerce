@@ -41,6 +41,7 @@ class SettingRepository extends ServiceEntityRepository
                 's.instaLink AS instaLink',
                 's.youtubeLink AS youtubeLink',
                 's.copyright AS copyright',
+                's.copyrightUrl AS copyrightUrl',
                 'lm.filename AS logo_filename',
                 'lm.alt AS logo_alt',
             ])

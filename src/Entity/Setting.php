@@ -59,6 +59,9 @@ class Setting
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $copyright = null;
 
+    #[ORM\Column(length: 512, nullable: true)]
+    private ?string $copyrightUrl = null;
+
     #[ORM\Column(nullable: true)]
     private ?int $freeShippingThresholdCents = null;
 
@@ -258,6 +261,18 @@ class Setting
     public function setCopyright(?string $copyright): static
     {
         $this->copyright = $copyright;
+
+        return $this;
+    }
+
+    public function getCopyrightUrl(): ?string
+    {
+        return $this->copyrightUrl;
+    }
+
+    public function setCopyrightUrl(?string $copyrightUrl): static
+    {
+        $this->copyrightUrl = $copyrightUrl;
 
         return $this;
     }
