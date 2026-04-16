@@ -20,6 +20,7 @@
         "league/oauth2-google": "^5.0",
         "phpdocumentor/reflection-docblock": "^5.6",
         "phpstan/phpdoc-parser": "^2.3",
+        "sentry/sentry-symfony": "^5.10",
         "stripe/stripe-php": "^19.1",
         "symfony/cache": "8.0.*",
         "symfony/config": "8.0.*",
