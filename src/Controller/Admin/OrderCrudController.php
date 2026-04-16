@@ -74,7 +74,7 @@ final class OrderCrudController extends AbstractCrudController
             ->addCssClass('btn btn-sm btn-primary')
             ->displayIf(static fn (Order $order): bool =>
                 $order->getPaymentStatus() === PaymentStatus::Paid
-                && $order->getFulfillmentStatus() !== FulfillmentStatus::Shipped
+                && !\in_array($order->getFulfillmentStatus(), [FulfillmentStatus::Shipped, FulfillmentStatus::Delivered, FulfillmentStatus::Cancelled], true)
                 && $order->getCarrier() !== null
             );
 

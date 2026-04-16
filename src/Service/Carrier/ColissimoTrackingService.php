@@ -4,8 +4,11 @@ namespace App\Service\Carrier;
 
 use App\Entity\Shipment;
 use App\Entity\ShipmentStatus;
+use App\Enum\FulfillmentStatus;
+use App\Message\SendDeliveredEmailMessage;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\Messenger\MessageBusInterface;
 
 /**
  * Synchronise les statuts de suivi Colissimo depuis l'API vers la base de données.
@@ -16,9 +19,10 @@ final class ColissimoTrackingService
     private const DELIVERED_CODES = ['LIVCFM', 'LIVGAR', 'LIVDOM'];
 
     public function __construct(
-        private readonly ColissimoClient     $colissimoClient,
+        private readonly ColissimoClient        $colissimoClient,
         private readonly EntityManagerInterface $em,
         private readonly LoggerInterface        $logger,
+        private readonly MessageBusInterface    $bus,
     ) {}
 
     /**
@@ -80,14 +84,22 @@ final class ColissimoTrackingService
 
         // Marquer livré si nécessaire
         if (\in_array($tracking['statusCode'], self::DELIVERED_CODES, true) && $shipment->getDeliveredAt() === null) {
-            // On prend la date du dernier événement de livraison, sinon maintenant
             $deliveryDate = $this->findDeliveryDate($tracking['events']) ?? new \DateTimeImmutable();
             $shipment->setDeliveredAt($deliveryDate);
+
+            // Mettre à jour le FulfillmentStatus de la commande
+            $order = $shipment->getCustomerOrder();
+            if ($order !== null && $order->getFulfillmentStatus() !== FulfillmentStatus::Delivered) {
+                $order->setFulfillmentStatus(FulfillmentStatus::Delivered);
+            }
 
             $this->logger->info('[ColissimoTracking] Colis livré', [
                 'tracking'    => $trackingNumber,
                 'deliveredAt' => $deliveryDate->format('Y-m-d H:i'),
             ]);
+
+            // Envoyer l'email de livraison via Messenger (async)
+            $this->bus->dispatch(new SendDeliveredEmailMessage($shipment->getId()));
         }
 
         $this->em->flush();
