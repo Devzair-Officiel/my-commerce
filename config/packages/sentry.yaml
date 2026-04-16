@@ -2,12 +2,13 @@ sentry:
     dsn: '%env(SENTRY_DSN)%'
     register_error_listener: true
     options:
-        # Environnement affiché dans Sentry (production, development…)
         environment: '%kernel.environment%'
-        # Traces de performance — 10% des requêtes en prod pour ne pas saturer le quota
         traces_sample_rate: '%env(float:default::SENTRY_TRACES_SAMPLE_RATE)%'
-        # Ne pas envoyer les erreurs 404 et accès refusés — trop de bruit
         ignore_exceptions:
             - Symfony\Component\HttpKernel\Exception\NotFoundHttpException
             - Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException
             - Symfony\Component\Security\Core\Exception\AccessDeniedException
+
+when@dev:
+    sentry:
+        dsn: null
