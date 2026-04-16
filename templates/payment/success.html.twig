@@ -23,7 +23,7 @@
 							Merci pour votre achat. Nous avons bien reçu votre commande et nous vous enverrons un email de confirmation avec les détails de votre commande.
 						</p>
 						{% if order is defined and order %}
-							<p class="text-muted">Commande n°{{ order.id }}</p>
+							<p class="text-muted">Commande : {{ order.orderReference }}</p>
 						{% endif %}
 						<a href="{{ path('app_account') }}" class="btn btn-fill-out">
 							Retour vers mon compte

@@ -109,28 +109,65 @@ final class ShipmentService
     }
 
     /**
+     * Extrait les informations du destinataire depuis le snapshot texte multiligne de la commande.
+     *
+     * Format snapshot (toMultilineSnapshot) :
+     *   Ligne 1 : client_name
+     *   Ligne 2 : (nom alias)  — optionnel
+     *   Ligne 3 : rue
+     *   Ligne 4 : code_postal ville
+     *   Ligne 5 : state/pays  — optionnel
+     *
      * @return array{lastName: string, firstName: string, line2: string, address: string, city: string, postalCode: string, countryCode: string}
      */
     private function extractRecipient(Order $order): array
     {
         $raw = $order->getShippingAddress();
-        if (!$raw) {
+        if (!$raw || trim($raw) === '') {
             throw new \RuntimeException('Adresse de livraison manquante sur la commande.');
         }
 
-        $addr = json_decode($raw, true);
-        if (!\is_array($addr)) {
-            throw new \RuntimeException('Adresse de livraison invalide (JSON malformé).');
+        // Supprimer les lignes vides et renuméroter
+        $lines = array_values(array_filter(
+            array_map('trim', explode("\n", $raw)),
+            static fn(string $l): bool => $l !== ''
+        ));
+
+        // Ligne "code_postal ville" : on cherche la première ligne qui commence par des chiffres
+        $postalCode = '';
+        $city       = '';
+        $street     = '';
+
+        foreach ($lines as $i => $line) {
+            if (preg_match('/^(\d{4,6})\s+(.+)$/', $line, $m)) {
+                $postalCode = $m[1];
+                $city       = $m[2];
+                // La ligne précédente est la rue
+                $street = $lines[$i - 1] ?? '';
+                break;
+            }
+        }
+
+        // Nom complet : première ligne (client_name)
+        $fullName  = $lines[0] ?? '';
+        $nameParts = explode(' ', $fullName, 2);
+        $firstName = $nameParts[0] ?? '';
+        $lastName  = $nameParts[1] ?? $order->getUser()?->getLastname() ?? '';
+
+        // Fallback si le parsing n'a rien trouvé
+        if ($street === '' && isset($lines[1])) {
+            $street = $lines[1];
         }
 
         return [
-            'lastName'    => $addr['last_name']    ?? ($order->getUser()?->getLastname()  ?? ''),
-            'firstName'   => $addr['first_name']   ?? ($order->getUser()?->getFirstname() ?? ''),
-            'line2'       => trim(($addr['address_line1'] ?? '') . ' ' . ($addr['address_line2'] ?? '')),
-            'address'     => trim(($addr['address_line1'] ?? '') . ' ' . ($addr['address_line2'] ?? '')),
-            'city'        => $addr['city']          ?? '',
-            'postalCode'  => $addr['postal_code']   ?? $addr['zip_code'] ?? '',
-            'countryCode' => $addr['country_code']  ?? 'FR',
+            'lastName'    => $lastName  !== '' ? $lastName  : ($order->getUser()?->getLastname()  ?? ''),
+            'firstName'   => $firstName !== '' ? $firstName : ($order->getUser()?->getFirstname() ?? ''),
+            'line2'       => $street,
+            'address'     => $street,
+            'city'        => $city,
+            'zipCode'     => $postalCode,  // generateLabel
+            'postalCode'  => $postalCode,  // generateLabelPickupPoint
+            'countryCode' => 'FR',
         ];
     }
 }

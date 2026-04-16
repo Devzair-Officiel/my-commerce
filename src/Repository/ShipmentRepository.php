@@ -31,13 +31,19 @@ class ShipmentRepository extends ServiceEntityRepository
 //        ;
 //    }
 
-//    public function findOneBySomeField($value): ?Shipment
-//    {
-//        return $this->createQueryBuilder('s')
-//            ->andWhere('s.exampleField = :val')
-//            ->setParameter('val', $value)
-//            ->getQuery()
-//            ->getOneOrNullResult()
-//        ;
-//    }
+    /**
+     * Retourne tous les colis expédiés mais pas encore livrés, triés du plus ancien au plus récent.
+     *
+     * @return Shipment[]
+     */
+    public function findActiveShipments(): array
+    {
+        return $this->createQueryBuilder('s')
+            ->where('s.shippedAt IS NOT NULL')
+            ->andWhere('s.deliveredAt IS NULL')
+            ->andWhere('s.trackingNumber IS NOT NULL')
+            ->orderBy('s.shippedAt', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
 }

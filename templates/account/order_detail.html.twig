@@ -75,12 +75,16 @@
 									<div class="text-muted small">N° de suivi</div>
 									<div class="fw-semibold">{{ shipment.trackingNumber }}</div>
 								</div>
-								{% if shipment.trackingUrl %}
-								<a href="{{ shipment.trackingUrl }}" target="_blank" rel="noopener"
-								   class="btn btn-sm btn-outline-primary">
-									Suivre mon colis <i class="fa fa-external-link ms-1"></i>
-								</a>
-								{% endif %}
+								<a href="{{ path('app_account_order_tracking', { orderId: order.id, shipmentId: shipment.id }) }}"
+							   class="btn btn-sm btn-primary">
+								<i class="fa fa-location-dot me-1"></i> Suivre mon colis
+							</a>
+							{% if shipment.trackingUrl %}
+							<a href="{{ shipment.trackingUrl }}" target="_blank" rel="noopener"
+							   class="btn btn-sm btn-outline-secondary">
+								laposte.fr <i class="fa fa-external-link ms-1"></i>
+							</a>
+							{% endif %}
 							</div>
 							{% endif %}
 

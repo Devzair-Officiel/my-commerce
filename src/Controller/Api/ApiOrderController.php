@@ -90,6 +90,7 @@ final class ApiOrderController extends AbstractController
                 $oldCarrierPrice = $order->getCarrierPriceSnapshotCents();
                 $newCarrierPrice = $carrier->getPrice();
 
+                $order->setCarrier($carrier);
                 $order->setCarrierNameSnapshot($carrier->getName());
                 $order->setCarrierPriceSnapshotCents($newCarrierPrice);
 

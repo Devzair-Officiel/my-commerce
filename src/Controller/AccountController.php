@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Dto\EditUserInput;
 use App\Entity\Order;
+use App\Entity\Shipment;
 use App\Entity\User;
 use App\Form\EditUserFormType;
 use App\Repository\AddressRepository;
@@ -159,6 +160,46 @@ class AccountController extends AbstractController
         // On n’a pas besoin d’un repo OrderDetails : $order->getOrderDetails() suffit
         return $this->render('account/order_detail.html.twig', [
             'order' => $order,
+        ]);
+    }
+
+    #[Route('/account/order/{orderId<\d+>}/tracking/{shipmentId<\d+>}', name: 'app_account_order_tracking', methods: ['GET'])]
+    public function orderTracking(int $orderId, int $shipmentId, OrderRepository $orderRepo): Response
+    {
+        $this->denyAccessUnlessGranted('ROLE_USER');
+
+        $user = $this->getUser();
+        if (!$user instanceof User) {
+            throw $this->createAccessDeniedException();
+        }
+
+        $order = $orderRepo->find($orderId);
+        if (!$order || $order->getUser()->getId() !== $user->getId()) {
+            throw $this->createAccessDeniedException();
+        }
+
+        /** @var Shipment|null $shipment */
+        $shipment = null;
+        foreach ($order->getShipments() as $s) {
+            if ($s->getId() === $shipmentId) {
+                $shipment = $s;
+                break;
+            }
+        }
+
+        if (!$shipment) {
+            throw $this->createNotFoundException('Expédition introuvable.');
+        }
+
+        // Trier les statuts du plus récent au plus ancien
+        $statuses = $shipment->getShipmentStatuses()->toArray();
+        usort($statuses, fn ($a, $b) => ($b->getOccuredAt() ?? new \DateTimeImmutable('0000-01-01'))
+            <=> ($a->getOccuredAt() ?? new \DateTimeImmutable('0000-01-01')));
+
+        return $this->render('account/order_tracking.html.twig', [
+            'order'    => $order,
+            'shipment' => $shipment,
+            'statuses' => $statuses,
         ]);
     }
 

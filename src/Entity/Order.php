@@ -530,4 +530,9 @@ class Order
     {
         return number_format($this->totalWeightGrams / 1000, 3, ',', ' ') . ' kg';
     }
+
+    public function __toString(): string
+    {
+        return $this->orderReference ?? '#' . $this->id;
+    }
 }

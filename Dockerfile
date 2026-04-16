@@ -32,6 +32,7 @@ RUN set -eux; \
 		opcache \
 		zip \
 		xml \
+		soap \
 		pdo_pgsql \
 	;
 

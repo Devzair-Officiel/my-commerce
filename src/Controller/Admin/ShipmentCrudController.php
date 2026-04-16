@@ -6,6 +6,7 @@ use App\Entity\Order;
 use App\Entity\Shipment;
 use App\Enum\CarrierType;
 use App\Repository\ShipmentRepository;
+use App\Service\Carrier\ColissimoTrackingService;
 use App\Service\Carrier\ShipmentService;
 use Doctrine\ORM\EntityManagerInterface;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
@@ -24,10 +25,27 @@ use Symfony\Component\HttpFoundation\Response;
 
 final class ShipmentCrudController extends AbstractCrudController
 {
+    // Codes Colissimo → classe Bootstrap badge
+    private const STATUS_BADGES = [
+        'LIVCFM'  => 'success',
+        'LIVGAR'  => 'success',
+        'LIVDOM'  => 'success',
+        'DISTRI'  => 'primary',
+        'OUTDELIV'=> 'primary',
+        'ENCOURS' => 'info',
+        'INTRANS' => 'info',
+        'TRANSIT' => 'info',
+        'PCHCFM'  => 'secondary',
+        'RETOUR'  => 'danger',
+        'ANOMAL'  => 'danger',
+        'RETN'    => 'danger',
+    ];
+
     public function __construct(
-        private readonly ShipmentService        $shipmentService,
-        private readonly ShipmentRepository     $shipmentRepository,
-        private readonly EntityManagerInterface $em,
+        private readonly ShipmentService          $shipmentService,
+        private readonly ShipmentRepository       $shipmentRepository,
+        private readonly ColissimoTrackingService  $trackingService,
+        private readonly EntityManagerInterface   $em,
     ) {}
 
     public static function getEntityFqcn(): string
@@ -60,13 +78,22 @@ final class ShipmentCrudController extends AbstractCrudController
             ->addCssClass('btn btn-sm btn-success')
             ->displayIf(static fn (Shipment $s): bool => $s->getLabelUrl() !== null);
 
+        $syncTrackingAction = Action::new('syncTracking', 'Sync suivi', 'fa fa-rotate')
+            ->linkToCrudAction('syncTracking')
+            ->addCssClass('btn btn-sm btn-outline-secondary')
+            ->displayIf(static fn (Shipment $s): bool =>
+                $s->getTrackingNumber() !== null && $s->getDeliveredAt() === null
+            );
+
         return $actions
             ->disable(Action::NEW)
             ->add(Crud::PAGE_INDEX, Action::DETAIL)
             ->add(Crud::PAGE_INDEX, $createLabelAction)
             ->add(Crud::PAGE_DETAIL, $createLabelAction)
             ->add(Crud::PAGE_INDEX, $downloadLabelAction)
-            ->add(Crud::PAGE_DETAIL, $downloadLabelAction);
+            ->add(Crud::PAGE_DETAIL, $downloadLabelAction)
+            ->add(Crud::PAGE_INDEX, $syncTrackingAction)
+            ->add(Crud::PAGE_DETAIL, $syncTrackingAction);
     }
 
     public function configureFields(string $pageName): iterable
@@ -75,9 +102,18 @@ final class ShipmentCrudController extends AbstractCrudController
             yield AssociationField::new('customerOrder', 'Commande');
             yield AssociationField::new('carrier', 'Transporteur');
             yield TextField::new('trackingNumber', 'N° Suivi');
-            yield TextField::new('statusCode', 'Statut');
-            yield IntegerField::new('weightGrams', 'Poids (g)');
+            yield TextField::new('statusCode', 'Statut')
+                ->formatValue(function (?string $value): string {
+                    if (!$value) {
+                        return '<span class="badge bg-light text-muted">–</span>';
+                    }
+                    $class = self::STATUS_BADGES[$value] ?? 'secondary';
+                    return \sprintf('<span class="badge bg-%s">%s</span>', $class, htmlspecialchars($value));
+                })
+                ->renderAsHtml();
             yield DateTimeField::new('shippedAt', 'Expédié le');
+            yield DateTimeField::new('deliveredAt', 'Livré le');
+            yield DateTimeField::new('syncedAt', 'Dernière synchro');
             return;
         }
 
@@ -89,9 +125,21 @@ final class ShipmentCrudController extends AbstractCrudController
         yield FormField::addPanel('Suivi')->setIcon('fa fa-location-dot');
         yield TextField::new('trackingNumber', 'N° Suivi')->setColumns(6);
         yield UrlField::new('trackingUrl', 'URL Suivi')->setColumns(6);
-        yield TextField::new('statusCode', 'Code statut transporteur')->setColumns(4)->onlyOnDetail();
+        yield TextField::new('statusCode', 'Statut')
+            ->setColumns(4)
+            ->onlyOnDetail()
+            ->formatValue(function (?string $value): string {
+                if (!$value) {
+                    return '<span class="badge bg-light text-muted">–</span>';
+                }
+                $class = self::STATUS_BADGES[$value] ?? 'secondary';
+                return \sprintf('<span class="badge bg-%s fs-6 px-3 py-2">%s</span>', $class, htmlspecialchars($value));
+            })
+            ->renderAsHtml();
         yield IntegerField::new('weightGrams', 'Poids (g)')->setColumns(4);
         yield DateTimeField::new('shippedAt', 'Expédié le')->setColumns(4);
+        yield DateTimeField::new('deliveredAt', 'Livré le')->setColumns(4)->onlyOnDetail();
+        yield DateTimeField::new('syncedAt', 'Dernière synchro')->setColumns(4)->onlyOnDetail();
 
         yield FormField::addPanel('Point relais')->setIcon('fa fa-map-pin');
         yield TextField::new('pickupPointId', 'ID Point relais')->setColumns(3)->onlyOnDetail();
@@ -167,5 +215,36 @@ final class ShipmentCrudController extends AbstractCrudController
 
         // Mondial Relay retourne une URL publique — on redirige
         return $this->redirect($labelUrl);
+    }
+
+    /**
+     * Action : synchronise manuellement le suivi Colissimo d'un colis.
+     */
+    public function syncTracking(AdminContext $context, AdminUrlGenerator $urlGenerator): Response
+    {
+        $entityId = $context->getRequest()->query->getInt('entityId');
+        $shipment = $this->shipmentRepository->find($entityId);
+
+        if (!$shipment instanceof Shipment) {
+            $this->addFlash('danger', 'Expédition introuvable.');
+            return $this->redirect($urlGenerator->setController(self::class)->setAction(Action::INDEX)->generateUrl());
+        }
+
+        try {
+            $inserted = $this->trackingService->syncShipment($shipment);
+            $status   = $shipment->getStatusCode() ?? '?';
+
+            $this->addFlash('success', \sprintf(
+                'Suivi synchronisé — statut : %s — %d nouvel(s) événement(s) enregistré(s).',
+                $status,
+                $inserted,
+            ));
+        } catch (\RuntimeException $e) {
+            $this->addFlash('danger', 'Erreur lors de la synchronisation : ' . $e->getMessage());
+        }
+
+        return $this->redirect(
+            $urlGenerator->setController(self::class)->setAction(Action::DETAIL)->setEntityId($entityId)->generateUrl()
+        );
     }
 }

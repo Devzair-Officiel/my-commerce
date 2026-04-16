@@ -24,11 +24,11 @@ class Shipment
     private ?Carrier $carrier = null;
 
     // Numéro de suivi
-    #[ORM\Column(length: 255)]
+    #[ORM\Column(length: 255, nullable: true)]
     private ?string $trackingNumber = null;
 
     // URL publique de suivi
-    #[ORM\Column(length: 255)]
+    #[ORM\Column(length: 255, nullable: true)]
     private ?string $trackingUrl = null;
 
     #[ORM\Column(type: 'string', length: 255, nullable: true)]
@@ -47,7 +47,7 @@ class Shipment
     private ?string $pickupPointCity = null;
 
     /** URL du bon de transport PDF (généré par l'API transporteur) */
-    #[ORM\Column(length: 512, nullable: true)]
+    #[ORM\Column(type: 'text', nullable: true)]
     private ?string $labelUrl = null;
 
     /** Poids réel du colis en grammes */

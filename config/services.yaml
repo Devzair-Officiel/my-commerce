@@ -16,8 +16,12 @@ parameters:
 
     stripe.webhook_secret: '%env(STRIPE_WEBHOOK_SECRET)%'
 
-    colissimo.login:    '%env(COLISSIMO_LOGIN)%'
-    colissimo.password: '%env(COLISSIMO_PASSWORD)%'
+    colissimo.login:         '%env(COLISSIMO_LOGIN)%'
+    colissimo.password:      '%env(COLISSIMO_PASSWORD)%'
+    colissimo.sender_name:   '%env(COLISSIMO_SENDER_NAME)%'
+    colissimo.sender_street: '%env(COLISSIMO_SENDER_STREET)%'
+    colissimo.sender_zip:    '%env(COLISSIMO_SENDER_ZIP)%'
+    colissimo.sender_city:   '%env(COLISSIMO_SENDER_CITY)%'
 
     app.free_shipping_threshold_cents: 5000
 
@@ -78,8 +82,12 @@ services:
 
     App\Service\Carrier\ColissimoClient:
         arguments:
-            $login:    '%colissimo.login%'
-            $password: '%colissimo.password%'
+            $login:        '%colissimo.login%'
+            $password:     '%colissimo.password%'
+            $senderName:   '%colissimo.sender_name%'
+            $senderStreet: '%colissimo.sender_street%'
+            $senderZip:    '%colissimo.sender_zip%'
+            $senderCity:   '%colissimo.sender_city%'
 
     App\MessageHandler\SendOrderConfirmationEmailMessageHandler:
         arguments:
