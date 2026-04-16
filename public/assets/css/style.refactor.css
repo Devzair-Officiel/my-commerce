@@ -99,7 +99,7 @@ img[id^="product"] {
 .notification {
 	position: fixed;
 	right: 20px;
-	bottom: 10px;
+	bottom: 40px;
 }
 
 p {
@@ -9004,8 +9004,9 @@ select {
 
 .notification {
     position: fixed;
-    top: 20px;
+    bottom: 20px;
     right: 20px;
+    top: unset;
     z-index: 99999;
     display: flex;
     flex-direction: column;
@@ -9030,7 +9031,7 @@ select {
     box-shadow: 0 12px 30px rgba(0, 0, 0, 0.14);
     border: 1px solid rgba(0, 0, 0, 0.06);
     opacity: 0;
-    transform: translateY(-8px) translateX(8px);
+    transform: translateY(8px) translateX(8px);
     transition: opacity 0.25s ease, transform 0.25s ease;
 }
 
@@ -9041,7 +9042,7 @@ select {
 
 .app-notification.is-leaving {
     opacity: 0;
-    transform: translateY(-6px) translateX(6px);
+    transform: translateY(6px) translateX(6px);
 }
 
 .app-notification__icon {

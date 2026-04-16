@@ -39,7 +39,7 @@ export function showFlash(message, type = "info", options = {}) {
         return;
     }
 
-    const duration = Number.isFinite(options.duration) ? options.duration : 5000;
+    const duration = Number.isFinite(options.duration) ? options.duration : 3000;
 
     const item = document.createElement("div");
     item.className = `app-notification app-notification--${normalizedType}`;
