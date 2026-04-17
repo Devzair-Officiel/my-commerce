@@ -71,7 +71,7 @@
             <div class="invoice-title">FACTURE</div>
             <div class="invoice-number">N° {{ invoice.invoiceNumber }}</div>
             <div class="invoice-date">
-                Date : {{ invoice.issuedAt ? invoice.issuedAt|date('d/m/Y') : 'N/A' }}
+                Date : {{ invoice.issuedAt ? invoice.issuedAt|date('d/m/Y', 'Europe/Paris') : 'N/A' }}
             </div>
         </div>
     </div>

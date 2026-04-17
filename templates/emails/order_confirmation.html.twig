@@ -1,4 +1,4 @@
-{% set orderDate = order.createdAt ?? null %}
+{% set orderDate = order.paidAt ?? order.createdAt ?? null %}
 {% set shippingCost = order.carrierPriceSnapshotCents ?? 0 %}
 {% set itemsTotalHt = order.itemsTotalHtCents ?? 0 %}
 {% set taxAmount = order.taxAmountCents ?? 0 %}

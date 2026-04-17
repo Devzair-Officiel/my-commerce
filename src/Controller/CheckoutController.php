@@ -116,10 +116,21 @@ class CheckoutController extends AbstractController
         // Toujours vider la session, quelle que soit la situation en base
         $this->cartService->clearCart();
 
+        // Fallback : garantir que paidAt est toujours renseigné dès que le paiement est confirmé
+        if ($order->getPaidAt() === null) {
+            $order->setPaidAt(new \DateTimeImmutable());
+        }
+
         if ($order->getCartClearedAt() === null) {
             $order->markCartCleared();
-            $this->em->flush();
         }
+
+        // Fallback email : si le webhook Stripe n'a pas encore envoyé l'email de confirmation
+        if (!$order->isConfirmationEmailSent()) {
+            $messageBus->dispatch(new SendOrderConfirmationEmailMessage($order->getId()));
+        }
+
+        $this->em->flush();
 
         return $this->render('payment/success.html.twig', [
             'order' => $order,

@@ -77,6 +77,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(nullable: true)]
     private ?\DateTimeImmutable $pendingEmailTokenExpiresAt = null;
 
+    #[ORM\Column(type: 'json', nullable: true)]
+    private ?array $savedCart = null;
+
     #[ORM\OneToMany(mappedBy: 'user', targetEntity: Address::class)]
     private Collection $addresses;
 
@@ -396,6 +399,17 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->pendingEmail = null;
         $this->pendingEmailToken = null;
         $this->pendingEmailTokenExpiresAt = null;
+    }
+
+    public function getSavedCart(): ?array
+    {
+        return $this->savedCart;
+    }
+
+    public function setSavedCart(?array $savedCart): static
+    {
+        $this->savedCart = $savedCart;
+        return $this;
     }
 
     // ---------------------------------------------------------------------

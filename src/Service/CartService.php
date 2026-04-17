@@ -3,9 +3,12 @@
 namespace App\Service;
 
 use App\Entity\Setting;
+use App\Entity\User;
 use App\Repository\CarrierRepository;
 use App\Repository\ProductRepository;
 use App\Repository\SettingRepository;
+use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 
@@ -27,6 +30,8 @@ final class CartService
         private readonly SettingRepository $settingRepo,
         private readonly ProductRepository $productRepo,
         private readonly CarrierRepository $carrierRepo,
+        private readonly Security $security,
+        private readonly EntityManagerInterface $em,
         private readonly int $freeShippingThresholdCents, // injecté via services.yaml
     ) {}
 
@@ -81,6 +86,7 @@ final class CartService
     private function saveCart(array $cart): void
     {
         $this->session()->set(self::SESSION_CART, $cart);
+        $this->persistCartForCurrentUser($cart ?: null);
     }
 
     public function get(string $key): mixed
@@ -93,6 +99,16 @@ final class CartService
         $this->session()->set($key, $value);
     }
 
+    public function getRawCart(): array
+    {
+        return $this->getCartRaw();
+    }
+
+    public function setRawCart(array $cart): void
+    {
+        $this->session()->set(self::SESSION_CART, $cart);
+    }
+
     public function clearCart(): void
     {
         $session = $this->session();
@@ -100,8 +116,26 @@ final class CartService
         $session->remove(self::SESSION_CART);
         $session->remove(self::SESSION_CARRIER);
         $session->remove(self::SESSION_PICKUP_POINT);
-
         $session->save();
+
+        $this->persistCartForCurrentUser(null);
+    }
+
+    /**
+     * Persiste le panier en BDD pour l'utilisateur connecté.
+     * Utilise une référence Doctrine (sans SELECT) pour éviter une requête inutile.
+     */
+    private function persistCartForCurrentUser(?array $cart): void
+    {
+        $user = $this->security->getUser();
+        if (!$user instanceof User || $user->getId() === null) {
+            return;
+        }
+
+        /** @var User $managedUser */
+        $managedUser = $this->em->getReference(User::class, $user->getId());
+        $managedUser->setSavedCart($cart);
+        $this->em->flush();
     }
 
     public function updateCarrier(array $carrier): void

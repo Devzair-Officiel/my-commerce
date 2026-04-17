@@ -61,7 +61,7 @@
                             {% if shipment.deliveredAt %}
                             <tr>
                                 <td class="cell cell-muted">Livré le</td>
-                                <td class="cell"><strong>{{ shipment.deliveredAt|date('d/m/Y à H:i') }}</strong></td>
+                                <td class="cell"><strong>{{ shipment.deliveredAt|date('d/m/Y à H:i', 'Europe/Paris') }}</strong></td>
                             </tr>
                             {% endif %}
                             {% if order.carrierNameSnapshot %}

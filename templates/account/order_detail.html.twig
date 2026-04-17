@@ -31,7 +31,7 @@
 					<tbody>
 						{% for line in order.orderDetails %}
 							<tr>
-								<td>{{ line.createdAt|date('d/m/Y', 'Europe/Paris') }}</td>
+								<td>{{ (order.paidAt ?? order.createdAt)|date('d/m/Y', 'Europe/Paris') }}</td>
 								<td>{{ line.productName }}</td>
 
 								<td class="price">

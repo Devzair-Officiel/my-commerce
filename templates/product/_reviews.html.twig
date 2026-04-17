@@ -38,7 +38,7 @@
                 <div class="rating">
                     <div class="product_rate" style="width: {{ ((review.rating / 5) * 100)|round }}%;"></div>
                 </div>
-                <small class="text-muted">{{ review.createdAt|date('d/m/Y') }}</small>
+                <small class="text-muted">{{ review.createdAt|date('d/m/Y', 'Europe/Paris') }}</small>
             </div>
             {% if review.comment %}
             <p class="mb-0 mt-2">{{ review.comment }}</p>
