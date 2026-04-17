@@ -3,6 +3,8 @@
 namespace App\Service\Carrier;
 
 use Psr\Log\LoggerInterface;
+use Symfony\Contracts\Cache\CacheInterface;
+use Symfony\Contracts\Cache\ItemInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 /**
@@ -25,6 +27,7 @@ final class ColissimoClient
     public function __construct(
         private readonly HttpClientInterface $httpClient,
         private readonly LoggerInterface $logger,
+        private readonly CacheInterface $cache,
         private readonly string $login,
         private readonly string $password,
         private readonly string $senderName   = 'Nidemiel',
@@ -92,28 +95,36 @@ final class ColissimoClient
      *
      * @throws \RuntimeException
      */
+    /**
+     * Retourne le token d'authentification du widget Colissimo.
+     * Le token est mis en cache 25 minutes (Colissimo l'invalide après ~28 min).
+     */
     public function getWidgetToken(): string
     {
-        try {
-            $response = $this->httpClient->request('POST', 'https://ws.colissimo.fr/widget-colissimo/rest/authenticate.rest', [
-                'json' => [
-                    'login'    => $this->login,
-                    'password' => $this->password,
-                ],
-            ]);
+        return $this->cache->get('colissimo_widget_token', function (ItemInterface $item): string {
+            $item->expiresAfter(1500); // 25 minutes
 
-            $data = $response->toArray(false);
-        } catch (\Throwable $e) {
-            $this->logger->error('[Colissimo] Erreur authentification widget', ['exception' => $e->getMessage()]);
-            throw new \RuntimeException('Colissimo widget auth failed: ' . $e->getMessage(), 0, $e);
-        }
+            try {
+                $response = $this->httpClient->request('POST', 'https://ws.colissimo.fr/widget-colissimo/rest/authenticate.rest', [
+                    'json' => [
+                        'login'    => $this->login,
+                        'password' => $this->password,
+                    ],
+                ]);
 
-        $token = $data['token'] ?? null;
-        if (!$token) {
-            throw new \RuntimeException('Colissimo widget: token absent de la réponse.');
-        }
+                $data = $response->toArray(false);
+            } catch (\Throwable $e) {
+                $this->logger->error('[Colissimo] Erreur authentification widget', ['exception' => $e->getMessage()]);
+                throw new \RuntimeException('Colissimo widget auth failed: ' . $e->getMessage(), 0, $e);
+            }
 
-        return $token;
+            $token = $data['token'] ?? null;
+            if (!$token) {
+                throw new \RuntimeException('Colissimo widget: token absent de la réponse.');
+            }
+
+            return $token;
+        });
     }
 
     // ── Tracking (REST) ──────────────────────────────────────────────────────

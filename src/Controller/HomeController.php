@@ -8,6 +8,7 @@ use App\Seo\SeoResolver;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Attribute\Cache;
 use Symfony\Component\Routing\Attribute\Route;
 
 /**
@@ -19,6 +20,7 @@ final class HomeController extends AbstractController
     {}
 
     #[Route('/', name: 'app_home')]
+    #[Cache(smaxage: 3600, vary: ['Accept-Language'])]
     public function index(SlidersRepository $slider, SeoResolver $seoResolver, Request $request): Response
     {
         $sliders = $slider->findAll();

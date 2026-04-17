@@ -6,6 +6,7 @@ use App\Trait\DateTrait;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use App\Repository\AddressRepository;
+use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * Entité représentant une adresse de livraison ou de facturation associée à un compte client.
@@ -22,21 +23,32 @@ class Address
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank(message: 'Le nom de l\'adresse est requis.')]
+    #[Assert\Length(max: 255)]
     private ?string $name = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank(message: 'Le nom du destinataire est requis.')]
+    #[Assert\Length(min: 2, max: 255)]
     private ?string $client_name = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank(message: 'La rue est requise.')]
+    #[Assert\Length(min: 2, max: 255)]
     private ?string $street = null;
 
     #[ORM\Column(length: 255, nullable: true)]
+    #[Assert\Length(max: 10)]
     private ?string $code_postal = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank(message: 'La ville est requise.')]
+    #[Assert\Length(min: 1, max: 255)]
     private ?string $city = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank(message: 'Le pays est requis.')]
+    #[Assert\Length(max: 255)]
     private ?string $state = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
