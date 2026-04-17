@@ -5684,7 +5684,10 @@ footer .widget_title {
 	border-radius: 5px;
 	padding: 10px 20px;
 	color: var(--nm-on-dark);
-	display: block;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 8px;
 }
 
 .btn-login li a i {
@@ -9942,8 +9945,8 @@ select {
 
 /* ── Icônes dans les boutons ─────────────────────────────────────────────────── */
 .btn .icon {
-    width: 16px;
-    height: 16px;
+    width: 17px;
+    height: 17px;
     vertical-align: middle;
 }
 
