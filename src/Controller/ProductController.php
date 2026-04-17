@@ -2,13 +2,20 @@
 
 namespace App\Controller;
 
+use App\Entity\Review;
+use App\Enum\ReviewStatus;
+use App\Form\ReviewFormType;
+use App\Message\SendNewReviewNotificationMessage;
 use App\Repository\CategoryRepository;
 use App\Repository\ProductRepository;
+use App\Repository\ReviewRepository;
 use App\Seo\SeoResolver;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\RateLimiter\RateLimiterFactory;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\Routing\Attribute\Route;
@@ -20,12 +27,18 @@ final class ProductController extends AbstractController
 {
 
     public function __construct(private ProductRepository $productRepo) {}
-    
+
     #[Route('/produits/{slug}', name: 'app_product_by_slug', requirements: [
         'slug' => '[a-z0-9-]+',
     ])]
-    public function showProduct(string $slug, SeoResolver $seoResolver, Request $request): Response
-    {
+    public function showProduct(
+        string $slug,
+        SeoResolver $seoResolver,
+        Request $request,
+        ReviewRepository $reviewRepository,
+        MessageBusInterface $messageBus,
+        EntityManagerInterface $em,
+    ): Response {
         $product = $this->productRepo->findOneBySlugWithRelations($slug);
 
         if (!$product) {
@@ -34,12 +47,62 @@ final class ProductController extends AbstractController
 
         $seo = $seoResolver->forProduct($product, $request);
 
+        /** @var \App\Entity\User|null $currentUser */
+        $currentUser = $this->getUser();
+
+        $userReview     = null;
+        $reviewForm     = null;
+
+        if ($currentUser !== null) {
+            $userReview = $reviewRepository->findOneByProductAndUser($product, $currentUser);
+
+            $reviewEntity = $userReview ?? new Review();
+            $reviewForm   = $this->createForm(ReviewFormType::class, $reviewEntity);
+            $reviewForm->handleRequest($request);
+
+            if ($reviewForm->isSubmitted() && $reviewForm->isValid()) {
+                $isNew = ($reviewEntity->getId() === null);
+
+                $reviewEntity->setProduct($product);
+                $reviewEntity->setUser($currentUser);
+
+                if ($isNew) {
+                    $reviewEntity->setStatus(ReviewStatus::Pending);
+                }
+
+                $em->persist($reviewEntity);
+                $em->flush();
+
+                if ($isNew) {
+                    $messageBus->dispatch(new SendNewReviewNotificationMessage($reviewEntity->getId()));
+                }
+
+                $this->addFlash(
+                    'success',
+                    $isNew
+                        ? 'Votre avis a été soumis et sera affiché après modération.'
+                        : 'Votre avis a été mis à jour.'
+                );
+
+                return $this->redirectToRoute('app_product_by_slug', ['slug' => $slug]);
+            }
+
+            $reviewForm = $reviewForm->createView();
+        }
+
+        $reviews       = $reviewRepository->findApprovedByProduct($product);
+        $averageRating = $product->getAverageRating();
+
         return $this->render('product/show_product_by_slug.html.twig', [
-            'product' => $product,
-            'media' => $product->getMediaData(),
+            'product'           => $product,
+            'media'             => $product->getMediaData(),
             'productBestSeller' => $this->productRepo->findBestSellersWithMedias(),
-            'relatedProducts' => $product->getRelatedProducts(),
-            'seo' => $seo
+            'relatedProducts'   => $product->getRelatedProducts(),
+            'seo'               => $seo,
+            'reviews'           => $reviews,
+            'reviewForm'        => $reviewForm,
+            'userReview'        => $userReview,
+            'averageRating'     => $averageRating,
         ]);
     }
 

@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Nouvel avis à modérer</title>
+    <style>
+        body { font-family: Arial, sans-serif; color: #333; background: #f9f9f9; margin: 0; padding: 0; }
+        .container { max-width: 600px; margin: 30px auto; background: #fff; border-radius: 8px; overflow: hidden; border: 1px solid #e0e0e0; }
+        .header { background: #e37e03; color: #fff; padding: 24px 32px; }
+        .header h1 { margin: 0; font-size: 22px; }
+        .body { padding: 32px; }
+        .field { margin-bottom: 16px; }
+        .field strong { display: inline-block; width: 120px; color: #555; }
+        .stars { color: #e37e03; font-size: 18px; }
+        .comment { background: #f5f5f5; border-left: 4px solid #e37e03; padding: 12px 16px; border-radius: 4px; font-style: italic; }
+        .btn { display: inline-block; margin-top: 24px; padding: 12px 28px; background: #e37e03; color: #fff; text-decoration: none; border-radius: 5px; font-weight: bold; }
+        .footer { padding: 16px 32px; font-size: 12px; color: #aaa; border-top: 1px solid #eee; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1>Nouvel avis à modérer</h1>
+    </div>
+    <div class="body">
+        <p>Un client vient de soumettre un avis sur votre boutique.</p>
+
+        <div class="field">
+            <strong>Produit :</strong> {{ product.title }}
+        </div>
+        <div class="field">
+            <strong>Client :</strong> {{ user.firstName ?? '' }} {{ user.lastName ?? user.email }}
+        </div>
+        <div class="field">
+            <strong>Note :</strong>
+            <span class="stars">
+                {% for i in 1..5 %}{{ i <= review.rating ? '★' : '☆' }}{% endfor %}
+            </span>
+            ({{ review.rating }}/5)
+        </div>
+        {% if review.comment %}
+        <div class="field">
+            <strong>Commentaire :</strong>
+            <div class="comment">{{ review.comment }}</div>
+        </div>
+        {% endif %}
+
+        <a href="{{ adminUrl }}" class="btn">Modérer les avis dans l'administration</a>
+    </div>
+    <div class="footer">
+        Cet e-mail a été envoyé automatiquement par votre boutique Nidemiel.
+    </div>
+</div>
+</body>
+</html>

@@ -23,9 +23,9 @@
                 </div>
                 <div class="col-md-6">
                   <h5><i class="ti-calendar"></i> Date</h5>
-                  <p>{{ contact.createdAt|date('d/m/Y à H:i') }}</p>
+                  <p>{{ contact.createdAt|date('d/m/Y à H:i', 'Europe/Paris') }}</p>
                   {% if contact.updatedAt and contact.updatedAt != contact.createdAt %}
-                    <p class="text-muted small">Mis à jour le {{ contact.updatedAt|date('d/m/Y à H:i') }}</p>
+                    <p class="text-muted small">Mis à jour le {{ contact.updatedAt|date('d/m/Y à H:i', 'Europe/Paris') }}</p>
                   {% endif %}
                 </div>
               </div>

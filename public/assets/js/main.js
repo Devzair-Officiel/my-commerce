@@ -1,7 +1,6 @@
 import { displayCompare, initCompare } from "./modules/compare.js";
 import { displayWishlist, initWishlist } from "./modules/wishlist.js";
 import { initCart, displayCart, updateHeaderCart } from "./modules/cart.js";
-import { initCheckoutAddressInline } from "./pages/checkout/address.js";
 import { initSearch } from "./modules/search.js";
 import { initCookieConsent, reopenCookieConsent } from "./modules/cookie-consent.js";
 
@@ -22,7 +21,6 @@ window.addEventListener("load", async () => {
   initCart();
   initCompare();
   initWishlist();
-  initCheckoutAddressInline();
   initSearch();
   initCookieConsent();
 

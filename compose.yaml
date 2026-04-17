@@ -5,10 +5,13 @@ services:
     restart: unless-stopped
     env_file:
       - .env
+      - path: .env.dev.local
+        required: false
+      - path: .env.prod.local
+        required: false
     environment:
       SERVER_NAME: ${SERVER_NAME:-localhost}, php:80
       DEFAULT_URI: https://${SERVER_NAME:-localhost}:${HTTPS_PORT:-443}
-      DATABASE_URL: ${DATABASE_URL}
       # The two next lines can be removed after initial installation
       SYMFONY_VERSION: ${SYMFONY_VERSION:-}
       STABILITY: ${STABILITY:-stable}
@@ -34,8 +37,10 @@ services:
     restart: unless-stopped
     env_file:
       - .env
-    environment:
-      DATABASE_URL: ${DATABASE_URL}
+      - path: .env.dev.local
+        required: false
+      - path: .env.prod.local
+        required: false
     command: bin/console messenger:consume async failed --time-limit=3600 --memory-limit=128M -vv
     healthcheck:
       disable: true

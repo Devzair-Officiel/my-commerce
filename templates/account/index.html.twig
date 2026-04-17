@@ -130,7 +130,7 @@
 														<tr>
 															<td>{{ contact.subject }}</td>
 															<td>{{ contact.content|striptags|slice(0, 40) ~ '...' }}</td>
-															<td>{{ contact.createdAt|date('d/m/Y H:i') }}</td>
+															<td>{{ contact.createdAt|date('d/m/Y H:i', 'Europe/Paris') }}</td>
 															<td>
 																<a href="{{ path('app_account_message_detail', {'id': contact.id}) }}" class="btn btn-fill-out btn-sm">Détail</a>
 															</td>

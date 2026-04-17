@@ -31,7 +31,7 @@
 					<tbody>
 						{% for line in order.orderDetails %}
 							<tr>
-								<td>{{ line.createdAt|date('d/m/Y') }}</td>
+								<td>{{ line.createdAt|date('d/m/Y', 'Europe/Paris') }}</td>
 								<td>{{ line.productName }}</td>
 
 								<td class="price">
@@ -64,7 +64,7 @@
 								{% if shipment.carrier %}— {{ shipment.carrier.name }}{% endif %}
 							</span>
 							{% if shipment.shippedAt %}
-								<small class="text-muted">Expédié le {{ shipment.shippedAt|date('d/m/Y') }}</small>
+								<small class="text-muted">Expédié le {{ shipment.shippedAt|date('d/m/Y', 'Europe/Paris') }}</small>
 							{% endif %}
 						</div>
 						<div class="card-body">

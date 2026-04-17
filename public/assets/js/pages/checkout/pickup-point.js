@@ -21,6 +21,12 @@ export function initPickupPointSelector({ onPickupPointChange, onShippingModeCha
     const zipCode     = mainContent?.dataset?.colissimoZipcode ?? "";
     const city        = mainContent?.dataset?.colissimoCity ?? "";
 
+    // Pré-initialiser dès le chargement si un carrier point relais existe sur la page
+    const hasPickupCarrier = [...carrierOptions].some(l => l.dataset.hasPickup === "true");
+    if (hasPickupCarrier && token) {
+        initWidget();
+    }
+
     // Appliquer le mode initial selon le carrier coché
     // Aucun carrier sélectionné par défaut — on masque les deux sections
     const checkedRadio = document.querySelector(".carrier-radio:checked");
@@ -108,44 +114,74 @@ export function initPickupPointSelector({ onPickupPointChange, onShippingModeCha
         }
     };
 
+    const modalBodyEl = document.getElementById("colissimo-modal-body");
+    const loaderEl    = document.getElementById("colissimo-loader");
+
+    function hideLoader() {
+        if (loaderEl) {
+            loaderEl.style.transition = "opacity 0.3s";
+            loaderEl.style.opacity = "0";
+            setTimeout(() => loaderEl.remove(), 300);
+        }
+    }
+
+    // Démarre l'initialisation du widget dans le container hors-écran
+    function initWidget() {
+        if (widgetInitialized || !token) return;
+
+        waitForColissimoPlugin(5000).then((ready) => {
+            if (!ready) {
+                console.error("[PickupPoint] Plugin Colissimo non chargé.");
+                hideLoader();
+                return;
+            }
+
+            jQuery("#colissimo-widget-container").frameColissimoOpen({
+                URLColissimo:      "https://ws.colissimo.fr",
+                ceLang:            "FR",
+                ceCountryList:     "FR",
+                ceCountry:         "FR",
+                ceZipCode:         zipCode,
+                ceTown:            city,
+                token:             token,
+                callBackFrame:     "onColissimoPointSelected",
+                dyPreparationTime: "1",
+                dyWeight:          "500",
+                origin:            "WIDGET",
+                filterRelay:       "1",
+            });
+
+            widgetInitialized = true;
+
+            // Quand les données sont prêtes, masquer le loader (si la modale est déjà ouverte)
+            waitForWidgetReady().then(hideLoader);
+        });
+    }
+
+    // Déplace le widget du container hors-écran vers la modale
+    function moveWidgetToModal() {
+        const widgetEl = document.getElementById("colissimo-widget-container");
+        if (widgetEl && modalBodyEl && widgetEl.parentElement !== modalBodyEl) {
+            modalBodyEl.appendChild(widgetEl);
+        }
+    }
+
     function openModal() {
         if (!token) {
             console.error("[PickupPoint] Token Colissimo absent.");
             return;
         }
 
-        // Ouvrir la modale Bootstrap (réutilise l'instance si elle existe)
+        // Déplacer le widget (déjà pré-initialisé ou en cours) dans la modale
+        moveWidgetToModal();
+
         if (modalEl && window.bootstrap) {
             const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
             modal.show();
         }
 
-        // Initialiser le widget à la première ouverture
-        if (!widgetInitialized) {
-            waitForColissimoPlugin(5000).then((ready) => {
-                if (!ready) {
-                    console.error("[PickupPoint] Plugin Colissimo non chargé.");
-                    return;
-                }
-
-                jQuery("#colissimo-widget-container").frameColissimoOpen({
-                    URLColissimo:      "https://ws.colissimo.fr",
-                    ceLang:            "FR",
-                    ceCountryList:     "FR",
-                    ceCountry:         "FR",
-                    ceZipCode:         zipCode,
-                    ceTown:            city,
-                    token:             token,
-                    callBackFrame:     "onColissimoPointSelected",
-                    dyPreparationTime: "1",
-                    dyWeight:          "500",
-                    origin:            "WIDGET",
-                    filterRelay:       "1",
-                });
-
-                widgetInitialized = true;
-            });
-        }
+        // Si la pré-init n'a pas encore démarré (carrier sélectionné très rapidement)
+        initWidget();
     }
 
     function applyMode(isPickup) {
@@ -165,6 +201,30 @@ export function initPickupPointSelector({ onPickupPointChange, onShippingModeCha
         carrierOptions.forEach((item) => item.classList.remove("carrier-option--active"));
         activeLabel?.classList.add("carrier-option--active");
     }
+}
+
+// Attend la fin de la requête XHR GetPointsRetraitGET (données des points relais)
+// C'est la dernière requête significative du widget (~2.5s)
+function waitForWidgetReady(timeout = 10000) {
+    return new Promise((resolve) => {
+        const timer = setTimeout(resolve, timeout); // sécurité : retire le spinner au bout de 10s quoi qu'il arrive
+
+        const OriginalXHR = window.XMLHttpRequest;
+        const OriginalOpen = OriginalXHR.prototype.open;
+
+        OriginalXHR.prototype.open = function (method, url, ...args) {
+            if (typeof url === "string" && url.includes("GetPointsRetraitGET")) {
+                this.addEventListener("loadend", () => {
+                    // Restaurer la méthode open originale
+                    OriginalXHR.prototype.open = OriginalOpen;
+                    clearTimeout(timer);
+                    // Petit délai pour laisser le widget rendre les marqueurs
+                    setTimeout(resolve, 300);
+                }, { once: true });
+            }
+            return OriginalOpen.call(this, method, url, ...args);
+        };
+    });
 }
 
 function waitForColissimoPlugin(timeout = 5000) {

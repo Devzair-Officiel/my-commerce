@@ -124,7 +124,11 @@ class Product
     #[ORM\ManyToMany(targetEntity: Wishlist::class, mappedBy: 'products')]
     private Collection $wishlists;
 
-
+    /**
+     * @var Collection<int, Review>
+     */
+    #[ORM\OneToMany(mappedBy: 'product', targetEntity: Review::class, cascade: ['remove'], orphanRemoval: true)]
+    private Collection $reviews;
 
     public function __construct()
     {
@@ -132,6 +136,7 @@ class Product
         $this->medias = new ArrayCollection();
         $this->wishlists = new ArrayCollection();
         $this->relatedProducts = new ArrayCollection();
+        $this->reviews = new ArrayCollection();
     }
 
     // ---------------------------------------------------------------------
@@ -508,6 +513,34 @@ class Product
     public function __toString(): string
     {
         return (string) $this->title;
+    }
+
+    /** @return Collection<int, Review> */
+    public function getReviews(): Collection
+    {
+        return $this->reviews;
+    }
+
+    public function getAverageRating(): ?float
+    {
+        $approved = $this->reviews->filter(
+            fn(Review $r) => $r->getStatus() === \App\Enum\ReviewStatus::Approved
+        );
+
+        if ($approved->isEmpty()) {
+            return null;
+        }
+
+        $sum = array_sum($approved->map(fn(Review $r) => $r->getRating())->toArray());
+
+        return round($sum / $approved->count(), 1);
+    }
+
+    public function getApprovedReviewsCount(): int
+    {
+        return $this->reviews->filter(
+            fn(Review $r) => $r->getStatus() === \App\Enum\ReviewStatus::Approved
+        )->count();
     }
 
     /** @return Collection<int, self> */

@@ -83,10 +83,11 @@ document.addEventListener("DOMContentLoaded", () => {
         const checkedLabel = document.querySelector(".carrier-radio:checked")?.closest(".carrier-option");
         if (!checkedLabel) return;
 
-        const priceCents    = parseInt(checkedLabel.dataset.price ?? "0", 10);
-        const isFree        = priceCents === 0;
-        const subTotal      = cart.sub_total ?? 0;
-        const totalWithShip = subTotal + priceCents;
+        const priceCents      = parseInt(checkedLabel.dataset.price ?? "0", 10);
+        const subTotal        = cart.sub_total ?? 0;
+        const freeThreshold   = cart.free_shipping_threshold ?? 0;
+        const isFree          = priceCents === 0 || (freeThreshold > 0 && subTotal >= freeThreshold);
+        const totalWithShip   = subTotal + (isFree ? 0 : priceCents);
 
         const shippingLabel = document.getElementById("checkout-shipping-label");
         const shippingPrice = document.getElementById("checkout-shipping-price");

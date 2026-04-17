@@ -19,6 +19,7 @@ use Symfony\Component\HttpFoundation\Response;
 use App\Admin\Dashboard\DashboardMetricsProvider;
 use App\Entity\Blog;
 use App\Entity\Invoice;
+use App\Entity\Review;
 use App\Entity\Shipment;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Assets;
 use EasyCorp\Bundle\EasyAdminBundle\Config\MenuItem;
@@ -115,6 +116,9 @@ final class DashboardController extends AbstractDashboardController
         yield MenuItem::linkToCrud('Factures', 'fa fa-file-invoice', Invoice::class);
         yield MenuItem::linkToCrud('Modes de paiement', 'fa fa-credit-card', PaymentMethod::class);
         yield MenuItem::linkToCrud('Transporteurs', 'fa fa-truck', Carrier::class);
+
+        yield MenuItem::section('Avis');
+        yield MenuItem::linkToCrud('Avis clients', 'fa fa-star', Review::class);
 
         yield MenuItem::section('Utilisateurs');
         yield MenuItem::linkToCrud('Utilisateurs', 'fa fa-users', User::class);

@@ -52,11 +52,18 @@
 					{% endif %}
 				</div>
 
+				{% set rating = product_rating(product.id) %}
 				<div class="rating_wrap">
 					<div class="rating">
-						<div class="product_rate" style="width: 80%;"></div>
+						<div class="product_rate" style="width: {{ rating.count > 0 ? ((rating.average / 5) * 100)|round : 0 }}%;"></div>
 					</div>
-					<span class="rating_num">(21)</span>
+					<span class="rating_num">
+						{% if rating.count > 0 %}
+							{{ rating.average|number_format(1, ',') }}/5 ({{ rating.count }})
+						{% else %}
+							Aucun avis
+						{% endif %}
+					</span>
 				</div>
 			</div>
 		</a>

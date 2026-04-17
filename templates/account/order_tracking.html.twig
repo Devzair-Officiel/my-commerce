@@ -223,13 +223,13 @@
                                 {% if shipment.shippedAt %}
                                 <div>
                                     <div class="text-muted small">Expédié le</div>
-                                    <div class="fw-semibold">{{ shipment.shippedAt|date('d/m/Y') }}</div>
+                                    <div class="fw-semibold">{{ shipment.shippedAt|date('d/m/Y', 'Europe/Paris') }}</div>
                                 </div>
                                 {% endif %}
                                 {% if shipment.deliveredAt %}
                                 <div>
                                     <div class="text-muted small">Livré le</div>
-                                    <div class="fw-semibold text-success">{{ shipment.deliveredAt|date('d/m/Y') }}</div>
+                                    <div class="fw-semibold text-success">{{ shipment.deliveredAt|date('d/m/Y', 'Europe/Paris') }}</div>
                                 </div>
                                 {% endif %}
                                 {% if shipment.trackingUrl %}
@@ -335,7 +335,7 @@
 
                                         {% if status.occuredAt %}
                                         <div class="tracking-event__date">
-                                            {{ status.occuredAt|date('d/m/Y à H:i') }}
+                                            {{ status.occuredAt|date('d/m/Y à H:i', 'Europe/Paris') }}
                                         </div>
                                         {% endif %}
 

@@ -368,4 +368,5 @@ async function submitAddressForm({ root, apiBase, form, addressType = null, clos
     }
 }
 
-// Initialisé depuis main.js via window.addEventListener("load")
+// Auto-init sur la page checkout uniquement
+window.addEventListener("load", () => initCheckoutAddressInline());

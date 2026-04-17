@@ -14,7 +14,7 @@
         {% for order in orders %}
             <tr>
                     <td>{{ order.orderReference ?? '#' ~ order.id }}</td>
-                    <td>{{ order.createdAt|date('d/m/Y') }}</td>
+                    <td>{{ (order.paidAt ?? order.createdAt)|date('d/m/Y', 'Europe/Paris') }}</td>
                     <td>{{ order.paymentStatus.label() }}</td>
                     <td>{{ (order.orderTotalTtcCents / 100)|format_currency(order.currency) }}</td>
                     <td>

@@ -95,17 +95,14 @@
                                     {% endif %}
                                 </div>
 
-								{# <div class="rating_wrap">
-									{% set totalScoring = 0 %}
-									{% for opinion in opinions %}
-										{% set totalScoring = totalScoring + opinion.scoring %}
-									{% endfor %}
+								{% if averageRating is not null %}
+								<div class="rating_wrap">
 									<div class="rating">
-										<div class="product_rate" style="width: {{ opinions|length > 0 ? ((totalScoring / opinions|length) / 5) * 100 : 0 }}%;"></div>
-
+										<div class="product_rate" style="width: {{ ((averageRating / 5) * 100)|round }}%;"></div>
 									</div>
-									<span class="rating_num">({{ opinions|length }})</span>
-								</div> #}
+									<span class="rating_num">({{ product.approvedReviewsCount }} avis)</span>
+								</div>
+								{% endif %}
 								<div class="pr_desc m-3">
 									<p>{{ product.description|normalize_editor_html|raw}}
 									</p>
@@ -238,8 +235,8 @@
 								<div id="Additional-info" role="tabpanel" aria-labelledby="Additional-info-tab" class="tab-pane fade">
 									{{ product.additionalInfos|normalize_editor_html|raw }}
 								</div>
-								<div
-									id="Reviews" role="tabpanel" aria-labelledby="Reviews-tab" class="tab-pane fade">{# {% include "opinion/index.html.twig" %} #}
+								<div id="Reviews" role="tabpanel" aria-labelledby="Reviews-tab" class="tab-pane fade">
+									{% include 'product/_reviews.html.twig' %}
 								</div>
 							</div>
 						</div>
@@ -283,29 +280,27 @@ document.addEventListener('DOMContentLoaded', function () {
     const qtyInput = document.querySelector('input.qty');
     if (!qtyInput) return;
 
-    const max = qtyInput.dataset.max ? parseInt(qtyInput.dataset.max, 10) : null;
-    const min = 1;
-
-    document.querySelector('.plus')?.addEventListener('click', function () {
-        let val = parseInt(qtyInput.value, 10) || 1;
-        if (max !== null && val >= max) return;
-        qtyInput.value = val + 1;
-        syncCartLink(val + 1);
-    });
-
-    document.querySelector('.minus')?.addEventListener('click', function () {
-        let val = parseInt(qtyInput.value, 10) || 1;
-        if (val <= min) return;
-        qtyInput.value = val - 1;
-        syncCartLink(val - 1);
-    });
-
+    // Synchronise le lien "Ajouter au panier" à chaque changement de quantité
     function syncCartLink(qty) {
         const link = document.querySelector('.btn-addtocart');
         if (link) {
             link.href = '/cart/add/{{ product.id }}/' + qty;
         }
     }
+
+    // Le thème gère déjà +/- ; on écoute simplement les changements de valeur
+    qtyInput.addEventListener('change', function () {
+        syncCartLink(parseInt(this.value, 10) || 1);
+    });
+
+    // Délégation sur les clics +/- pour mettre à jour le lien après que le thème ait incrémenté
+    document.addEventListener('click', function (e) {
+        if (e.target.classList.contains('plus') || e.target.classList.contains('minus')) {
+            setTimeout(function () {
+                syncCartLink(parseInt(qtyInput.value, 10) || 1);
+            }, 0);
+        }
+    });
 });
 </script>
 {% endblock %}

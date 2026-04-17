@@ -43,8 +43,9 @@
 	header ?X-XSS-Protection "1; mode=block"
 	# HSTS : forcer HTTPS pour 1 an (activer uniquement en prod avec HTTPS valide)
 	header ?Strict-Transport-Security "max-age=31536000; includeSubDomains"
-	# CSP : autoriser Stripe, Google (reCAPTCHA, OAuth), CDN Bootstrap/fonts
-	header ?Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' js.stripe.com cdn.jsdelivr.net www.google.com www.gstatic.com; style-src 'self' 'unsafe-inline' cdn.jsdelivr.net fonts.googleapis.com; font-src 'self' fonts.gstatic.com cdn.jsdelivr.net; img-src 'self' data: https:; frame-src js.stripe.com www.google.com; connect-src 'self' api.stripe.com"
+	# CSP désactivé en dev — à configurer sur le serveur de production
+	# après audit des domaines tiers (Stripe, Colissimo/HERE Maps, Mapbox, Google, etc.)
+	# header ?Content-Security-Policy "..."
 
 	@phpRoute {
 		not path /.well-known/mercure*
