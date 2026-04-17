@@ -2,6 +2,9 @@
 
 namespace App\Enum;
 
+/**
+ * Enumération des types de transporteurs supportés par la boutique (manuel ou Colissimo avec API La Poste).
+ */
 enum CarrierType: string
 {
     case Manual    = 'manual';     // Suivi manuel, pas d'API

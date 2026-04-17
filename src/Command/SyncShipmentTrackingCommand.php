@@ -11,6 +11,10 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
+/**
+ * Commande planifiable qui interroge l'API Colissimo pour mettre à jour
+ * les statuts de suivi des expéditions en cours d'acheminement.
+ */
 #[AsCommand(
     name: 'app:sync-shipment-tracking',
     description: 'Synchronise les statuts de suivi des colis Colissimo en cours d\'acheminement.',

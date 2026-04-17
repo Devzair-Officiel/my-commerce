@@ -11,6 +11,10 @@ use Doctrine\ORM\Event\OnFlushEventArgs;
 use Doctrine\ORM\Event\PostFlushEventArgs;
 use Doctrine\ORM\Events;
 
+/**
+ * Invalide sélectivement le cache du storefront lorsque des entités clés
+ * (Setting, Page, Category) sont modifiées ou supprimées en back-office.
+ */
 #[AsDoctrineListener(event: Events::onFlush)]
 #[AsDoctrineListener(event: Events::postFlush)]
 final class StorefrontGlobalsCacheInvalidationListener

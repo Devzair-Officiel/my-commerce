@@ -15,6 +15,9 @@ use EasyCorp\Bundle\EasyAdminBundle\Field\IdField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextareaField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
 
+/**
+ * Contrôleur EasyAdmin pour la gestion CRUD des adresses de livraison et de facturation des clients.
+ */
 final class AddressCrudController extends AbstractCrudController
 {
     private const ADDRESS_TYPE_CHOICES = [

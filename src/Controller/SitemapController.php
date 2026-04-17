@@ -10,6 +10,9 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
+/**
+ * Contrôleur qui génère dynamiquement le sitemap XML du site (pages statiques, produits, catégories, articles de blog).
+ */
 final class SitemapController extends AbstractController
 {
     public function __construct(

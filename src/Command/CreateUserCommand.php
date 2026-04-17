@@ -12,6 +12,10 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
+/**
+ * Commande interactive pour créer un utilisateur en base de données avec un rôle prédéfini.
+ * Utilisée en ligne de commande pour initialiser des comptes administrateurs ou de test.
+ */
 #[AsCommand(
     name: 'app:create-user',
     description: 'Crée un utilisateur en base avec un rôle prédéfini.',

@@ -9,6 +9,9 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
+/**
+ * Contrôleur public pour l'affichage de la liste des articles de blog et de leur détail.
+ */
 final class BlogController extends AbstractController
 {
     public function __construct(private BlogRepository $blogRepo) {}

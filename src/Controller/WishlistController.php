@@ -9,6 +9,9 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
+/**
+ * Contrôleur public de la liste de souhaits : affichage, ajout et retrait de produits (utilisateur connecté requis).
+ */
 class WishlistController extends AbstractController
 {
     public function __construct(private readonly WishlistService $wishlistService) {}

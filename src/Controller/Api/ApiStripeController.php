@@ -17,6 +17,10 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
+/**
+ * API JSON pour la création d'un PaymentIntent Stripe lors du paiement d'une commande.
+ * Accessible uniquement aux utilisateurs connectés (ROLE_USER).
+ */
 #[IsGranted('ROLE_USER')]
 final class ApiStripeController
 {

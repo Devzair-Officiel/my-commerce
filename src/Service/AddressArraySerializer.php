@@ -4,6 +4,9 @@ namespace App\Service;
 
 use App\Entity\Address;
 
+/**
+ * Convertit une entité Address (ou une collection) en tableau scalaire pour les réponses JSON de l'API.
+ */
 final class AddressArraySerializer
 {
     public function one(Address $a): array

@@ -16,6 +16,9 @@ use EasyCorp\Bundle\EasyAdminBundle\Field\MoneyField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextEditorField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
 
+/**
+ * Contrôleur EasyAdmin pour la gestion CRUD des transporteurs (domicile, point relais, manuel).
+ */
 final class CarrierCrudController extends AbstractCrudController
 {
     public static function getEntityFqcn(): string

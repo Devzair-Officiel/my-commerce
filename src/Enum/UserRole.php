@@ -2,6 +2,9 @@
 
 namespace App\Enum;
 
+/**
+ * Enumération des rôles utilisateur de la boutique (client, administrateur, super administrateur) avec leur hiérarchie.
+ */
 enum UserRole: string
 {
     case User       = 'ROLE_USER';

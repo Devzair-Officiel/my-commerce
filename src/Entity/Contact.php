@@ -9,6 +9,9 @@ use App\Repository\ContactRepository;
 use Symfony\Component\Validator\Constraints as Assert;
 
 
+/**
+ * Entité représentant un message reçu via le formulaire de contact du site.
+ */
 #[ORM\Entity(repositoryClass: ContactRepository::class)]
 #[ORM\HasLifecycleCallbacks]
 class Contact

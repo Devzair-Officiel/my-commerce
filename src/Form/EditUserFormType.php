@@ -12,6 +12,9 @@ use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\Extension\Core\Type\EmailType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 
+/**
+ * Formulaire de modification des informations personnelles d'un compte client (civilité, nom, prénom, e-mail, téléphone).
+ */
 class EditUserFormType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options): void

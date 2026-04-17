@@ -11,6 +11,9 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Symfony\Component\Validator\Constraints as Assert;
 
+/**
+ * Entité représentant un transporteur (Colissimo, manuel, etc.) avec ses tarifs et son type de livraison.
+ */
 #[ORM\Entity(repositoryClass: CarrierRepository::class)]
 #[ORM\HasLifecycleCallbacks]
 class Carrier

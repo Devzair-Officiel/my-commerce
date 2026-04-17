@@ -17,6 +17,9 @@ use EasyCorp\Bundle\EasyAdminBundle\Field\TextEditorField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
 
+/**
+ * Contrôleur EasyAdmin pour la consultation des messages reçus via le formulaire de contact.
+ */
 class ContactCrudController extends AbstractCrudController
 {
     public static function getEntityFqcn(): string

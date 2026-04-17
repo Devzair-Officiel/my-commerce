@@ -2,6 +2,9 @@
 
 namespace App\Enum;
 
+/**
+ * Enumération des statuts de traitement (fulfillment) d'une commande (brouillon, préparation, expédiée, livrée, annulée).
+ */
 enum FulfillmentStatus: string
 {
     case Draft = 'draft';

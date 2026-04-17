@@ -17,6 +17,9 @@ use EasyCorp\Bundle\EasyAdminBundle\Field\SlugField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextEditorField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
 
+/**
+ * Contrôleur EasyAdmin pour la gestion CRUD des catégories de produits, avec upload d'image et champs SEO.
+ */
 final class CategoryCrudController extends AbstractCrudController
 {
     private const UPLOAD_DIR = 'public/assets/images/categories';

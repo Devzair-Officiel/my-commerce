@@ -13,6 +13,9 @@ use Symfony\Component\RateLimiter\RateLimiterFactory;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\Routing\Attribute\Route;
 
+/**
+ * Contrôleur public pour l'affichage des produits (fiche produit par slug) et la navigation par catégorie.
+ */
 final class ProductController extends AbstractController
 {
 

@@ -8,6 +8,10 @@ use App\Trait\DateTrait;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
+/**
+ * Entité représentant une facture générée automatiquement lors du paiement d'une commande.
+ * Contient le numéro séquentiel, le montant TTC, la TVA et le statut (brouillon, émise, annulée).
+ */
 #[ORM\Entity(repositoryClass: InvoiceRepository::class)]
 #[ORM\HasLifecycleCallbacks]
 class Invoice

@@ -10,6 +10,9 @@ use Symfony\Component\Mailer\MailerInterface;
 use SymfonyCasts\Bundle\VerifyEmail\Exception\VerifyEmailExceptionInterface;
 use SymfonyCasts\Bundle\VerifyEmail\VerifyEmailHelperInterface;
 
+/**
+ * Service responsable de l'envoi et de la vérification du lien de confirmation d'adresse e-mail après inscription.
+ */
 class EmailVerifier
 {
     public function __construct(

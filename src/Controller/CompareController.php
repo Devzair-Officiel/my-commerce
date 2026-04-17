@@ -7,6 +7,9 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
+/**
+ * Contrôleur public pour la comparaison de produits : affichage, ajout et retrait de la liste de comparaison.
+ */
 class CompareController extends AbstractController
 {
     public function __construct(private CompareService $compareService)

@@ -7,6 +7,9 @@ use App\Trait\SeoFieldsTrait;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
+/**
+ * Entité représentant une page statique du site (mentions légales, CGV, politique de confidentialité, etc.).
+ */
 #[ORM\Entity(repositoryClass: PageRepository::class)]
 class Page
 {

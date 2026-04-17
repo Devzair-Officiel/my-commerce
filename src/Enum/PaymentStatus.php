@@ -2,6 +2,9 @@
 
 namespace App\Enum;
 
+/**
+ * Enumération des statuts de paiement d'une commande (en attente, payé, remboursé, échec).
+ */
 enum PaymentStatus: string
 {
     case Pending = 'pending';

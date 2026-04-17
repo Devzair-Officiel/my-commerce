@@ -5,6 +5,9 @@ namespace App\Dto;
 use Symfony\Component\Serializer\Attribute\SerializedName;
 use Symfony\Component\Validator\Constraints as Assert;
 
+/**
+ * DTO de validation pour la création ou la modification d'une adresse via l'API.
+ */
 final class AddressInput
 {
     #[Assert\NotBlank]

@@ -27,6 +27,10 @@ use EasyCorp\Bundle\EasyAdminBundle\Attribute\AdminDashboard;
 use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGenerator;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractDashboardController;
 
+/**
+ * Point d'entrée principal du back-office EasyAdmin, affiche le tableau de bord
+ * avec les métriques clés (commandes, chiffre d'affaires, clients) et configure le menu de navigation.
+ */
 #[AdminDashboard(routePath: '/admin', routeName: 'admin')]
 final class DashboardController extends AbstractDashboardController
 {

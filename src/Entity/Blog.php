@@ -10,6 +10,9 @@ use Doctrine\ORM\Mapping as ORM;
 use App\Repository\BlogRepository;
 use App\Trait\SeoFieldsTrait;
 
+/**
+ * Entité représentant un article de blog, avec son contenu éditorial, ses médias et ses champs SEO.
+ */
 #[ORM\Entity(repositoryClass: BlogRepository::class)]
 #[ORM\HasLifecycleCallbacks]
 class Blog

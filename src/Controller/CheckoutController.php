@@ -22,6 +22,10 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Routing\Attribute\Route;
 
+/**
+ * Contrôleur du tunnel de commande : récapitulatif, initialisation du paiement Stripe
+ * et création de la commande après confirmation du paiement.
+ */
 class CheckoutController extends AbstractController
 {
     public function __construct(

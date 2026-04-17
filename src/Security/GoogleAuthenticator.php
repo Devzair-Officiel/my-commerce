@@ -18,6 +18,9 @@ use Symfony\Component\Security\Http\Authenticator\Passport\Badge\UserBadge;
 use Symfony\Component\Security\Http\Authenticator\Passport\Passport;
 use Symfony\Component\Security\Http\Authenticator\Passport\SelfValidatingPassport;
 
+/**
+ * Authentificateur OAuth2 Google : crée ou retrouve un compte client à partir des informations Google et connecte l'utilisateur.
+ */
 final class GoogleAuthenticator extends OAuth2Authenticator
 {
     public function __construct(

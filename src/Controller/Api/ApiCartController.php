@@ -9,6 +9,9 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
+/**
+ * API JSON pour la mise à jour du transporteur sélectionné dans le panier de l'utilisateur connecté.
+ */
 #[IsGranted('ROLE_USER')]
 class ApiCartController extends AbstractController
 {

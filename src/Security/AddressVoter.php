@@ -8,6 +8,9 @@ use Symfony\Component\Security\Core\Authorization\Voter\Vote;
 use Symfony\Component\Security\Core\Authorization\Voter\Voter;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 
+/**
+ * Voter Symfony qui autorise la modification ou la suppression d'une adresse uniquement par son propriétaire.
+ */
 final class AddressVoter extends Voter
 {
     public const EDIT = 'ADDRESS_EDIT';

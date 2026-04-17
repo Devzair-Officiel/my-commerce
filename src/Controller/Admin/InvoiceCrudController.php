@@ -23,6 +23,9 @@ use EasyCorp\Bundle\EasyAdminBundle\Filter\ChoiceFilter;
 use EasyCorp\Bundle\EasyAdminBundle\Filter\DateTimeFilter;
 use Symfony\Component\HttpFoundation\Response;
 
+/**
+ * Contrôleur EasyAdmin pour la consultation et le téléchargement PDF des factures générées automatiquement.
+ */
 final class InvoiceCrudController extends AbstractCrudController
 {
     public function __construct(

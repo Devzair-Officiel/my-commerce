@@ -10,6 +10,9 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
+/**
+ * Contrôleur de la page d'accueil : affiche les sliders et les sélections de produits mis en avant.
+ */
 final class HomeController extends AbstractController
 {
     public function __construct(private ProductRepository $product) 

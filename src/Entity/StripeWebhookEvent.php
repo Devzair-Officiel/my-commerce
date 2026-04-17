@@ -5,6 +5,9 @@ namespace App\Entity;
 use App\Repository\StripeWebhookEventRepository;
 use Doctrine\ORM\Mapping as ORM;
 
+/**
+ * Entité d'idempotence pour les webhooks Stripe : enregistre chaque événement reçu afin d'éviter les doublons de traitement.
+ */
 #[ORM\Entity(repositoryClass: StripeWebhookEventRepository::class)]
 #[ORM\Table(name: 'stripe_webhook_event')]
 #[ORM\UniqueConstraint(name: 'uniq_stripe_event_id', columns: ['stripe_event_id'])]

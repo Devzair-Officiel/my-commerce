@@ -10,6 +10,10 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
+/**
+ * API JSON pour la sélection d'un point relais Colissimo lors du tunnel de commande.
+ * Enregistre le point relais choisi dans la session panier de l'utilisateur connecté.
+ */
 #[IsGranted('ROLE_USER')]
 final class ApiPickupPointController
 {

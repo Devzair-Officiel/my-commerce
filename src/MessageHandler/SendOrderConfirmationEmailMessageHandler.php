@@ -15,6 +15,9 @@ use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 use Symfony\Component\Mime\Address;
 use Symfony\Component\Mime\Part\DataPart;
 
+/**
+ * Gestionnaire Messenger qui émet la facture et envoie l'e-mail de confirmation de commande avec le PDF en pièce jointe.
+ */
 #[AsMessageHandler]
 final readonly class SendOrderConfirmationEmailMessageHandler
 {

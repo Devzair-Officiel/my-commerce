@@ -11,6 +11,9 @@ use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 use Symfony\Component\Mime\Address;
 
+/**
+ * Gestionnaire Messenger qui envoie l'e-mail de confirmation de livraison au client.
+ */
 #[AsMessageHandler]
 final readonly class SendDeliveredEmailMessageHandler
 {

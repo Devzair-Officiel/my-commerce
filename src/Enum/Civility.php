@@ -2,6 +2,9 @@
 
 namespace App\Enum;
 
+/**
+ * Enumération des civilités utilisables dans les formulaires client (M., Mme, Mlle).
+ */
 enum Civility: string
 {
     case MR = 'Mr';

@@ -2,6 +2,9 @@
 
 namespace App\Enum;
 
+/**
+ * Enumération des statuts d'une facture (brouillon, émise, annulée).
+ */
 enum InvoiceStatus: string
 {
     case Draft    = 'draft';

@@ -8,6 +8,9 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 
+/**
+ * Entité représentant une ligne de commande : produit, quantité, prix unitaire et montant total.
+ */
 #[ORM\Entity(repositoryClass: OrderDetailsRepository::class)]
 #[ORM\HasLifecycleCallbacks]
 class OrderDetails

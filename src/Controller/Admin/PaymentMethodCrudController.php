@@ -15,6 +15,9 @@ use EasyCorp\Bundle\EasyAdminBundle\Field\ImageField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextEditorField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
 
+/**
+ * Contrôleur EasyAdmin pour la gestion CRUD des moyens de paiement affichés sur le site (Stripe, virement, etc.).
+ */
 class PaymentMethodCrudController extends AbstractCrudController
 {
     private const UPLOAD_DIR = 'public/assets/images/payment_methods_logos';

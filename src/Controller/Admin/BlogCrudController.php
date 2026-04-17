@@ -24,6 +24,9 @@ use EasyCorp\Bundle\EasyAdminBundle\Field\CollectionField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextEditorField;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
 
+/**
+ * Contrôleur EasyAdmin pour la gestion CRUD des articles de blog, incluant l'upload et la suppression des médias associés.
+ */
 final class BlogCrudController extends AbstractCrudController
 {
     public function __construct(private readonly MediaFileManager $files) {}

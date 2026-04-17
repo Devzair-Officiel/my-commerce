@@ -11,6 +11,9 @@ use App\Repository\ProductRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\SecurityBundle\Security;
 
+/**
+ * Gère la liste de souhaits d'un client connecté : création, ajout, retrait de produits et récupération des détails.
+ */
 class WishlistService
 {
     public function __construct(

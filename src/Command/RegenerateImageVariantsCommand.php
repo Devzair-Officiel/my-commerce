@@ -11,6 +11,10 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
+/**
+ * Commande de maintenance qui régénère les variantes d'images (-thumb et -medium)
+ * pour tous les médias uploadés (produits, blogs, catégories, sliders, etc.).
+ */
 #[AsCommand(
     name: 'app:regenerate-image-variants',
     description: 'Régénère les variantes -thumb et -medium pour toutes les images uploadées.',

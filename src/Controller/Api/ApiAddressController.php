@@ -18,6 +18,10 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
+/**
+ * API JSON pour la gestion des adresses d'un utilisateur connecté (création, modification, suppression).
+ * Protège les opérations avec un voter dédié et une validation CSRF.
+ */
 #[Route('/api/address')]
 class ApiAddressController extends AbstractController
 {

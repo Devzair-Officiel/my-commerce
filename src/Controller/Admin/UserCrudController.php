@@ -31,6 +31,10 @@ use Symfony\Component\Validator\Constraints\Length;
 use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
+/**
+ * Contrôleur EasyAdmin pour la gestion des comptes utilisateurs (clients et administrateurs).
+ * Accessible uniquement aux super administrateurs.
+ */
 #[IsGranted('ROLE_SUPER_ADMIN')]
 final class UserCrudController extends AbstractCrudController
 {

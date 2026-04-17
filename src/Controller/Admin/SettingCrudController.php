@@ -20,6 +20,10 @@ use EasyCorp\Bundle\EasyAdminBundle\Field\UrlField;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
+/**
+ * Contrôleur EasyAdmin pour la gestion des paramètres globaux du site (nom, logo, contact, réseaux sociaux).
+ * Accessible uniquement aux super administrateurs.
+ */
 #[IsGranted('ROLE_SUPER_ADMIN')]
 final class SettingCrudController extends AbstractCrudController
 {

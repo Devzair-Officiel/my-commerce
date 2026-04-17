@@ -8,6 +8,9 @@ use App\Entity\User;
 use App\Enum\Civility;
 use Symfony\Component\Validator\Constraints as Assert;
 
+/**
+ * DTO de validation pour la modification des informations personnelles d'un compte utilisateur.
+ */
 final class EditUserInput
 {
     #[Assert\NotBlank]

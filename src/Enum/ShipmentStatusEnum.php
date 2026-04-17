@@ -2,6 +2,9 @@
 
 namespace App\Enum;
 
+/**
+ * Enumération normalisée des étapes de suivi d'une expédition (créé, pris en charge, en transit, en livraison, livré, exception).
+ */
 enum ShipmentStatusEnum: string
 {
     case CREATED = 'Création du colis';

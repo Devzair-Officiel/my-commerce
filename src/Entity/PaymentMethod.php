@@ -12,6 +12,9 @@ use Doctrine\Common\Collections\Collection;
 use Symfony\Component\Validator\Constraints as Assert;
 use DH\Auditor\Provider\Doctrine\Auditing\Annotation\Auditable;
 
+/**
+ * Entité représentant un moyen de paiement affiché sur le site (Stripe, virement, etc.) avec son logo et sa configuration.
+ */
 #[ORM\Entity(repositoryClass: PaymentMethodRepository::class)]
 class PaymentMethod
 {

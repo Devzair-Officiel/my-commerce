@@ -14,6 +14,9 @@ use EasyCorp\Bundle\EasyAdminBundle\Field\SlugField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextareaField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
 
+/**
+ * Contrôleur EasyAdmin pour la gestion CRUD des pages statiques du site (mentions légales, CGV, etc.).
+ */
 final class PageCrudController extends AbstractCrudController
 {
     public static function getEntityFqcn(): string

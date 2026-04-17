@@ -12,6 +12,9 @@ use EasyCorp\Bundle\EasyAdminBundle\Field\TextEditorField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\AssociationField;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
 
+/**
+ * Contrôleur EasyAdmin pour la gestion CRUD des médias (images) associés aux produits et catégories.
+ */
 class MediaCrudController extends AbstractCrudController
 {
     public static function getEntityFqcn(): string

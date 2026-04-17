@@ -26,6 +26,9 @@ use EasyCorp\Bundle\EasyAdminBundle\Field\TextEditorField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\AssociationField;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
 
+/**
+ * Contrôleur EasyAdmin pour la gestion CRUD des produits (miels), incluant les médias, le stock, le prix et les champs SEO.
+ */
 final class ProductCrudController extends AbstractCrudController
 {
     public function __construct(private readonly MediaFileManager $files) {}

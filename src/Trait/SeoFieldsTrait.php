@@ -5,6 +5,9 @@ namespace App\Trait;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 
+/**
+ * Trait ajoutant les champs SEO (meta title, meta description, noindex) aux entités indexables du catalogue.
+ */
 trait SeoFieldsTrait
 {
     #[ORM\Column(length: 70, nullable: true)]

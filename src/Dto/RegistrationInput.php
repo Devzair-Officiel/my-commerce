@@ -9,6 +9,9 @@ use App\Enum\Civility;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Validator\Constraints as Assert;
 
+/**
+ * DTO de validation pour le formulaire d'inscription d'un nouveau client.
+ */
 #[UniqueEntity(
     fields: ['email'],
     entityClass: User::class,

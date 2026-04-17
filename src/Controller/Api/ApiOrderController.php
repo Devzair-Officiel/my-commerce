@@ -13,6 +13,9 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
+/**
+ * API JSON pour la mise à jour partielle d'une commande (adresse, transporteur) par l'utilisateur connecté.
+ */
 final class ApiOrderController extends AbstractController
 {
     #[Route('/api/order/{id<\d+>}', name: 'app_api_order_update', methods: ['PATCH'])]

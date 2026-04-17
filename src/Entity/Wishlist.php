@@ -9,6 +9,9 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
+/**
+ * Entité représentant la liste de souhaits d'un client, contenant les produits sauvegardés pour plus tard.
+ */
 #[ORM\Entity(repositoryClass: WishlistRepository::class)]
 class Wishlist
 {

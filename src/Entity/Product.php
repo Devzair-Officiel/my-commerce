@@ -12,6 +12,9 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
+/**
+ * Entité centrale du catalogue : produit de miel avec prix, stock, catégories, médias et champs SEO.
+ */
 #[ORM\HasLifecycleCallbacks]
 #[ORM\Entity(repositoryClass: ProductRepository::class)]
 #[Assert\Callback('validatePricing')]

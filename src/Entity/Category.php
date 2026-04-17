@@ -14,6 +14,9 @@ use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
 
+/**
+ * Entité représentant une catégorie de produits, avec image, description SEO et option d'affichage en méga-menu.
+ */
 #[ORM\HasLifecycleCallbacks]
 #[ORM\Entity(repositoryClass: CategoryRepository::class)]
 #[Assert\Callback('validateMegaRequiresProducts')]

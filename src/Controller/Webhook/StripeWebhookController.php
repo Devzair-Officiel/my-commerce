@@ -25,6 +25,10 @@ use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
+/**
+ * Contrôleur de webhook Stripe : réceptionne les événements de paiement,
+ * met à jour les statuts de commande et déclenche les actions post-paiement (stock, facture, e-mails).
+ */
 final class StripeWebhookController extends AbstractController
 {
     public function __construct(

@@ -16,6 +16,9 @@ use EasyCorp\Bundle\EasyAdminBundle\Field\TextEditorField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\UrlField;
 
+/**
+ * Contrôleur EasyAdmin pour la gestion CRUD des sliders affichés sur la page d'accueil.
+ */
 final class SlidersCrudController extends AbstractCrudController
 {
     public static function getEntityFqcn(): string

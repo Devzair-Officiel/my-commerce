@@ -13,6 +13,9 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\Collections\ArrayCollection;
 use Symfony\Component\Validator\Constraints as Assert;
 
+/**
+ * Entité principale d'une commande client : articles, adresse, transporteur, statuts de paiement et d'expédition.
+ */
 #[ORM\Entity(repositoryClass: OrderRepository::class)]
 #[ORM\Table(name: '`order`')]
 #[ORM\HasLifecycleCallbacks]

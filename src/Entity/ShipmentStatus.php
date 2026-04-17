@@ -5,6 +5,9 @@ namespace App\Entity;
 use App\Repository\ShipmentStatusRepository;
 use Doctrine\ORM\Mapping as ORM;
 
+/**
+ * Entité représentant un événement de suivi d'une expédition (code statut transporteur, libellé, date).
+ */
 #[ORM\Entity(repositoryClass: ShipmentStatusRepository::class)]
 class ShipmentStatus
 {

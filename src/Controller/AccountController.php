@@ -24,6 +24,10 @@ use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
+/**
+ * Gère l'espace client : profil, historique des commandes, adresses et messages de contact.
+ * Toutes les routes sont protégées par ROLE_USER.
+ */
 class AccountController extends AbstractController
 {
     #[Route('/account', name: 'app_account', methods: ['GET', 'POST'])]

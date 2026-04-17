@@ -7,6 +7,9 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
+/**
+ * Entité représentant un slide du carrousel de la page d'accueil (titre, image, bouton d'appel à l'action).
+ */
 #[ORM\Entity(repositoryClass: SlidersRepository::class)]
 class Sliders
 {

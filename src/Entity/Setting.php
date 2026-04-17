@@ -6,6 +6,10 @@ use App\Entity\Media;
 use Doctrine\ORM\Mapping as ORM;
 use App\Repository\SettingRepository;
 
+/**
+ * Entité de configuration globale du site (nom, description, contact, réseaux sociaux, logo, TVA, etc.).
+ * Il n'existe qu'un seul enregistrement en base.
+ */
 #[ORM\Entity(repositoryClass: SettingRepository::class)]
 class Setting
 {

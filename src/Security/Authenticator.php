@@ -15,6 +15,9 @@ use Symfony\Component\Security\Http\Authenticator\Passport\Credentials\PasswordC
 use Symfony\Component\Security\Http\Authenticator\Passport\Passport;
 use Symfony\Component\Security\Http\Util\TargetPathTrait;
 
+/**
+ * Authentificateur par formulaire de connexion (e-mail + mot de passe) avec protection CSRF et option "Se souvenir de moi".
+ */
 final class Authenticator extends AbstractLoginFormAuthenticator
 {
     use TargetPathTrait;

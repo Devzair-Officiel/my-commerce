@@ -7,6 +7,10 @@ use App\Entity\Product;
 use Doctrine\DBAL\LockMode;
 use Doctrine\ORM\EntityManagerInterface;
 
+/**
+ * Décrémente le stock des produits d'une commande payée de façon atomique (verrou pessimiste Doctrine).
+ * Ne démarre pas de transaction et ne fait pas de flush : l'appelant en est responsable.
+ */
 final class StockAllocator
 {
     public function __construct(private readonly EntityManagerInterface $em) {}

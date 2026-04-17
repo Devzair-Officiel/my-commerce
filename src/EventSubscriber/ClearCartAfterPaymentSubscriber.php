@@ -12,6 +12,10 @@ use Symfony\Component\HttpKernel\KernelEvents;
 use Symfony\Component\HttpKernel\Event\RequestEvent;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
+/**
+ * Vide automatiquement le panier de session après qu'un paiement a été confirmé,
+ * afin d'éviter de re-présenter un panier déjà commandé lors de la prochaine requête.
+ */
 final class ClearCartAfterPaymentSubscriber implements EventSubscriberInterface
 {
     public function __construct(

@@ -7,6 +7,9 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
+/**
+ * Contrôleur d'initiation de la connexion OAuth2 via Google (redirection vers Google et point de retour).
+ */
 final class GoogleConnectController extends AbstractController
 {
     #[Route('/connect/google', name: 'connect_google_start', methods: ['GET'])]

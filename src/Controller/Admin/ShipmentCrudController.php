@@ -23,6 +23,10 @@ use EasyCorp\Bundle\EasyAdminBundle\Field\UrlField;
 use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGenerator;
 use Symfony\Component\HttpFoundation\Response;
 
+/**
+ * Contrôleur EasyAdmin pour la gestion des expéditions : consultation des étiquettes,
+ * rafraîchissement manuel du suivi Colissimo et affichage des statuts colorés.
+ */
 final class ShipmentCrudController extends AbstractCrudController
 {
     // Codes Colissimo → classe Bootstrap badge

@@ -33,6 +33,10 @@ use EasyCorp\Bundle\EasyAdminBundle\Filter\ChoiceFilter;
 use EasyCorp\Bundle\EasyAdminBundle\Filter\DateTimeFilter;
 use EasyCorp\Bundle\EasyAdminBundle\Filter\EntityFilter;
 
+/**
+ * Contrôleur EasyAdmin pour la gestion des commandes : consultation, changement de statut,
+ * création d'étiquette d'expédition Colissimo et déclenchement de remboursements Stripe.
+ */
 final class OrderCrudController extends AbstractCrudController
 {
     public function __construct(

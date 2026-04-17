@@ -13,6 +13,10 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Contracts\Cache\ItemInterface;
 use Symfony\Contracts\Cache\CacheInterface;
 
+/**
+ * Calcule et met en cache les métriques du tableau de bord administrateur
+ * (commandes, chiffre d'affaires, nouveaux clients, graphiques sur 14 jours).
+ */
 final class DashboardMetricsProvider
 {
     public function __construct(

@@ -4,6 +4,9 @@ namespace App\Trait;
 
 use Doctrine\ORM\Mapping as ORM;
 
+/**
+ * Trait ajoutant les champs createdAt et updatedAt à une entité Doctrine, mis à jour automatiquement via les callbacks de cycle de vie.
+ */
 #[ORM\HasLifecycleCallbacks]
 trait DateTrait
 {

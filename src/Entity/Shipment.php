@@ -7,6 +7,9 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
+/**
+ * Entité représentant une expédition liée à une commande : transporteur, numéro de suivi et historique des statuts.
+ */
 #[ORM\Entity(repositoryClass: ShipmentRepository::class)]
 class Shipment
 {

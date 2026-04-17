@@ -6,6 +6,9 @@ use App\Repository\ProductRepository;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 
+/**
+ * Gère la liste de comparaison de produits stockée en session (ajout, retrait, récupération des détails).
+ */
 final class CompareService
 {
     public function __construct(

@@ -8,6 +8,9 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
+/**
+ * Contrôleur public pour l'affichage et la gestion du panier (ajout, retrait, mise à jour de quantité).
+ */
 class CartController extends AbstractController
 {
     public function __construct(private CartService $cartService)

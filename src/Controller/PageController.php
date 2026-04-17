@@ -10,6 +10,9 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
+/**
+ * Contrôleur public pour l'affichage des pages statiques du site (mentions légales, CGV, etc.) identifiées par leur slug.
+ */
 final class PageController extends AbstractController
 {
     #[Route('/page/{slug}', name: 'app_page')]

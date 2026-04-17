@@ -40,21 +40,16 @@
 									</div>
                                     
                                     <div class="login_footer form-group mb-3 d-flex justify-content-between align-items-center">
-                                        <div></div>
-                                        <a href="{{ path('app_forgot_password_request') }}">Mot de passe oublié ?</a>
-                                    </div>
-
-									{# <div class="login_footer form-group mb-3">
                                         <div class="chek-form">
                                             <div class="custome-checkbox">
-                                                <input type="checkbox" name="checkbox" id="exampleCheckbox1" value="" class="form-check-input">
-                                                <label for="exampleCheckbox1" class="form-check-label">
-                                                    <span>Remember me</span>
+                                                <input type="checkbox" name="_remember_me" id="rememberMe" value="on" style="display:none">
+                                                <label for="rememberMe" class="form-check-label">
+                                                    <span>Se souvenir de moi</span>
                                                 </label>
                                             </div>
                                         </div>
-                                        <a href="#">Forgot password?</a>
-                                    </div> #}
+                                        <a href="{{ path('app_forgot_password_request') }}">Mot de passe oublié ?</a>
+                                    </div>
 
 									<input type="hidden" name="_csrf_token" data-controller="csrf-protection" value="{{ csrf_token('authenticate') }}">
 

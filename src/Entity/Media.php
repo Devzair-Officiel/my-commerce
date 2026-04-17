@@ -8,6 +8,9 @@ use Doctrine\ORM\Mapping as ORM;
 use App\Repository\MediaRepository;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 
+/**
+ * Entité représentant un fichier média (image) associé à un produit ou une catégorie.
+ */
 #[ORM\Entity(repositoryClass: MediaRepository::class)]
 class Media
 {
