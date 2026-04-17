@@ -3,7 +3,7 @@
 		<div class="product_img">
 			<a href="/produits/{{product.slug}}">
 				<img
-					alt="{{product.medias[0].alt}}"
+					alt="{{product.medias[0].alt ?: product.title}}"
 					src="/assets/images/products/{{product.medias[0].thumbnailFilename}}"
 					width="600" height="600"
 					loading="lazy"

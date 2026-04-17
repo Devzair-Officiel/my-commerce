@@ -33,7 +33,7 @@
 				</div>
 				<div class="col-lg-2 col-md-3 col-sm-6 text-center">
 					<div class="widget">
-						<h6 class="widget_title">Liens Utiles</h6>
+						<h3 class="widget_title">Liens Utiles</h6>
 						<ul class="widget_links">
 							{% for page in globalFooterPages %}
 							<li>
@@ -46,7 +46,7 @@
 				</div>
 				<div class="col-lg-2 col-md-3 col-sm-6 text-center">
 					<div class="widget">
-						<h6 class="widget_title">Categories</h6>
+						<h3 class="widget_title">Categories</h6>
 						<ul class="widget_links">
 							{% for category in globalMegaCategories %}
 								<li class="">
@@ -60,7 +60,7 @@
 				</div>
 				<div class="col-lg-2 col-md-6 col-sm-6 text-center">
 					<div class="widget">
-						<h6 class="widget_title">Mon compte</h6>
+						<h3 class="widget_title">Mon compte</h6>
 						<ul class="widget_links">
 							<li>
 								<a href="{{ path('app_account') }}">Dashboard</a>
@@ -76,7 +76,7 @@
 				</div>
 				<div class="col-lg-3 col-md-4 col-sm-6 text-center">
 					<div class="widget">
-						<h6 class="widget_title">Contact Info</h6>
+						<h3 class="widget_title">Contact Info</h6>
 						<ul class="contact_info contact_info_light">
 							<li>
 								<svg class="icon" aria-hidden="true"><use href="#icon-location"></use></svg>
@@ -100,9 +100,9 @@
 		<div class="container">
 			<div class="row mb-2">
 				<div class="col-12 text-center">
-					<a href="{{ path('app_page', {slug: 'mentions-legales'}) }}" class="text-muted small me-3">Mentions légales</a>
-					<a href="{{ path('app_page', {slug: 'politique-de-confidentialite'}) }}" class="text-muted small me-3">Politique de confidentialité</a>
-					<a href="{{ path('app_page', {slug: 'cgv'}) }}" class="text-muted small">Conditions générales de vente</a>
+					<a href="{{ path('app_page', {slug: 'mentions-legales'}) }}" class="footer-legal-link me-3">Mentions légales</a>
+					<a href="{{ path('app_page', {slug: 'politique-de-confidentialite'}) }}" class="footer-legal-link me-3">Politique de confidentialité</a>
+					<a href="{{ path('app_page', {slug: 'cgv'}) }}" class="footer-legal-link">Conditions générales de vente</a>
 				</div>
 			</div>
 			<div class="row">

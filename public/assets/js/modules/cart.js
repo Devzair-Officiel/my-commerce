@@ -192,7 +192,10 @@ export async function updateHeaderCart(cart = null) {
         }
     }
 
-    setText(".cart_count", String(cart?.cart_count ?? 0));
+    const count = cart?.cart_count ?? 0;
+    setText(".cart_count", String(count));
+    const trigger = document.querySelector(".cart_trigger");
+    if (trigger) trigger.setAttribute("aria-label", count > 0 ? `Panier (${count} article${count > 1 ? "s" : ""})` : "Panier");
     setText(".cart_price_value_ht",  formatPrice((cart.sub_total_ht ?? 0) / 100));
     setText(".cart_taxe_value",       formatPrice((cart.taxe         ?? 0) / 100));
     setText(".cart_price_value_ttc",  formatPrice((cart.sub_total    ?? 0) / 100));

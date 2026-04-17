@@ -9,6 +9,7 @@
 
 	/* Brand */
 	--nm-brand: #e98737;
+	--nm-brand-text: #b35500; /* darker variant for text on white, meets 4.5:1 */
 	--nm-brand-2: #0E93D8;
 	/* occasional link/hover color in template */
 
@@ -6116,7 +6117,7 @@ footer .widget_title {
 }
 
 .price {
-	color: var(--nm-brand);
+	color: var(--nm-brand-text);
 	font-weight: 600;
 }
 
@@ -6133,7 +6134,7 @@ footer .widget_title {
 
 .on_sale {
 	display: inline-block;
-	color: #388e3c;
+	color: #2e7d32; /* darkened for 4.5:1 contrast on white */
 	font-size: 14px;
 }
 
@@ -10002,4 +10003,17 @@ select {
     height: 30px;
     /* box-shadow simule le padding horizontal sans affecter le layout */
     box-shadow: -24px 0 0 var(--nm-surface), 24px 0 0 var(--nm-surface);
+}
+
+/* Footer legal links: contrast + minimum target size */
+.footer-legal-link {
+	color: #a8b0b8; /* contrast 4.5:1+ on footer dark bg #202325 */
+	font-size: 13px;
+	text-decoration: none;
+	display: inline-block;
+	padding: 6px 2px; /* min 24px tall tap target */
+}
+.footer-legal-link:hover {
+	color: #ffffff;
+	text-decoration: underline;
 }
