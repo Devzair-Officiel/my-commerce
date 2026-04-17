@@ -164,10 +164,10 @@
 								</div>
 								{% endif %}
 								<div class="cart_btn">
-									<a href="/compare/add/{{product.id}}" class="add-to-compare">
+									<a href="/compare/add/{{product.id}}" class="add-to-compare" aria-label="Ajouter {{ product.title }} au comparatif">
 										<svg class="icon" aria-hidden="true"><use href="#icon-shuffle"></use></svg>
 									</a>
-									<a href="/wishlist/add/{{ product.id }}" class="add-to-wishlist mx-2">
+									<a href="/wishlist/add/{{ product.id }}" class="add-to-wishlist mx-2" aria-label="Ajouter {{ product.title }} à la liste de souhaits">
 										<svg class="icon" aria-hidden="true"><use href="#icon-heart"></use></svg>
 									</a>
 								</div>

@@ -6,6 +6,8 @@ use App\Entity\Blog;
 use App\Entity\Category;
 use App\Entity\Media;
 use App\Entity\Product;
+use App\Repository\ReviewRepository;
+use App\Repository\SettingRepository;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
@@ -27,6 +29,8 @@ final class SeoResolver
 {
     public function __construct(
         private readonly UrlGeneratorInterface $urlGenerator,
+        private readonly ReviewRepository $reviewRepository,
+        private readonly SettingRepository $settingRepository,
         private readonly string $brandName = 'Nidemiel',
         private readonly string $defaultOgImage = '/assets/images/setting/nidemiel.png',
     ) {}
@@ -74,8 +78,12 @@ final class SeoResolver
             type: 'product'
         );
 
+        $ratingSummary = $this->reviewRepository->findRatingSummaryForProducts([$product->getId()]);
+        $rating = $ratingSummary[$product->getId()] ?? null;
+        $reviews = $this->reviewRepository->findApprovedByProduct($product);
+
         $jsonLd = [
-            $this->productJsonLd($product, $canonical, $image),
+            $this->productJsonLd($product, $canonical, $image, $rating, $reviews),
             $this->breadcrumbJsonLd([
                 [
                     'name' => 'Accueil',
@@ -263,6 +271,10 @@ final class SeoResolver
             $jsonLd[] = $this->organizationJsonLd($data['organization']);
         }
 
+        if (!empty($data['faq'])) {
+            $jsonLd[] = $this->faqPageJsonLd($data['faq']);
+        }
+
         return new SeoPayload($title, $description, $canonical, $robots, $og, $jsonLd);
     }
 
@@ -298,7 +310,7 @@ final class SeoResolver
     /**
      * Génère les données structurées d'un produit simple.
      */
-    private function productJsonLd(Product $product, string $canonical, ?string $image): array
+    private function productJsonLd(Product $product, string $canonical, ?string $image, ?array $rating = null, array $reviews = []): array
     {
         $description = $product->getSeoDescription()
             ?: $product->getDescription()
@@ -333,6 +345,53 @@ final class SeoResolver
                 'value' => $product->getWeightGrams(),
                 'unitCode' => 'GRM',
             ];
+        }
+
+        if ($rating !== null && ($rating['count'] ?? 0) > 0) {
+            $data['aggregateRating'] = [
+                '@type' => 'AggregateRating',
+                'ratingValue' => round((float) $rating['average'], 1),
+                'reviewCount' => (int) $rating['count'],
+                'bestRating' => 5,
+                'worstRating' => 1,
+            ];
+        }
+
+        $reviewSchemas = [];
+        foreach (\array_slice($reviews, 0, 5) as $review) {
+            $user = $review->getUser();
+            $fullName = $user?->getFullName() ?: 'Client';
+            // Masquer le nom de famille pour la vie privée : "Marie D."
+            $parts = explode(' ', trim($fullName), 2);
+            $displayName = $parts[0] . (isset($parts[1]) ? ' ' . mb_substr($parts[1], 0, 1) . '.' : '');
+
+            $schema = [
+                '@type' => 'Review',
+                'reviewRating' => [
+                    '@type' => 'Rating',
+                    'ratingValue' => $review->getRating(),
+                    'bestRating' => 5,
+                    'worstRating' => 1,
+                ],
+                'author' => [
+                    '@type' => 'Person',
+                    'name' => $displayName,
+                ],
+            ];
+
+            if ($review->getComment()) {
+                $schema['reviewBody'] = $this->truncateText($review->getComment(), 500);
+            }
+
+            if ($review->getCreatedAt()) {
+                $schema['datePublished'] = $review->getCreatedAt()->format('Y-m-d');
+            }
+
+            $reviewSchemas[] = $schema;
+        }
+
+        if ($reviewSchemas !== []) {
+            $data['review'] = $reviewSchemas;
         }
 
         if ($price !== null) {
@@ -426,6 +485,13 @@ final class SeoResolver
             type: 'website'
         );
 
+        $setting = $this->settingRepository->findOneForLayout();
+        $sameAs = array_values(array_filter([
+            $setting['facebookLink'] ?? null,
+            $setting['instaLink'] ?? null,
+            $setting['youtubeLink'] ?? null,
+        ], static fn(?string $v): bool => $v !== null && $v !== ''));
+
         $jsonLd = [
             $this->webPageJsonLd($title, $description, $canonical),
             $this->webSiteJsonLd($homeUrl, $searchUrl),
@@ -433,6 +499,7 @@ final class SeoResolver
                 'name' => $this->brandName,
                 'url' => $homeUrl,
                 'logo' => rtrim($request->getSchemeAndHttpHost(), '/') . '/assets/images/setting/nidemiel.png',
+                'sameAs' => $sameAs,
             ]),
             $this->breadcrumbJsonLd([
                 ['name' => 'Accueil', 'url' => $homeUrl],
@@ -497,7 +564,40 @@ final class SeoResolver
             ];
         }
 
+        if (!empty($data['sameAs'])) {
+            $schema['sameAs'] = $data['sameAs'];
+        }
+
         return $schema;
+    }
+
+    /**
+     * Génère les données structurées d'une FAQ.
+     *
+     * @param array<int, array{question: string, answer: string}> $items
+     */
+    private function faqPageJsonLd(array $items): array
+    {
+        $entities = [];
+        foreach ($items as $item) {
+            if (empty($item['question']) || empty($item['answer'])) {
+                continue;
+            }
+            $entities[] = [
+                '@type' => 'Question',
+                'name' => $item['question'],
+                'acceptedAnswer' => [
+                    '@type' => 'Answer',
+                    'text' => $this->truncateText(strip_tags($item['answer']), 500),
+                ],
+            ];
+        }
+
+        return [
+            '@context' => 'https://schema.org',
+            '@type' => 'FAQPage',
+            'mainEntity' => $entities,
+        ];
     }
 
     /**

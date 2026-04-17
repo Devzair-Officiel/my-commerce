@@ -14,18 +14,18 @@
 				<ul class="list_none pr_action_btn">
 					{% if product.stock != 0 %}
 						<li>
-							<a href="/cart/add/{{product.id}}/1" data-product-id="{{ product.id }}" class="add-to-cart" title="Ajouter au panier">
+							<a href="/cart/add/{{product.id}}/1" data-product-id="{{ product.id }}" class="add-to-cart" title="Ajouter au panier" aria-label="Ajouter {{ product.title }} au panier">
 								<svg class="icon" aria-hidden="true"><use href="#icon-cart"></use></svg>
 							</a>
 						</li>
 					{% endif %}
 					<li>
-						<a href="/compare/add/{{product.id}}" class="add-to-compare" title="Ajouter au comparatif">
+						<a href="/compare/add/{{product.id}}" class="add-to-compare" title="Ajouter au comparatif" aria-label="Ajouter {{ product.title }} au comparatif">
 							<svg class="icon" aria-hidden="true"><use href="#icon-shuffle"></use></svg>
 						</a>
 					</li>
 					<li>
-						<a href="/wishlist/add/{{ product.id }}" class="add-to-wishlist" title="Ajouter a la liste des souhaits">
+						<a href="/wishlist/add/{{ product.id }}" class="add-to-wishlist" title="Ajouter a la liste des souhaits" aria-label="Ajouter {{ product.title }} à la liste de souhaits">
 							<svg class="icon" aria-hidden="true"><use href="#icon-heart"></use></svg>
 						</a>
 					</li>

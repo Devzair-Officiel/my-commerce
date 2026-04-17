@@ -26,7 +26,9 @@ final class PageController extends AbstractController
 
         $canonical = $this->generateUrl('app_page', ['slug' => $slug], UrlGeneratorInterface::ABSOLUTE_URL);
 
-        $seo = $seoResolver->forStaticPage([
+        $faq = $this->extractFaqFromHtml($page->getContent() ?? '');
+
+        $seoData = [
             'title' => ($page->getSeoTitle() ?: $page->getTitle()) . ' | Nidemiel',
             'description' => $page->getSeoDescription() ?: $page->getTitle(),
             'canonical' => $canonical,
@@ -36,11 +38,65 @@ final class PageController extends AbstractController
                 ['name' => 'Accueil', 'url' => $this->generateUrl('app_home', [], UrlGeneratorInterface::ABSOLUTE_URL)],
                 ['name' => $page->getTitle(), 'url' => $canonical],
             ],
-        ], $request);
+        ];
+
+        if ($faq !== []) {
+            $seoData['faq'] = $faq;
+        }
+
+        $seo = $seoResolver->forStaticPage($seoData, $request);
 
         return $this->render('page/index.html.twig', [
             'page' => $page,
             'seo' => $seo,
         ]);
+    }
+
+    /**
+     * Extrait des paires question/réponse depuis le HTML d'une page.
+     * Cherche les balises h2/h3 suivies d'un paragraphe.
+     * Retourne au moins 2 paires pour justifier un FAQPage JSON-LD.
+     *
+     * @return array<int, array{question: string, answer: string}>
+     */
+    private function extractFaqFromHtml(string $html): array
+    {
+        if (trim($html) === '') {
+            return [];
+        }
+
+        $doc = new \DOMDocument();
+        @$doc->loadHTML('<?xml encoding="UTF-8">' . $html, \LIBXML_HTML_NOIMPLIED | \LIBXML_HTML_NODEFDTD);
+
+        $faq = [];
+        $xpath = new \DOMXPath($doc);
+        $headings = $xpath->query('//h2|//h3');
+
+        if ($headings === false) {
+            return [];
+        }
+
+        foreach ($headings as $heading) {
+            $question = trim($heading->textContent);
+            if ($question === '') {
+                continue;
+            }
+
+            // Cherche le premier <p> frère suivant
+            $sibling = $heading->nextSibling;
+            while ($sibling !== null && !($sibling instanceof \DOMElement && $sibling->tagName === 'p')) {
+                $sibling = $sibling->nextSibling;
+            }
+
+            if ($sibling instanceof \DOMElement) {
+                $answer = trim($sibling->textContent);
+                if ($answer !== '') {
+                    $faq[] = ['question' => $question, 'answer' => $answer];
+                }
+            }
+        }
+
+        // Ne génère un FAQPage que si au moins 2 paires sont trouvées
+        return \count($faq) >= 2 ? $faq : [];
     }
 }

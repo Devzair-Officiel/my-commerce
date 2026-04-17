@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Repository\BlogRepository;
 use App\Repository\CategoryRepository;
+use App\Repository\PageRepository;
 use App\Repository\ProductRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
@@ -19,6 +20,7 @@ final class SitemapController extends AbstractController
         private ProductRepository  $productRepo,
         private CategoryRepository $categoryRepo,
         private BlogRepository     $blogRepo,
+        private PageRepository     $pageRepo,
     ) {}
 
     #[Route('/sitemap.xml', name: 'app_sitemap', methods: ['GET'], defaults: ['_format' => 'xml'])]
@@ -63,14 +65,24 @@ final class SitemapController extends AbstractController
             ];
         }
 
-        // Articles de blog
-        foreach ($this->blogRepo->findAll() as $blog) {
+        // Articles de blog publiés uniquement
+        foreach ($this->blogRepo->findBy(['isPublished' => true]) as $blog) {
             if (!$blog->getSlug()) continue;
             $urls[] = [
                 'loc'        => $urlGenerator->generate('app_blog_show', ['slug' => $blog->getSlug()], UrlGeneratorInterface::ABSOLUTE_URL),
                 'lastmod'    => ($blog->getUpdatedAt() ?? $blog->getCreatedAt())?->format('Y-m-d'),
                 'priority'   => '0.7',
                 'changefreq' => 'monthly',
+            ];
+        }
+
+        // Pages CMS (mentions légales, CGV, politique de confidentialité, etc.)
+        foreach ($this->pageRepo->findAll() as $page) {
+            if (!$page->getSlug()) continue;
+            $urls[] = [
+                'loc'        => $urlGenerator->generate('app_page', ['slug' => $page->getSlug()], UrlGeneratorInterface::ABSOLUTE_URL),
+                'priority'   => '0.4',
+                'changefreq' => 'yearly',
             ];
         }
 

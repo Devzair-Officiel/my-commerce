@@ -159,25 +159,20 @@
 														<table class="table">
 															<thead>
 																<tr>
-																	<th>Id</th>
+																	<th>Nom</th>
 																	<th>Adresse</th>
-																	<th>Actions</th>
+																	<th class="text-center" colspan="2">Actions</th>
 																</tr>
 															</thead>
 															<tbody id="address-tbody">
 																{% for address in addresses %}
 																	<tr>
-																		<td>{{ address.id }}</td>
-																		<td>
-																			{{ address.street }}
-																			{{ address.codePostal }}
-																			{{ address.city }}
-																			{{ address.state }}
-																		</td>
-																		<td>
+																		<td>{{ address.clientName }}</td>
+																		<td>{{ address.street }}, {{ address.codePostal }} {{ address.city }}</td>
+																		<td style="width:1%;white-space:nowrap;padding-right:4px;">
 																			<a href="#" class="btn btn-fill-out btn-sm edit_address" data-id="{{ address.id }}" data-address_type="{{ address.addressType }}" data-client_name="{{ address.clientName }}" data-name="{{ address.name }}" data-street="{{ address.street }}" data-code_postal="{{ address.codePostal }}" data-city="{{ address.city }}" data-state="{{ address.state }}">Modifier</a>
 																		</td>
-																		<td>
+																		<td style="width:1%;white-space:nowrap;padding-left:4px;">
 																			<a href="#" class="btn btn-fill-out btn-sm remove_address" data-id="{{ address.id }}">Supprimer</a>
 																		</td>
 																	</tr>
