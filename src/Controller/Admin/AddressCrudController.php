@@ -120,7 +120,7 @@ final class AddressCrudController extends AbstractCrudController
             ->setHelp('Facturation ou livraison.');
 
         yield FormField::addPanel('Coordonnées')
-            ->setIcon('fa fa-location-dot')
+            ->setIcon('fa fa-map-marker-alt')
             ->setHelp('Adresse postale utilisée pour les envois et/ou la facturation.');
 
         yield TextField::new('street', 'Rue')

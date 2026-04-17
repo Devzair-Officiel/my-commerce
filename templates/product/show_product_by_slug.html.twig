@@ -57,7 +57,7 @@
 									decoding="async"
 								>
 								<a href="/assets/images/products/{{ product.medias[0].filename }}" title="Zoom" class="product_img_zoom">
-									<span class="linearicons-zoom-in"></span>
+									<svg class="icon" aria-hidden="true"><use href="#icon-zoom-in"></use></svg>
 								</a>
 							</div>
 
@@ -110,18 +110,18 @@
 								<div class="product_sort_info">
 									<ul>
 										<li>
-											<i class="linearicons-shield-check"></i>
+											<svg class="icon" aria-hidden="true"><use href="#icon-shield"></use></svg>
 											Produit Certifié</li>
 										<li>
-											<i class="linearicons-map-marker"></i>
+											<svg class="icon" aria-hidden="true"><use href="#icon-location"></use></svg>
 											et partout en France
 										</li>
 										<li>
-											<i class="linearicons-sync"></i>
+											<svg class="icon" aria-hidden="true"><use href="#icon-refresh"></use></svg>
 											Retour sous 30 jours
 										</li>
 										<li>
-											<i class="linearicons-bag-dollar"></i>
+											<svg class="icon" aria-hidden="true"><use href="#icon-tag"></use></svg>
 											Paiement sécurisé
 										</li>
 									</ul>
@@ -130,9 +130,9 @@
 							{% set inStock = product.stock is null or product.stock > 0 %}
 							<div class="my-2">
 								{% if inStock %}
-									<span class="badge bg-success"><i class="ti-check me-1"></i>En stock{% if product.stock is not null %} ({{ product.stock }}){% endif %}</span>
+									<span class="badge bg-success"><svg class="icon me-1" aria-hidden="true"><use href="#icon-check"></use></svg>En stock{% if product.stock is not null %} ({{ product.stock }}){% endif %}</span>
 								{% else %}
-									<span class="badge bg-danger"><i class="ti-close me-1"></i>Rupture de stock</span>
+									<span class="badge bg-danger"><svg class="icon me-1" aria-hidden="true"><use href="#icon-x"></use></svg>Rupture de stock</span>
 								{% endif %}
 							</div>
 							<hr>
@@ -147,28 +147,28 @@
 								</div>
 								<div class="cart_btn my-2">
 									<a href="/cart/add/{{product.id}}/1" class="btn btn-fill-out btn-addtocart btn-no-margin">
-										<i class="icon-basket-loaded"></i>
+										<svg class="icon" aria-hidden="true"><use href="#icon-cart"></use></svg>
 										Ajouter au panier
 									</a>
 									<a href="/checkout" class="btn btn-fill-out checkout btn-no-margin">
-										<i class="icon-credit-card"></i>
+										<svg class="icon" aria-hidden="true"><use href="#icon-credit-card"></use></svg>
 										Payer maintenant
 									</a>
 								</div>
 								{% else %}
 								<div class="cart_btn my-2">
 									<button class="btn btn-light btn-no-margin" disabled>
-										<i class="icon-basket-loaded"></i>
+										<svg class="icon" aria-hidden="true"><use href="#icon-cart"></use></svg>
 										Indisponible
 									</button>
 								</div>
 								{% endif %}
 								<div class="cart_btn">
 									<a href="/compare/add/{{product.id}}" class="add-to-compare">
-										<i class="icon-shuffle"></i>
+										<svg class="icon" aria-hidden="true"><use href="#icon-shuffle"></use></svg>
 									</a>
 									<a href="/wishlist/add/{{ product.id }}" class="add-to-wishlist mx-2">
-										<i class="icon-heart"></i>
+										<svg class="icon" aria-hidden="true"><use href="#icon-heart"></use></svg>
 									</a>
 								</div>
 							</div>
@@ -187,17 +187,17 @@
 								<ul class="social_icons">
 									<li>
 										<a href="#">
-											<i class="ion-social-facebook"></i>
+											<svg class="icon icon--filled" aria-hidden="true"><use href="#icon-facebook"></use></svg>
 										</a>
 									</li>
 									<li>
 										<a href="#">
-											<i class="ion-social-twitter"></i>
+											<svg class="icon icon--filled" aria-hidden="true"><use href="#icon-twitter"></use></svg>
 										</a>
 									</li>
 									<li>
 										<a href="#">
-											<i class="ion-social-instagram-outline"></i>
+											<svg class="icon" aria-hidden="true"><use href="#icon-instagram"></use></svg>
 										</a>
 									</li>
 								</ul>

@@ -82,7 +82,7 @@ final class ShipmentCrudController extends AbstractCrudController
             ->addCssClass('btn btn-sm btn-success')
             ->displayIf(static fn (Shipment $s): bool => $s->getLabelUrl() !== null);
 
-        $syncTrackingAction = Action::new('syncTracking', 'Sync suivi', 'fa fa-rotate')
+        $syncTrackingAction = Action::new('syncTracking', 'Sync suivi', 'fa fa-sync')
             ->linkToCrudAction('syncTracking')
             ->addCssClass('btn btn-sm btn-outline-secondary')
             ->displayIf(static fn (Shipment $s): bool =>
@@ -126,7 +126,7 @@ final class ShipmentCrudController extends AbstractCrudController
         yield AssociationField::new('customerOrder', 'Commande')->setColumns(6);
         yield AssociationField::new('carrier', 'Transporteur')->setColumns(6);
 
-        yield FormField::addPanel('Suivi')->setIcon('fa fa-location-dot');
+        yield FormField::addPanel('Suivi')->setIcon('fa fa-map-marker-alt');
         yield TextField::new('trackingNumber', 'N° Suivi')->setColumns(6);
         yield UrlField::new('trackingUrl', 'URL Suivi')->setColumns(6);
         yield TextField::new('statusCode', 'Statut')

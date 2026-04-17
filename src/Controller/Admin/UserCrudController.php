@@ -96,7 +96,7 @@ final class UserCrudController extends AbstractCrudController
             yield TelephoneField::new('phone', 'Téléphone')->setColumns(12);
             yield ChoiceField::new('civility', 'Civilité')->setColumns(6);
 
-            yield FormField::addTab('Compte')->setIcon('fa-solid fa-shield-halved');
+            yield FormField::addTab('Compte')->setIcon('fa-solid fa-shield-alt');
             yield FormField::addFieldset('Sécurité')->setIcon('fa-solid fa-lock');
             yield BooleanField::new('isVerified', 'Email vérifié');
             yield ArrayField::new('roles', 'Rôles')->setColumns(12);
@@ -135,7 +135,7 @@ final class UserCrudController extends AbstractCrudController
             ->setColumns(6);
 
         yield FormField::addColumn(4);
-        yield FormField::addFieldset('Sécurité')->setIcon('fa fa-shield-halved')->collapsible();
+        yield FormField::addFieldset('Sécurité')->setIcon('fa fa-shield-alt')->collapsible();
         yield BooleanField::new('isVerified', 'Email vérifié')
             ->setHelp('Indique si l’utilisateur a confirmé son email.');
         yield TextField::new('plainPassword', $isNew ? 'Mot de passe' : 'Nouveau mot de passe')

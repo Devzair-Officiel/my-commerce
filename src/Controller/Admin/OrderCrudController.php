@@ -83,7 +83,7 @@ final class OrderCrudController extends AbstractCrudController
                 && $order->getCarrier() !== null
             );
 
-        $refundAction = Action::new('refund', 'Rembourser', 'fa fa-rotate-left')
+        $refundAction = Action::new('refund', 'Rembourser', 'fa fa-sync-left')
             ->linkToCrudAction('processRefund')
             ->addCssClass('btn btn-sm btn-danger')
             ->displayIf(static fn (Order $order): bool => $order->getPaymentStatus() === PaymentStatus::Paid);

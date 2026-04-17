@@ -73,7 +73,7 @@ export function displayWishlist(wishlist = []) {
   if (!Array.isArray(wishlist) || wishlist.length === 0) {
     grid.innerHTML = `
       <div class="col-12 text-center py-5">
-        <i class="ti-heart" style="font-size:3rem; color:#ddd;"></i>
+        <svg class="icon" aria-hidden="true" style="width:3rem;height:3rem;color:#ddd;"><use href="#icon-heart"></use></svg>
         <p class="mt-3 text-muted">Votre liste de favoris est vide.</p>
         <a href="/category/miels-du-monde" class="btn btn-fill-out mt-2">Découvrir nos miels</a>
       </div>
@@ -150,7 +150,7 @@ export function displayWishlist(wishlist = []) {
                 class="btn btn-fill-out btn-sm add-to-cart ${!inStock ? "disabled" : ""}"
                 ${!inStock ? 'aria-disabled="true"' : ""}
               >
-                <i class="icon-basket-loaded"></i> Panier
+                <svg class="icon" aria-hidden="true"><use href="#icon-cart"></use></svg> Panier
               </a>
               <a
                 href="/wishlist/remove/${id}"
@@ -158,7 +158,7 @@ export function displayWishlist(wishlist = []) {
                 aria-label="Retirer des favoris"
                 title="Retirer des favoris"
               >
-                <i class="ti-trash"></i>
+                <svg class="icon" aria-hidden="true"><use href="#icon-trash"></use></svg>
               </a>
             </div>
           </div>

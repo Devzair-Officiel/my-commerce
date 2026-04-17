@@ -58,7 +58,7 @@ export function displayCompare(compare = []) {
   if (!Array.isArray(compare) || compare.length === 0) {
     grid.innerHTML = `
       <div class="text-center py-5">
-        <i class="ti-control-shuffle" style="font-size:3rem; color:#ddd;"></i>
+        <svg class="icon" aria-hidden="true" style="width:3rem;height:3rem;color:#ddd;"><use href="#icon-shuffle"></use></svg>
         <p class="mt-3 text-muted">Aucun produit à comparer pour le moment.</p>
         <a href="/" class="btn btn-fill-out mt-2">Découvrir nos produits</a>
       </div>
@@ -156,10 +156,10 @@ export function displayCompare(compare = []) {
         cell = `
           <div class="compare-cell compare-cell--actions">
             <a href="/cart/add/${id}" class="btn btn-fill-out btn-sm add-to-cart ${!inStock ? "disabled" : ""}">
-              <i class="icon-basket-loaded"></i> Panier
+              <svg class="icon" aria-hidden="true"><use href="#icon-cart"></use></svg> Panier
             </a>
             <a href="/compare/remove/${id}" class="compare-card__remove" aria-label="Retirer">
-              <i class="ti-trash"></i>
+              <svg class="icon" aria-hidden="true"><use href="#icon-trash"></use></svg>
             </a>
           </div>`;
       }

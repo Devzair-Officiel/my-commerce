@@ -1429,8 +1429,7 @@ button:focus:not(:focus-visible) {
 .dropdown-toggle::after,
 .dropdown-toggler::after {
 	border: 0 none;
-	content: "\f3d0";
-	font-family: "Ionicons";
+	content: "▾";
 	margin-left: 5px;
 	vertical-align: middle;
 }
@@ -1670,8 +1669,7 @@ button:focus:not(:focus-visible) {
 }
 
 .search_trigger.open i::before {
-	content: "\f129";
-	font-family: "Ionicons";
+	content: "×";
 }
 
 .search_wrap {
@@ -2277,7 +2275,7 @@ button:focus:not(:focus-visible) {
 }
 
 .navbar-toggler[aria-expanded="true"] span::before {
-	content: "\f129";
+	content: "×";
 	font-size: 21px;
 }
 
@@ -2884,7 +2882,7 @@ input.text {
 }
 
 .ddArrow::before {
-	content: "\f3d0";
+	content: "▾";
 	color: #878787;
 	font-family: ionicons;
 	position: absolute;
@@ -5071,8 +5069,7 @@ footer .widget_title {
 }
 
 .breadcrumb-item+.breadcrumb-item::before {
-	content: "\f3d1";
-	font-family: "Ionicons";
+	content: "›";
 	vertical-align: middle;
 }
 
@@ -5462,8 +5459,7 @@ footer .widget_title {
 }
 
 .accordion_style1 .card-header a::after {
-	content: "\f208";
-	font-family: "Ionicons";
+	content: "−";
 	font-size: 16px;
 	font-weight: normal;
 	position: absolute;
@@ -5472,7 +5468,7 @@ footer .widget_title {
 }
 
 .accordion_style1 .card-header a[aria-expanded="false"]::after {
-	content: "\f217";
+	content: "+";
 }
 
 .accordion_style2 .card-header {
@@ -5492,8 +5488,7 @@ footer .widget_title {
 }
 
 .accordion_style2 .card-header a::after {
-	content: "\f126";
-	font-family: "Ionicons";
+	content: "−";
 	font-size: 16px;
 	font-weight: normal;
 	position: absolute;
@@ -5502,7 +5497,7 @@ footer .widget_title {
 }
 
 .accordion_style2 .card-header a.collapsed:after {
-	content: "\f123";
+	content: "+";
 }
 
 .accordion_style3.accordion .card {
@@ -5528,8 +5523,7 @@ footer .widget_title {
 }
 
 .accordion_style3 .card-header a::after {
-	content: "\f208";
-	font-family: "Ionicons";
+	content: "−";
 	font-size: 16px;
 	font-weight: normal;
 	position: absolute;
@@ -5538,7 +5532,7 @@ footer .widget_title {
 }
 
 .accordion_style3 .card-header a[aria-expanded="false"]::after {
-	content: "\f217";
+	content: "+";
 }
 
 .accordion_style4 .card-header a {
@@ -5549,8 +5543,7 @@ footer .widget_title {
 }
 
 .accordion_style4 .card-header a::after {
-	content: "\f126";
-	font-family: "Ionicons";
+	content: "−";
 	font-size: 14px;
 	font-weight: normal;
 	position: absolute;
@@ -5559,7 +5552,7 @@ footer .widget_title {
 }
 
 .accordion_style4 .card-header a.collapsed::after {
-	content: "\f123";
+	content: "+";
 }
 
 .accordion_style4>.card .card-header {
@@ -6168,17 +6161,16 @@ footer .widget_title {
 .rating_wrap .rating {
 	overflow: hidden;
 	position: relative;
-	height: 20px;
-	font-size: 12px;
-	width: 70px;
-	font-family: "Font Awesome 5 Free";
+	height: 22px;
+	font-size: 15px;
+	width: 88px;
 	display: inline-block;
 	vertical-align: middle;
 }
 
 .rating::before {
-	font-size: 12px;
-	content: "\f005\f005\f005\f005\f005";
+	font-size: 15px;
+	content: "★★★★★";
 	top: 0;
 	position: absolute;
 	left: 0;
@@ -6197,8 +6189,8 @@ footer .widget_title {
 }
 
 .product_rate::before {
-	font-size: 12px;
-	content: "\f005\f005\f005\f005\f005";
+	font-size: 15px;
+	content: "★★★★★";
 	top: 0;
 	position: absolute;
 	left: 0;
@@ -6781,11 +6773,11 @@ a:hover .product_title {
 }
 
 .vertical_gallery .slick-prev:before {
-	content: "\f10e"
+	content: "❞"
 }
 
 .vertical_gallery .slick-next:before {
-	content: "\f105"
+	content: "›"
 }
 
 .vertical_gallery .slick_slider:hover .slick-prev {
@@ -7625,8 +7617,7 @@ select option {
 
 .widget_categories li a::before,
 .widget_archive li a:before {
-	content: "\f3d1";
-	font-family: "Ionicons";
+	content: "›";
 	height: auto;
 	line-height: normal;
 	margin-right: 10px;
@@ -8350,8 +8341,8 @@ body .owl-theme .owl-nav [class*="owl-"] {
 }
 
 .slick-prev::before {
-	content: "\f108";
-	font-family: "Ionicons";
+	content: "‹";
+	font-family: inherit;
 	color: var(--nm-text-strong);
 	opacity: 1;
 	display: block;
@@ -8359,8 +8350,8 @@ body .owl-theme .owl-nav [class*="owl-"] {
 }
 
 .slick-next::before {
-	content: "\f10b";
-	font-family: "Ionicons";
+	content: "›";
+	font-family: inherit;
 	color: var(--nm-text-strong);
 	opacity: 1;
 	display: block;
@@ -8584,12 +8575,12 @@ blockquote p:last-child {
 }
 
 .blockquote_style2::before {
-	content: "\f10e";
+	content: "❞";
 	position: absolute;
 	left: 20px;
 	top: 10px;
 	color: var(--nm-on-dark);
-	font-family: "Font Awesome 5 Free";
+	
 	font-weight: 900;
 	font-size: 70px;
 	opacity: 0.3;
@@ -8610,12 +8601,12 @@ blockquote p:last-child {
 }
 
 .blockquote_style3::before {
-	content: "\f10e";
+	content: "❞";
 	position: absolute;
 	left: 20px;
 	top: 10px;
 	color: #000;
-	font-family: "Font Awesome 5 Free";
+	
 	font-weight: 900;
 	font-size: 70px;
 	opacity: 0.05;
@@ -8637,12 +8628,12 @@ blockquote p:last-child {
 }
 
 .blockquote_style4::before {
-	content: "\f10d";
+	content: "❝";
 	position: absolute;
 	left: 50px;
 	top: 10px;
 	color: #000;
-	font-family: "Font Awesome 5 Free";
+	
 	font-weight: 900;
 	font-size: 70px;
 	opacity: 0.05;
@@ -9790,4 +9781,222 @@ select {
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
+}
+
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   SVG ICONS SYSTEM
+   ══════════════════════════════════════════════════════════════════════════════ */
+
+/* Base : toujours en px pour éviter les contextes font-size:0 */
+.icon {
+    display: inline-block;
+    width: 18px;
+    height: 18px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    vertical-align: middle;
+    flex-shrink: 0;
+    margin-bottom: 0;
+    overflow: visible;
+}
+
+.icon--sm  { width: 14px; height: 14px; }
+.icon--md  { width: 20px; height: 20px; }
+.icon--lg  { width: 24px; height: 24px; }
+.icon--xl  { width: 28px; height: 28px; }
+.icon--2xl { width: 36px; height: 36px; }
+
+.icon--spin {
+    animation: icon-spin 1s linear infinite;
+}
+@keyframes icon-spin {
+    from { transform: rotate(0deg); }
+    to   { transform: rotate(360deg); }
+}
+
+/* Icônes sociales et Google : remplies */
+.icon--filled { fill: currentColor; stroke: none; }
+
+/* ── Header top (compare, heart, user, logout) ─────────────────────────────── */
+.header_list .icon {
+    width: 22px;
+    height: 22px;
+}
+
+/* .contact_detail a font-size:0 → forcer px */
+.contact_detail .icon {
+    width: 16px;
+    height: 16px;
+    vertical-align: middle;
+    margin-right: 4px;
+}
+
+/* ── Header attr-nav (search, cart) ────────────────────────────────────────── */
+.navbar .attr-nav li .nav-link .icon,
+.navbar .attr-nav li .search_trigger .icon,
+.navbar .navbar-nav > li > .nav-link.cart_trigger .icon {
+    width: 20px;
+    height: 20px;
+}
+
+/* ── Bouton hamburger mobile ────────────────────────────────────────────────── */
+.navbar-toggler .icon {
+    width: 22px;
+    height: 22px;
+}
+
+/* ── Product action buttons (.pr_action_btn a a font-size:0) ────────────────── */
+.pr_action_btn li a .icon {
+    width: 18px;
+    height: 18px;
+    display: block;
+    margin: 0 auto;
+    /* Compenser le line-height:37px de l'original */
+    position: relative;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+/* Annuler le transform si display:flex est appliqué */
+.pr_action_btn li a {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.pr_action_btn li a .icon {
+    top: auto;
+    transform: none;
+}
+
+/* ── Account dashboard menu ─────────────────────────────────────────────────── */
+.dashboard_menu .nav-tabs li.nav-item a {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.dashboard_menu .nav-tabs li.nav-item a .icon {
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+}
+
+/* ── Footer contact_info ────────────────────────────────────────────────────── */
+.contact_info {
+    list-style: none;
+    padding: 0;
+    margin: 0 auto;
+    display: inline-block; /* centré dans la colonne text-center */
+    text-align: left;      /* icône + texte alignés à gauche en interne */
+}
+.contact_info > li {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+}
+.contact_info > li:last-child {
+    margin-bottom: 0;
+}
+.contact_info .icon {
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+}
+.contact_info_light .icon {
+    color: var(--nm-on-dark);
+}
+.contact_info > li > p,
+.contact_info > li > a {
+    margin: 0;
+    font-size: 14px;
+    line-height: 1.4;
+    color: var(--nm-text);
+}
+.contact_info_light > li > p,
+.contact_info_light > li > a {
+    color: rgba(255,255,255,0.8);
+}
+
+/* ── Icônes inline dans du texte (checkout, badges, tracking) ───────────────── */
+.icon.me-1 { margin-right: 4px !important; }
+.icon.me-2 { margin-right: 8px !important; }
+.badge .icon {
+    width: 12px;
+    height: 12px;
+    vertical-align: middle;
+}
+
+/* ── Icônes produit show (shield, tag, location, etc.) ──────────────────────── */
+.product_info_spec .icon,
+.product_guarantee .icon {
+    width: 16px;
+    height: 16px;
+    vertical-align: middle;
+    margin-right: 6px;
+    flex-shrink: 0;
+}
+
+/* ── Icônes dans les boutons ─────────────────────────────────────────────────── */
+.btn .icon {
+    width: 16px;
+    height: 16px;
+    vertical-align: middle;
+}
+
+/* ── Password toggle ─────────────────────────────────────────────────────────── */
+.input-group .btn .icon {
+    width: 18px;
+    height: 18px;
+}
+
+/* ── Social icons footer (.social_icons a font-size:0) ──────────────────────── */
+.social_icons .icon {
+    width: 18px;
+    height: 18px;
+}
+
+/* ── Carousel arrows ─────────────────────────────────────────────────────────── */
+.carousel-control-prev .icon,
+.carousel-control-next .icon {
+    width: 28px;
+    height: 28px;
+}
+
+/* ── Product sort info (shield, location, refresh, tag) ─────────────────────── */
+.product_sort_info li {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    padding-left: 0;
+}
+.product_sort_info li .icon {
+    color: var(--nm-brand);
+    width: 16px;
+    height: 16px;
+    margin-top: 2px;
+    flex-shrink: 0;
+    position: static;
+}
+
+/* ── Social icons ────────────────────────────────────────────────────────────── */
+.social_icons li a .icon {
+    width: 18px;
+    height: 18px;
+    vertical-align: middle;
+}
+
+/* ── Divider avec icône centrale (page cart) ─────────────────────────────────── */
+.divider svg.icon {
+    background-color: var(--nm-surface);
+    color: #d9d9d9;
+    position: relative;
+    z-index: 1;
+    width: 30px;
+    height: 30px;
+    /* box-shadow simule le padding horizontal sans affecter le layout */
+    box-shadow: -24px 0 0 var(--nm-surface), 24px 0 0 var(--nm-surface);
 }

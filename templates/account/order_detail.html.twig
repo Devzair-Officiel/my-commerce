@@ -96,7 +96,7 @@
 					<div class="card mt-4">
 						<div class="card-header d-flex justify-content-between align-items-center">
 							<span class="fw-semibold">
-								<i class="fa fa-truck me-2"></i>Expédition
+								<svg class="icon me-2" aria-hidden="true"><use href="#icon-truck"></use></svg>Expédition
 								{% if shipment.carrier %}— {{ shipment.carrier.name }}{% endif %}
 							</span>
 							{% if shipment.shippedAt %}
@@ -113,12 +113,12 @@
 								</div>
 								<a href="{{ path('app_account_order_tracking', { orderId: order.id, shipmentId: shipment.id }) }}"
 							   class="btn btn-sm btn-primary">
-								<i class="fa fa-location-dot me-1"></i> Suivre mon colis
+								<svg class="icon me-1" aria-hidden="true"><use href="#icon-location"></use></svg> Suivre mon colis
 							</a>
 							{% if shipment.trackingUrl %}
 							<a href="{{ shipment.trackingUrl }}" target="_blank" rel="noopener"
 							   class="btn btn-sm btn-outline-secondary">
-								laposte.fr <i class="fa fa-external-link ms-1"></i>
+								laposte.fr <svg class="icon ms-1" aria-hidden="true"><use href="#icon-external-link"></use></svg>
 							</a>
 							{% endif %}
 							</div>
@@ -127,13 +127,13 @@
 							{% set pp = order.pickupPoint %}
 							{% if pp %}
 							<div class="border rounded p-3 bg-light">
-								<div class="fw-semibold mb-1"><i class="fa fa-map-pin me-2 text-primary"></i>Point relais</div>
+								<div class="fw-semibold mb-1"><svg class="icon me-2 text-primary" aria-hidden="true"><use href="#icon-location"></use></svg>Point relais</div>
 								<div>{{ pp.name }}</div>
 								<div class="text-muted small">{{ pp.address }}, {{ pp.postalCode }} {{ pp.city }}</div>
 							</div>
 							{% elseif order.shippingAddress %}
 							<div class="text-muted small">
-								<i class="fa fa-location-dot me-1"></i>
+								<svg class="icon me-1" aria-hidden="true"><use href="#icon-location"></use></svg>
 								{{ order.shippingAddress|nl2br }}
 							</div>
 							{% endif %}
@@ -143,7 +143,7 @@
 					{% endfor %}
 				{% elseif order.fulfillmentStatus.value in ['shipped', 'delivered'] %}
 					<div class="alert alert-info mt-4">
-						<i class="fa fa-truck me-2"></i>
+						<svg class="icon me-2" aria-hidden="true"><use href="#icon-truck"></use></svg>
 						Votre commande a été expédiée. Les informations de suivi seront disponibles prochainement.
 					</div>
 				{% endif %}

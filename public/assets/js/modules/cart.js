@@ -31,7 +31,7 @@ function renderAddButton(productId, qty, stock) {
     }
 
     return `<div class="cart_stock_blocked" style="text-align:center;align-self:center;" title="Stock épuisé" aria-label="Stock épuisé">
-                <i class="fa fa-ban" style="font-size:28px;color:#999;"></i>
+                <svg class="icon" aria-hidden="true" style="width:28px;height:28px;color:#999;"><use href="#icon-ban"></use></svg>
             </div>`;
 }
 
@@ -70,7 +70,7 @@ function renderCartRow(item) {
             <td data-title="Total TTC" class="product-subtotal">${formatPrice((sub_total   ?? 0) / 100)}</td>
             <td data-title="Supprimer" class="product-remove">
                 <a href="/cart/remove/${product.id}/${qty}">
-                    <i class="ti-close"></i>
+                    <svg class="icon" aria-hidden="true"><use href="#icon-x"></use></svg>
                 </a>
             </td>
         </tr>

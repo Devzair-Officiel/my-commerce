@@ -12,17 +12,17 @@
             <div class="card-header d-flex justify-content-between align-items-center">
               <h3>Détail du message #{{ contact.id }}</h3>
               <a href="{{ path('app_account') }}#messages" class="btn btn-outline-secondary">
-                <i class="ti-arrow-left"></i> Retour aux messages
+                <svg class="icon" aria-hidden="true"><use href="#icon-arrow-left"></use></svg> Retour aux messages
               </a>
             </div>
             <div class="card-body">
               <div class="row mb-4">
                 <div class="col-md-6">
-                  <h5><i class="ti-email"></i> Sujet</h5>
+                  <h5><svg class="icon" aria-hidden="true"><use href="#icon-mail"></use></svg> Sujet</h5>
                   <p class="fs-5 fw-bold">{{ contact.subject }}</p>
                 </div>
                 <div class="col-md-6">
-                  <h5><i class="ti-calendar"></i> Date</h5>
+                  <h5><svg class="icon" aria-hidden="true"><use href="#icon-calendar"></use></svg> Date</h5>
                   <p>{{ contact.createdAt|date('d/m/Y à H:i', 'Europe/Paris') }}</p>
                   {% if contact.updatedAt and contact.updatedAt != contact.createdAt %}
                     <p class="text-muted small">Mis à jour le {{ contact.updatedAt|date('d/m/Y à H:i', 'Europe/Paris') }}</p>
@@ -31,18 +31,18 @@
               </div>
               <div class="row mb-4">
                 <div class="col-md-6">
-                  <h5><i class="ti-user"></i> Email</h5>
+                  <h5><svg class="icon" aria-hidden="true"><use href="#icon-user"></use></svg> Email</h5>
                   <p>{{ contact.email }}</p>
                 </div>
                 <div class="col-md-6">
                   {% if contact.phone %}
-                    <h5><i class="ti-mobile"></i> Téléphone</h5>
+                    <h5><svg class="icon" aria-hidden="true"><use href="#icon-phone"></use></svg> Téléphone</h5>
                     <p>{{ contact.phone }}</p>
                   {% endif %}
                 </div>
               </div>
               <hr>
-              <h5><i class="ti-message-2"></i> Contenu du message</h5>
+              <h5><svg class="icon" aria-hidden="true"><use href="#icon-message"></use></svg> Contenu du message</h5>
               <div class="message-content p-3 border rounded bg-light">
                 {{ contact.content|nl2br }}
               </div>

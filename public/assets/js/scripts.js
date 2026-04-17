@@ -372,7 +372,7 @@
 				center: $carousel.data('center'),
 				nav: $carousel.data('nav'),
 				rewind: $carousel.data('rewind'),
-				navText: ['<i class="ion-ios-arrow-left"></i>', '<i class="ion-ios-arrow-right"></i>'],
+				navText: ['<i class="fa fa-chevron-left"></i>', '<i class="fa fa-chevron-right"></i>'],
 				autoplay: $carousel.data('autoplay'),
 				animateIn: $carousel.data('animate-in'),
 				animateOut: $carousel.data('animate-out'),

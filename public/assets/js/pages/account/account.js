@@ -59,20 +59,14 @@ function initPasswordFeatures() {
         const input = group.querySelector("input");
         if (!input) return;
 
-        const icon = toggleButton.querySelector("i");
+        const useEl = toggleButton.querySelector("use");
 
         if (input.type === "password") {
             input.type = "text";
-            if (icon) {
-                icon.classList.remove("fa-eye");
-                icon.classList.add("fa-eye-slash");
-            }
+            if (useEl) useEl.setAttribute("href", "#icon-eye-off");
         } else {
             input.type = "password";
-            if (icon) {
-                icon.classList.remove("fa-eye-slash");
-                icon.classList.add("fa-eye");
-            }
+            if (useEl) useEl.setAttribute("href", "#icon-eye");
         }
     };
 

@@ -11,7 +11,7 @@
 				<div class="col-md-6">
 					<ul class="contact_detail text-center text-lg-start" aria-label="Informations de contact">
 						<li>
-							<i class="ti-mobile" aria-hidden="true"></i>
+							<svg class="icon" aria-hidden="true"><use href="#icon-phone"></use></svg>
 							<span>{{ globalSetting.phone }}</span>
 						</li>
 					</ul>
@@ -21,12 +21,12 @@
 					<ul class="header_list text-center text-md-end">
 						<li>
 							<a href="/compare" aria-label="Comparateur">
-								<i class="ti-control-shuffle fa-2x"></i>
+								<svg class="icon icon--xl" aria-hidden="true"><use href="#icon-shuffle"></use></svg>
 							</a>
 						</li>
 						<li>
 							<a href="/wishlist" aria-label="Liste d'envies">
-								<i class="ti-heart fa-2x"></i>
+								<svg class="icon icon--xl" aria-hidden="true"><use href="#icon-heart"></use></svg>
 							</a>
 						</li>
 
@@ -34,19 +34,19 @@
 							{% if is_granted('ROLE_ADMIN') %}
 								<li>
 									<a href="/admin" aria-label="Espace administrateur">
-										<i class="ti-user fa-2x"></i>
+										<svg class="icon icon--xl" aria-hidden="true"><use href="#icon-user"></use></svg>
 									</a>
 								</li>
 							{% else %}
 								<li>
 									<a href="/account" aria-label="Mon compte">
-										<i class="ti-user fa-2x"></i>
+										<svg class="icon icon--xl" aria-hidden="true"><use href="#icon-user"></use></svg>
 									</a>
 								</li>
 							{% endif %}
 							<li>
 								<a href="/logout" aria-label="Me déconnecter">
-									<i class="ti-shift-right fa-2x"></i>
+									<svg class="icon icon--xl" aria-hidden="true"><use href="#icon-logout"></use></svg>
 								</a>
 							</li>
 						{% else %}
@@ -71,7 +71,7 @@
 				</div>
 
 				<button type="button" class="navbar-toggler collapsed" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-expanded="false" aria-label="Menu principal">
-					<span class="ion-android-menu"></span>
+					<svg class="icon" aria-hidden="true"><use href="#icon-menu"></use></svg>
 				</button>
 
 				<div class="collapse navbar-collapse justify-content-end" id="navbarSupportedContent">
@@ -154,13 +154,13 @@
 				<ul class="navbar-nav attr-nav align-items-center">
 					<li>
 						<a href="#" class="nav-link search_trigger" aria-label="Recherche">
-							<i class="linearicons-magnifier"></i>
+							<svg class="icon" aria-hidden="true"><use href="#icon-search"></use></svg>
 						</a>
 						<div class="search_wrap">
 							<form action="/product/search" method="get">
 								<input type="text" name="term" placeholder="Rechercher..." class="form-control" aria-label="Champ de recherche">
 								<button type="submit" class="search_icon" aria-label="Valider la recherche">
-									<i class="ion-ios-search-strong"></i>
+									<svg class="icon" aria-hidden="true"><use href="#icon-search"></use></svg>
 								</button>
 							</form>
 						</div>
@@ -168,7 +168,7 @@
 
 					<li class="dropdown cart_dropdown">
 						<a href="#" class="nav-link cart_trigger" data-bs-toggle="dropdown" aria-label="Panier">
-							<i class="linearicons-cart"></i>
+							<svg class="icon" aria-hidden="true"><use href="#icon-cart"></use></svg>
 							<span class="cart_count"></span>
 						</a>
 						<div class="cart_box dropdown-menu dropdown-menu-right">

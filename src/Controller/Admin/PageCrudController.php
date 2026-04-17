@@ -96,7 +96,7 @@ final class PageCrudController extends AbstractCrudController
             ->setHelp('Tu peux mettre du HTML. Évite les scripts.');
 
         // ===== TAB 2 : EMPLACEMENTS =====
-        yield FormField::addTab('Emplacements')->setIcon('fa fa-location-dot');
+        yield FormField::addTab('Emplacements')->setIcon('fa fa-map-marker-alt');
 
         yield FormField::addPanel('Visibilité')
             ->setIcon('fa fa-eye')

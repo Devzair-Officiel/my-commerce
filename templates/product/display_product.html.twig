@@ -15,18 +15,18 @@
 					{% if product.stock != 0 %}
 						<li>
 							<a href="/cart/add/{{product.id}}/1" data-product-id="{{ product.id }}" class="add-to-cart" title="Ajouter au panier">
-								<i class="icon-basket-loaded"></i>
+								<svg class="icon" aria-hidden="true"><use href="#icon-cart"></use></svg>
 							</a>
 						</li>
 					{% endif %}
 					<li>
 						<a href="/compare/add/{{product.id}}" class="add-to-compare" title="Ajouter au comparatif">
-							<i class="icon-shuffle"></i>
+							<svg class="icon" aria-hidden="true"><use href="#icon-shuffle"></use></svg>
 						</a>
 					</li>
 					<li>
 						<a href="/wishlist/add/{{ product.id }}" class="add-to-wishlist" title="Ajouter a la liste des souhaits">
-							<i class="icon-heart"></i>
+							<svg class="icon" aria-hidden="true"><use href="#icon-heart"></use></svg>
 						</a>
 					</li>
 				</ul>

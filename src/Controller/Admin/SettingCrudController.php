@@ -185,7 +185,7 @@ final class SettingCrudController extends AbstractCrudController
             $logo,
             $logoAlt,
 
-            FormField::addTab('Adresse')->setIcon('fa fa-location-dot'),
+            FormField::addTab('Adresse')->setIcon('fa fa-map-marker-alt'),
             FormField::addFieldset('Adresse postale')->setIcon('fa fa-map'),
             $street,
             $codePostal,
