@@ -47,6 +47,13 @@
 	# après audit des domaines tiers (Stripe, Colissimo/HERE Maps, Mapbox, Google, etc.)
 	# header ?Content-Security-Policy "..."
 
+	# Cache long durée pour les assets statiques (CSS, JS, fonts, images)
+	@staticAssets {
+		path /assets/css/* /assets/js/* /assets/fonts/* /assets/images/* /favicon/*
+		file
+	}
+	header @staticAssets Cache-Control "public, max-age=31536000, immutable"
+
 	@phpRoute {
 		not path /.well-known/mercure*
 		not file {path}

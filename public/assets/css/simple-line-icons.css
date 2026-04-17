@@ -1,5 +1,5 @@
 /* http://graphicburger.com/simple-line-icons-webfont/ */
-@font-face {
+@font-face { font-display: swap;
 	font-family: 'Simple-Line-Icons';
 
 	src:url('../fonts/Simple-Line-Icons.eot');
@@ -13,7 +13,7 @@
 }
 
 @media screen and (-webkit-min-device-pixel-ratio:0) {
-	@font-face {
+	@font-face { font-display: swap;
 		font-family: 'Simple-Line-Icons';
 		src: url('../fonts/Simple-Line-Icons.svg#Simple-Line-Icons') format('svg');
 	}

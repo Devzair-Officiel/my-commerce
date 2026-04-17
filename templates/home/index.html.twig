@@ -5,6 +5,13 @@
 	{{ globalSetting.website_name }}
 {% endblock %}
 
+{% block stylesheets %}
+	{# Preload de l'image LCP (1ère slide du carousel) pour que le navigateur la télécharge en priorité #}
+	{% if sliders|length > 0 %}
+		<link rel="preload" as="image" href="/assets/images/sliders/{{ sliders[0].mediaSlider }}" fetchpriority="high">
+	{% endif %}
+{% endblock %}
+
 {% block body %}
 
 	<main id="main-content">
@@ -12,7 +19,13 @@
 			<div id="carouselExampleControls" data-bs-ride="carousel" class="carousel slide carousel-fade light_arrow">
 				<div class="carousel-inner">
 					{% for slider in sliders %}
-						<div class="lazyload {{ loop.first ? 'carousel-item background_bg active' : 'carousel-item background_bg' }}" data-img-src="/assets/images/sliders/{{ slider.mediaSlider }}" style="background-image: url('/assets/images/sliders/{{ slider.mediaSlider }}');" aria-label="Slide {{ loop.index }}">
+						<div class="{{ loop.first ? 'carousel-item background_bg active' : 'lazyload carousel-item background_bg' }}"
+							{% if loop.first %}
+								style="background-image: url('/assets/images/sliders/{{ slider.mediaSlider }}');"
+							{% else %}
+								data-img-src="/assets/images/sliders/{{ slider.mediaSlider }}"
+							{% endif %}
+							aria-label="Slide {{ loop.index }}">
 							<div class="banner_slide_content">
 								<div class="container">
 									<div class="row">

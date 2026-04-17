@@ -93,7 +93,7 @@ function renderMiniCartItem({ product, quantity }) {
                 <a href="/cart/remove/${product.id}/1" class="mini_cart_minus" aria-label="Diminuer">
                     <button type="button" class="mini_btn" aria-hidden="true">−</button>
                 </a>
-                <input class="mini_qty" name="quantity" type="text" value="${qty}" readonly>
+                <input class="mini_qty" name="quantity" type="text" value="${qty}" readonly aria-label="Quantité">
                 ${canAdd
                     ? `<a href="/cart/add/${product.id}/1" class="mini_cart_plus" aria-label="Augmenter">
                            <button type="button" class="mini_btn" aria-hidden="true">+</button>
