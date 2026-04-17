@@ -22,11 +22,12 @@ class CategoryRepository extends ServiceEntityRepository
     public function findMegaCategoriesForLayout(): array
     {
         return $this->createQueryBuilder('c')
-            ->select('c.id AS id, c.title AS title, c.slug AS slug, c.description AS description')
+            ->select('c', 'm')
+            ->leftJoin('c.media', 'm')
             ->andWhere('c.isMega = true')
             ->orderBy('c.id', 'ASC')
             ->getQuery()
-            ->getArrayResult();
+            ->getResult();
     }
 
 }

@@ -107,11 +107,14 @@ class ProductRepository extends ServiceEntityRepository
             p.title AS title,
             p.slug AS slug,
             p.regular_price AS price,
-            c.id AS category_id
+            c.id AS category_id,
+            MIN(m.filename) AS media_filename
         ')
             ->innerJoin('p.categories', 'c')
+            ->leftJoin('p.medias', 'm')
             ->andWhere('c.id IN (:categoryIds)')
             ->setParameter('categoryIds', $categoryIds)
+            ->groupBy('p.id, c.id')
             ->orderBy('p.id', 'ASC')
             ->getQuery()
             ->getArrayResult();

@@ -94,19 +94,31 @@
 						<li class="dropdown dropdown-mega-menu">
 							<a href="#" class="dropdown-toggle nav-link" data-bs-toggle="dropdown" aria-expanded="false">Produits</a>
 							<div class="dropdown-menu">
-								<ul class="mega-menu d-lg-flex">
-									{% for category in globalMegaCategories %}
-										<li class="mega-menu-col col-lg-4">
-											<ul>
-												<li>
-													<h5>
-														<a class="nav-link" href="/category/{{ category.slug }}">{{ category.title }}</a>
-													</h5>
+								<ul class="mega-menu mega-menu--products d-lg-flex">
+									{% set visibleCategories = globalMegaCategories|slice(0, 3) %}
+									{% set colClass = visibleCategories|length == 2 ? 'col-lg-6' : 'col-lg-4' %}
+									{% for category in visibleCategories %}
+										<li class="mega-menu-col mega-menu__category {{ colClass }}">
+											<ul class="mega-menu__list">
+												<li class="mega-menu__category-header">
+													<a href="/category/{{ category.slug }}" class="mega-menu__category-title">
+														{{ category.title }}
+													</a>
 												</li>
 												{% for product in globalMegaProducts[category.id] %}
-													{% if loop.index < 6 %}
-														<li>
-															<a class="dropdown-item nav-link nav_item" href="/produits/{{ product.slug }}">{{ product.title }}</a>
+													{% if loop.index <= 5 %}
+														<li class="mega-menu__product-item">
+															<a href="/produits/{{ product.slug }}" class="mega-menu__product-link">
+																{% if product.media_filename %}
+																	<img src="/assets/images/products/{{ product.media_filename|replace({'.': '-thumb.'}) }}"
+																		 alt="{{ product.title }}"
+																		 loading="lazy"
+																		 class="mega-menu__product-img">
+																{% else %}
+																	<span class="mega-menu__product-img-placeholder"></span>
+																{% endif %}
+																<span class="mega-menu__product-name">{{ product.title }}</span>
+															</a>
 														</li>
 													{% endif %}
 												{% endfor %}

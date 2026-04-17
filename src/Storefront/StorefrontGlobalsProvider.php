@@ -28,7 +28,7 @@ final class StorefrontGlobalsProvider
     public const TAG_PRODUCTS   = 'storefront.products';
 
     // Clé versionnée : incrémenter la version si la structure change
-    private const CACHE_KEY = 'storefront.globals.v7.scalars';
+    private const CACHE_KEY = 'storefront.globals.v8.objects';
 
     private const MEGA_MENU_PRODUCTS_PER_CATEGORY = 6;
 
@@ -55,7 +55,7 @@ final class StorefrontGlobalsProvider
 
             $megaCategories = $this->categories->findMegaCategoriesForLayout();
             $categoryIds = array_map(
-                static fn(array $c): int => (int) ($c['id'] ?? 0),
+                static fn(\App\Entity\Category $c): int => (int) $c->getId(),
                 $megaCategories
             );
             $categoryIds = array_values(array_filter($categoryIds, static fn(int $id) => $id > 0));
