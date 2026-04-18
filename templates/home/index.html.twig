@@ -15,7 +15,32 @@
 {% block body %}
 
 	<main id="main-content">
+		{% set heroVideo = globalSetting.hero_video_filename ?? null %}
 		<section class="banner_section slide_medium shop_banner_slider staggered-animation-wrap" aria-label="Mise en avant des produits">
+
+		{% if heroVideo %}
+			<div class="slider-video-item">
+				<video class="slider-video-bg" autoplay muted loop playsinline preload="auto" aria-hidden="true">
+					<source src="/assets/videos/hero/{{ heroVideo }}" type="video/mp4">
+				</video>
+				<div class="banner_slide_content">
+					<div class="container">
+						<div class="row">
+							<div class="col-lg-7 col-9">
+								<div class="banner_content overflow-hidden">
+									<h1 class="staggered-animation animated slideInLeft" style="color:#fff;">
+										Acheter du miel naturel en ligne
+									</h1>
+									<a class="mt-4 btn btn-fill-out rounded-0 text-uppercase" href="/boutique">
+										Découvrir
+									</a>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		{% else %}
 			<div id="carouselExampleControls" data-bs-ride="carousel" class="carousel slide carousel-fade light_arrow">
 				<div class="carousel-inner">
 					{% for slider in sliders %}
@@ -70,6 +95,7 @@
 					<svg class="icon" aria-hidden="true"><use href="#icon-chevron-right"></use></svg>
 				</a>
 			</div>
+		{% endif %}
 		</section>
 
 		<section class="main_content" aria-labelledby="home-products-title">

@@ -10,6 +10,7 @@ use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use EasyCorp\Bundle\EasyAdminBundle\Field\IdField;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
+use EasyCorp\Bundle\EasyAdminBundle\Field\Field;
 use EasyCorp\Bundle\EasyAdminBundle\Field\FormField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\EmailField;
@@ -19,6 +20,8 @@ use EasyCorp\Bundle\EasyAdminBundle\Field\TextareaField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TelephoneField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\UrlField;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
+use Symfony\Component\Form\Extension\Core\Type\FileType;
+use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 /**
@@ -28,7 +31,10 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 #[IsGranted('ROLE_SUPER_ADMIN')]
 final class SettingCrudController extends AbstractCrudController
 {
-    public function __construct(private readonly StorefrontGlobalsProvider $globalsProvider) {}
+    public function __construct(
+        private readonly StorefrontGlobalsProvider $globalsProvider,
+        private readonly RequestStack $requestStack,
+    ) {}
 
     public static function getEntityFqcn(): string
     {
@@ -228,6 +234,32 @@ final class SettingCrudController extends AbstractCrudController
                 ->setColumns(12)
                 ->setFormTypeOption('attr', ['rows' => 4])
                 ->setRequired(false),
+
+            FormField::addTab('Vidéo hero')->setIcon('fa fa-video'),
+            FormField::addFieldset('Vidéo de la page d\'accueil')->setIcon('fa fa-film')
+                ->setHelp('Si une vidéo est définie, elle remplace le carousel d\'images sur la page d\'accueil.'),
+            TextField::new('heroVideoFilename', 'Vidéo actuelle')
+                ->setColumns(12)
+                ->onlyOnDetail()
+                ->formatValue(static fn(?string $v) => $v
+                    ? sprintf('<video src="/assets/videos/hero/%s" controls style="max-width:400px;max-height:200px;"></video>', htmlspecialchars($v))
+                    : 'Aucune vidéo — le carousel d\'images est affiché.'
+                )
+                ->renderAsHtml(),
+            TextField::new('heroVideoFilename', 'Vidéo actuelle')
+                ->setColumns(12)
+                ->onlyOnIndex()
+                ->formatValue(static fn(?string $v) => $v ?: '—'),
+            Field::new('_heroVideoUpload', 'Uploader une vidéo (MP4, WebM)')
+                ->setColumns(12)
+                ->onlyOnForms()
+                ->setFormType(FileType::class)
+                ->setFormTypeOptions([
+                    'mapped'   => false,
+                    'required' => false,
+                    'attr'     => ['accept' => 'video/mp4,video/webm,video/*'],
+                ])
+                ->setHelp('Laisser vide pour conserver la vidéo actuelle. Supprimer le nom du fichier pour revenir au carousel.'),
         ];
     }
 
@@ -243,6 +275,33 @@ final class SettingCrudController extends AbstractCrudController
         return $setting;
     }
 
+    private function handleHeroVideoUpload(Setting $setting): void
+    {
+        $request = $this->requestStack->getCurrentRequest();
+        if (!$request) {
+            return;
+        }
+
+        $all  = $request->files->all();
+        $file = $all['Setting']['_heroVideoUpload']
+            ?? $all['setting']['_heroVideoUpload']
+            ?? $request->files->get('_heroVideoUpload')
+            ?? null;
+
+        if (!$file) {
+            return;
+        }
+
+        $uploadDir = \dirname(__DIR__, 3) . '/public/assets/videos/hero';
+        if (!is_dir($uploadDir)) {
+            mkdir($uploadDir, 0755, true);
+        }
+
+        $filename = 'hero-video-' . time() . '.' . $file->getClientOriginalExtension();
+        $file->move($uploadDir, $filename);
+        $setting->setHeroVideoFilename($filename);
+    }
+
     public function persistEntity(EntityManagerInterface $entityManager, $entityInstance): void
     {
         /** @var Setting $setting */
@@ -252,12 +311,14 @@ final class SettingCrudController extends AbstractCrudController
             $setting->setlogoMedia(new Media());
         }
 
+        $this->handleHeroVideoUpload($setting);
         parent::persistEntity($entityManager, $entityInstance);
         $this->globalsProvider->invalidateSetting();
     }
 
     public function updateEntity(EntityManagerInterface $entityManager, $entityInstance): void
     {
+        $this->handleHeroVideoUpload($this->getContext()->getEntity()->getInstance());
         parent::updateEntity($entityManager, $entityInstance);
         $this->globalsProvider->invalidateSetting();
     }

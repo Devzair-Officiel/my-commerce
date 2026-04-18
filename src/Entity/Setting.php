@@ -84,6 +84,9 @@ class Setting
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $faviconFilename = null;
 
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $heroVideoFilename = null;
+
     #[ORM\OneToOne(mappedBy: 'setting', cascade: ['persist', 'remove'], orphanRemoval: true)]
     private ?Media $logoMedia = null;
 
@@ -368,6 +371,17 @@ class Setting
     public function setFaviconFilename(?string $faviconFilename): static
     {
         $this->faviconFilename = $faviconFilename;
+        return $this;
+    }
+
+    public function getHeroVideoFilename(): ?string
+    {
+        return $this->heroVideoFilename;
+    }
+
+    public function setHeroVideoFilename(?string $heroVideoFilename): static
+    {
+        $this->heroVideoFilename = $heroVideoFilename;
         return $this;
     }
 

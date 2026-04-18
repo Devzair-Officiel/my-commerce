@@ -771,6 +771,36 @@ button:focus:not(:focus-visible) {
     background-repeat: no-repeat;
 }
 
+.slider-video-item {
+    position: relative;
+    overflow: hidden;
+    height: 700px;
+}
+
+@media (max-width: 767px) {
+    .slider-video-item {
+        height: 400px;
+    }
+}
+
+.slider-video-bg {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    min-width: 100%;
+    min-height: 100%;
+    width: auto;
+    height: auto;
+    transform: translate(-50%, -50%);
+    object-fit: cover;
+    z-index: 0;
+}
+
+.slider-video-item .banner_slide_content {
+    position: relative;
+    z-index: 1;
+}
+
 .bg_size_auto {
 	background-size: auto !important;
 }
