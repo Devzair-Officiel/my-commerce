@@ -6,8 +6,18 @@
 {% endblock %}
 
 {% block stylesheets %}
-	{# Preload de l'image LCP (1ère slide du carousel) pour que le navigateur la télécharge en priorité #}
-	{% if sliders|length > 0 %}
+	{% set heroVideo = globalSetting.hero_video_filename ?? null %}
+	{% set heroPoster = globalSetting.hero_poster_filename ?? null %}
+	{% if heroVideo %}
+		{% if heroPoster %}
+			{# Poster = LCP réel, préchargement prioritaire #}
+			<link rel="preload" as="image" href="/assets/images/hero/{{ heroPoster }}" fetchpriority="high">
+		{% else %}
+			{# Sans poster, précharger la vidéo #}
+			<link rel="preload" as="video" href="/assets/videos/hero/{{ heroVideo }}" type="video/mp4">
+		{% endif %}
+	{% elseif sliders|length > 0 %}
+		{# Préchargement de l'image LCP (1ère slide du carousel) #}
 		<link rel="preload" as="image" href="/assets/images/sliders/{{ sliders[0].mediaSlider }}" fetchpriority="high">
 	{% endif %}
 {% endblock %}
@@ -19,8 +29,10 @@
 		<section class="banner_section slide_medium shop_banner_slider staggered-animation-wrap" aria-label="Mise en avant des produits">
 
 		{% if heroVideo %}
+			{% set heroPoster = globalSetting.hero_poster_filename ?? null %}
 			<div class="slider-video-item">
-				<video class="slider-video-bg" autoplay muted loop playsinline preload="auto" aria-hidden="true">
+				<video class="slider-video-bg" autoplay muted loop playsinline preload="auto" fetchpriority="high" aria-hidden="true"
+					{% if heroPoster %}poster="/assets/images/hero/{{ heroPoster }}"{% endif %}>
 					<source src="/assets/videos/hero/{{ heroVideo }}" type="video/mp4">
 				</video>
 				<div class="banner_slide_content">

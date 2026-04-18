@@ -22,8 +22,8 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
  */
 final class MediaFileManager
 {
-    private const THUMB_MAX  = 600;
-    private const MEDIUM_MAX = 800;
+    private const THUMB_MAX  = 200;
+    private const MEDIUM_MAX = 600;
 
     public function __construct(
         private Filesystem $fs,
@@ -132,28 +132,22 @@ final class MediaFileManager
     private function generateVariants(string $sourcePath, string $dir, string $filename): void
     {
         if (!\extension_loaded('gd')) {
-            return; // GD non disponible : on laisse l'original tel quel
+            return;
         }
 
-        $info = \pathinfo($filename);
-        $base = $info['filename'];
-        $ext  = $info['extension'] ?? 'jpg';
+        $base = \pathinfo($filename, \PATHINFO_FILENAME);
 
         $manager = new ImageManager(new Driver());
 
         try {
-            $image = $manager->decode($sourcePath);
-
-            // Thumbnail : contenu recadré en carré 300×300
             $manager->decode($sourcePath)
                 ->cover(self::THUMB_MAX, self::THUMB_MAX)
-                ->save($dir . '/' . $base . '-thumb.' . $ext);
+                ->save($dir . '/' . $base . '-thumb.webp');
 
-            // Medium : redimensionné dans la boîte 800×800, ratio conservé
-            $image->scaleDown(self::MEDIUM_MAX, self::MEDIUM_MAX)
-                ->save($dir . '/' . $base . '-medium.' . $ext);
+            $manager->decode($sourcePath)
+                ->scaleDown(self::MEDIUM_MAX, self::MEDIUM_MAX)
+                ->save($dir . '/' . $base . '-medium.webp');
         } catch (\Throwable) {
-            // Si le fichier n'est pas une image (PDF, etc.) on ignore silencieusement
         }
     }
 
@@ -174,9 +168,14 @@ final class MediaFileManager
         $ext    = $info['extension'] ?? '';
 
         foreach (['-thumb', '-medium'] as $suffix) {
-            $variant = $dir . '/' . $base . $suffix . ($ext !== '' ? '.' . $ext : '');
-            if ($this->fs->exists($variant)) {
-                $this->fs->remove($variant);
+            foreach (['webp', $ext] as $varExt) {
+                if ($varExt === '') {
+                    continue;
+                }
+                $variant = $dir . '/' . $base . $suffix . '.' . $varExt;
+                if ($this->fs->exists($variant)) {
+                    $this->fs->remove($variant);
+                }
             }
         }
     }

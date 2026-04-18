@@ -174,8 +174,7 @@ class Media
         if ($this->filename === null) {
             return '';
         }
-        $info = \pathinfo($this->filename);
-        return ($info['filename'] ?? '') . '-thumb.' . ($info['extension'] ?? '');
+        return \pathinfo($this->filename, \PATHINFO_FILENAME) . '-thumb.webp';
     }
 
     public function getMediumFilename(): string
@@ -183,8 +182,7 @@ class Media
         if ($this->filename === null) {
             return '';
         }
-        $info = \pathinfo($this->filename);
-        return ($info['filename'] ?? '') . '-medium.' . ($info['extension'] ?? '');
+        return \pathinfo($this->filename, \PATHINFO_FILENAME) . '-medium.webp';
     }
 
     public function __toString(): string

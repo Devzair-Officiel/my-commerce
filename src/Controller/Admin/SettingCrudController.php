@@ -260,6 +260,31 @@ final class SettingCrudController extends AbstractCrudController
                     'attr'     => ['accept' => 'video/mp4,video/webm,video/*'],
                 ])
                 ->setHelp('Laisser vide pour conserver la vidéo actuelle. Supprimer le nom du fichier pour revenir au carousel.'),
+
+            FormField::addFieldset('Image poster (miniature affichée avant le chargement de la vidéo)')->setIcon('fa fa-image')
+                ->setHelp('Recommandé : image JPG ou WebP au format 16/9, même dimensions que la vidéo. Améliore le LCP Lighthouse.'),
+            TextField::new('heroPosterFilename', 'Poster actuel')
+                ->setColumns(12)
+                ->onlyOnDetail()
+                ->formatValue(static fn(?string $v) => $v
+                    ? sprintf('<img src="/assets/images/hero/%s" style="max-width:400px;max-height:200px;object-fit:cover;">', htmlspecialchars($v))
+                    : 'Aucun poster défini.'
+                )
+                ->renderAsHtml(),
+            TextField::new('heroPosterFilename', 'Poster actuel')
+                ->setColumns(12)
+                ->onlyOnIndex()
+                ->formatValue(static fn(?string $v) => $v ?: '—'),
+            Field::new('_heroPosterUpload', 'Uploader un poster (JPG, WebP, PNG)')
+                ->setColumns(12)
+                ->onlyOnForms()
+                ->setFormType(FileType::class)
+                ->setFormTypeOptions([
+                    'mapped'   => false,
+                    'required' => false,
+                    'attr'     => ['accept' => 'image/jpeg,image/webp,image/png,image/*'],
+                ])
+                ->setHelp('Laisser vide pour conserver le poster actuel.'),
         ];
     }
 
@@ -273,6 +298,33 @@ final class SettingCrudController extends AbstractCrudController
         $setting->setlogoMedia($media);
 
         return $setting;
+    }
+
+    private function handleHeroPosterUpload(Setting $setting): void
+    {
+        $request = $this->requestStack->getCurrentRequest();
+        if (!$request) {
+            return;
+        }
+
+        $all  = $request->files->all();
+        $file = $all['Setting']['_heroPosterUpload']
+            ?? $all['setting']['_heroPosterUpload']
+            ?? $request->files->get('_heroPosterUpload')
+            ?? null;
+
+        if (!$file) {
+            return;
+        }
+
+        $uploadDir = \dirname(__DIR__, 3) . '/public/assets/images/hero';
+        if (!is_dir($uploadDir)) {
+            mkdir($uploadDir, 0755, true);
+        }
+
+        $filename = 'hero-poster-' . time() . '.' . $file->getClientOriginalExtension();
+        $file->move($uploadDir, $filename);
+        $setting->setHeroPosterFilename($filename);
     }
 
     private function handleHeroVideoUpload(Setting $setting): void
@@ -312,13 +364,16 @@ final class SettingCrudController extends AbstractCrudController
         }
 
         $this->handleHeroVideoUpload($setting);
+        $this->handleHeroPosterUpload($setting);
         parent::persistEntity($entityManager, $entityInstance);
         $this->globalsProvider->invalidateSetting();
     }
 
     public function updateEntity(EntityManagerInterface $entityManager, $entityInstance): void
     {
-        $this->handleHeroVideoUpload($this->getContext()->getEntity()->getInstance());
+        $instance = $this->getContext()->getEntity()->getInstance();
+        $this->handleHeroVideoUpload($instance);
+        $this->handleHeroPosterUpload($instance);
         parent::updateEntity($entityManager, $entityInstance);
         $this->globalsProvider->invalidateSetting();
     }

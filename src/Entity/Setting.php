@@ -87,6 +87,9 @@ class Setting
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $heroVideoFilename = null;
 
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $heroPosterFilename = null;
+
     #[ORM\OneToOne(mappedBy: 'setting', cascade: ['persist', 'remove'], orphanRemoval: true)]
     private ?Media $logoMedia = null;
 
@@ -382,6 +385,17 @@ class Setting
     public function setHeroVideoFilename(?string $heroVideoFilename): static
     {
         $this->heroVideoFilename = $heroVideoFilename;
+        return $this;
+    }
+
+    public function getHeroPosterFilename(): ?string
+    {
+        return $this->heroPosterFilename;
+    }
+
+    public function setHeroPosterFilename(?string $heroPosterFilename): static
+    {
+        $this->heroPosterFilename = $heroPosterFilename;
         return $this;
     }
 

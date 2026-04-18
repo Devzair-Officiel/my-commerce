@@ -21,8 +21,8 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 )]
 final class RegenerateImageVariantsCommand extends Command
 {
-    private const THUMB_MAX  = 600;
-    private const MEDIUM_MAX = 800;
+    private const THUMB_MAX  = 200;
+    private const MEDIUM_MAX = 600;
 
     private const DIRS = [
         'products',
@@ -87,8 +87,8 @@ final class RegenerateImageVariantsCommand extends Command
                 }
 
                 $sourcePath  = $file->getPathname();
-                $thumbPath   = $dir . '/' . $base . '-thumb.' . $ext;
-                $mediumPath  = $dir . '/' . $base . '-medium.' . $ext;
+                $thumbPath   = $dir . '/' . $base . '-thumb.webp';
+                $mediumPath  = $dir . '/' . $base . '-medium.webp';
 
                 $needsThumb  = !file_exists($thumbPath);
                 $needsMedium = !file_exists($mediumPath);

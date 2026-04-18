@@ -42,37 +42,42 @@
 	});
 
 	// -----------------------------
-	// 03. ANIMATION (Waypoints)
+	// 03. ANIMATION (IntersectionObserver)
 	// -----------------------------
 	(function initAnimations() {
-		if (!$.fn.waypoint) return;
+		if (!('IntersectionObserver' in window)) return;
 
-		function ckScrollInit($items, $trigger) {
-			$items.each(function () {
-				const $el = $(this);
-				const animationClass = $el.attr('data-animation');
-				const animationDelay = $el.attr('data-animation-delay') || '0s';
-
-				$el.css({
-					'-webkit-animation-delay': animationDelay,
-					'-moz-animation-delay': animationDelay,
-					'animation-delay': animationDelay,
-					opacity: 0,
-				});
-
-				const $wpTrigger = $trigger && $trigger.length ? $trigger : $el;
-
-				$wpTrigger.waypoint(
-					function () {
-						$el.addClass('animated').addClass(animationClass).css('opacity', '1');
-					},
-					{ triggerOnce: true, offset: '90%' }
-				);
-			});
+		function animate(el) {
+			const delay = el.dataset.animationDelay || '0s';
+			el.style.setProperty('-webkit-animation-delay', delay);
+			el.style.animationDelay = delay;
+			el.style.opacity = '1';
+			const cls = el.dataset.animation;
+			if (cls) el.classList.add('animated', cls);
 		}
 
-		ckScrollInit($('.animation'));
-		ckScrollInit($('.staggered-animation'), $('.staggered-animation-wrap'));
+		// Simple items — each observes itself
+		$('.animation').each(function () {
+			const el = this;
+			el.style.opacity = '0';
+			new IntersectionObserver(function (entries, obs) {
+				if (!entries[0].isIntersecting) return;
+				animate(el);
+				obs.disconnect();
+			}, { threshold: 0.1 }).observe(el);
+		});
+
+		// Staggered items — observe the wrap, animate all children
+		$('.staggered-animation-wrap').each(function () {
+			const wrap = this;
+			const children = wrap.querySelectorAll('.staggered-animation');
+			children.forEach(function (el) { el.style.opacity = '0'; });
+			new IntersectionObserver(function (entries, obs) {
+				if (!entries[0].isIntersecting) return;
+				children.forEach(animate);
+				obs.disconnect();
+			}, { threshold: 0.1 }).observe(wrap);
+		});
 	})();
 
 	// -----------------------------

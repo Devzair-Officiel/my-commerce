@@ -777,10 +777,26 @@ button:focus:not(:focus-visible) {
     height: 700px;
 }
 
-@media (max-width: 767px) {
-    .slider-video-item {
-        height: 400px;
-    }
+@media only screen and (max-width: 1199px) {
+    .slider-video-item { height: 400px; }
+    .banner_section.slide_medium,
+    .banner_section.slide_medium .carousel-item,
+    .banner_section.slide_medium .banner_content_wrap,
+    .banner_section.slide_medium .banner_content_wrap .carousel-item { height: 400px; }
+}
+@media only screen and (max-width: 991px) {
+    .slider-video-item { height: 350px; }
+    .banner_section.slide_medium,
+    .banner_section.slide_medium .carousel-item,
+    .banner_section.slide_medium .banner_content_wrap,
+    .banner_section.slide_medium .banner_content_wrap .carousel-item { height: 350px; }
+}
+@media only screen and (max-width: 575px) {
+    .slider-video-item { height: 250px; }
+    .banner_section.slide_medium,
+    .banner_section.slide_medium .carousel-item,
+    .banner_section.slide_medium .banner_content_wrap,
+    .banner_section.slide_medium .banner_content_wrap .carousel-item { height: 250px; }
 }
 
 .slider-video-bg {
@@ -3270,6 +3286,7 @@ input.text {
 *===================================*/
 .banner_section {
 	position: relative;
+	overflow: hidden;
 }
 
 .banner_content_wrap {
