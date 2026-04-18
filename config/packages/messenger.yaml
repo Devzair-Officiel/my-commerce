@@ -36,3 +36,4 @@ framework:
             App\Message\SendOrderConfirmationEmailMessage: async
             App\Message\SendRefundEmailMessage: async
             App\Message\SendShippedEmailMessage: async
+            App\Message\SendBackInStockAlertMessage: async

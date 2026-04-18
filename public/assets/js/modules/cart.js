@@ -30,9 +30,9 @@ function renderAddButton(productId, qty, stock) {
         return `<a href="/cart/add/${productId}/1"><input type="button" value="+" class="plus"></a>`;
     }
 
-    return `<div class="cart_stock_blocked" style="text-align:center;align-self:center;" title="Stock épuisé" aria-label="Stock épuisé">
-                <svg class="icon" aria-hidden="true" style="width:28px;height:28px;color:#999;"><use href="#icon-ban"></use></svg>
-            </div>`;
+    return `<button type="button" class="plus" disabled title="Stock épuisé" aria-label="Stock épuisé" style="cursor:not-allowed;opacity:0.45;display:flex;align-items:center;justify-content:center;line-height:normal;">
+                <svg class="icon" aria-hidden="true" style="width:16px;height:16px;"><use href="#icon-ban"></use></svg>
+            </button>`;
 }
 
 // ── Ligne du tableau panier ────────────────────────────────────────────────────
@@ -40,7 +40,7 @@ function renderAddButton(productId, qty, stock) {
 function renderCartRow(item) {
     const { product, quantity, sub_total, taxe, sub_total_ht } = item;
     const qty   = Number(quantity ?? 0);
-    const stock = Number(product?.stock ?? 0);
+    const stock = product?.stock ?? null;
     const price = (product.isOnSale ? product.soldePrice : product.regularPrice) ?? 0;
 
     return `
@@ -98,7 +98,7 @@ function renderMiniCartItem({ product, quantity }) {
                     ? `<a href="/cart/add/${product.id}/1" class="mini_cart_plus" aria-label="Augmenter">
                            <button type="button" class="mini_btn" aria-hidden="true">+</button>
                        </a>`
-                    : `<span class="mini_btn mini_btn--disabled" aria-label="Stock épuisé">+</span>`
+                    : `<span class="mini_btn mini_btn--disabled" aria-label="Stock épuisé" style="display:inline-flex;align-items:center;justify-content:center;opacity:0.45;cursor:not-allowed;"><svg class="icon" aria-hidden="true" style="width:14px;height:14px;"><use href="#icon-ban"></use></svg></span>`
                 }
                 <a href="/cart/remove/${product.id}/${qty}" class="mini_cart_remove item_remove" aria-label="Retirer">
                     <svg width="25" height="25" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">

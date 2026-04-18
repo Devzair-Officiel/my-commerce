@@ -9,6 +9,8 @@ use App\Message\SendNewReviewNotificationMessage;
 use App\Repository\CategoryRepository;
 use App\Repository\ProductRepository;
 use App\Repository\ReviewRepository;
+use App\Repository\StockAlertRepository;
+use App\Service\CartService;
 use App\Seo\SeoResolver;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -36,6 +38,8 @@ final class ProductController extends AbstractController
         SeoResolver $seoResolver,
         Request $request,
         ReviewRepository $reviewRepository,
+        StockAlertRepository $stockAlertRepository,
+        CartService $cartService,
         MessageBusInterface $messageBus,
         EntityManagerInterface $em,
     ): Response {
@@ -93,16 +97,32 @@ final class ProductController extends AbstractController
         $reviews       = $reviewRepository->findApprovedByProduct($product);
         $averageRating = $product->getAverageRating();
 
+        $stockAlertSubscribed = false;
+        if ($currentUser !== null) {
+            $stockAlertSubscribed = $stockAlertRepository->findByEmailAndProduct(
+                $currentUser->getUserIdentifier(),
+                $product
+            ) !== null;
+        }
+
+        // Stock disponible = stock réel − quantité déjà dans le panier
+        $cartRaw        = $cartService->getRawCart();
+        $qtyInCart      = (int) ($cartRaw[$product->getId()] ?? 0);
+        $rawStock       = $product->getStock();
+        $availableStock = $rawStock === null ? null : max(0, $rawStock - $qtyInCart);
+
         return $this->render('product/show_product_by_slug.html.twig', [
-            'product'           => $product,
-            'media'             => $product->getMediaData(),
-            'productBestSeller' => $this->productRepo->findBestSellersWithMedias(),
-            'relatedProducts'   => $product->getRelatedProducts(),
-            'seo'               => $seo,
-            'reviews'           => $reviews,
-            'reviewForm'        => $reviewForm,
-            'userReview'        => $userReview,
-            'averageRating'     => $averageRating,
+            'product'              => $product,
+            'media'                => $product->getMediaData(),
+            'productBestSeller'    => $this->productRepo->findBestSellersWithMedias(),
+            'relatedProducts'      => $product->getRelatedProducts(),
+            'seo'                  => $seo,
+            'reviews'              => $reviews,
+            'reviewForm'           => $reviewForm,
+            'userReview'           => $userReview,
+            'averageRating'        => $averageRating,
+            'stockAlertSubscribed' => $stockAlertSubscribed,
+            'availableStock'       => $availableStock,
         ]);
     }
 
