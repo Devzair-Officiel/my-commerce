@@ -454,17 +454,20 @@
 
 											<div class="form-group col-md-8">
 												<label class="form-label small fw-semibold">Rue <span class="text-danger">*</span></label>
-												<input required class="form-control form-control-sm" name="street" type="text">
+												<div class="position-relative">
+													<input required class="form-control form-control-sm address-street-input" name="street" type="text" autocomplete="off" placeholder="Commencez à taper votre adresse…">
+													<ul class="address-suggestions list-unstyled" role="listbox" aria-label="Suggestions d'adresse"></ul>
+												</div>
 											</div>
 
 											<div class="form-group col-md-4">
 												<label class="form-label small fw-semibold">Code postal <span class="text-danger">*</span></label>
-												<input required class="form-control form-control-sm" name="code_postal" type="text" inputmode="numeric" maxlength="10">
+												<input required class="form-control form-control-sm address-code-postal-input" name="code_postal" type="text" inputmode="numeric" maxlength="10">
 											</div>
 
 											<div class="form-group col-md-8">
 												<label class="form-label small fw-semibold">Ville <span class="text-danger">*</span></label>
-												<input required class="form-control form-control-sm" name="city" type="text">
+												<input required class="form-control form-control-sm address-city-input" name="city" type="text">
 											</div>
 
 											<div class="form-group col-md-4">
@@ -553,17 +556,20 @@
 
 											<div class="form-group col-md-8">
 												<label class="form-label small fw-semibold">Rue <span class="text-danger">*</span></label>
-												<input required class="form-control form-control-sm" name="street" type="text">
+												<div class="position-relative">
+													<input required class="form-control form-control-sm address-street-input" name="street" type="text" autocomplete="off" placeholder="Commencez à taper votre adresse…">
+													<ul class="address-suggestions list-unstyled" role="listbox" aria-label="Suggestions d'adresse"></ul>
+												</div>
 											</div>
 
 											<div class="form-group col-md-4">
 												<label class="form-label small fw-semibold">Code postal <span class="text-danger">*</span></label>
-												<input required class="form-control form-control-sm" name="code_postal" type="text" inputmode="numeric" maxlength="10">
+												<input required class="form-control form-control-sm address-code-postal-input" name="code_postal" type="text" inputmode="numeric" maxlength="10">
 											</div>
 
 											<div class="form-group col-md-8">
 												<label class="form-label small fw-semibold">Ville <span class="text-danger">*</span></label>
-												<input required class="form-control form-control-sm" name="city" type="text">
+												<input required class="form-control form-control-sm address-city-input" name="city" type="text">
 											</div>
 
 											<div class="form-group col-md-4">
@@ -752,6 +758,7 @@
 	{{ parent() }}
 	<script src="https://js.stripe.com/v3/"></script>
 	<script src="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js"></script>
+	<script src="{{ asset('assets/js/modules/address-autocomplete.js') }}" defer></script>
 	<script src="{{ asset('assets/js/pages/checkout/address.js') }}?v=3" type="module" defer></script>
 	<script src="{{ asset('assets/js/pages/checkout/stripe.js') }}?v=3" type="module" defer></script>
 {% endblock %}

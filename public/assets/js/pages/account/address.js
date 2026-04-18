@@ -6,7 +6,7 @@ function renderRow(a) {
   // a est en snake_case (API stable)
   return `
     <tr>
-      <td>${a.id ?? ""}</td>
+      <td>${escapeHtml(a.client_name ?? "")}</td>
       <td>${escapeHtml(`${a.street ?? ""} ${a.code_postal ?? ""} ${a.city ?? ""} ${a.state ?? ""}`.trim())}</td>
       <td>
         <a href="#"

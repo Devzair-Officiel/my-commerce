@@ -10017,3 +10017,35 @@ select {
 	color: #ffffff;
 	text-decoration: underline;
 }
+
+/* Address autocomplete suggestions */
+.address-suggestions {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-top: none;
+    border-radius: 0 0 4px 4px;
+    max-height: 220px;
+    overflow-y: auto;
+    z-index: 1050;
+    display: none;
+    margin: 0;
+    padding: 0;
+    box-shadow: 0 4px 12px rgba(0,0,0,.12);
+}
+.address-suggestions li {
+    padding: 9px 12px;
+    cursor: pointer;
+    font-size: 14px;
+    color: #333;
+    border-bottom: 1px solid #f0f0f0;
+}
+.address-suggestions li:last-child { border-bottom: none; }
+.address-suggestions li:hover,
+.address-suggestions li.active {
+    background: #fff5eb;
+    color: #b35500;
+}
