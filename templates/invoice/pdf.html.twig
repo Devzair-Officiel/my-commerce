@@ -68,7 +68,6 @@
                 <div class="logo-text">{{ seller.website_name }}</div>
             {% endif %}
             <div class="seller-info">
-                {% if seller.name %}{{ seller.name }}<br>{% endif %}
                 {% if seller.street %}{{ seller.street }}<br>{% endif %}
                 {{ seller.code_postal }} {{ seller.city }}{% if seller.state %}, {{ seller.state }}{% endif %}<br>
                 {% if seller.siret %}SIRET : {{ seller.siret }}<br>{% endif %}

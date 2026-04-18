@@ -24,7 +24,11 @@ export function initPickupPointSelector({ onPickupPointChange, onShippingModeCha
     // Pré-initialiser dès le chargement si un carrier point relais existe sur la page
     const hasPickupCarrier = [...carrierOptions].some(l => l.dataset.hasPickup === "true");
     if (hasPickupCarrier && token) {
-        initWidget();
+        // Attendre que jQuery soit disponible avant de lancer l'init
+        // (jQuery est chargé avec defer après les modules head)
+        waitForJQuery(8000).then((ready) => {
+            if (ready) initWidget();
+        });
     }
 
     // Appliquer le mode initial selon le carrier coché
@@ -227,7 +231,23 @@ function waitForWidgetReady(timeout = 10000) {
     });
 }
 
-function waitForColissimoPlugin(timeout = 5000) {
+function waitForJQuery(timeout = 8000) {
+    return new Promise((resolve) => {
+        const start = Date.now();
+        const check = () => {
+            if (typeof jQuery !== "undefined") {
+                resolve(true);
+            } else if (Date.now() - start > timeout) {
+                resolve(false);
+            } else {
+                setTimeout(check, 50);
+            }
+        };
+        check();
+    });
+}
+
+function waitForColissimoPlugin(timeout = 8000) {
     return new Promise((resolve) => {
         const start = Date.now();
         const check = () => {
