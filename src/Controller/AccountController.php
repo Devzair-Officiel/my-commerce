@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Dto\EditUserInput;
+use App\Entity\Invoice;
 use App\Entity\Order;
 use App\Entity\Shipment;
 use App\Entity\User;
@@ -12,6 +13,7 @@ use App\Entity\Contact;
 use App\Repository\ContactRepository;
 use App\Repository\OrderRepository;
 use App\Repository\UserRepository;
+use App\Service\Invoice\InvoicePdfRenderer;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -355,6 +357,34 @@ class AccountController extends AbstractController
 
         $this->addFlash('success', 'Votre adresse e-mail a bien été mise à jour.');
         return $this->redirectToRoute('app_account');
+    }
+
+    #[Route('/account/invoice/{id<\d+>}/download', name: 'app_account_invoice_download', methods: ['GET'])]
+    public function downloadInvoice(Invoice $invoice, InvoicePdfRenderer $renderer): Response
+    {
+        $this->denyAccessUnlessGranted('ROLE_USER');
+
+        $user = $this->getUser();
+        if (!$user instanceof User) {
+            throw $this->createAccessDeniedException();
+        }
+
+        $order = $invoice->getCustomerOrder();
+        if ($order === null || $order->getUser()?->getId() !== $user->getId()) {
+            throw $this->createAccessDeniedException();
+        }
+
+        if (!$invoice->isIssued()) {
+            throw $this->createNotFoundException('Facture non disponible.');
+        }
+
+        $pdf = $renderer->render($invoice);
+        $filename = $renderer->getFilename($invoice);
+
+        return new Response($pdf, 200, [
+            'Content-Type'        => 'application/pdf',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+        ]);
     }
 
     #[Route('/account/orders/ajax', name: 'app_account_orders_ajax', methods: ['GET'])]

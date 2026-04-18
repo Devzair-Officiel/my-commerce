@@ -4,6 +4,7 @@ namespace App\Controller\Admin;
 
 use App\Entity\Media;
 use App\Entity\Setting;
+use App\Storefront\StorefrontGlobalsProvider;
 use Doctrine\ORM\EntityManagerInterface;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
@@ -27,6 +28,8 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 #[IsGranted('ROLE_SUPER_ADMIN')]
 final class SettingCrudController extends AbstractCrudController
 {
+    public function __construct(private readonly StorefrontGlobalsProvider $globalsProvider) {}
+
     public static function getEntityFqcn(): string
     {
         return Setting::class;
@@ -237,12 +240,17 @@ final class SettingCrudController extends AbstractCrudController
         /** @var Setting $setting */
         $setting = $entityInstance;
 
-        // Sécurité: si jamais media est null, on le recrée
         if ($setting->getlogoMedia() === null) {
             $setting->setlogoMedia(new Media());
         }
 
         parent::persistEntity($entityManager, $entityInstance);
+        $this->globalsProvider->invalidateSetting();
     }
-    
+
+    public function updateEntity(EntityManagerInterface $entityManager, $entityInstance): void
+    {
+        parent::updateEntity($entityManager, $entityInstance);
+        $this->globalsProvider->invalidateSetting();
+    }
 }

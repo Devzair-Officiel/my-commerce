@@ -28,7 +28,7 @@ final class StorefrontGlobalsProvider
     public const TAG_PRODUCTS   = 'storefront.products';
 
     // Clé versionnée : incrémenter la version si la structure change
-    private const CACHE_KEY = 'storefront.globals.v8.objects';
+    private const CACHE_KEY = 'storefront.globals.v9.objects';
 
     private const MEGA_MENU_PRODUCTS_PER_CATEGORY = 6;
 

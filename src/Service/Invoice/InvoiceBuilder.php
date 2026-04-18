@@ -80,6 +80,7 @@ final class InvoiceBuilder
             'phone'                      => $setting?->getPhone() ?? '',
             'email'                      => $setting?->getEmail() ?? '',
             'website_name'               => $setting?->getWebsiteName() ?? '',
+            'logo_filename'              => $setting?->getLogoMedia()?->getFilename() ?? '',
             'legal_mentions'             => $setting?->getLegalMentions() ?? '',
             // Snapshot des infos de paiement au moment de l'émission
             'paid_at'                    => $order->getPaidAt()?->format('d/m/Y'),

@@ -10,7 +10,7 @@ parameters:
     upload_dir_products: '%kernel.project_dir%/public/assets/images/products'
     upload_dir_categories: '%kernel.project_dir%/public/assets/images/categories'
     upload_dir_sliders: '%kernel.project_dir%/public/assets/images/sliders'
-    upload_dir_settings: '%kernel.project_dir%/public/assets/images/settings'
+    upload_dir_settings: '%kernel.project_dir%/public/assets/images/setting'
     upload_dir_blogs: '%kernel.project_dir%/public/assets/images/blogs'
     upload_dir_PaymentMethod: '%kernel.project_dir%/public/assets/images/payment_methods_logos'
 

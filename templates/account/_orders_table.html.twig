@@ -17,8 +17,13 @@
                     <td>{{ (order.paidAt ?? order.createdAt)|date('d/m/Y', 'Europe/Paris') }}</td>
                     <td>{{ order.paymentStatus.label() }}</td>
                     <td>{{ (order.orderTotalTtcCents / 100)|format_currency(order.currency) }}</td>
-                    <td>
+                    <td class="d-flex gap-2 flex-wrap">
                         <a href="/account/order/{{order.id}}" class="btn btn-fill-out btn-sm">Détail</a>
+                        {% if order.invoice is not null and order.invoice.isIssued %}
+                            <a href="{{ path('app_account_invoice_download', {id: order.invoice.id}) }}" class="btn btn-fill-line btn-sm" title="Télécharger la facture {{ order.invoice.invoiceNumber }}">
+                                <svg class="icon me-1" aria-hidden="true"><use href="#icon-file"></use></svg>Facture
+                            </a>
+                        {% endif %}
                     </td>
             </tr>
         {% endfor %}
