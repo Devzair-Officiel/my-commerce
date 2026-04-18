@@ -10,11 +10,17 @@
 			{% endblock %}
 		</title>
 
-		<link rel="icon" type="image/png" href="{{ asset('favicon/favicon-96x96.png') }}" sizes="96x96">
-		<link rel="icon" type="image/svg+xml" href="{{ asset('favicon/favicon.svg') }}">
-		<link rel="shortcut icon" href="{{ asset('favicon/favicon.ico') }}">
-		<link rel="apple-touch-icon" sizes="180x180" href="{{ asset('favicon/apple-touch-icon.png') }}">
-		<link rel="manifest" href="{{ asset('favicon/site.webmanifest') }}">
+		{% if globalSetting.favicon_filename is defined and globalSetting.favicon_filename %}
+			<link rel="icon" type="image/png" href="/assets/images/setting/{{ globalSetting.favicon_filename }}" sizes="32x32">
+			<link rel="shortcut icon" href="/assets/images/setting/{{ globalSetting.favicon_filename }}">
+			<link rel="apple-touch-icon" href="/assets/images/setting/{{ globalSetting.favicon_filename }}">
+		{% else %}
+			<link rel="icon" type="image/png" href="{{ asset('favicon/favicon-96x96.png') }}" sizes="96x96">
+			<link rel="icon" type="image/svg+xml" href="{{ asset('favicon/favicon.svg') }}">
+			<link rel="shortcut icon" href="{{ asset('favicon/favicon.ico') }}">
+			<link rel="apple-touch-icon" sizes="180x180" href="{{ asset('favicon/apple-touch-icon.png') }}">
+			<link rel="manifest" href="{{ asset('favicon/site.webmanifest') }}">
+		{% endif %}
 
         {% set s = seo ?? null %}
 

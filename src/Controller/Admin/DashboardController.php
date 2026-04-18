@@ -21,6 +21,8 @@ use App\Entity\Blog;
 use App\Entity\Invoice;
 use App\Entity\Review;
 use App\Entity\Shipment;
+use App\Enum\PaymentStatus;
+use App\Enum\ReviewStatus;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Assets;
 use EasyCorp\Bundle\EasyAdminBundle\Config\MenuItem;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Dashboard;

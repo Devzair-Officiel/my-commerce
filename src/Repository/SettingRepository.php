@@ -44,6 +44,7 @@ class SettingRepository extends ServiceEntityRepository
                 's.copyrightUrl AS copyrightUrl',
                 'lm.filename AS logo_filename',
                 'lm.alt AS logo_alt',
+                's.faviconFilename AS favicon_filename',
             ])
             ->orderBy('s.id', 'ASC')
             ->setMaxResults(1);

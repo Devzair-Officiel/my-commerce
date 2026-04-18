@@ -81,6 +81,9 @@ class Setting
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $legalMentions = null;
 
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $faviconFilename = null;
+
     #[ORM\OneToOne(mappedBy: 'setting', cascade: ['persist', 'remove'], orphanRemoval: true)]
     private ?Media $logoMedia = null;
 
@@ -354,6 +357,17 @@ class Setting
 
         $this->logoMedia->setAlt($alt);
 
+        return $this;
+    }
+
+    public function getFaviconFilename(): ?string
+    {
+        return $this->faviconFilename;
+    }
+
+    public function setFaviconFilename(?string $faviconFilename): static
+    {
+        $this->faviconFilename = $faviconFilename;
         return $this;
     }
 

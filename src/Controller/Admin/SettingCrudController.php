@@ -95,7 +95,14 @@ final class SettingCrudController extends AbstractCrudController
             ->setRequired(false);
 
         $logoAlt = TextField::new('logoAlt', 'Texte alternatif (alt)')
-            ->setHelp('Décrit l’image pour l’accessibilité et le SEO')
+            ->setHelp("Décrit l'image pour l'accessibilité et le SEO")
+            ->setRequired(false);
+
+        $favicon = ImageField::new('faviconFilename', 'Favicon')
+            ->setBasePath('/assets/images/setting')
+            ->setUploadDir('public/assets/images/setting')
+            ->setUploadedFileNamePattern('favicon.[timestamp].[extension]')
+            ->setHelp("Formats recommandés : PNG 32×32 ou ICO. Affiché dans l'onglet du navigateur.")
             ->setRequired(false);
 
         // --- Adresse
@@ -187,6 +194,7 @@ final class SettingCrudController extends AbstractCrudController
             FormField::addFieldset('Image de marque')->setIcon('fa fa-image'),
             $logo,
             $logoAlt,
+            $favicon,
 
             FormField::addTab('Adresse')->setIcon('fa fa-map-marker-alt'),
             FormField::addFieldset('Adresse postale')->setIcon('fa fa-map'),

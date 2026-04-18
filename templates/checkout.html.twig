@@ -4,7 +4,12 @@
 		<meta charset="UTF-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
 		<title>{% block title %}Checkout{% endblock %}</title>
-		<link rel="icon" type="image/png" href="{{ asset('favicon/favicon-96x96.png') }}" sizes="96x96">
+		{% if globalSetting is defined and globalSetting.favicon_filename is defined and globalSetting.favicon_filename %}
+			<link rel="icon" type="image/png" href="/assets/images/setting/{{ globalSetting.favicon_filename }}" sizes="32x32">
+			<link rel="shortcut icon" href="/assets/images/setting/{{ globalSetting.favicon_filename }}">
+		{% else %}
+			<link rel="icon" type="image/png" href="{{ asset('favicon/favicon-96x96.png') }}" sizes="96x96">
+		{% endif %}
 
 		<link rel="stylesheet" href="/assets/bootstrap/css/bootstrap.min.css"/>
 		<link rel="stylesheet" href="/assets/css/style.refactor.css?v=1.1.3"/>
