@@ -3,6 +3,12 @@
 {% block title %} {{globalSetting.website_name}} | Blog
 {% endblock %}
 
+{% block stylesheets %}
+	{% if blog.medias[0] is defined %}
+		<link rel="preload" as="image" href="/assets/images/blogs/{{ blog.medias[0].mediumFilename }}" fetchpriority="high">
+	{% endif %}
+{% endblock %}
+
 {% block body %}    
     {% include 'page_head/index.html.twig' with {
 		page_name: blog.title,

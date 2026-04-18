@@ -15,7 +15,9 @@ function isCartPath(pathname) {
 
 function productImageSrc(product) {
     const file = product.image?.[0]?.filename;
-    return file ? `/assets/images/products/${file}` : "";
+    if (!file) return "";
+    const base = file.replace(/\.[^.]+$/, "");
+    return `/assets/images/products/${base}-thumb.webp`;
 }
 
 function productImageAlt(product) {
@@ -47,7 +49,7 @@ function renderCartRow(item) {
         <tr>
             <td class="product-thumbnail">
                 <a href="/produits/${product.slug ?? ""}">
-                    <img width="50" alt="${productImageAlt(product)}" src="${productImageSrc(product)}">
+                    <img width="50" height="50" alt="${productImageAlt(product)}" src="${productImageSrc(product)}" loading="lazy" decoding="async">
                 </a>
             </td>
             <td data-title="Produit" class="product-title">

@@ -26,7 +26,35 @@
 										<th class="product-remove">Supprimer</th>
 									</tr>
 								</thead>
-								<tbody></tbody>
+								<tbody>
+									{% for item in cart.items %}
+										{% set img = item.product.image[0] ?? null %}
+										{% if img %}
+											{% set parts = img.filename|split('.') %}
+											{% set base = parts|slice(0, parts|length - 1)|join('.') %}
+											{% set thumbSrc = '/assets/images/products/' ~ base ~ '-thumb.webp' %}
+										{% else %}
+											{% set thumbSrc = '' %}
+										{% endif %}
+									<tr>
+										<td class="product-thumbnail">
+											<a href="/produits/{{ item.product.slug }}">
+												<img width="50" height="50"
+													alt="{{ img.alt ?? item.product.title }}"
+													src="{{ thumbSrc }}"
+													loading="lazy" decoding="async">
+											</a>
+										</td>
+										<td class="product-title"><a>{{ item.product.title }}</a></td>
+										<td class="product-price"></td>
+										<td class="product-quantity"></td>
+										<td class="product-subtotal"></td>
+										<td class="product-subtotal"></td>
+										<td class="product-subtotal"></td>
+										<td class="product-remove"></td>
+									</tr>
+									{% endfor %}
+								</tbody>
 							</table>
 						</div>
 					</div>

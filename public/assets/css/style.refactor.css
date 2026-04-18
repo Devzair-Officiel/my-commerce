@@ -7258,6 +7258,8 @@ a:hover .product_title {
 	max-width: 100px;
 }
 
+.shop_cart_table tbody { min-height: 60px; }
+
 .shop_cart_table th,
 .shop_cart_table td,
 .wishlist_table th,

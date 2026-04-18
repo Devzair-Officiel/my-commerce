@@ -4,6 +4,12 @@
 	{{ category.title }} – Acheter du miel naturel en ligne | {{ globalSetting.website_name }}
 {% endblock %}
 
+{% block stylesheets %}
+	{% if products|length > 0 and products[0].medias|length > 0 %}
+		<link rel="preload" as="image" href="/assets/images/products/{{ products[0].medias[0].thumbnailFilename }}" fetchpriority="high">
+	{% endif %}
+{% endblock %}
+
 {% block body %}
 
     {% include 'page_head/index.html.twig' with {

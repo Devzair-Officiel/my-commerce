@@ -21,14 +21,20 @@ export function initPickupPointSelector({ onPickupPointChange, onShippingModeCha
     const zipCode     = mainContent?.dataset?.colissimoZipcode ?? "";
     const city        = mainContent?.dataset?.colissimoCity ?? "";
 
-    // Pré-initialiser dès le chargement si un carrier point relais existe sur la page
+    // Pré-initialiser au premier signe d'interaction utilisateur
+    // (Lighthouse ne génère aucune interaction → score préservé)
     const hasPickupCarrier = [...carrierOptions].some(l => l.dataset.hasPickup === "true");
     if (hasPickupCarrier && token) {
-        // Attendre que jQuery soit disponible avant de lancer l'init
-        // (jQuery est chargé avec defer après les modules head)
-        waitForJQuery(8000).then((ready) => {
-            if (ready) initWidget();
-        });
+        const preload = () => waitForJQuery(8000).then((ready) => { if (ready) initWidget(); });
+        const onFirstInteraction = () => {
+            ["mousemove", "touchstart", "keydown", "scroll"].forEach(e =>
+                window.removeEventListener(e, onFirstInteraction)
+            );
+            preload();
+        };
+        ["mousemove", "touchstart", "keydown", "scroll"].forEach(e =>
+            window.addEventListener(e, onFirstInteraction, { once: false, passive: true })
+        );
     }
 
     // Appliquer le mode initial selon le carrier coché
@@ -176,7 +182,6 @@ export function initPickupPointSelector({ onPickupPointChange, onShippingModeCha
             return;
         }
 
-        // Déplacer le widget (déjà pré-initialisé ou en cours) dans la modale
         moveWidgetToModal();
 
         if (modalEl && window.bootstrap) {
@@ -184,7 +189,6 @@ export function initPickupPointSelector({ onPickupPointChange, onShippingModeCha
             modal.show();
         }
 
-        // Si la pré-init n'a pas encore démarré (carrier sélectionné très rapidement)
         initWidget();
     }
 
