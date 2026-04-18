@@ -30,7 +30,7 @@ final class ColissimoClient
         private readonly CacheInterface $cache,
         private readonly string $login,
         private readonly string $password,
-        private readonly string $senderName   = 'Nidemiel',
+        private readonly string $senderName,
         private readonly string $senderStreet = '',
         private readonly string $senderZip    = '',
         private readonly string $senderCity   = '',

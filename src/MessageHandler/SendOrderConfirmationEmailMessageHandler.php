@@ -27,8 +27,8 @@ final readonly class SendOrderConfirmationEmailMessageHandler
         private MailerInterface        $mailer,
         private InvoiceBuilder         $invoiceBuilder,
         private InvoicePdfRenderer     $pdfRenderer,
-        private string $mailFromAddress = 'contact@nidemiel.com',
-        private string $mailFromName = 'Nidemiel',
+        private string $mailFromAddress,
+        private string $mailFromName,
     ) {}
 
     public function __invoke(SendOrderConfirmationEmailMessage $message): void

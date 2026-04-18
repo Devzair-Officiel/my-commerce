@@ -27,8 +27,8 @@ final readonly class SendNewReviewNotificationMessageHandler
         private EntityManagerInterface $em,
         private MailerInterface        $mailer,
         private AdminUrlGenerator      $adminUrlGenerator,
-        private string $mailFromAddress = 'contact@nidemiel.com',
-        private string $mailFromName    = 'Nidemiel',
+        private string $mailFromAddress,
+        private string $mailFromName,
     ) {}
 
     public function __invoke(SendNewReviewNotificationMessage $message): void
@@ -46,14 +46,15 @@ final readonly class SendNewReviewNotificationMessageHandler
 
         $email = (new TemplatedEmail())
             ->from(new Address($this->mailFromAddress, $this->mailFromName))
-            ->to(new Address('contact@nidemiel.com'))
+            ->to(new Address($this->mailFromAddress))
             ->subject('Nouvel avis en attente de modération — ' . $review->getProduct()?->getTitle())
             ->htmlTemplate('emails/new_review_notification.html.twig')
             ->context([
-                'review'    => $review,
-                'product'   => $review->getProduct(),
-                'user'      => $review->getUser(),
-                'adminUrl'  => $adminUrl,
+                'review'     => $review,
+                'product'    => $review->getProduct(),
+                'user'       => $review->getUser(),
+                'adminUrl'   => $adminUrl,
+                'brandName'  => $this->mailFromName,
             ]);
 
         $this->mailer->send($email);

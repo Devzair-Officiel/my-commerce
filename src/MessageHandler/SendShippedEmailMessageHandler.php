@@ -20,8 +20,8 @@ final readonly class SendShippedEmailMessageHandler
     public function __construct(
         private OrderRepository $orderRepository,
         private MailerInterface $mailer,
-        private string $mailFromAddress = 'contact@nidemiel.com',
-        private string $mailFromName = 'Nidemiel',
+        private string $mailFromAddress,
+        private string $mailFromName,
     ) {}
 
     public function __invoke(SendShippedEmailMessage $message): void

@@ -28,7 +28,10 @@ use Symfony\Component\Routing\Attribute\Route;
 final class ProductController extends AbstractController
 {
 
-    public function __construct(private ProductRepository $productRepo) {}
+    public function __construct(
+        private ProductRepository $productRepo,
+        private readonly string $brandName,
+    ) {}
 
     #[Route('/produits/{slug}', name: 'app_product_by_slug', requirements: [
         'slug' => '[a-z0-9-]+',
@@ -153,11 +156,11 @@ final class ProductController extends AbstractController
 
         $seo = $seoResolver->forStaticPage([
             'title'       => $term !== ''
-                ? sprintf('Recherche "%s" | Nidemiel', $term)
-                : 'Recherche | Nidemiel',
+                ? sprintf('Recherche "%s" | %s', $term, $this->brandName)
+                : 'Recherche | ' . $this->brandName,
             'description' => $term !== ''
-                ? sprintf('Résultats pour "%s" : miels naturels, artisanaux et d\'origine contrôlée disponibles sur Nidemiel.', $term)
-                : 'Recherchez parmi notre sélection de miels naturels artisanaux du monde entier sur Nidemiel.',
+                ? sprintf('Résultats pour "%s" : miels naturels, artisanaux et d\'origine contrôlée disponibles sur %s.', $term, $this->brandName)
+                : 'Recherchez parmi notre sélection de miels naturels artisanaux du monde entier sur ' . $this->brandName . '.',
             'canonical'   => $request->getUri(),
             'robots'      => 'noindex,follow',
             'breadcrumbs' => [

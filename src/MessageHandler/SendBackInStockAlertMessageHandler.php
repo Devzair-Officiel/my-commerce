@@ -21,8 +21,8 @@ final readonly class SendBackInStockAlertMessageHandler
         private StockAlertRepository $stockAlertRepository,
         private MailerInterface      $mailer,
         private EntityManagerInterface $em,
-        private string $mailFromAddress = 'contact@nidemiel.com',
-        private string $mailFromName    = 'Nidemiel',
+        private string $mailFromAddress,
+        private string $mailFromName,
     ) {}
 
     public function __invoke(SendBackInStockAlertMessage $message): void

@@ -14,7 +14,10 @@ use Symfony\Component\Routing\Attribute\Route;
  */
 final class BlogController extends AbstractController
 {
-    public function __construct(private BlogRepository $blogRepo) {}
+    public function __construct(
+        private BlogRepository $blogRepo,
+        private readonly string $brandName,
+    ) {}
     
     #[Route('/blog', name: 'app_blog')]
     public function index(SeoResolver $seoResolver, Request $request): Response
@@ -22,8 +25,8 @@ final class BlogController extends AbstractController
         $blogs = $this->blogRepo->findBy(['isPublished' => true]);
 
         $seo = $seoResolver->forStaticPage([
-            'title' => 'Blog Miel Naturel – Bienfaits, Recettes & Conseils Apiculture | Nidemiel',
-            'description' => 'Bienfaits du miel, recettes naturelles, guide d\'achat et actus apiculture : le blog Nidemiel pour tout savoir sur les miels artisanaux du monde.',
+            'title' => 'Blog Miel Naturel – Bienfaits, Recettes & Conseils Apiculture | ' . $this->brandName,
+            'description' => 'Bienfaits du miel, recettes naturelles, guide d\'achat et actus apiculture : le blog ' . $this->brandName . ' pour tout savoir sur les miels artisanaux du monde.',
             'route' => 'app_blog',
             'robots' => 'index,follow',
             'ogType' => 'website',

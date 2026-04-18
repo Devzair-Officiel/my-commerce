@@ -32,6 +32,11 @@ use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
  */
 class AccountController extends AbstractController
 {
+    public function __construct(
+        private readonly string $mailFromAddress,
+        private readonly string $mailFromName,
+    ) {}
+
     #[Route('/account', name: 'app_account', methods: ['GET', 'POST'])]
     public function index(
         AddressRepository $addressRepo,
@@ -96,7 +101,7 @@ class AccountController extends AbstractController
 
                     $mailer->send(
                         (new TemplatedEmail())
-                            ->from(new Address('contact@nidemiel.com', 'Nidemiel'))
+                            ->from(new Address($this->mailFromAddress, $this->mailFromName))
                             ->to($newEmail)
                             ->subject('Confirmez votre nouvelle adresse e-mail')
                             ->htmlTemplate('emails/email_change_confirmation.html.twig')

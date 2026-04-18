@@ -31,8 +31,8 @@ final class SeoResolver
         private readonly UrlGeneratorInterface $urlGenerator,
         private readonly ReviewRepository $reviewRepository,
         private readonly SettingRepository $settingRepository,
-        private readonly string $brandName = 'Nidemiel',
-        private readonly string $defaultOgImage = '/assets/images/setting/nidemiel.png',
+        private readonly string $brandName,
+        private readonly string $defaultOgImage = '/assets/images/setting/og-default.png',
     ) {}
 
     /**
@@ -498,7 +498,7 @@ final class SeoResolver
             $this->organizationJsonLd([
                 'name' => $this->brandName,
                 'url' => $homeUrl,
-                'logo' => rtrim($request->getSchemeAndHttpHost(), '/') . '/assets/images/setting/nidemiel.png',
+                'logo' => rtrim($request->getSchemeAndHttpHost(), '/') . $this->defaultOgImage,
                 'sameAs' => $sameAs,
             ]),
             $this->breadcrumbJsonLd([

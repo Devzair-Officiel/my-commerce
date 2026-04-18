@@ -15,6 +15,8 @@ use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
  */
 final class PageController extends AbstractController
 {
+    public function __construct(private readonly string $brandName) {}
+
     #[Route('/page/{slug}', name: 'app_page')]
     public function index(string $slug, PageRepository $pageRepo, SeoResolver $seoResolver, Request $request): Response
     {
@@ -29,7 +31,7 @@ final class PageController extends AbstractController
         $faq = $this->extractFaqFromHtml($page->getContent() ?? '');
 
         $seoData = [
-            'title' => ($page->getSeoTitle() ?: $page->getTitle()) . ' | Nidemiel',
+            'title' => ($page->getSeoTitle() ?: $page->getTitle()) . ' | ' . $this->brandName,
             'description' => $page->getSeoDescription() ?: $page->getTitle(),
             'canonical' => $canonical,
             'robots' => $page->isSeoNoindex() ? 'noindex,follow' : 'index,follow',

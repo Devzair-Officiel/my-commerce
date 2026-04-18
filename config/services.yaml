@@ -25,8 +25,9 @@ parameters:
 
     app.free_shipping_threshold_cents: 5000
 
-    app.mail_from_address: 'contact@nidemiel.com'
-    app.mail_from_name: 'Nidemiel'
+    app.mail_from_address: '%env(MAILER_FROM_ADDRESS)%'
+    app.mail_from_name: '%env(MAILER_FROM_NAME)%'
+    app.site_name: '%env(APP_SITE_NAME)%'
 
 services:
     # default configuration for services in *this* file
@@ -35,6 +36,9 @@ services:
         autoconfigure: true # Automatically registers your services as commands, event subscribers, etc.
         bind:
             string $publicDir: '%kernel.project_dir%/public'
+            string $mailFromAddress: '%app.mail_from_address%'
+            string $mailFromName: '%app.mail_from_name%'
+            string $brandName: '%app.site_name%'
             string $uploadDirProducts: '%upload_dir_products%'
             string $uploadDirCategories: '%upload_dir_categories%'
             string $uploadDirSliders: '%upload_dir_sliders%'
@@ -89,8 +93,4 @@ services:
             $senderZip:    '%colissimo.sender_zip%'
             $senderCity:   '%colissimo.sender_city%'
 
-    App\MessageHandler\SendOrderConfirmationEmailMessageHandler:
-        arguments:
-            $mailFromAddress: '%app.mail_from_address%'
-            $mailFromName: '%app.mail_from_name%'
 

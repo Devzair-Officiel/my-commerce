@@ -23,6 +23,8 @@ use Symfony\Component\DependencyInjection\Attribute\Autowire;
  */
 class ContactController extends AbstractController
 {
+    public function __construct(private readonly string $brandName) {}
+
     #[Route('/contact', name: 'app_contact', methods: ['GET', 'POST'])]
     public function index(
         Request $request,
@@ -94,8 +96,8 @@ class ContactController extends AbstractController
         }
 
         $seo = $seoResolver->forStaticPage([
-            'title' => 'Contactez-nous | Nidemiel',
-            'description' => 'Une question sur nos miels naturels ? Contactez l\'équipe Nidemiel, nous vous répondrons dans les plus brefs délais.',
+            'title' => 'Contactez-nous | ' . $this->brandName,
+            'description' => 'Une question sur nos miels naturels ? Contactez l\'équipe ' . $this->brandName . ', nous vous répondrons dans les plus brefs délais.',
             'route' => 'app_contact',
             'robots' => 'noindex,follow',
             'breadcrumbs' => [
