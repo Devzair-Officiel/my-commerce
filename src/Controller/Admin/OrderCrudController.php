@@ -8,7 +8,6 @@ use App\Enum\CarrierType;
 use App\Enum\FulfillmentStatus;
 use App\Enum\PaymentStatus;
 use App\Message\SendRefundEmailMessage;
-use App\Message\SendShippedEmailMessage;
 use App\Repository\OrderRepository;
 use App\Service\Carrier\ShipmentService;
 use App\Service\RefundService;
@@ -387,8 +386,6 @@ final class OrderCrudController extends AbstractCrudController
 
             $order->setFulfillmentStatus(FulfillmentStatus::Shipped);
             $this->em->flush();
-
-            $this->bus->dispatch(new SendShippedEmailMessage($order->getId()));
 
             $this->addFlash('success', \sprintf(
                 'Commande %s marquée comme expédiée.',

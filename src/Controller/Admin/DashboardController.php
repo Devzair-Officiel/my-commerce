@@ -101,6 +101,9 @@ final class DashboardController extends AbstractDashboardController
 
     public function configureMenuItems(): iterable
     {
+        $pendingReviews = $this->em->getRepository(Review::class)->count(['status' => ReviewStatus::Pending]);
+        $pendingOrders  = $this->em->getRepository(Order::class)->count(['paymentStatus' => PaymentStatus::Pending]);
+
         yield MenuItem::linkToDashboard('Dashboard', 'fa fa-home');
 
         yield MenuItem::section('Catalogue');
@@ -113,14 +116,22 @@ final class DashboardController extends AbstractDashboardController
         yield MenuItem::linkToCrud('Blog', 'fas fa-code', Blog::class);
 
         yield MenuItem::section('Vente');
-        yield MenuItem::linkToCrud('Commandes', 'fas fa-shopping-cart', Order::class);
+        $ordersItem = MenuItem::linkToCrud('Commandes', 'fas fa-shopping-cart', Order::class);
+        if ($pendingOrders > 0) {
+            $ordersItem->setBadge($pendingOrders, 'danger');
+        }
+        yield $ordersItem;
         yield MenuItem::linkToCrud('Expéditions', 'fa fa-truck-fast', Shipment::class);
         yield MenuItem::linkToCrud('Factures', 'fa fa-file-invoice', Invoice::class);
         yield MenuItem::linkToCrud('Modes de paiement', 'fa fa-credit-card', PaymentMethod::class);
         yield MenuItem::linkToCrud('Transporteurs', 'fa fa-truck', Carrier::class);
 
         yield MenuItem::section('Avis');
-        yield MenuItem::linkToCrud('Avis clients', 'fa fa-star', Review::class);
+        $reviewsItem = MenuItem::linkToCrud('Avis clients', 'fa fa-star', Review::class);
+        if ($pendingReviews > 0) {
+            $reviewsItem->setBadge($pendingReviews, 'warning');
+        }
+        yield $reviewsItem;
 
         yield MenuItem::section('Utilisateurs');
         yield MenuItem::linkToCrud('Utilisateurs', 'fa fa-users', User::class);
