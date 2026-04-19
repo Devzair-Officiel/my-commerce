@@ -16,3 +16,17 @@
 
 # Backups locaux
 /backups/
+
+# Images et vidéos uploadées via l'admin (ne pas versionner)
+/public/assets/images/products/
+/public/assets/images/blogs/
+/public/assets/images/categories/
+/public/assets/images/sliders/
+/public/assets/images/setting/
+/public/assets/images/hero/
+/public/assets/images/collections/
+/public/assets/images/payment_methods_logos/
+/public/assets/videos/
+
+# robots.txt généré selon l'environnement
+/public/robots.txt
