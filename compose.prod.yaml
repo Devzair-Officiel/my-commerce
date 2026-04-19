@@ -9,6 +9,10 @@ services:
       APP_SECRET: ${APP_SECRET}
       APP_ENV: prod
 
+  messenger-worker:
+    environment:
+      APP_ENV: prod
+
   database:
     env_file:
       - .env
