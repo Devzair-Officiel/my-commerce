@@ -30,7 +30,7 @@
         {% if s and s.canonical %}
             <link rel="canonical" href="{{ s.canonical }}">
         {% endif %}
-        <meta name="robots" content="{{ s and s.robots ? s.robots : 'index,follow' }}">
+        <meta name="robots" content="noindex, nofollow">
 
 
 		<meta property="og:site_name" content="{{ globalSetting.website_name }}">
