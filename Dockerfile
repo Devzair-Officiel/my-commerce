@@ -93,7 +93,17 @@ COPY --link --exclude=frankenphp/ . ./
 
 RUN set -eux; \
 	mkdir -p var/cache var/log var/share; \
+	mkdir -p public/assets/images/products \
+	         public/assets/images/blogs \
+	         public/assets/images/categories \
+	         public/assets/images/sliders \
+	         public/assets/images/setting \
+	         public/assets/images/hero \
+	         public/assets/images/collections \
+	         public/assets/images/payment_methods_logos \
+	         public/assets/videos/hero; \
 	composer dump-autoload --classmap-authoritative --no-dev; \
 	composer dump-env prod; \
+	php bin/console assets:install --no-debug; \
 	php bin/console cache:clear --no-warmup; \
 	chmod +x bin/console; sync;
