@@ -11,6 +11,9 @@ services:
     environment:
       APP_ENV: prod
       APP_SECRET: ${APP_SECRET}
+    volumes:
+      - uploads_data:/app/public/assets/images
+      - videos_data:/app/public/assets/videos
 
   messenger-worker:
     env_file:
@@ -24,3 +27,7 @@ services:
       - .env
       - path: .env.prod.local
         required: false
+
+volumes:
+  uploads_data:
+  videos_data:
