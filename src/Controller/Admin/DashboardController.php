@@ -16,7 +16,7 @@ use App\Entity\Category;
 use App\Entity\PaymentMethod;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Response;
-use App\Admin\Dashboard\DashboardMetricsProvider;
+use App\Controller\Admin\Dashboard\DashboardMetricsProvider;
 use App\Entity\Blog;
 use App\Entity\Faq;
 use App\Entity\Invoice;

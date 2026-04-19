@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Admin\Dashboard;
+namespace App\Controller\Admin\Dashboard;
 
 use App\Entity\Order;
 use App\Entity\Product;
