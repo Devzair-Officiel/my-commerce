@@ -269,7 +269,7 @@ final class SettingCrudController extends AbstractCrudController
                 ->onlyOnIndex()
                 ->formatValue(static fn(?string $v) => $v ?: '—'),
             Field::new('_heroVideoUpload', 'Uploader une vidéo (MP4, WebM)')
-                ->setColumns(12)
+                ->setColumns(8)
                 ->onlyOnForms()
                 ->setFormType(FileType::class)
                 ->setFormTypeOptions([
@@ -277,7 +277,13 @@ final class SettingCrudController extends AbstractCrudController
                     'required' => false,
                     'attr'     => ['accept' => 'video/mp4,video/webm,video/*'],
                 ])
-                ->setHelp('Laisser vide pour conserver la vidéo actuelle. Supprimer le nom du fichier pour revenir au carousel.'),
+                ->setHelp('Laisser vide pour conserver la vidéo actuelle.'),
+            Field::new('_heroVideoDelete', 'Supprimer la vidéo')
+                ->setColumns(4)
+                ->onlyOnForms()
+                ->setFormType(\Symfony\Component\Form\Extension\Core\Type\CheckboxType::class)
+                ->setFormTypeOptions(['mapped' => false, 'required' => false])
+                ->setHelp('Cocher pour revenir au carousel.'),
 
             FormField::addFieldset('Image poster (miniature affichée avant le chargement de la vidéo)')->setIcon('fa fa-image')
                 ->setHelp('Recommandé : image JPG ou WebP au format 16/9, même dimensions que la vidéo. Améliore le LCP Lighthouse.'),
@@ -294,7 +300,7 @@ final class SettingCrudController extends AbstractCrudController
                 ->onlyOnIndex()
                 ->formatValue(static fn(?string $v) => $v ?: '—'),
             Field::new('_heroPosterUpload', 'Uploader un poster (JPG, WebP, PNG)')
-                ->setColumns(12)
+                ->setColumns(8)
                 ->onlyOnForms()
                 ->setFormType(FileType::class)
                 ->setFormTypeOptions([
@@ -303,6 +309,12 @@ final class SettingCrudController extends AbstractCrudController
                     'attr'     => ['accept' => 'image/jpeg,image/webp,image/png,image/*'],
                 ])
                 ->setHelp('Laisser vide pour conserver le poster actuel.'),
+            Field::new('_heroPosterDelete', 'Supprimer le poster')
+                ->setColumns(4)
+                ->onlyOnForms()
+                ->setFormType(\Symfony\Component\Form\Extension\Core\Type\CheckboxType::class)
+                ->setFormTypeOptions(['mapped' => false, 'required' => false])
+                ->setHelp('Cocher pour supprimer le poster.'),
         ];
     }
 
@@ -325,10 +337,18 @@ final class SettingCrudController extends AbstractCrudController
             return;
         }
 
+        // Suppression demandée via la case à cocher
+        $post = $request->request->all();
+        $delete = ($post['Setting']['_heroPosterDelete'] ?? $post['setting']['_heroPosterDelete'] ?? false);
+        if ($delete) {
+            $this->deleteHeroFile($setting->getHeroPosterFilename(), 'images/hero');
+            $setting->setHeroPosterFilename(null);
+            return;
+        }
+
         $all  = $request->files->all();
         $file = $all['Setting']['_heroPosterUpload']
             ?? $all['setting']['_heroPosterUpload']
-            ?? $request->files->get('_heroPosterUpload')
             ?? null;
 
         if (!$file) {
@@ -339,6 +359,9 @@ final class SettingCrudController extends AbstractCrudController
         if (!is_dir($uploadDir)) {
             mkdir($uploadDir, 0755, true);
         }
+
+        // Supprimer l'ancien fichier avant de sauvegarder le nouveau
+        $this->deleteHeroFile($setting->getHeroPosterFilename(), 'images/hero');
 
         $filename = 'hero-poster-' . time() . '.' . $file->getClientOriginalExtension();
         $file->move($uploadDir, $filename);
@@ -352,10 +375,18 @@ final class SettingCrudController extends AbstractCrudController
             return;
         }
 
+        // Suppression demandée via la case à cocher
+        $post = $request->request->all();
+        $delete = ($post['Setting']['_heroVideoDelete'] ?? $post['setting']['_heroVideoDelete'] ?? false);
+        if ($delete) {
+            $this->deleteHeroFile($setting->getHeroVideoFilename(), 'videos/hero');
+            $setting->setHeroVideoFilename(null);
+            return;
+        }
+
         $all  = $request->files->all();
         $file = $all['Setting']['_heroVideoUpload']
             ?? $all['setting']['_heroVideoUpload']
-            ?? $request->files->get('_heroVideoUpload')
             ?? null;
 
         if (!$file) {
@@ -367,9 +398,23 @@ final class SettingCrudController extends AbstractCrudController
             mkdir($uploadDir, 0755, true);
         }
 
+        // Supprimer l'ancien fichier avant de sauvegarder le nouveau
+        $this->deleteHeroFile($setting->getHeroVideoFilename(), 'videos/hero');
+
         $filename = 'hero-video-' . time() . '.' . $file->getClientOriginalExtension();
         $file->move($uploadDir, $filename);
         $setting->setHeroVideoFilename($filename);
+    }
+
+    private function deleteHeroFile(?string $filename, string $subDir): void
+    {
+        if (!$filename) {
+            return;
+        }
+        $path = \dirname(__DIR__, 3) . '/public/assets/' . $subDir . '/' . $filename;
+        if (file_exists($path)) {
+            unlink($path);
+        }
     }
 
     public function persistEntity(EntityManagerInterface $entityManager, $entityInstance): void
