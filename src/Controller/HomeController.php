@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Repository\FaqRepository;
 use App\Repository\ProductRepository;
 use App\Repository\SlidersRepository;
 use App\Seo\SeoResolver;
@@ -21,18 +22,19 @@ final class HomeController extends AbstractController
 
     #[Route('/', name: 'app_home')]
     #[Cache(smaxage: 3600, vary: ['Accept-Language'])]
-    public function index(SlidersRepository $slider, SeoResolver $seoResolver, Request $request): Response
+    public function index(SlidersRepository $slider, FaqRepository $faqRepository, SeoResolver $seoResolver, Request $request): Response
     {
         $sliders = $slider->findAll();
 
         $seo = $seoResolver->forHome($request);
 
         return $this->render('home/index.html.twig', [
-            'sliders' => $sliders,
+            'sliders'           => $sliders,
             'productBestSeller' => $this->product->findFeaturedWithMedias('isBestSeller'),
             'productNewArrival' => $this->product->findFeaturedWithMedias('isNewArrival'),
             'productAll'        => $this->product->findFeaturedWithMedias('isAvailable'),
-            'seo' => $seo,
+            'faqs'              => $faqRepository->findActive(),
+            'seo'               => $seo,
         ]);
     }
 }

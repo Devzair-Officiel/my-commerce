@@ -18,6 +18,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Response;
 use App\Admin\Dashboard\DashboardMetricsProvider;
 use App\Entity\Blog;
+use App\Entity\Faq;
 use App\Entity\Invoice;
 use App\Entity\Review;
 use App\Entity\Shipment;
@@ -114,6 +115,7 @@ final class DashboardController extends AbstractDashboardController
         yield MenuItem::linkToCrud('Pages', 'fa fa-file', Page::class);
         yield MenuItem::linkToCrud('Sliders', 'fa fa-image', Sliders::class);
         yield MenuItem::linkToCrud('Blog', 'fas fa-code', Blog::class);
+        yield MenuItem::linkToCrud('FAQ', 'fa fa-circle-question', Faq::class);
 
         yield MenuItem::section('Vente');
         $ordersItem = MenuItem::linkToCrud('Commandes', 'fas fa-shopping-cart', Order::class);

@@ -230,6 +230,48 @@
         </section>
 
 
+	{% if faqs is not empty %}
+		<section class="section pt-0 pb-70" aria-labelledby="faq-title">
+			<div class="container">
+				<div class="row justify-content-center">
+					<div class="col-md-10 col-lg-8">
+						<div class="heading_s1 text-center mb-4">
+							<h2 id="faq-title">Questions fréquentes</h2>
+						</div>
+						<div class="accordion" id="faqAccordion">
+							{% for faq in faqs %}
+								<div class="accordion-item">
+									<h3 class="accordion-header" id="faq-heading-{{ faq.id }}">
+										<button
+											class="accordion-button {% if not loop.first %}collapsed{% endif %}"
+											type="button"
+											data-bs-toggle="collapse"
+											data-bs-target="#faq-collapse-{{ faq.id }}"
+											aria-expanded="{{ loop.first ? 'true' : 'false' }}"
+											aria-controls="faq-collapse-{{ faq.id }}"
+										>
+											{{ faq.question }}
+										</button>
+									</h3>
+									<div
+										id="faq-collapse-{{ faq.id }}"
+										class="accordion-collapse collapse {% if loop.first %}show{% endif %}"
+										aria-labelledby="faq-heading-{{ faq.id }}"
+										data-bs-parent="#faqAccordion"
+									>
+										<div class="accordion-body">
+											{{ faq.answer|nl2br }}
+										</div>
+									</div>
+								</div>
+							{% endfor %}
+						</div>
+					</div>
+				</div>
+			</div>
+		</section>
+	{% endif %}
+
 	</main>
 
 {% endblock %}
