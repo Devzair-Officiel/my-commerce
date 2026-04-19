@@ -29,8 +29,8 @@ final class Version20260406070440 extends AbstractMigration
         $this->addSql('COMMENT ON COLUMN invoice.issued_at IS \'\'');
         $this->addSql('COMMENT ON COLUMN invoice.created_at IS \'\'');
         $this->addSql('COMMENT ON COLUMN invoice.updated_at IS \'\'');
-        $this->addSql('ALTER INDEX uniq_invoice_number RENAME TO UNIQ_906517442DA68207');
-        $this->addSql('ALTER INDEX uniq_invoice_order RENAME TO UNIQ_90651744A15A2E17');
+        $this->addSql("DO \$\$ BEGIN IF EXISTS (SELECT 1 FROM pg_indexes WHERE indexname = 'uniq_invoice_number') THEN ALTER INDEX uniq_invoice_number RENAME TO UNIQ_906517442DA68207; END IF; END \$\$");
+        $this->addSql("DO \$\$ BEGIN IF EXISTS (SELECT 1 FROM pg_indexes WHERE indexname = 'uniq_invoice_order') THEN ALTER INDEX uniq_invoice_order RENAME TO UNIQ_90651744A15A2E17; END IF; END \$\$");
         $this->addSql('COMMENT ON COLUMN "order".stock_decremented_at IS \'\'');
         $this->addSql('ALTER TABLE shipment ADD label_url VARCHAR(512) DEFAULT NULL');
         $this->addSql('ALTER TABLE shipment ADD weight_grams INT DEFAULT NULL');
