@@ -75,7 +75,7 @@ export function displayWishlist(wishlist = []) {
       <div class="col-12 text-center py-5">
         <svg class="icon" aria-hidden="true" style="width:3rem;height:3rem;color:#ddd;"><use href="#icon-heart"></use></svg>
         <p class="mt-3 text-muted">Votre liste de favoris est vide.</p>
-        <a href="/category/miels-du-monde" class="btn btn-fill-out mt-2">Découvrir nos miels</a>
+        <a href="/" class="btn btn-fill-out mt-2">Découvrir nos miels</a>
       </div>
     `;
     return;

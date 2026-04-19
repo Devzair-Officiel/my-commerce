@@ -60,7 +60,7 @@ export function displayCompare(compare = []) {
       <div class="text-center py-5">
         <svg class="icon" aria-hidden="true" style="width:3rem;height:3rem;color:#ddd;"><use href="#icon-shuffle"></use></svg>
         <p class="mt-3 text-muted">Aucun produit à comparer pour le moment.</p>
-        <a href="/" class="btn btn-fill-out mt-2">Découvrir nos produits</a>
+        <a href="/" class="btn btn-fill-out mt-2">Découvrir nos miels</a>
       </div>
     `;
     return;
