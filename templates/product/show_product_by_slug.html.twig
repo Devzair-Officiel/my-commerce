@@ -69,6 +69,7 @@
     } %}
 
 
+	<main id="main-content">
 	<div class="main_content">
 		<div class="section">
 			<div class="container">
@@ -84,7 +85,7 @@
 									fetchpriority="high"
 									decoding="async"
 								>
-								<a href="/assets/images/products/{{ product.medias[0].filename }}" title="Zoom" class="product_img_zoom">
+								<a href="/assets/images/products/{{ product.medias[0].filename }}" title="Zoom" class="product_img_zoom" aria-label="Agrandir l'image">
 									<svg class="icon" aria-hidden="true"><use href="#icon-zoom-in"></use></svg>
 								</a>
 							</div>
@@ -93,8 +94,8 @@
 
 								{% for image in product.medias %}
 									<div class="item">
-										<a href="javascript:void(0)" class="product_gallery_item {% if loop.first %}active{% endif %}" data-image="/assets/images/products/{{ image.mediumFilename }}" data-zoom-image="/assets/images/products/{{ image.filename }}">
-											<img alt="{{ image.alt }}" src="/assets/images/products/{{ image.thumbnailFilename }}" width="90" height="90" loading="lazy" decoding="async">
+										<a href="javascript:void(0)" class="product_gallery_item {% if loop.first %}active{% endif %}" data-image="/assets/images/products/{{ image.mediumFilename }}" data-zoom-image="/assets/images/products/{{ image.filename }}" aria-label="Image {{ loop.index }} — {{ image.alt ?: product.title }}">
+											<img alt="" src="/assets/images/products/{{ image.thumbnailFilename }}" width="90" height="90" loading="lazy" decoding="async">
 										</a>
 									</div>
 								{% endfor %}
@@ -105,7 +106,7 @@
 					<div class="col-lg-6 col-md-11">
 						<div class="pr_detail">
 							<div class="product_description">
-								<h4 class="product_title">{{ product.title }}</h4>
+								<h2 class="product_title">{{ product.title }}</h2>
 
 								{% if averageRating is not null %}
 								<div class="rating_wrap mb-2">
@@ -170,9 +171,9 @@
 								{% if inStock %}
 								<div class="cart-product-quantity">
 									<div class="quantity">
-										<input type="button" value="-" class="minus">
-										<input type="text" name="quantity" value="1" title="Qty" size="4" class="qty" {% if availableStock is not null %}data-max="{{ availableStock }}"{% endif %}>
-										<input type="button" value="+" class="plus">
+										<input type="button" value="-" class="minus" aria-label="Diminuer la quantité">
+										<input type="text" name="quantity" value="1" aria-label="Quantité" size="4" class="qty" {% if availableStock is not null %}data-max="{{ availableStock }}"{% endif %}>
+										<input type="button" value="+" class="plus" aria-label="Augmenter la quantité">
 									</div>
 								</div>
 								<div class="cart_btn my-2">
@@ -243,17 +244,17 @@
 								<span>Réseaux sociaux:</span>
 								<ul class="social_icons">
 									<li>
-										<a href="#">
+										<a href="https://www.facebook.com/sharer/sharer.php?u={{ app.request.uri|url_encode }}" aria-label="Partager sur Facebook" rel="noopener" target="_blank">
 											<svg class="icon icon--filled" aria-hidden="true"><use href="#icon-facebook"></use></svg>
 										</a>
 									</li>
 									<li>
-										<a href="#">
+										<a href="https://twitter.com/intent/tweet?url={{ app.request.uri|url_encode }}&text={{ product.title|url_encode }}" aria-label="Partager sur Twitter" rel="noopener" target="_blank">
 											<svg class="icon icon--filled" aria-hidden="true"><use href="#icon-twitter"></use></svg>
 										</a>
 									</li>
 									<li>
-										<a href="#">
+										<a href="https://www.instagram.com/" aria-label="Voir sur Instagram" rel="noopener" target="_blank">
 											<svg class="icon" aria-hidden="true"><use href="#icon-instagram"></use></svg>
 										</a>
 									</li>
@@ -332,6 +333,7 @@
 			</div>
 		</div>
 	</div>
+	</main>
 {% endblock %}
 
 {% block javascripts %}

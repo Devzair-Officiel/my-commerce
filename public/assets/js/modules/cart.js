@@ -29,7 +29,7 @@ function renderAddButton(productId, qty, stock) {
     const canAdd = Number.isFinite(stock) ? qty < stock : true;
 
     if (canAdd) {
-        return `<a href="/cart/add/${productId}/1"><input type="button" value="+" class="plus"></a>`;
+        return `<button type="button" class="plus" onclick="location.href='/cart/add/${productId}/1'" aria-label="Augmenter la quantité">+</button>`;
     }
 
     return `<button type="button" class="plus" disabled title="Stock épuisé" aria-label="Stock épuisé" style="cursor:not-allowed;opacity:0.45;display:flex;align-items:center;justify-content:center;line-height:normal;">
@@ -53,16 +53,14 @@ function renderCartRow(item) {
                 </a>
             </td>
             <td data-title="Produit" class="product-title">
-                <a>${product.title ?? ""}</a>
+                <span>${product.title ?? ""}</span>
             </td>
             <td data-title="Prix" class="product-price">
                 ${formatPrice(price / 100)}
             </td>
             <td data-title="Quantité" class="product-quantity">
                 <div class="quantity">
-                    <a href="/cart/remove/${product.id}/1">
-                        <input type="button" value="-" class="minus">
-                    </a>
+                    <button type="button" class="minus" onclick="location.href='/cart/remove/${product.id}/1'" aria-label="Diminuer la quantité">−</button>
                     <input type="text" name="quantity" value="${qty}" title="Qty" size="4" class="qty">
                     ${renderAddButton(product.id, qty, stock)}
                 </div>
@@ -71,7 +69,7 @@ function renderCartRow(item) {
             <td data-title="Total HT" class="product-subtotal">${formatPrice((sub_total_ht ?? 0) / 100)}</td>
             <td data-title="Total TTC" class="product-subtotal">${formatPrice((sub_total   ?? 0) / 100)}</td>
             <td data-title="Supprimer" class="product-remove">
-                <a href="/cart/remove/${product.id}/${qty}">
+                <a href="/cart/remove/${product.id}/${qty}" aria-label="Supprimer du panier">
                     <svg class="icon" aria-hidden="true"><use href="#icon-x"></use></svg>
                 </a>
             </td>
@@ -92,14 +90,10 @@ function renderMiniCartItem({ product, quantity }) {
                 <span class="mini_cart_title">${product.title ?? ""}</span>
             </a>
             <div class="mini_cart_controls">
-                <a href="/cart/remove/${product.id}/1" class="mini_cart_minus" aria-label="Diminuer">
-                    <button type="button" class="mini_btn" aria-hidden="true">−</button>
-                </a>
+                <a href="/cart/remove/${product.id}/1" class="mini_btn mini_cart_minus" aria-label="Diminuer">−</a>
                 <input class="mini_qty" name="quantity" type="text" value="${qty}" readonly aria-label="Quantité">
                 ${canAdd
-                    ? `<a href="/cart/add/${product.id}/1" class="mini_cart_plus" aria-label="Augmenter">
-                           <button type="button" class="mini_btn" aria-hidden="true">+</button>
-                       </a>`
+                    ? `<a href="/cart/add/${product.id}/1" class="mini_btn mini_cart_plus" aria-label="Augmenter">+</a>`
                     : `<span class="mini_btn mini_btn--disabled" aria-label="Stock épuisé" style="display:inline-flex;align-items:center;justify-content:center;opacity:0.45;cursor:not-allowed;"><svg class="icon" aria-hidden="true" style="width:14px;height:14px;"><use href="#icon-ban"></use></svg></span>`
                 }
                 <a href="/cart/remove/${product.id}/${qty}" class="mini_cart_remove item_remove" aria-label="Retirer">

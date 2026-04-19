@@ -90,6 +90,15 @@ class Setting
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $heroPosterFilename = null;
 
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $heroTitle = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $heroButtonText = null;
+
+    #[ORM\Column(length: 512, nullable: true)]
+    private ?string $heroButtonUrl = null;
+
     #[ORM\OneToOne(mappedBy: 'setting', cascade: ['persist', 'remove'], orphanRemoval: true)]
     private ?Media $logoMedia = null;
 
@@ -396,6 +405,39 @@ class Setting
     public function setHeroPosterFilename(?string $heroPosterFilename): static
     {
         $this->heroPosterFilename = $heroPosterFilename;
+        return $this;
+    }
+
+    public function getHeroTitle(): ?string
+    {
+        return $this->heroTitle;
+    }
+
+    public function setHeroTitle(?string $heroTitle): static
+    {
+        $this->heroTitle = $heroTitle;
+        return $this;
+    }
+
+    public function getHeroButtonText(): ?string
+    {
+        return $this->heroButtonText;
+    }
+
+    public function setHeroButtonText(?string $heroButtonText): static
+    {
+        $this->heroButtonText = $heroButtonText;
+        return $this;
+    }
+
+    public function getHeroButtonUrl(): ?string
+    {
+        return $this->heroButtonUrl;
+    }
+
+    public function setHeroButtonUrl(?string $heroButtonUrl): static
+    {
+        $this->heroButtonUrl = $heroButtonUrl;
         return $this;
     }
 

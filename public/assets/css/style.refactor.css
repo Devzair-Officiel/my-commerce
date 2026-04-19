@@ -5120,6 +5120,14 @@ footer .widget_title {
 	content: "›";
 	vertical-align: middle;
 }
+.breadcrumb-item.active,
+.breadcrumb-item,
+.breadcrumb-item a {
+	color: #4b5563;
+}
+.breadcrumb-item.active {
+	color: #374151;
+}
 
 .page-title+.breadcrumb {
 	margin-top: 15px;
@@ -8026,7 +8034,7 @@ footer .widget_recent_post .post_img img {
 .tab-style1 .nav-tabs li.nav-item a.active:hover,
 .tab-style2 .nav-tabs li.nav-item a.active,
 .tab-style2 .nav-tabs li.nav-item a.active:hover {
-	color: var(--nm-brand);
+	color: var(--nm-brand-text);
 }
 
 .tab-style2 .nav-tabs li.nav-item a {
@@ -8051,7 +8059,7 @@ footer .widget_recent_post .post_img img {
 
 .tab-style3 .nav-tabs .nav-item a.active {
 	border-bottom-color: var(--nm-brand);
-	color: var(--nm-brand);
+	color: var(--nm-brand-text);
 }
 
 .tab_slider>.tab-pane {

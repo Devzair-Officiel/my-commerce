@@ -236,6 +236,24 @@ final class SettingCrudController extends AbstractCrudController
                 ->setRequired(false),
 
             FormField::addTab('Vidéo hero')->setIcon('fa fa-video'),
+            FormField::addFieldset('Contenu de la bannière')->setIcon('fa fa-align-left')
+                ->setHelp('Titre et bouton affichés par-dessus la vidéo (ou le carousel). Laisser vide pour utiliser les valeurs par défaut.'),
+            TextField::new('heroTitle', 'Titre')
+                ->setColumns(8)
+                ->setRequired(false)
+                ->setHelp('Ex : Acheter du miel naturel en ligne')
+                ->setFormTypeOption('attr', ['maxlength' => 255, 'placeholder' => 'Acheter du miel naturel en ligne']),
+            TextField::new('heroButtonText', 'Texte du bouton')
+                ->setColumns(4)
+                ->setRequired(false)
+                ->setHelp('Ex : Découvrir')
+                ->setFormTypeOption('attr', ['maxlength' => 100, 'placeholder' => 'Découvrir']),
+            TextField::new('heroButtonUrl', 'Lien du bouton')
+                ->setColumns(12)
+                ->setRequired(false)
+                ->setHelp('Ex : /boutique')
+                ->setFormTypeOption('attr', ['maxlength' => 512, 'placeholder' => '/boutique']),
+
             FormField::addFieldset('Vidéo de la page d\'accueil')->setIcon('fa fa-film')
                 ->setHelp('Si une vidéo est définie, elle remplace le carousel d\'images sur la page d\'accueil.'),
             TextField::new('heroVideoFilename', 'Vidéo actuelle')

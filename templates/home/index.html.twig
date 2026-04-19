@@ -41,10 +41,12 @@
 							<div class="col-lg-7 col-9">
 								<div class="banner_content overflow-hidden">
 									<h1 class="staggered-animation animated slideInLeft" style="color:#fff;">
-										Acheter du miel naturel en ligne
+										{{ globalSetting.heroTitle ?: 'Acheter du miel naturel en ligne' }}
 									</h1>
-									<a class="mt-4 btn btn-fill-out rounded-0 text-uppercase" href="/boutique">
-										Découvrir
+									{% set btnUrl  = globalSetting.heroButtonUrl  ?: '/boutique' %}
+									{% set btnText = globalSetting.heroButtonText ?: 'Découvrir' %}
+									<a class="mt-4 btn btn-fill-out rounded-0 text-uppercase" href="{{ btnUrl }}">
+										{{ btnText }}
 									</a>
 								</div>
 							</div>

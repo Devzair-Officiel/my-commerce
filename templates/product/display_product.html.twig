@@ -1,9 +1,9 @@
 <div class="col-lg-3 col-md-4 col-6">
 	<div class="product">
 		<div class="product_img">
-			<a href="/produits/{{product.slug}}">
+			<a href="/produits/{{product.slug}}" tabindex="-1" aria-hidden="true">
 				<img
-					alt="{{product.medias[0].alt ?: product.title}}"
+					alt=""
 					src="/assets/images/products/{{product.medias[0].thumbnailFilename}}"
 					width="200" height="200"
 					loading="lazy"
@@ -34,9 +34,9 @@
 		</div>
 		<a href="/produits/{{product.slug}}">
 			<div class="product_info">
-				<h6 class="product_title">
+				<h3 class="product_title">
 					{{product.title}}
-				</h6>
+				</h3>
 				<div class="product_price">
 					{% if product.isOnSale %}
 						<span class="price">{{ (product.soldePrice / 100)|number_format(2, ',', ' ') }}€</span>

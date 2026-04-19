@@ -91,22 +91,22 @@
 		.pup-item-top { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 2px; }
 		.pup-item-name { font-size: 12px; font-weight: 700; color: #1a1a1a; text-transform: capitalize; line-height: 1.3; }
 		.pup-item-dist { font-size: 11px; color: #E87722; font-weight: 600; white-space: nowrap; flex-shrink: 0; }
-		.pup-item-addr { font-size: 11px; color: #888; margin-bottom: 5px; }
+		.pup-item-addr { font-size: 11px; color: #6b7280; margin-bottom: 5px; }
 		.pup-item-hours { margin-top: 5px; }
 		.pup-today-open { font-size: 11px; color: #1a1a1a; }
-		.pup-today-open strong { color: #E87722; }
-		.pup-today-closed { font-size: 11px; color: #aaa; }
-		.pup-today-closed strong { color: #aaa; }
+		.pup-today-open strong { color: #c05e10; }
+		.pup-today-closed { font-size: 11px; color: #6b7280; }
+		.pup-today-closed strong { color: #6b7280; }
 		.pup-hours-details { margin-top: 3px; }
 		.pup-map-wrap .pup-zone-btn { position: absolute; top: 8px; left: 50%; transform: translateX(-50%); z-index: 1000; background: #fff; border: 1px solid #ddd; border-radius: 12px; padding: 4px 10px !important; font-size: 11px; font-weight: 600; color: #374151; cursor: pointer; box-shadow: 0 1px 6px rgba(0,0,0,.12); white-space: nowrap; transition: background .15s; width: auto !important; min-width: unset !important; line-height: normal; }
 		.pup-map-wrap .pup-zone-btn:hover { background: #f9fafb; }
 		.pup-map-wrap .pup-zone-btn:disabled { opacity: .6; cursor: not-allowed; }
 		.pup-hours-table { border-collapse: collapse; font-size: 11px; width: 100%; margin-top: 4px; }
 		.pup-hours-table td { padding: 1px 0; }
-		.pup-hours-day { color: #aaa; width: 28px; font-weight: 600; }
-		.pup-hours-val { color: #555; }
-		.pup-hours-closed { color: #ccc; font-style: italic; }
-		.pup-hours-today .pup-hours-day { color: #E87722; }
+		.pup-hours-day { color: #6b7280; width: 28px; font-weight: 600; }
+		.pup-hours-val { color: #374151; }
+		.pup-hours-closed { color: #6b7280; font-style: italic; }
+		.pup-hours-today .pup-hours-day { color: #c05e10; }
 		.pup-hours-today .pup-hours-val { color: #1a1a1a; font-weight: 600; }
 		@keyframes spin { to { transform: rotate(360deg); } }
 		.pup-select-btn { margin-top: 6px; font-size: 11px; font-weight: 700; color: #E87722; border: 1px solid #E87722; border-radius: 4px; padding: 3px 10px; background: none; cursor: pointer; display: none; }
@@ -231,7 +231,7 @@
 							</a>
 
 							<div class="d-flex align-items-center gap-2 flex-wrap">
-								<h3 class="mb-0">Checkout</h3>
+								<h1 class="mb-0" style="font-size:1.4rem;">Checkout</h1>
 							</div>
 
 							<div class="badge bg-light text-dark border">
@@ -301,9 +301,9 @@
 								<div id="pickup-selected" class="d-none">
 									<div class="address-card-item address-card-item--active">
 										<div id="pickup-selected-label"></div>
-										<div type="button"  class="btn btn-fill-line pickup-selected">
+										<button type="button" class="btn btn-fill-line pickup-selected">
 											<svg class="icon" aria-hidden="true"><use href="#icon-pen"></use></svg> Changer de point de retrait
-										</div>
+										</button>
 									</div>
 								</div>
 							</div>
@@ -354,7 +354,7 @@
 							</div>
 
 							{# Select caché — utilisé par le JS pour lire la valeur #}
-							<select id="shipping_address" name="shipping_address" class="d-none" aria-hidden="true">
+							<select id="shipping_address" name="shipping_address" class="d-none" aria-hidden="true" tabindex="-1">
 								<option value=""></option>
 								{% for address in addresses %}
 									<option value="{{ address.id }}">{{ address.clientName }}</option>
@@ -394,7 +394,7 @@
 
 							<div id="checkout-add-address-form" class="card mt-3 d-none border-0 shadow-sm">
 								<div class="card-body">
-									<h6 class="card-title mb-3 fw-bold">Nouvelle adresse</h6>
+									<h3 class="card-title mb-3 fw-bold" style="font-size:1rem;">Nouvelle adresse</h3>
 
 									<form id="checkoutAddressForm">
 										<div class="row g-3">
@@ -458,7 +458,7 @@
 							</div>
 
 							{# Select caché — utilisé par le JS pour lire la valeur #}
-							<select id="billing_address" name="billing_address" class="d-none" aria-hidden="true">
+							<select id="billing_address" name="billing_address" class="d-none" aria-hidden="true" tabindex="-1">
 								<option value=""></option>
 								{% for address in addresses %}
 									<option value="{{ address.id }}">{{ address.clientName }}</option>
@@ -498,7 +498,7 @@
 
 							<div id="checkout-add-billing-form" class="card mt-3 d-none border-0 shadow-sm">
 								<div class="card-body">
-									<h6 class="card-title mb-3 fw-bold">Nouvelle adresse de facturation</h6>
+									<h3 class="card-title mb-3 fw-bold" style="font-size:1rem;">Nouvelle adresse de facturation</h3>
 
 									<form id="checkoutBillingAddressForm">
 										<div class="row g-3">
@@ -574,7 +574,7 @@
 					<div class="col-md-6">
 						<div class="order_review">
 							<div class="heading_s1 d-flex justify-content-between align-items-center">
-								<h4 class="mb-0">Votre commande</h4>
+								<h2 class="mb-0" style="font-size:1.1rem;">Votre commande</h2>
 								<span class="text-muted small">
 									{{ total_products }} article{% if total_products > 1 %}s{% endif %}
 								</span>

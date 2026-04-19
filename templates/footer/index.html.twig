@@ -5,7 +5,7 @@
 				<div class="col-lg-3 col-md-6 col-sm-12 text-center">
 					<div class="widget">
 						<div class="footer_logo">
-							<a href="#">
+							<a href="/" aria-label="{{ globalSetting.website_name }} — Accueil">
 								<h2>{{ globalSetting.website_name }}</h2>
 							</a>
 						</div>
@@ -33,7 +33,7 @@
 				</div>
 				<div class="col-lg-2 col-md-3 col-sm-6 text-center">
 					<div class="widget">
-						<h3 class="widget_title">Liens Utiles</h6>
+						<h3 class="widget_title">Liens Utiles</h3>
 						<ul class="widget_links">
 							{% for page in globalFooterPages %}
 							<li>
@@ -46,7 +46,7 @@
 				</div>
 				<div class="col-lg-2 col-md-3 col-sm-6 text-center">
 					<div class="widget">
-						<h3 class="widget_title">Categories</h6>
+						<h3 class="widget_title">Categories</h3>
 						<ul class="widget_links">
 							{% for category in globalMegaCategories %}
 								<li class="">
@@ -60,7 +60,7 @@
 				</div>
 				<div class="col-lg-2 col-md-6 col-sm-6 text-center">
 					<div class="widget">
-						<h3 class="widget_title">Mon compte</h6>
+						<h3 class="widget_title">Mon compte</h3>
 						<ul class="widget_links">
 							<li>
 								<a href="{{ path('app_account') }}">Dashboard</a>
@@ -76,7 +76,7 @@
 				</div>
 				<div class="col-lg-3 col-md-4 col-sm-6 text-center">
 					<div class="widget">
-						<h3 class="widget_title">Contact Info</h6>
+						<h3 class="widget_title">Contact Info</h3>
 						<ul class="contact_info contact_info_light">
 							<li>
 								<svg class="icon" aria-hidden="true"><use href="#icon-location"></use></svg>
