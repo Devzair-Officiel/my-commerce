@@ -7,3 +7,9 @@ services:
       target: frankenphp_prod
     environment:
       APP_SECRET: ${APP_SECRET}
+
+  database:
+    env_file:
+      - .env
+      - path: .env.prod.local
+        required: false
