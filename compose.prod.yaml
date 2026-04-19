@@ -7,6 +7,7 @@ services:
       target: frankenphp_prod
     environment:
       APP_SECRET: ${APP_SECRET}
+      APP_ENV: prod
 
   database:
     env_file:
