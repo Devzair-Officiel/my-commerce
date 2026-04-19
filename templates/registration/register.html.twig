@@ -51,3 +51,26 @@ Créer un compte |
 		</div>
 	</div>
 {% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+<script src="https://www.google.com/recaptcha/api.js?render={{ recaptcha3_site_key }}"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const formEl = document.querySelector('form');
+    const captchaInput = document.querySelector('input[name="registration_form[captcha]"]');
+    if (!formEl || !captchaInput) return;
+    formEl.addEventListener('submit', function (e) {
+        if (captchaInput.value) return;
+        e.preventDefault();
+        grecaptcha.ready(function () {
+            grecaptcha.execute('{{ recaptcha3_site_key }}', { action: 'register' })
+                .then(function (token) {
+                    captchaInput.value = token;
+                    formEl.submit();
+                });
+        });
+    });
+});
+</script>
+{% endblock %}

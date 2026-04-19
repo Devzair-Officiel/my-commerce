@@ -11,6 +11,8 @@ use Symfony\Component\Form\Extension\Core\Type\EmailType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\PasswordType;
 use Symfony\Component\Form\Extension\Core\Type\RepeatedType;
+use Karser\Recaptcha3Bundle\Form\Recaptcha3Type;
+use Karser\Recaptcha3Bundle\Validator\Constraints\Recaptcha3;
 
 /**
  * Formulaire d'inscription d'un nouveau client avec e-mail, civilité, nom, prénom et mot de passe.
@@ -66,6 +68,10 @@ class RegistrationFormType extends AbstractType
                         'class' => 'form-group mb-3'
                     ]
                 ]
+            ])
+            ->add('captcha', Recaptcha3Type::class, [
+                'constraints' => new Recaptcha3(),
+                'mapped' => false,
             ])
         ;
     }
