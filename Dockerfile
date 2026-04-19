@@ -103,7 +103,6 @@ RUN set -eux; \
 	         public/assets/images/payment_methods_logos \
 	         public/assets/videos/hero; \
 	composer dump-autoload --classmap-authoritative --no-dev; \
-	composer dump-env prod; \
 	php bin/console assets:install --no-debug; \
 	php bin/console cache:clear --no-warmup; \
 	chmod +x bin/console; sync;
