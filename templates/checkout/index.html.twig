@@ -5,8 +5,6 @@
 {% block stylesheets %}
 	{# Font Awesome supprimé — icônes migrées vers SVG sprite Lucide #}
 	<link rel="stylesheet" href="/assets/css/stripe.css">
-	<link rel="preload" href="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css" as="style" onload="this.rel='stylesheet'">
-	<noscript><link href="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css" rel="stylesheet"></noscript>
 	<style>
 		/* ── Address cards ──────────────────────────────────── */
 		.address-card-item {
@@ -61,107 +59,78 @@
 			margin-top: 3px;
 		}
 
-		/* ── Colissimo modal ────────────────────────────────── */
-		/*
-		 * Le widget injecte .widget_colissimo_contenu { width:1000px; height:574px; box-sizing:content-box }
-		 * La modal doit faire ≥ 1002px. Sur écrans plus étroits : scroll horizontal.
-		 */
-		#colissimo-modal .modal-dialog {
-			width: 1040px;
-			max-width: 98vw;
-			margin: 10px auto;
-		}
-		#colissimo-modal .modal-content {
-			border: none;
-			border-radius: 10px;
-			overflow: hidden;
-			box-shadow: 0 20px 60px rgba(0,0,0,.22);
-		}
-		#colissimo-modal .modal-header {
-			background: #fff;
-			border-bottom: 1px solid #e8e8e8;
-			padding: 10px 16px;
-			flex-shrink: 0;
-		}
-		#colissimo-modal .modal-header .modal-title {
-			font-size: 14px;
-			font-weight: 700;
-		}
-		#colissimo-modal .modal-body {
-			padding: 0 !important;
-			overflow-x: auto;
-			overflow-y: hidden;
-			height: 576px;
-			background: #fff;
-		}
-		#colissimo-widget-container {
-			min-width: 1000px;
-			line-height: normal;
-		}
+		/* ── Pickup point modal ─────────────────────────────── */
+		#colissimo-modal .modal-dialog { max-width: min(920px, 98vw); margin: 10px auto; }
+		#colissimo-modal .modal-content { border: none; border-radius: 12px; overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,.22); }
+		#colissimo-modal .modal-header { background: #fff; border-bottom: 1px solid #e8e8e8; padding: 10px 16px; }
+		#colissimo-modal .modal-header .modal-title { font-size: 14px; font-weight: 700; }
+		#colissimo-modal .modal-body { padding: 0 !important; height: 540px; background: #fff; display: flex; flex-direction: column; overflow: hidden; }
+		@media (max-width: 767px) { #colissimo-modal .modal-body { height: 75vh; max-height: 600px; } }
 
-		/*
-		 * ── Personnalisation officielle Colissimo (doc §2.9) ──────────────────
-		 * .couleur1 → markers, bouton validation, bordure gauche point sélectionné
-		 * .couleur2 → filtres accessibilité
-		 * .police   → police de caractères
-		 * Le widget lit ces classes CSS au démarrage via colissimo(".couleur1").css('color')
-		 */
-		.couleur1 { color: #E87722; }
-		.couleur2 { color: #E87722; }
-		.police   { font-family: inherit; }
+		/* Layout wrap */
+		.pup-wrap { display: flex; flex: 1; min-height: 0; overflow: hidden; }
 
-		/*
-		 * ── Overrides CSS widget — on préfixe avec #colissimo-widget-container
-		 *    pour avoir une spécificité supérieure au <style> injecté par le plugin
-		 * ─────────────────────────────────────────────────────────────────────
-		 */
+		/* Sidebar */
+		.pup-sidebar { display: flex; flex-direction: column; width: 320px; flex-shrink: 0; border-right: 1px solid #ececec; background: #fff; min-width: 0; }
+		@media (max-width: 767px) { .pup-sidebar { width: 100%; border-right: none; } }
 
-		/* Supprime la bordure externe (déjà dans la modal Bootstrap) */
-		#colissimo-widget-container .widget_colissimo_contenu {
-			border: none !important;
-			margin: 0 !important;
-		}
+		/* Search */
+		.pup-search-bar { display: flex; gap: 8px; padding: 10px 12px; border-bottom: 1px solid #f0f0f0; flex-shrink: 0; align-items: center; background: #fafafa; }
+		.pup-zip { flex: 1; font-size: 13px; border: 1px solid #ddd; border-radius: 6px; padding: 5px 10px; outline: none; }
+		.pup-zip:focus { border-color: #E87722; box-shadow: 0 0 0 3px rgba(232,119,34,.1); }
+		.pup-search-bar .pup-search-btn { background: #E87722; color: #fff; border: none; border-radius: 6px; padding: 7px 12px !important; cursor: pointer; flex-shrink: 0; display: flex; align-items: center; justify-content: center; width: auto !important; min-width: unset !important; max-width: unset !important; line-height: 1; }
+		.pup-search-btn:hover { background: #d06a18; }
+		.pup-search-btn:disabled { opacity: .5; cursor: not-allowed; }
 
-		/* Bouton "Me livrer à cette adresse" — texte centré, taille correcte */
-		#colissimo-widget-container .widget_colissimo_bouton_validation {
-			width: 240px !important;
-			height: 36px !important;
-			border-radius: 20px !important;
-			padding-left: 0 !important;
-			padding-right: 0 !important;
-			padding-top: 0 !important;
-			display: flex !important;
-			align-items: center !important;
-			justify-content: center !important;
-			margin: 16px auto !important;
-			cursor: pointer !important;
-		}
-		#colissimo-widget-container .widget_colissimo_text_bouton {
-			text-align: center !important;
-			font-size: 13px !important;
-			font-weight: 600 !important;
-			padding: 0 !important;
-			margin: 0 !important;
-			line-height: 1 !important;
-			white-space: nowrap !important;
-		}
+		/* List */
+		.pup-list { flex: 1; overflow-y: auto; }
+		.pup-item { padding: 11px 14px; cursor: pointer; border-bottom: 1px solid #f5f5f5; transition: background .1s; outline: none; }
+		.pup-item:hover { background: #fffaf6; }
+		.pup-item:focus { background: #fffaf6; }
+		.pup-item--active { background: #fff5ec; border-left: 3px solid #E87722; padding-left: 11px; }
+		.pup-item-top { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 2px; }
+		.pup-item-name { font-size: 12px; font-weight: 700; color: #1a1a1a; text-transform: capitalize; line-height: 1.3; }
+		.pup-item-dist { font-size: 11px; color: #E87722; font-weight: 600; white-space: nowrap; flex-shrink: 0; }
+		.pup-item-addr { font-size: 11px; color: #888; margin-bottom: 5px; }
+		.pup-item-hours { margin-top: 5px; }
+		.pup-today-open { font-size: 11px; color: #1a1a1a; }
+		.pup-today-open strong { color: #E87722; }
+		.pup-today-closed { font-size: 11px; color: #aaa; }
+		.pup-today-closed strong { color: #aaa; }
+		.pup-hours-details { margin-top: 3px; }
+		.pup-map-wrap .pup-zone-btn { position: absolute; top: 8px; left: 50%; transform: translateX(-50%); z-index: 1000; background: #fff; border: 1px solid #ddd; border-radius: 12px; padding: 4px 10px !important; font-size: 11px; font-weight: 600; color: #374151; cursor: pointer; box-shadow: 0 1px 6px rgba(0,0,0,.12); white-space: nowrap; transition: background .15s; width: auto !important; min-width: unset !important; line-height: normal; }
+		.pup-map-wrap .pup-zone-btn:hover { background: #f9fafb; }
+		.pup-map-wrap .pup-zone-btn:disabled { opacity: .6; cursor: not-allowed; }
+		.pup-hours-table { border-collapse: collapse; font-size: 11px; width: 100%; margin-top: 4px; }
+		.pup-hours-table td { padding: 1px 0; }
+		.pup-hours-day { color: #aaa; width: 28px; font-weight: 600; }
+		.pup-hours-val { color: #555; }
+		.pup-hours-closed { color: #ccc; font-style: italic; }
+		.pup-hours-today .pup-hours-day { color: #E87722; }
+		.pup-hours-today .pup-hours-val { color: #1a1a1a; font-weight: 600; }
+		@keyframes spin { to { transform: rotate(360deg); } }
+		.pup-select-btn { margin-top: 6px; font-size: 11px; font-weight: 700; color: #E87722; border: 1px solid #E87722; border-radius: 4px; padding: 3px 10px; background: none; cursor: pointer; display: none; }
+		.pup-item--active .pup-select-btn { display: inline-block; }
+		.pup-select-btn:hover { background: #E87722; color: #fff; }
 
-		/* Markers sur la carte — remplacés par l'image locale */
-		#colissimo-widget-container .widget_colissimo_marker,
-		#colissimo-widget-container .widget_colissimo_marker_S,
-		#colissimo-widget-container .widget_colissimo_marker_relais,
-		#colissimo-widget-container .widget_colissimo_marker_bureau-de-poste,
-		#colissimo-widget-container .widget_colissimo_marker_consigne,
-		#colissimo-widget-container .widget_colissimo_marker_voisin-relais {
-			background-image: url('/assets/images/colissimo.png') !important;
-			background-size: contain !important;
-			background-repeat: no-repeat !important;
-		}
+		/* Map */
+		.pup-map-wrap { flex: 1; position: relative; min-width: 0; overflow: hidden; }
+		@media (max-width: 767px) { .pup-map-wrap { display: none; } }
+		.pup-map { position: absolute; inset: 0; }
 
-		/* Masque le bouton close interne du widget (on a déjà le btn-close Bootstrap) */
-		#colissimo-widget-container .widget_colissimo_close {
-			display: none !important;
-		}
+		/* Markers Colissimo */
+		.pup-marker { transition: filter .15s; filter: drop-shadow(0 1px 3px rgba(0,0,0,.4)); opacity: .75; }
+		.pup-marker-active { filter: drop-shadow(0 2px 8px rgba(232,119,34,.8)) !important; opacity: 1 !important; }
+
+		/* Zip autocomplete */
+		.pup-ac-list { position: absolute; top: 100%; left: 0; right: 0; z-index: 2000; background: #fff; border: 1px solid #e5e7eb; border-radius: 8px; box-shadow: 0 4px 16px rgba(0,0,0,.12); list-style: none; margin: 3px 0 0; padding: 4px 0; max-height: 220px; overflow-y: auto; }
+		.pup-ac-item { padding: 7px 12px; cursor: pointer; font-size: 12px; transition: background .1s; }
+		.pup-ac-item:hover, .pup-ac-item--active { background: #fff5ec; }
+		.pup-ac-label { color: #374151; }
+
+		/* States */
+		.pup-loading { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; gap: 12px; color: #888; font-size: 14px; }
+		.pup-error { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: #888; font-size: 13px; text-align: center; padding: 24px; gap: 8px; }
 
 		/* ── Bouton "Choisir un point relais" ───────────────── */
 		#pickup-open-btn {
@@ -358,10 +327,7 @@
 
 						{% endif %}
 
-						{# ── Modale widget Colissimo ──────────────────────── #}
-						<div id="colissimo-prefetch" aria-hidden="true" style="position:fixed;top:-9999px;left:-9999px;width:1000px;height:574px;overflow:hidden;pointer-events:none;">
-							<div id="colissimo-widget-container"></div>
-						</div>
+						{# ── Modale sélecteur points relais (Leaflet + OSM) ── #}
 						<div class="modal fade" id="colissimo-modal" tabindex="-1" aria-labelledby="colissimoModalLabel" aria-hidden="true">
 							<div class="modal-dialog modal-dialog-centered">
 								<div class="modal-content">
@@ -375,14 +341,7 @@
 										</div>
 										<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
 									</div>
-									<div class="modal-body" id="colissimo-modal-body" style="min-height:400px; position:relative;">
-										<div id="colissimo-loader" style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#fff;z-index:10;gap:12px;">
-											<div class="spinner-border text-warning" role="status" style="width:2.5rem;height:2.5rem;">
-												<span class="visually-hidden">Chargement…</span>
-											</div>
-											<span class="text-muted small">Chargement de la carte…</span>
-										</div>
-									</div>
+									<div class="modal-body" id="colissimo-modal-body"></div>
 								</div>
 							</div>
 						</div>
@@ -756,12 +715,9 @@
 {% block javascripts %}
 	{{ parent() }}
 	<script src="https://js.stripe.com/v3/" defer></script>
-	<script src="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js" defer></script>
 	<script src="{{ asset('assets/js/modules/address-autocomplete.js') }}" defer></script>
 	<script src="{{ asset('assets/js/pages/checkout/address.js') }}?v=3" type="module" defer></script>
 	<script src="{{ asset('assets/js/pages/checkout/stripe.js') }}?v=3" type="module" defer></script>
 {% endblock %}
 
-{% block body_scripts %}
-	<script src="https://ws.colissimo.fr/widget-colissimo/js/jquery.plugin.colissimo.js" defer></script>
-{% endblock %}
+{% block body_scripts %}{% endblock %}

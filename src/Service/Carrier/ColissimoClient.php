@@ -186,6 +186,104 @@ final class ColissimoClient
         return ['statusCode' => $statusCode, 'label' => $statusLabel, 'events' => $events];
     }
 
+    // ── Pickup point search (REST) ──────────────────────────────────────────
+
+    /**
+     * Recherche les points relais Colissimo par code postal.
+     *
+     * @return list<array{id:string, name:string, address:string, city:string, postalCode:string, lat:float, lng:float, distance:int, hours:array}>
+     * @throws \RuntimeException
+     */
+    public function searchPickupPoints(string $zipCode, string $city = ''): array
+    {
+        if ($city === '') {
+            $city = $this->resolveCityFromZip($zipCode) ?? '';
+        }
+
+        $e    = fn(string $v): string => htmlspecialchars($v, \ENT_XML1, 'UTF-8');
+        $date = (new \DateTimeImmutable())->format('d/m/Y');
+
+        $xml = <<<XML
+        <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:poi="http://pointretrait.geopost.com/">
+          <soapenv:Body>
+            <poi:findRDVPointRetraitAcheminement>
+              <accountNumber>{$e($this->login)}</accountNumber>
+              <password>{$e($this->password)}</password>
+              <address></address>
+              <zipCode>{$e($zipCode)}</zipCode>
+              <city>{$e($city)}</city>
+              <weight>500</weight>
+              <shippingDate>{$e($date)}</shippingDate>
+              <filterRelay>1</filterRelay>
+            </poi:findRDVPointRetraitAcheminement>
+          </soapenv:Body>
+        </soapenv:Envelope>
+        XML;
+
+        try {
+            $response = $this->httpClient->request('POST', 'https://ws.colissimo.fr/pointretrait-ws-cxf/PointRetraitServiceWS', [
+                'headers' => ['Content-Type' => 'text/xml; charset=utf-8'],
+                'body'    => $xml,
+            ]);
+            $body = $response->getContent(false);
+        } catch (\Throwable $e) {
+            $this->logger->error('[Colissimo] Erreur recherche points relais', ['exception' => $e->getMessage()]);
+            throw new \RuntimeException('Colissimo pickup points search failed: ' . $e->getMessage(), 0, $e);
+        }
+
+        // Parse chaque <listePointRetraitAcheminement> du XML
+        \preg_match_all(
+            '/<listePointRetraitAcheminement>(.*?)<\/listePointRetraitAcheminement>/s',
+            $body,
+            $matches
+        );
+
+        $points = [];
+        foreach ($matches[1] as $block) {
+            $get = static function (string $tag) use ($block): string {
+                \preg_match("/<{$tag}>([^<]*)<\/{$tag}>/", $block, $m);
+                return \trim($m[1] ?? '');
+            };
+
+            $address = \trim(\implode(' ', \array_filter([$get('adresse1'), $get('adresse2')])));
+
+            $points[] = [
+                'id'         => $get('identifiant'),
+                'name'       => $get('nom'),
+                'address'    => $address,
+                'city'       => $get('localite'),
+                'postalCode' => $get('codePostal'),
+                'lat'        => (float) $get('coordGeolocalisationLatitude'),
+                'lng'        => (float) $get('coordGeolocalisationLongitude'),
+                'distance'   => (int)   $get('distanceEnMetre'),
+                'hours'      => [
+                    'lundi'    => $get('horairesOuvertureLundi'),
+                    'mardi'    => $get('horairesOuvertureMardi'),
+                    'mercredi' => $get('horairesOuvertureMercredi'),
+                    'jeudi'    => $get('horairesOuvertureJeudi'),
+                    'vendredi' => $get('horairesOuvertureVendredi'),
+                    'samedi'   => $get('horairesOuvertureSamedi'),
+                    'dimanche' => $get('horairesOuvertureDimanche'),
+                ],
+            ];
+        }
+
+        return $points;
+    }
+
+    private function resolveCityFromZip(string $zipCode): ?string
+    {
+        try {
+            $response = $this->httpClient->request('GET', 'https://api-adresse.data.gouv.fr/search/', [
+                'query' => ['q' => $zipCode, 'type' => 'municipality', 'limit' => 1],
+            ]);
+            $data = $response->toArray(false);
+            return $data['features'][0]['properties']['city'] ?? null;
+        } catch (\Throwable) {
+            return null;
+        }
+    }
+
     // ── SOAP/MTOM helpers ────────────────────────────────────────────────────
 
     private function buildGenerateLabelXml(

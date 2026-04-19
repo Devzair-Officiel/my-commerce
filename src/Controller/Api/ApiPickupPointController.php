@@ -23,6 +23,28 @@ final class ApiPickupPointController
     ) {}
 
     /**
+     * Recherche les points relais Colissimo à partir d'un code postal.
+     */
+    #[Route('/api/pickup-points/search', name: 'api_pickup_point_search', methods: ['GET'])]
+    public function search(Request $request): JsonResponse
+    {
+        $zipCode = \trim($request->query->getString('zipCode'));
+        $city    = \trim($request->query->getString('city'));
+
+        if ($zipCode === '') {
+            return new JsonResponse(['error' => 'Code postal requis.'], Response::HTTP_BAD_REQUEST);
+        }
+
+        try {
+            $points = $this->colissimoClient->searchPickupPoints($zipCode, $city);
+        } catch (\Throwable) {
+            return new JsonResponse(['error' => 'Impossible de récupérer les points relais.'], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+
+        return new JsonResponse($points);
+    }
+
+    /**
      * Enregistre le point relais choisi dans la session panier.
      */
     #[Route('/api/pickup-points/select', name: 'api_pickup_point_select', methods: ['POST'])]
