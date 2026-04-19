@@ -21,8 +21,8 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 )]
 final class RegenerateImageVariantsCommand extends Command
 {
-    private const THUMB_MAX  = 200;
-    private const MEDIUM_MAX = 600;
+    private const THUMB_MAX  = 400;
+    private const MEDIUM_MAX = 800;
 
     private const DIRS = [
         'products',
@@ -41,12 +41,14 @@ final class RegenerateImageVariantsCommand extends Command
     protected function configure(): void
     {
         $this->addOption('dry-run', null, InputOption::VALUE_NONE, 'Affiche ce qui serait fait sans écrire de fichiers');
+        $this->addOption('force', 'f', InputOption::VALUE_NONE, 'Régénère même si les variantes existent déjà');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io     = new SymfonyStyle($input, $output);
         $dryRun = (bool) $input->getOption('dry-run');
+        $force  = (bool) $input->getOption('force');
 
         if (!\extension_loaded('gd')) {
             $io->error('L\'extension GD n\'est pas disponible.');
@@ -90,8 +92,8 @@ final class RegenerateImageVariantsCommand extends Command
                 $thumbPath   = $dir . '/' . $base . '-thumb.webp';
                 $mediumPath  = $dir . '/' . $base . '-medium.webp';
 
-                $needsThumb  = !file_exists($thumbPath);
-                $needsMedium = !file_exists($mediumPath);
+                $needsThumb  = $force || !file_exists($thumbPath);
+                $needsMedium = $force || !file_exists($mediumPath);
 
                 if (!$needsThumb && !$needsMedium) {
                     $io->writeln(sprintf('<comment>Ignoré (variantes déjà présentes)</comment> %s/%s', $subDir, $filename), OutputInterface::VERBOSITY_VERBOSE);

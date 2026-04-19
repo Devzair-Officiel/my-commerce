@@ -2,7 +2,9 @@
 
 {% block stylesheets %}
 	{# Préchargement LCP : image principale du produit #}
+	{% if product.medias|length > 0 %}
 	<link rel="preload" as="image" href="/assets/images/products/{{ product.medias[0].mediumFilename }}" fetchpriority="high">
+	{% endif %}
 
 	{# CSS non-critiques — différés pour ne pas bloquer le rendu #}
 	<link rel="stylesheet" href="/assets/css/slick.css" media="print" onload="this.media='all'">
@@ -55,16 +57,17 @@
 
 {% block body %}
 
+    {% set firstCategory = product.categories|first %}
     {% include 'page_head/index.html.twig' with {
         page_name: product.title,
-        breadcrumbs: [
+        breadcrumbs: firstCategory ? [
             {
-                label: product.categories[0].title,
-                url: path('app_category', { categoryName: product.categories[0].slug})
+                label: firstCategory.title,
+                url: path('app_category', { categoryName: firstCategory.slug})
             },
-            {
-                label: product.title
-            }
+            { label: product.title }
+        ] : [
+            { label: product.title }
         ]
     } %}
 
@@ -76,18 +79,21 @@
 				<div class="row justify-content-center">
 					<div class="col-lg-6 col-md-11 mb-4 mb-md-3">
 						<div class="product-image">
+							{% set mainMedia = product.medias|first %}
 							<div class="product_img_box">
 								<img
 									id="product_img"
-									alt="{{ product.medias[0].alt }}"
-									src="/assets/images/products/{{ product.medias[0].mediumFilename }}"
+									alt="{{ mainMedia ? mainMedia.alt : product.title }}"
+									src="{{ mainMedia ? '/assets/images/products/' ~ mainMedia.mediumFilename : '/assets/images/placeholder.png' }}"
 									width="800" height="800"
 									fetchpriority="high"
 									decoding="async"
 								>
-								<a href="/assets/images/products/{{ product.medias[0].filename }}" title="Zoom" class="product_img_zoom" aria-label="Agrandir l'image">
+								{% if mainMedia %}
+								<a href="/assets/images/products/{{ mainMedia.filename }}" title="Zoom" class="product_img_zoom" aria-label="Agrandir l'image">
 									<svg class="icon" aria-hidden="true"><use href="#icon-zoom-in"></use></svg>
 								</a>
+								{% endif %}
 							</div>
 
 							<div id="pr_item_gallery" data-slides-to-show="4" data-slides-to-scroll="1" data-infinite="false" class="product_gallery_item slick_slider">

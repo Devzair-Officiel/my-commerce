@@ -6381,6 +6381,8 @@ footer .widget_title {
 .product .product_title,
 .product_box .product_title,
 .product_wrap .product_title {
+	font-size: 1rem;
+	font-weight: 600;
 	white-space: nowrap;
 	text-overflow: ellipsis;
 	overflow: hidden;

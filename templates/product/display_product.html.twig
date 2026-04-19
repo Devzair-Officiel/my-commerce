@@ -1,11 +1,12 @@
 <div class="col-lg-3 col-md-4 col-6">
 	<div class="product">
 		<div class="product_img">
+			{% set thumb = product.medias|first %}
 			<a href="/produits/{{product.slug}}" tabindex="-1" aria-hidden="true">
 				<img
 					alt=""
-					src="/assets/images/products/{{product.medias[0].thumbnailFilename}}"
-					width="200" height="200"
+					src="{{ thumb ? '/assets/images/products/' ~ thumb.thumbnailFilename : '/assets/images/placeholder.png' }}"
+					width="400" height="400"
 					loading="lazy"
 					decoding="async"
 				>

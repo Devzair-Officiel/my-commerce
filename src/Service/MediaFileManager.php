@@ -22,7 +22,7 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
  */
 final class MediaFileManager
 {
-    private const THUMB_MAX  = 200;
+    private const THUMB_MAX  = 400;
     private const MEDIUM_MAX = 600;
 
     public function __construct(
@@ -156,19 +156,19 @@ final class MediaFileManager
      */
     private function removeWithVariants(string $path): void
     {
-        if (!$this->fs->exists($path)) {
-            return;
+        $info = \pathinfo($path);
+        $dir  = $info['dirname'];
+        $base = $info['filename'];
+        $ext  = $info['extension'] ?? '';
+
+        // Supprimer le fichier original s'il existe
+        if ($this->fs->exists($path)) {
+            $this->fs->remove($path);
         }
 
-        $this->fs->remove($path);
-
-        $info   = \pathinfo($path);
-        $dir    = $info['dirname'];
-        $base   = $info['filename'];
-        $ext    = $info['extension'] ?? '';
-
+        // Supprimer les variantes dans tous les cas (même si l'original est absent)
         foreach (['-thumb', '-medium'] as $suffix) {
-            foreach (['webp', $ext] as $varExt) {
+            foreach (array_unique(['webp', $ext]) as $varExt) {
                 if ($varExt === '') {
                     continue;
                 }

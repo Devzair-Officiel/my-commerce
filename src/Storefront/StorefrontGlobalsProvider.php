@@ -79,13 +79,43 @@ final class StorefrontGlobalsProvider
             }
 
             return [
-                'globalSetting'        => $this->settings->findOneForLayout(),
+                'globalSetting'        => $this->settings->findOneForLayout() ?? $this->defaultSetting(),
                 'globalHeaderPages'    => $this->pages->findHeaderPagesForLayout(),
                 'globalFooterPages'    => $this->pages->findFooterPagesForLayout(),
                 'globalMegaCategories' => $megaCategories,
                 'globalMegaProducts'   => $productsByCategory,
             ];
         });
+    }
+
+    private function defaultSetting(): array
+    {
+        return [
+            'id'                  => null,
+            'website_name'        => 'Mon site',
+            'description'         => '',
+            'currency'            => 'EUR',
+            'taxe_rate'           => 0,
+            'street'              => '',
+            'city'                => '',
+            'code_postal'         => '',
+            'state'               => '',
+            'phone'               => '',
+            'email'               => null,
+            'facebookLink'        => null,
+            'instaLink'           => null,
+            'youtubeLink'         => null,
+            'copyright'           => null,
+            'copyrightUrl'        => null,
+            'logo_filename'       => null,
+            'logo_alt'            => null,
+            'favicon_filename'    => null,
+            'hero_video_filename' => null,
+            'hero_poster_filename'=> null,
+            'heroTitle'           => null,
+            'heroButtonText'      => null,
+            'heroButtonUrl'       => null,
+        ];
     }
 
     public function invalidateSetting(): void

@@ -128,8 +128,6 @@ final class BlogCrudController extends AbstractCrudController
                 continue;
             }
 
-            // Lire le fichier depuis le formulaire EasyAdmin
-            // (Comme 'upload' est mapped=false, on le récupère via l'objet si tu le remplis ailleurs)
             $file = $media->getUpload();
 
             if (!$file instanceof UploadedFile) {
@@ -145,8 +143,19 @@ final class BlogCrudController extends AbstractCrudController
             $media->setFilename($filename);
             $media->setUpload(null);
 
-            // Assure la relation owning side (ManyToMany : owning side = Blog.medias)
             $blog->addMedia($media);
         }
+    }
+
+    public function deleteEntity(EntityManagerInterface $entityManager, $entityInstance): void
+    {
+        /** @var Blog $blog */
+        $blog = $entityInstance;
+
+        foreach ($blog->getMedias() as $media) {
+            $this->files->removeFile($media);
+        }
+
+        parent::deleteEntity($entityManager, $entityInstance);
     }
 }
