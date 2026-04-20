@@ -93,15 +93,25 @@ fi
 
 log "Dump terminé : $(du -sh "$BACKUP_FILE" | cut -f1)"
 
-# ── 2. Archives des uploads ────────────────────────────────────────────────────
-UPLOADS_DIR="$PROJECT_DIR/public/uploads"
-if [[ -d "$UPLOADS_DIR" ]]; then
-    log "Archivage des uploads → $UPLOADS_FILE"
-    tar -czf "$UPLOADS_FILE" -C "$PROJECT_DIR/public" uploads \
-        || fail "Archivage des uploads a échoué"
-    log "Uploads archivés : $(du -sh "$UPLOADS_FILE" | cut -f1)"
+# ── 2. Sync des volumes Docker vers OVH Object Storage ────────────────────────
+UPLOADS_VOLUME="/var/lib/docker/volumes/my-commerce_uploads_data/_data"
+VIDEOS_VOLUME="/var/lib/docker/volumes/my-commerce_videos_data/_data"
+
+if command -v rclone &>/dev/null && rclone listremotes 2>/dev/null | grep -q "^backup:"; then
+    if [[ -d "$UPLOADS_VOLUME" ]]; then
+        log "Sync images uploads → backup:nidemiel-backups/uploads/"
+        rclone sync "$UPLOADS_VOLUME" backup:nidemiel-backups/uploads/ \
+            --transfers 4 --log-level INFO \
+            || log "AVERTISSEMENT : sync uploads a échoué"
+    fi
+    if [[ -d "$VIDEOS_VOLUME" ]]; then
+        log "Sync vidéos → backup:nidemiel-backups/videos/"
+        rclone sync "$VIDEOS_VOLUME" backup:nidemiel-backups/videos/ \
+            --transfers 2 --log-level INFO \
+            || log "AVERTISSEMENT : sync vidéos a échoué"
+    fi
 else
-    log "Pas de dossier uploads trouvé, on passe."
+    log "rclone non configuré — médias non sauvegardés."
 fi
 
 # ── 3. Sync vers stockage distant (rclone) ─────────────────────────────────────
