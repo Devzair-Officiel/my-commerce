@@ -97,16 +97,26 @@ log "Dump terminé : $(du -sh "$BACKUP_FILE" | cut -f1)"
 UPLOADS_VOLUME="/var/lib/docker/volumes/my-commerce_uploads_data/_data"
 VIDEOS_VOLUME="/var/lib/docker/volumes/my-commerce_videos_data/_data"
 
-if command -v rclone &>/dev/null && rclone listremotes 2>/dev/null | grep -q "^backup:"; then
+# rclone peut être installé dans le home de l'utilisateur courant ou de devzair
+RCLONE_BIN="$(command -v rclone 2>/dev/null || echo /usr/local/bin/rclone)"
+RCLONE_CONFIG="${HOME}/.config/rclone/rclone.conf"
+# Si on tourne en sudo (root), utiliser la config de devzair
+if [[ "$(id -u)" == "0" ]] && [[ -f "/home/devzair/.config/rclone/rclone.conf" ]]; then
+    RCLONE_CONFIG="/home/devzair/.config/rclone/rclone.conf"
+fi
+
+rclone_cmd() { "$RCLONE_BIN" --config "$RCLONE_CONFIG" "$@"; }
+
+if [[ -x "$RCLONE_BIN" ]] && rclone_cmd listremotes 2>/dev/null | grep -q "^backup:"; then
     if [[ -d "$UPLOADS_VOLUME" ]]; then
         log "Sync images uploads → backup:nidemiel-backups/uploads/"
-        rclone sync "$UPLOADS_VOLUME" backup:nidemiel-backups/uploads/ \
+        rclone_cmd sync "$UPLOADS_VOLUME" backup:nidemiel-backups/uploads/ \
             --transfers 4 --log-level INFO \
             || log "AVERTISSEMENT : sync uploads a échoué"
     fi
     if [[ -d "$VIDEOS_VOLUME" ]]; then
         log "Sync vidéos → backup:nidemiel-backups/videos/"
-        rclone sync "$VIDEOS_VOLUME" backup:nidemiel-backups/videos/ \
+        rclone_cmd sync "$VIDEOS_VOLUME" backup:nidemiel-backups/videos/ \
             --transfers 2 --log-level INFO \
             || log "AVERTISSEMENT : sync vidéos a échoué"
     fi
@@ -117,9 +127,9 @@ fi
 # ── 3. Sync vers stockage distant (rclone) ─────────────────────────────────────
 # Nécessite rclone configuré avec un remote nommé "backup"
 # Voir : https://rclone.org/docs/ — rclone config
-if command -v rclone &>/dev/null && rclone listremotes 2>/dev/null | grep -q "^backup:"; then
-    log "Sync vers stockage distant (rclone backup:nidemiel-backups/)…"
-    rclone copy "$BACKUP_DIR" backup:nidemiel-backups/ \
+if [[ -x "$RCLONE_BIN" ]] && rclone_cmd listremotes 2>/dev/null | grep -q "^backup:"; then
+    log "Sync BDD vers stockage distant (rclone backup:nidemiel-backups/)…"
+    rclone_cmd copy "$BACKUP_DIR" backup:nidemiel-backups/ \
         --include "*.gz" \
         --transfers 2 \
         --log-level INFO \
