@@ -301,24 +301,24 @@
 
                                             <form id="passwordForm">
                                                 {% if hasLocalPassword %}
-                                                    <div class="input-group mb-3" id="old_password">
+                                                    <div class="form-group mb-3" style="position:relative" id="old_password">
                                                         <input type="password" id="currentPassword" name="currentPassword" class="form-control" placeholder="Mot de passe actuel" autocomplete="current-password" required>
-                                                        <button class="btn" style="right: 0; z-index: 5" type="button" onclick="togglePasswordVisibility('old_password', this)">
+                                                        <button class="btn" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;padding:0;color:#888;z-index:5" type="button" onclick="togglePasswordVisibility('old_password', this)">
                                                             <svg class="icon" aria-hidden="true"><use href="#icon-eye"></use></svg>
                                                         </button>
                                                     </div>
                                                 {% endif %}
 
-                                                <div class="input-group mb-3" id="first_password">
+                                                <div class="form-group mb-3" style="position:relative" id="first_password">
                                                     <input type="password" id="newPassword" name="newPassword" class="form-control" placeholder="Nouveau mot de passe" autocomplete="new-password" required>
-                                                    <button class="btn" style="right: 0; z-index: 5" type="button" onclick="togglePasswordVisibility('first_password', this)">
+                                                    <button class="btn" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;padding:0;color:#888;z-index:5" type="button" onclick="togglePasswordVisibility('first_password', this)">
                                                         <svg class="icon" aria-hidden="true"><use href="#icon-eye"></use></svg>
                                                     </button>
                                                 </div>
 
-                                                <div class="input-group mb-3" id="second_password">
+                                                <div class="form-group mb-3" style="position:relative" id="second_password">
                                                     <input type="password" id="confirmPassword" name="confirmPassword" class="form-control" placeholder="Confirmez le nouveau mot de passe" autocomplete="new-password" required>
-                                                    <button class="btn" style="right: 0; z-index: 5" type="button" onclick="togglePasswordVisibility('second_password', this)">
+                                                    <button class="btn" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;padding:0;color:#888;z-index:5" type="button" onclick="togglePasswordVisibility('second_password', this)">
                                                         <svg class="icon" aria-hidden="true"><use href="#icon-eye"></use></svg>
                                                     </button>
                                                 </div>

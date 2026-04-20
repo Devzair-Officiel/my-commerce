@@ -23,6 +23,8 @@ services:
       APP_ENV: prod
 
   database:
+    ports:
+      - "127.0.0.1:5432:5432"
     env_file:
       - .env
       - path: .env.prod.local

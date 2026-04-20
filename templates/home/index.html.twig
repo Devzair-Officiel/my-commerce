@@ -89,9 +89,11 @@
 													{% endif %}
 												{% endif %}
 
+												{% if slider.buttonLink and slider.buttonText %}
 												<a data-animation="slideInLeft" data-animation-delay="1.5s" class="mt-4 btn btn-fill-out rounded-0 staggered-animation text-uppercase animated slideInLeft" href="{{ slider.buttonLink }}" style="animation-delay: 1.5s; opacity: 1;">
 													{{ slider.buttonText }}
 												</a>
+												{% endif %}
 											</div>
 										</div>
 									</div>

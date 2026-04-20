@@ -84,32 +84,43 @@ RCLONE_S3_BUCKET=nidemiel-backups
 
 ## Étape 4 — Construire et démarrer les containers
 
+> ⚠️ En production on utilise **toujours** deux fichiers compose ensemble :
+> `compose.yaml` (base) + `compose.prod.yaml` (surcharges prod)
+
 ```bash
 cd /var/www/my-commerce
 
-# Construire l'image de prod
-docker compose build
+# Charger les variables dans le shell (obligatoire avant chaque commande docker compose)
+export $(grep -v '^#' .env.prod.local | xargs)
 
-# Démarrer tous les services
-docker compose up -d
+# Construire l'image et démarrer tous les services
+docker compose -f compose.yaml -f compose.prod.yaml up -d --build
 
 # Vérifier que tout tourne
-docker compose ps
+docker compose -f compose.yaml -f compose.prod.yaml ps
 ```
+
+**Explication des options :**
+
+| Option | Signification |
+|---|---|
+| `-f compose.yaml -f compose.prod.yaml` | Charge les deux fichiers, le second écrase le premier |
+| `up` | Crée et démarre les conteneurs |
+| `-d` | En arrière-plan (detached), le terminal reste libre |
+| `--build` | Reconstruit l'image Docker avant de démarrer |
+| `--force-recreate` | Recrée les conteneurs même s'ils n'ont pas changé (utile pour recharger les variables d'env) |
 
 ---
 
 ## Étape 5 — Initialiser l'application
 
+> Les migrations sont exécutées **automatiquement** au démarrage du conteneur via `docker-entrypoint.sh`.
+> Si tu as besoin de les relancer manuellement :
+
 ```bash
-# Exécuter les migrations
-docker compose exec php bin/console doctrine:migrations:migrate --no-interaction
-
-# Vider le cache prod
-docker compose exec php bin/console cache:clear --env=prod
-
-# Vérifier les assets
-docker compose exec php bin/console assets:install --env=prod
+docker compose -f compose.yaml -f compose.prod.yaml exec php bin/console doctrine:migrations:migrate --no-interaction
+docker compose -f compose.yaml -f compose.prod.yaml exec php bin/console cache:clear
+docker compose -f compose.yaml -f compose.prod.yaml exec php bin/console assets:install
 ```
 
 ---
@@ -213,6 +224,150 @@ Depuis l'admin (`/admin`), créer les 3 pages statiques :
 - [ ] Vérifier `https://nidemiel.com/sitemap.xml`
 - [ ] Vérifier `https://nidemiel.com/robots.txt`
 - [ ] Tester la délivrabilité email sur [mail-tester.com](https://mail-tester.com)
+
+---
+
+---
+
+## Commandes du quotidien
+
+### Workflow de déploiement standard
+```bash
+# Sur ta machine locale
+git add .
+git commit -m "feat: ..."
+git push
+
+# Sur le serveur
+ssh devzair@<ip> -p 1991
+cd /var/www/my-commerce
+git pull
+
+# Si tu as modifié du PHP, JS, CSS ou le Dockerfile → rebuild obligatoire
+export $(grep -v '^#' .env.prod.local | xargs)
+docker compose -f compose.yaml -f compose.prod.yaml up -d --build
+
+# Si tu as modifié uniquement des templates Twig ou des fichiers de config → pas de rebuild
+docker compose -f compose.yaml -f compose.prod.yaml up -d
+```
+
+### Voir les logs
+```bash
+# Logs en temps réel
+docker compose -f compose.yaml -f compose.prod.yaml logs -f php
+
+# 50 dernières lignes
+docker compose -f compose.yaml -f compose.prod.yaml logs php --tail=50
+
+# Filtrer uniquement les erreurs
+docker compose -f compose.yaml -f compose.prod.yaml logs php --tail=100 | grep -i "error\|exception\|critical"
+```
+
+### Exécuter une commande Symfony
+```bash
+docker compose -f compose.yaml -f compose.prod.yaml exec php bin/console <commande>
+
+# Exemples
+docker compose -f compose.yaml -f compose.prod.yaml exec php bin/console cache:clear
+docker compose -f compose.yaml -f compose.prod.yaml exec php bin/console app:create-admin
+```
+
+### Modifier une variable d'environnement
+```bash
+nano .env.prod.local
+# ... modifie la valeur ...
+
+# Recharger sans rebuild
+export $(grep -v '^#' .env.prod.local | xargs)
+docker compose -f compose.yaml -f compose.prod.yaml up -d --force-recreate php messenger-worker
+```
+
+### Vérifier ce qu'un conteneur voit réellement
+```bash
+docker compose -f compose.yaml -f compose.prod.yaml exec php printenv | grep MAILER
+docker compose -f compose.yaml -f compose.prod.yaml exec php printenv | grep DATABASE
+```
+
+---
+
+## Images et fichiers uploadés
+
+Les images et vidéos uploadées via l'admin sont dans des **volumes Docker persistants** :
+- `my-commerce_uploads_data` → `/app/public/assets/images`
+- `my-commerce_videos_data` → `/app/public/assets/videos`
+
+Ces volumes **survivent aux rebuilds** — les images ne sont pas perdues lors d'un `--build`.
+
+```bash
+# Espace utilisé par Docker
+docker system df
+
+# Voir le contenu du volume images
+docker run --rm -v my-commerce_uploads_data:/data alpine ls -la /data/
+```
+
+---
+
+## Erreurs courantes
+
+### Conteneur en `Restarting` en boucle
+```bash
+docker compose -f compose.yaml -f compose.prod.yaml logs php --tail=30
+```
+Cherche la ligne `[critical]` — c'est là qu'est l'erreur réelle.
+
+### `The mailer DSN must contain a scheme`
+Le `MAILER_DSN` est vide ou mal formé dans `.env.prod.local`.
+Le `@` de l'email doit être encodé en `%40` dans l'URL :
+```
+MAILER_DSN=smtp://contact%40nidemiel.com:MOTDEPASSE@ssl0.ovh.net:465?encryption=ssl
+```
+
+### `could not find driver` / base de données inaccessible
+- Vérifie que `DATABASE_URL` utilise `database` comme hôte (pas `localhost`)
+- Vérifie que `POSTGRES_USER` / `POSTGRES_PASSWORD` sont bien renseignés
+
+### Variables d'env vides dans le conteneur (`MAILER_DSN=`)
+Le `export` n'a pas été fait avant `docker compose up`.
+```bash
+export $(grep -v '^#' .env.prod.local | xargs)
+docker compose -f compose.yaml -f compose.prod.yaml up -d --force-recreate php
+```
+
+### `Invalid upload directory does not exist`
+Les dossiers d'upload n'existent pas → rebuild obligatoire :
+```bash
+docker compose -f compose.yaml -f compose.prod.yaml up -d --build
+```
+
+### Assets EasyAdmin manquants (404 sur `/bundles/easyadmin/...`)
+```bash
+docker compose -f compose.yaml -f compose.prod.yaml exec php bin/console assets:install
+```
+
+### `MAILER_DSN=MAILER_DSN=smtp://...` (valeur dupliquée)
+Erreur de saisie dans `.env.prod.local` — la ligne contient le nom de la variable deux fois.
+Ouvrir le fichier et corriger la ligne.
+
+---
+
+## Sécurité serveur
+
+| Protection | Outil | Config |
+|---|---|---|
+| Pare-feu | UFW | Ports 1991 (SSH), 80, 443 ouverts uniquement |
+| Anti brute-force | Fail2ban | 5 tentatives max, ban 1h |
+| HTTPS | Let's Encrypt via Caddy | Automatique, renouvellement auto |
+| Auth SSH | Clé publique uniquement | Mot de passe désactivé |
+| Root login | Désactivé | `PermitRootLogin no` |
+
+```bash
+# État du pare-feu
+sudo ufw status
+
+# IPs bannies par Fail2ban
+sudo fail2ban-client status sshd
+```
 
 ---
 

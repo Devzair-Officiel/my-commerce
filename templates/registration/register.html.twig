@@ -57,6 +57,22 @@ Créer un compte |
 <script src="https://www.google.com/recaptcha/api.js?render={{ recaptcha3_site_key }}"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('input[type="password"]').forEach(function (input) {
+        const wrapper = document.createElement('div');
+        wrapper.style.position = 'relative';
+        input.parentNode.insertBefore(wrapper, input);
+        wrapper.appendChild(input);
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.innerHTML = '<svg class="icon" aria-hidden="true"><use href="#icon-eye"></use></svg>';
+        btn.style.cssText = 'position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;padding:0;color:#888;';
+        btn.setAttribute('aria-label', 'Afficher le mot de passe');
+        btn.addEventListener('click', function () {
+            input.type = input.type === 'password' ? 'text' : 'password';
+        });
+        wrapper.appendChild(btn);
+    });
+
     const formEl = document.querySelector('form');
     const captchaInput = document.querySelector('input[name="registration_form[captcha]"]');
     if (!formEl || !captchaInput) return;
