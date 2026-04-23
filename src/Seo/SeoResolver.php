@@ -464,6 +464,47 @@ final class SeoResolver
     }
 
     /**
+     * Construit le SEO de la page FAQ avec FAQPage JSON-LD.
+     *
+     * @param array<int, array{question: string, answer: string}> $faqs
+     */
+    public function forFaq(array $faqs, Request $request): SeoPayload
+    {
+        $canonical = $this->absoluteRoute('app_faq');
+        $title = 'FAQ miel : qualité, origine, conservation, cristallisation';
+        $description = 'Retrouvez les réponses aux questions fréquentes sur nos miels : origine, analyses, conservation, cristallisation, choix des goûts, commande et livraison.';
+        $robots = 'index,follow';
+        $image = $this->toAbsoluteIfNeeded($this->defaultOgImage, $request);
+
+        $og = $this->buildOg(
+            title: $title,
+            description: $description,
+            canonical: $canonical,
+            image: $image,
+            type: 'website'
+        );
+
+        $faqItems = array_map(static fn($f) => [
+            'question' => $f->getQuestion(),
+            'answer'   => strip_tags((string) $f->getAnswer()),
+        ], $faqs);
+
+        $jsonLd = [
+            $this->webPageJsonLd($title, $description, $canonical),
+            $this->breadcrumbJsonLd([
+                ['name' => 'Accueil', 'url' => $this->absoluteRoute('app_home')],
+                ['name' => 'FAQ', 'url' => $canonical],
+            ]),
+        ];
+
+        if (count($faqItems) >= 2) {
+            $jsonLd[] = $this->faqPageJsonLd($faqItems);
+        }
+
+        return new SeoPayload($title, $description, $canonical, $robots, $og, $jsonLd);
+    }
+
+    /**
      * Construit le SEO de la page d'accueil avec Organisation + WebSite JSON-LD.
      */
     public function forHome(Request $request): SeoPayload

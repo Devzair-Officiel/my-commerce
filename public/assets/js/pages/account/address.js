@@ -3,32 +3,48 @@ import { showFlash } from "../../utils/flash.js";
 import { escapeHtml } from "../../utils/html.js";
 
 function renderRow(a) {
-  // a est en snake_case (API stable)
+  const type    = escapeHtml(a.address_type ?? "");
+  const isLivraison = type === "livraison";
+  const typeLabel = isLivraison ? "Livraison" : "Facturation";
+  const typeIcon  = isLivraison
+    ? `<svg viewBox="0 0 20 20" fill="none"><path d="M3 10h10M13 7l3 3-3 3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/><rect x="1" y="6" width="12" height="8" rx="1" stroke="currentColor" stroke-width="1.4"/></svg>`
+    : `<svg viewBox="0 0 20 20" fill="none"><rect x="2" y="5" width="16" height="12" rx="1.5" stroke="currentColor" stroke-width="1.4"/><path d="M2 8h16" stroke="currentColor" stroke-width="1.4"/></svg>`;
+
   return `
-    <tr>
-      <td>${escapeHtml(a.client_name ?? "")}</td>
-      <td>${escapeHtml(`${a.street ?? ""} ${a.code_postal ?? ""} ${a.city ?? ""} ${a.state ?? ""}`.trim())}</td>
-      <td>
-        <a href="#"
-           class="btn btn-fill-out btn-sm edit_address"
-           data-id="${escapeHtml(a.id)}"
-           data-address_type="${escapeHtml(a.address_type ?? "")}"
-           data-client_name="${escapeHtml(a.client_name ?? "")}"
-           data-name="${escapeHtml(a.name ?? "")}"
-           data-street="${escapeHtml(a.street ?? "")}"
-           data-code_postal="${escapeHtml(a.code_postal ?? "")}"
-           data-city="${escapeHtml(a.city ?? "")}"
-           data-state="${escapeHtml(a.state ?? "")}"
-           data-more_details="${escapeHtml(a.more_details ?? "")}"
-        >Modifier</a>
-      </td>
-      <td>
-        <a href="#"
-           class="btn btn-fill-out btn-sm remove_address"
-           data-id="${escapeHtml(a.id)}"
-        >Supprimer</a>
-      </td>
-    </tr>
+    <div class="nide-addr-card" data-id="${escapeHtml(String(a.id))}">
+      <div class="nide-addr-card__head">
+        <span class="nide-addr-card__type nide-addr-card__type--${type}">
+          ${typeIcon}${typeLabel}
+        </span>
+        <span class="nide-addr-card__name">${escapeHtml(a.name ?? "")}</span>
+      </div>
+      <div class="nide-addr-card__body">
+        <p class="nide-addr-card__recipient">${escapeHtml(a.client_name ?? "")}</p>
+        <p class="nide-addr-card__line">${escapeHtml(a.street ?? "")}</p>
+        <p class="nide-addr-card__line">${escapeHtml(a.code_postal ?? "")} ${escapeHtml(a.city ?? "")}</p>
+        ${a.state ? `<p class="nide-addr-card__line">${escapeHtml(a.state)}</p>` : ""}
+      </div>
+      <div class="nide-addr-card__actions">
+        <a href="#" class="nide-addr-card__btn edit_address"
+          data-id="${escapeHtml(String(a.id))}"
+          data-address_type="${type}"
+          data-client_name="${escapeHtml(a.client_name ?? "")}"
+          data-name="${escapeHtml(a.name ?? "")}"
+          data-street="${escapeHtml(a.street ?? "")}"
+          data-code_postal="${escapeHtml(a.code_postal ?? "")}"
+          data-city="${escapeHtml(a.city ?? "")}"
+          data-state="${escapeHtml(a.state ?? "")}"
+          data-more_details="${escapeHtml(a.more_details ?? "")}">
+          <svg viewBox="0 0 20 20" fill="none"><path d="M14.5 3.5l2 2L7 15H5v-2L14.5 3.5z" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Modifier
+        </a>
+        <a href="#" class="nide-addr-card__btn nide-addr-card__btn--danger remove_address"
+          data-id="${escapeHtml(String(a.id))}">
+          <svg viewBox="0 0 20 20" fill="none"><path d="M5 7h10M8 7V5h4v2M9 10v4M11 10v4M6 7l1 9h6l1-9" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Supprimer
+        </a>
+      </div>
+    </div>
   `;
 }
 
@@ -179,7 +195,9 @@ export function initAddressBook() {
     }
   }
 
-  tbody.addEventListener("click", (e) => {
+  // Le conteneur est maintenant la grille de cartes (div#address-tbody)
+  const container = tbody;
+  container.addEventListener("click", (e) => {
     const edit = e.target.closest("a.edit_address");
     if (edit) {
       e.preventDefault();

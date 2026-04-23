@@ -5,7 +5,11 @@
 {% endblock %}
 
 {% block body %}
-	{% include "page_head/index.html.twig" with {'page_name': "A propos " ~ page.title} %}
+
+    {% include 'page_head/index.html.twig' with {
+		'page_name': page.title,
+		breadcrumbs: [{ label: page.title }]
+	} %}
 
 	<div class="main_content">
 		<div class="section">

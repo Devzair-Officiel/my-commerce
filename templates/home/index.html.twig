@@ -284,7 +284,7 @@
 					<p class="nide-faq__subtitle">Ce que nos clients demandent le plus souvent.</p>
 				</div>
 				<div class="nide-faq__list" id="faqAccordion">
-					{% for faq in faqs %}
+					{% for faq in faqs|slice(0, 3) %}
 						<div class="nide-faq__item {% if loop.first %}is-open{% endif %}">
 							<button
 								class="nide-faq__question"
@@ -313,6 +313,14 @@
 						</div>
 					{% endfor %}
 				</div>
+				{% if faqs|length > 3 %}
+					<div class="nide-faq__more">
+						<a href="{{ path('app_faq') }}" class="nide-trust__link">
+							Voir toutes les questions ({{ faqs|length }})
+							<svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M4 10h12M11 5l5 5-5 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+						</a>
+					</div>
+				{% endif %}
 			</div>
 		</section>
 	{% endif %}

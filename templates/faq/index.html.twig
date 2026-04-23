@@ -1,0 +1,69 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}FAQ miel : qualité, origine, conservation, cristallisation | {{ globalSetting.website_name }}{% endblock %}
+
+{% block body %}
+
+	{% include 'page_head/index.html.twig' with {
+		'page_name': 'Questions fréquentes sur nos miels',
+		breadcrumbs: [{ label: 'FAQ' }]
+	} %}
+
+	<main id="main-content">
+		<section class="nide-faq-page">
+			<div class="container">
+
+				<div class="nide-faq-page__intro">
+					<span class="nide-faq__kicker">FAQ</span>
+					<h1 class="nide-faq-page__title">Questions fréquentes sur nos miels</h1>
+					<p class="nide-faq-page__lead">Choisir un miel en ligne soulève souvent les mêmes questions&nbsp;: origine, goût, conservation, cristallisation, analyses, traçabilité. Cette FAQ rassemble les réponses les plus utiles pour vous aider à choisir avec plus de clarté et de confiance.</p>
+				</div>
+
+				{% if faqs is not empty %}
+					<div class="nide-faq__list" id="faqAccordion">
+						{% for faq in faqs %}
+							<div class="nide-faq__item {% if loop.first %}is-open{% endif %}">
+								<button
+									class="nide-faq__question"
+									type="button"
+									data-bs-toggle="collapse"
+									data-bs-target="#faq-p-{{ faq.id }}"
+									aria-expanded="{{ loop.first ? 'true' : 'false' }}"
+									aria-controls="faq-p-{{ faq.id }}"
+									id="faq-p-heading-{{ faq.id }}"
+								>
+									<span>{{ faq.question }}</span>
+									<span class="nide-faq__icon" aria-hidden="true">
+										<svg viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+									</span>
+								</button>
+								<div
+									id="faq-p-{{ faq.id }}"
+									class="accordion-collapse collapse {% if loop.first %}show{% endif %}"
+									aria-labelledby="faq-p-heading-{{ faq.id }}"
+									data-bs-parent="#faqAccordion"
+								>
+									<div class="nide-faq__answer">
+										{{ faq.answer|nl2br }}
+									</div>
+								</div>
+							</div>
+						{% endfor %}
+					</div>
+				{% else %}
+					<p class="nide-faq-page__empty">Aucune question disponible pour le moment.</p>
+				{% endif %}
+
+				<div class="nide-faq-page__cta">
+					<p>Vous ne trouvez pas la réponse à votre question&nbsp;?</p>
+					<a href="{{ path('app_contact') }}" class="nide-trust__link">
+						Contactez-nous
+						<svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M4 10h12M11 5l5 5-5 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+					</a>
+				</div>
+
+			</div>
+		</section>
+	</main>
+
+{% endblock %}

@@ -1,56 +1,56 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Message #{{ contact.id }}{% endblock %}
+{% block title %}Message — {{ contact.subject }} | {{ globalSetting.website_name }}{% endblock %}
 
 {% block body %}
-<div class="main_content">
-  <div class="section">
-    <div class="container">
-      <div class="row">
-        <div class="col-lg-12">
-          <div class="card">
-            <div class="card-header d-flex justify-content-between align-items-center">
-              <h3>Détail du message #{{ contact.id }}</h3>
-              <a href="{{ path('app_account') }}#messages" class="btn btn-outline-secondary">
-                <svg class="icon" aria-hidden="true"><use href="#icon-arrow-left"></use></svg> Retour aux messages
-              </a>
-            </div>
-            <div class="card-body">
-              <div class="row mb-4">
-                <div class="col-md-6">
-                  <h5><svg class="icon" aria-hidden="true"><use href="#icon-mail"></use></svg> Sujet</h5>
-                  <p class="fs-5 fw-bold">{{ contact.subject }}</p>
-                </div>
-                <div class="col-md-6">
-                  <h5><svg class="icon" aria-hidden="true"><use href="#icon-calendar"></use></svg> Date</h5>
-                  <p>{{ contact.createdAt|date('d/m/Y à H:i', 'Europe/Paris') }}</p>
-                  {% if contact.updatedAt and contact.updatedAt != contact.createdAt %}
-                    <p class="text-muted small">Mis à jour le {{ contact.updatedAt|date('d/m/Y à H:i', 'Europe/Paris') }}</p>
-                  {% endif %}
-                </div>
-              </div>
-              <div class="row mb-4">
-                <div class="col-md-6">
-                  <h5><svg class="icon" aria-hidden="true"><use href="#icon-user"></use></svg> Email</h5>
-                  <p>{{ contact.email }}</p>
-                </div>
-                <div class="col-md-6">
-                  {% if contact.phone %}
-                    <h5><svg class="icon" aria-hidden="true"><use href="#icon-phone"></use></svg> Téléphone</h5>
-                    <p>{{ contact.phone }}</p>
-                  {% endif %}
-                </div>
-              </div>
-              <hr>
-              <h5><svg class="icon" aria-hidden="true"><use href="#icon-message"></use></svg> Contenu du message</h5>
-              <div class="message-content p-3 border rounded bg-light">
-                {{ contact.content|nl2br }}
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
+
+	{% include 'page_head/index.html.twig' with {
+		page_name: 'Détail du message',
+		breadcrumbs: [
+			{ label: 'Mon compte', url: path('app_account') },
+			{ label: 'Message' }
+		]
+	} %}
+
+	<main id="main-content">
+		<section class="nide-account">
+			<div class="container">
+				<div style="max-width: 720px; margin: 0 auto;">
+
+					<div class="nide-account__panel">
+						<div class="nide-account__panel-head">
+							<h2 class="nide-account__panel-title">{{ contact.subject }}</h2>
+							<span class="nide-account__table-date">{{ contact.createdAt|date('d/m/Y à H:i', 'Europe/Paris') }}</span>
+						</div>
+
+						<dl class="nide-account__meta-list">
+							<div class="nide-account__meta-row">
+								<dt>E-mail</dt>
+								<dd>{{ contact.email }}</dd>
+							</div>
+							{% if contact.updatedAt and contact.updatedAt != contact.createdAt %}
+							<div class="nide-account__meta-row">
+								<dt>Mis à jour</dt>
+								<dd>{{ contact.updatedAt|date('d/m/Y à H:i', 'Europe/Paris') }}</dd>
+							</div>
+							{% endif %}
+						</dl>
+
+						<div class="nide-account__message-body">
+							{{ contact.content|nl2br }}
+						</div>
+					</div>
+
+					<div class="mt-3">
+						<a href="{{ path('app_account') }}#messages" class="nide-trust__link">
+							<svg viewBox="0 0 20 20" fill="none" aria-hidden="true" style="transform:rotate(180deg)"><path d="M4 10h12M11 5l5 5-5 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+							Retour à mes messages
+						</a>
+					</div>
+
+				</div>
+			</div>
+		</section>
+	</main>
+
 {% endblock %}

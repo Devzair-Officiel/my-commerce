@@ -1,245 +1,506 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}{{globalSetting.website_name}} | Mon compte
-{% endblock %}
+{% block title %}Mon compte | {{ globalSetting.website_name }}{% endblock %}
 
 {% block csrf_meta %}
 	<meta name="csrf-token-address" content="{{ csrf_token('address_api') }}">
-    <meta name="csrf-token-change-password" content="{{ csrf_token('change_password') }}">
+	<meta name="csrf-token-change-password" content="{{ csrf_token('change_password') }}">
 {% endblock %}
 
 {% block body %}
 
-    {% set hasLocalPassword = app.user and app.user.hasLocalPassword %}
-    {% set hasGoogleLogin = app.user and app.user.hasGoogleLogin %}
+	{% set hasLocalPassword = app.user and app.user.hasLocalPassword %}
+	{% set hasGoogleLogin   = app.user and app.user.hasGoogleLogin %}
 
 	<div id="account-page" data-address-api="{{ path('api_address_create') }}" data-countries-url="{{ asset('assets/data/countries.json') }}">
 
-		{% include "page_head/index.html.twig" with {'page_name': 'Mon compte'} %}
+		{% include 'page_head/index.html.twig' with {
+			'page_name': 'Mon compte',
+			breadcrumbs: [{ label: 'Mon compte' }]
+		} %}
 
-		<div class="main_content">
-			<div class="section">
+		<main id="main-content">
+			<section class="nide-account">
 				<div class="container">
-					<div class="row">
-						<div class="col-lg-3 col-md-4">
-							<div class="dashboard_menu">
-								<ul class="nav nav-tabs flex-column" role="tablist">
+					<div class="nide-account__layout">
+
+						{# ── Sidebar ── #}
+						<aside class="nide-account__sidebar">
+
+							<div class="nide-account__user-card">
+								<div class="nide-account__avatar" aria-hidden="true">
+									{{ (app.user.firstname ?? app.user.email)|first|upper }}
+								</div>
+								<div class="nide-account__user-info">
+									<p class="nide-account__user-name">
+										{% if app.user.firstname %}
+											{{ app.user.firstname }}{% if app.user.lastname %} {{ app.user.lastname }}{% endif %}
+										{% else %}
+											Mon compte
+										{% endif %}
+									</p>
+									<p class="nide-account__user-since">Client depuis {{ app.user.createdAt|date('Y') }}</p>
+								</div>
+							</div>
+
+							<nav class="nide-account__nav" aria-label="Navigation du compte">
+								<ul class="nav flex-column" role="tablist">
 									<li class="nav-item" role="presentation">
-										<a class="nav-link active" id="dashboard-tab" data-bs-toggle="tab" href="#dashboard" role="tab" aria-controls="dashboard" aria-selected="true">
-											<svg class="icon" aria-hidden="true"><use href="#icon-grid"></use></svg>Tableau debord
+										<a class="nide-account__nav-link active" id="dashboard-tab" data-bs-toggle="tab" href="#dashboard" role="tab" aria-controls="dashboard" aria-selected="true">
+											<span class="nide-account__nav-icon" aria-hidden="true">
+												<svg viewBox="0 0 20 20" fill="none"><rect x="2" y="2" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.4"/><rect x="11" y="2" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.4"/><rect x="2" y="11" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.4"/><rect x="11" y="11" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.4"/></svg>
+											</span>
+											Tableau de bord
 										</a>
 									</li>
 									<li class="nav-item" role="presentation">
-										<a class="nav-link" id="orders-tab" data-bs-toggle="tab" href="#orders" role="tab" aria-controls="orders" aria-selected="false">
-											<svg class="icon" aria-hidden="true"><use href="#icon-cart"></use></svg>Mes commandes</a>
+										<a class="nide-account__nav-link" id="orders-tab" data-bs-toggle="tab" href="#orders" role="tab" aria-controls="orders" aria-selected="false">
+											<span class="nide-account__nav-icon" aria-hidden="true">
+												<svg viewBox="0 0 20 20" fill="none"><path d="M3 5h14M3 10h14M3 15h8" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+											</span>
+											Mes commandes
+											{% if orders|length > 0 %}
+												<span class="nide-account__nav-badge">{{ orders|length }}</span>
+											{% endif %}
+										</a>
 									</li>
 									<li class="nav-item" role="presentation">
-										<a class="nav-link" id="messages-tab" data-bs-toggle="tab" href="#messages" role="tab" aria-controls="messages" aria-selected="false">
-											<svg class="icon" aria-hidden="true"><use href="#icon-mail"></use></svg>Mes messages</a>
+										<a class="nide-account__nav-link" id="messages-tab" data-bs-toggle="tab" href="#messages" role="tab" aria-controls="messages" aria-selected="false">
+											<span class="nide-account__nav-icon" aria-hidden="true">
+												<svg viewBox="0 0 20 20" fill="none"><path d="M2 5a2 2 0 012-2h12a2 2 0 012 2v8a2 2 0 01-2 2H6l-4 3V5z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>
+											</span>
+											Mes messages
+										</a>
 									</li>
 									<li class="nav-item" role="presentation">
-										<a class="nav-link" id="address-tab" data-bs-toggle="tab" href="#address" role="tab" aria-controls="address" aria-selected="true">
-											<svg class="icon" aria-hidden="true"><use href="#icon-location"></use></svg>Mes Adresses</a>
+										<a class="nide-account__nav-link" id="address-tab" data-bs-toggle="tab" href="#address" role="tab" aria-controls="address" aria-selected="false">
+											<span class="nide-account__nav-icon" aria-hidden="true">
+												<svg viewBox="0 0 20 20" fill="none"><path d="M10 2a6 6 0 016 6c0 5-6 10-6 10S4 13 4 8a6 6 0 016-6z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><circle cx="10" cy="8" r="2" stroke="currentColor" stroke-width="1.4"/></svg>
+											</span>
+											Mes adresses
+										</a>
 									</li>
 									<li class="nav-item" role="presentation">
-										<a class="nav-link" id="account-detail-tab" data-bs-toggle="tab" href="#account-detail" role="tab" aria-controls="account-detail" aria-selected="true">
-											<svg class="icon" aria-hidden="true"><use href="#icon-id-badge"></use></svg>Mes informations</a>
+										<a class="nide-account__nav-link" id="account-detail-tab" data-bs-toggle="tab" href="#account-detail" role="tab" aria-controls="account-detail" aria-selected="false">
+											<span class="nide-account__nav-icon" aria-hidden="true">
+												<svg viewBox="0 0 20 20" fill="none"><circle cx="10" cy="7" r="3.5" stroke="currentColor" stroke-width="1.4"/><path d="M2.5 17c0-3.31 3.36-6 7.5-6s7.5 2.69 7.5 6" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+											</span>
+											Mes informations
+										</a>
 									</li>
 									<li class="nav-item" role="presentation">
-										<a class="nav-link" id="account-detail-tab password-tab" data-bs-toggle="tab" href="#password" role="tab" aria-controls="account-detail" aria-selected="true">
-											<svg class="icon" aria-hidden="true"><use href="#icon-lock"></use></svg>
+										<a class="nide-account__nav-link" id="password-tab" data-bs-toggle="tab" href="#password" role="tab" aria-controls="password" aria-selected="false">
+											<span class="nide-account__nav-icon" aria-hidden="true">
+												<svg viewBox="0 0 20 20" fill="none"><rect x="4" y="9" width="12" height="9" rx="1.5" stroke="currentColor" stroke-width="1.4"/><path d="M7 9V6.5a3 3 0 016 0V9" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+											</span>
 											Mot de passe
 										</a>
 									</li>
-									<li class="nav-item" role="presentation">
-										<a class="nav-link" id="logout-tab" href="/logout">
-											<svg class="icon" aria-hidden="true"><use href="#icon-logout"></use></svg>Deconnexion</a>
+									<li class="nav-item nide-account__nav-separator"></li>
+									<li class="nav-item">
+										<a class="nide-account__nav-link nide-account__nav-link--logout" href="/logout">
+											<span class="nide-account__nav-icon" aria-hidden="true">
+												<svg viewBox="0 0 20 20" fill="none"><path d="M13 14l4-4-4-4M17 10H7" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M10 3H5a1 1 0 00-1 1v12a1 1 0 001 1h5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+											</span>
+											Déconnexion
+										</a>
 									</li>
 								</ul>
-							</div>
-						</div>
-						<div class="col-lg-9 col-md-8">
-							<div class="tab-content dashboard_content">
-								<div class="tab-pane fade active show" id="dashboard" role="tabpanel" aria-labelledby="dashboard-tab">
-									<div class="card">
-										<div class="card-header">
-											<h3>Tableau de bord</h3>
-										</div>
-										<div class="card-body">
-											<p>
-												Nous sommes ravis de vous compter parmi nous depuis le
-												{{ app.user.createdAt | date('d/m/Y') }}.
+							</nav>
+						</aside>
 
-												<br>
-												Vous pouvez consulter et gérer vos commandes, vos adresses et vos informations
-																																																							                              personnelles.
-												<br>
-												{% if orders | length > 0 %}
-													Nous vous remercions pour vos
-													{{orders | length}}
-													commande passé.
-													<br>
-												{% endif %}
-												Nous ésperons que vous trouverez votre bonheur parmi nos produits.
-																																																							                              N'hésitez pas à nous contacter pour toute question ou information complémentaire.
-											</p>
+						{# ── Contenu ── #}
+						<div class="nide-account__content">
+							<div class="tab-content">
+
+								{# Dashboard #}
+								<div class="tab-pane fade active show" id="dashboard" role="tabpanel" aria-labelledby="dashboard-tab">
+									<div class="nide-account__panel">
+										<h2 class="nide-account__panel-title">Tableau de bord</h2>
+										<div class="nide-account__dashboard-welcome">
+											<p>Bienvenue{% if app.user.firstname %}, <strong>{{ app.user.firstname }}</strong>{% endif %}&nbsp;! Vous êtes membre depuis le {{ app.user.createdAt|date('d/m/Y') }}.</p>
+											<p>Gérez ici vos commandes, vos adresses de livraison et vos informations personnelles.</p>
 										</div>
-									</div>
-								</div>
-								
-								<div class="tab-pane fade" id="logout" role="tabpanel" aria-labelledby="logout-tab">
-									<div class="card">
-										<div class="card-header">
-											<h3>Deconnexion</h3>
-										</div>
-										<div class="card-body">
-											<button type="submit" class="btn btn-fill-out py-2" name="submit" value="Submit">Logout</button>
-										</div>
-									</div>
-								</div>
-								<div class="tab-pane fade" id="orders" role="tabpanel" aria-labelledby="orders-tab">
-									<div class="card">
-										<div class="card-header">
-											<h3>Commandes</h3>
-										</div>
-										<div class="card-body">
-											<div id="orders-table-container">
-												{% include 'account/_orders_table.html.twig' %}
+										<div class="nide-account__stats">
+											<div class="nide-account__stat">
+												<span class="nide-account__stat-value">{{ ordersTotal }}</span>
+												<span class="nide-account__stat-label">Commande{{ ordersTotal > 1 ? 's' : '' }}</span>
+											</div>
+											<div class="nide-account__stat">
+												<span class="nide-account__stat-value">{{ addresses|length }}</span>
+												<span class="nide-account__stat-label">Adresse{{ addresses|length > 1 ? 's' : '' }}</span>
+											</div>
+											<div class="nide-account__stat">
+												<span class="nide-account__stat-value">{{ contacts|length }}</span>
+												<span class="nide-account__stat-label">Message{{ contacts|length > 1 ? 's' : '' }}</span>
 											</div>
 										</div>
 									</div>
 								</div>
-								
-								<div class="tab-pane fade" id="messages" role="tabpanel" aria-labelledby="messages-tab">
-									<div class="card">
-										<div class="card-header">
-											<h3>Mes messages</h3>
+
+								{# Commandes #}
+								<div class="tab-pane fade" id="orders" role="tabpanel" aria-labelledby="orders-tab">
+									<div class="nide-account__panel">
+										<h2 class="nide-account__panel-title">Mes commandes</h2>
+										<div id="orders-table-container">
+											{% include 'account/_orders_table.html.twig' %}
 										</div>
-										<div class="card-body">
-											<div class="table-responsive">
-												<table class="table">
+									</div>
+								</div>
+
+								{# Messages #}
+								<div class="tab-pane fade" id="messages" role="tabpanel" aria-labelledby="messages-tab">
+									<div class="nide-account__panel">
+										<h2 class="nide-account__panel-title">Mes messages</h2>
+										{% if contacts is empty %}
+											<p class="nide-account__empty">Aucun message pour le moment.</p>
+										{% else %}
+											<div class="nide-account__table-wrap">
+												<table class="nide-account__table">
 													<thead>
 														<tr>
 															<th>Sujet</th>
-															<th>Message</th>
+															<th>Aperçu</th>
 															<th>Date</th>
+															<th></th>
 														</tr>
 													</thead>
 													<tbody>
 														{% for contact in contacts %}
-														<tr>
-															<td>{{ contact.subject }}</td>
-															<td>{{ contact.content|striptags|slice(0, 40) ~ '...' }}</td>
-															<td>{{ contact.createdAt|date('d/m/Y H:i', 'Europe/Paris') }}</td>
-															<td>
-																<a href="{{ path('app_account_message_detail', {'id': contact.id}) }}" class="btn btn-fill-out btn-sm">Détail</a>
-															</td>
-														</tr>
-														{% else %}
-														<tr>
-															<td colspan="4" class="text-center text-muted">Aucun message pour le moment.</td>
-														</tr>
+															<tr>
+																<td>{{ contact.subject }}</td>
+																<td class="nide-account__table-preview">{{ contact.content|striptags|slice(0, 50) }}…</td>
+																<td class="nide-account__table-date">{{ contact.createdAt|date('d/m/Y', 'Europe/Paris') }}</td>
+																<td>
+																	<a href="{{ path('app_account_message_detail', {'id': contact.id}) }}" class="nide-account__table-action">Voir</a>
+																</td>
+															</tr>
 														{% endfor %}
 													</tbody>
 												</table>
 											</div>
-										</div>
+										{% endif %}
 									</div>
 								</div>
 
+								{# Adresses #}
 								<div class="tab-pane fade" id="address" role="tabpanel" aria-labelledby="address-tab">
-									<div class="row">
-										<div id="address_details" class="col-lg-12 d-block">
-											<div class="card">
-												<div class="card-header">
-													<h3>Adresses</h3>
-												</div>
-												<div class="card-body">
-													<div class="table-responsive address_content">
-														<table class="table">
-															<thead>
-																<tr>
-																	<th>Nom</th>
-																	<th>Adresse</th>
-																	<th class="text-center" colspan="2">Actions</th>
-																</tr>
-															</thead>
-															<tbody id="address-tbody">
-																{% for address in addresses %}
-																	<tr>
-																		<td>{{ address.clientName }}</td>
-																		<td>{{ address.street }}, {{ address.codePostal }} {{ address.city }}</td>
-																		<td style="width:1%;white-space:nowrap;padding-right:4px;">
-																			<a href="#" class="btn btn-fill-out btn-sm edit_address" data-id="{{ address.id }}" data-address_type="{{ address.addressType }}" data-client_name="{{ address.clientName }}" data-name="{{ address.name }}" data-street="{{ address.street }}" data-code_postal="{{ address.codePostal }}" data-city="{{ address.city }}" data-state="{{ address.state }}">Modifier</a>
-																		</td>
-																		<td style="width:1%;white-space:nowrap;padding-left:4px;">
-																			<a href="#" class="btn btn-fill-out btn-sm remove_address" data-id="{{ address.id }}">Supprimer</a>
-																		</td>
-																	</tr>
-																{% endfor %}
-															</tbody>
+									<div class="nide-account__panel">
+										<h2 class="nide-account__panel-title">Mes adresses</h2>
 
-														</table>
-													</div>
+										<div id="address_details">
+											{% if addresses is empty %}
+												<p class="nide-account__empty">Aucune adresse enregistrée.</p>
+											{% else %}
+												<div class="nide-addr-grid" id="address-tbody">
+													{% for address in addresses %}
+														<div class="nide-addr-card" data-id="{{ address.id }}">
+															<div class="nide-addr-card__head">
+																<span class="nide-addr-card__type nide-addr-card__type--{{ address.addressType }}">
+																	{% if address.addressType == 'livraison' %}
+																		<svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M3 10h10M13 7l3 3-3 3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/><rect x="1" y="6" width="12" height="8" rx="1" stroke="currentColor" stroke-width="1.4"/></svg>
+																		Livraison
+																	{% else %}
+																		<svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><rect x="2" y="5" width="16" height="12" rx="1.5" stroke="currentColor" stroke-width="1.4"/><path d="M2 8h16" stroke="currentColor" stroke-width="1.4"/></svg>
+																		Facturation
+																	{% endif %}
+																</span>
+																<span class="nide-addr-card__name">{{ address.name }}</span>
+															</div>
+															<div class="nide-addr-card__body">
+																<p class="nide-addr-card__recipient">{{ address.clientName }}</p>
+																<p class="nide-addr-card__line">{{ address.street }}</p>
+																<p class="nide-addr-card__line">{{ address.codePostal }} {{ address.city }}</p>
+																{% if address.state %}
+																	<p class="nide-addr-card__line">{{ address.state }}</p>
+																{% endif %}
+															</div>
+															<div class="nide-addr-card__actions">
+																<a href="#" class="nide-addr-card__btn edit_address"
+																	data-id="{{ address.id }}"
+																	data-address_type="{{ address.addressType }}"
+																	data-client_name="{{ address.clientName }}"
+																	data-name="{{ address.name }}"
+																	data-street="{{ address.street }}"
+																	data-code_postal="{{ address.codePostal }}"
+																	data-city="{{ address.city }}"
+																	data-state="{{ address.state }}">
+																	<svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M14.5 3.5l2 2L7 15H5v-2L14.5 3.5z" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+																	Modifier
+																</a>
+																<a href="#" class="nide-addr-card__btn nide-addr-card__btn--danger remove_address" data-id="{{ address.id }}">
+																	<svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M5 7h10M8 7V5h4v2M9 10v4M11 10v4M6 7l1 9h6l1-9" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+																	Supprimer
+																</a>
+															</div>
+														</div>
+													{% endfor %}
 												</div>
-											</div>
+											{% endif %}
 										</div>
-										<div class="action text-center mt-4">
+
+										<div class="nide-account__addr-actions">
 											<a href="#" id="add_new_address" class="btn btn-fill-out">Ajouter une adresse</a>
 										</div>
 
-										<div class="col-lg-12 d-none" id="add_form">
+										<div class="d-none nide-account__addr-form" id="add_form">
+											<h3 class="nide-account__form-subtitle">Nouvelle adresse</h3>
 											<form action="">
-												<div class="row">
-													<div class="form-group col-md-12 mb-3">
-														<label>Type de l'adresse<span class="required">*</span>
-														</label>
+												<div class="row g-3">
+													<div class="col-12">
+														<label class="nide-account__label">Type d'adresse <span class="required">*</span></label>
 														<select name="address_type" id="address_type" class="form-control">
 															<option value="facturation">Facturation</option>
 															<option value="livraison">Livraison</option>
 														</select>
 													</div>
-													<div class="form-group col-md-12 mb-3">
-														<label>Nom de l'adresse<span class="required">*</span>
-														</label>
-														<input required="" class="form-control" name="name" type="text" placeholder="Ex : Maison, Bureau, Chez mes parents…">
+													<div class="col-12">
+														<label class="nide-account__label">Nom de l'adresse <span class="required">*</span></label>
+														<input required class="form-control" name="name" type="text" placeholder="Ex : Maison, Bureau…">
 													</div>
-													<div class="form-group col-md-12 mb-3">
-														<label>Nom du destinataire
-															<span class="required">*</span>
-														</label>
-														<input required="" class="form-control" name="client_name" placeholder="Ex : Jean Dupont">
+													<div class="col-12">
+														<label class="nide-account__label">Nom du destinataire <span class="required">*</span></label>
+														<input required class="form-control" name="client_name" placeholder="Ex : Jean Dupont">
 													</div>
-													<div class="form-group col-md-6 mb-3">
-														<label>Rue
-															<span class="required">*</span>
-														</label>
+													<div class="col-md-6">
+														<label class="nide-account__label">Rue <span class="required">*</span></label>
 														<div class="position-relative">
-															<input required="" class="form-control" name="street" id="street_input" type="text" autocomplete="off" placeholder="Commencez à taper votre adresse…">
+															<input required class="form-control" name="street" id="street_input" type="text" autocomplete="off" placeholder="Commencez à taper…">
 															<ul id="street_suggestions" class="address-suggestions list-unstyled" role="listbox" aria-label="Suggestions d'adresse"></ul>
 														</div>
 													</div>
-													<div class="form-group col-md-6 mb-3">
-														<label>Ville
-															<span class="required">*</span>
-														</label>
-														<input required="" class="form-control" name="city" id="city_input" type="text">
+													<div class="col-md-6">
+														<label class="nide-account__label">Ville <span class="required">*</span></label>
+														<input required class="form-control" name="city" id="city_input" type="text">
 													</div>
-													<div class="form-group col-md-6 mb-3">
-														<label>Code postal
-															<span class="required">*</span>
-														</label>
-														<input required="" class="form-control" name="code_postal" id="code_postal_input" type="text">
+													<div class="col-md-6">
+														<label class="nide-account__label">Code postal <span class="required">*</span></label>
+														<input required class="form-control" name="code_postal" id="code_postal_input" type="text">
 													</div>
-													<div class="form-group col-md-6 mb-3">
-														<label>Pays
-															<span class="required">*</span>
-														</label>
+													<div class="col-md-6">
+														<label class="nide-account__label">Pays <span class="required">*</span></label>
 														<select class="form-control" name="state" id="state"></select>
 													</div>
-													<div class="col-md-12">
-														<button type="submit" class="btn btn-fill-out" name="submit" value="Submit">Save</button>
+													<div class="col-12">
+														<button type="submit" class="btn btn-fill-out">Enregistrer l'adresse</button>
 													</div>
+												</div>
+											</form>
+										</div>
+									</div>
+								</div>
+
+								{# Informations #}
+								<div class="tab-pane fade" id="account-detail" role="tabpanel" aria-labelledby="account-detail-tab">
+									<div class="nide-account__panel">
+										<h2 class="nide-account__panel-title">Mes informations</h2>
+
+										{# ── Vue lecture ── #}
+										<div id="userinfo-card">
+											<div class="nide-userinfo-card">
+												<div class="nide-userinfo-card__avatar" aria-hidden="true">
+													{{ (app.user.firstname ?? app.user.email)|first|upper }}
+												</div>
+												<div class="nide-userinfo-card__body">
+													<p class="nide-userinfo-card__fullname" id="ui-fullname">
+														{% if app.user.civility %}{{ app.user.civility.label() }} {% endif %}{{ app.user.firstname ?? '' }} {{ app.user.lastname ?? '' }}
+													</p>
+													<dl class="nide-userinfo-card__dl">
+														<div class="nide-userinfo-card__row">
+															<dt>
+																<svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M2 4a1 1 0 011-1h10a1 1 0 011 1v8a1 1 0 01-1 1H3a1 1 0 01-1-1V4z" stroke="currentColor" stroke-width="1.3"/><path d="M2 4l6 5 6-5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+																E-mail
+															</dt>
+															<dd id="ui-email">{{ app.user.email }}</dd>
+														</div>
+														<div class="nide-userinfo-card__row">
+															<dt>
+																<svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 3.5A1.5 1.5 0 014.5 2h.879a1 1 0 01.958.713l.59 1.965a1 1 0 01-.27 1.003L5.5 6.5S6.5 9 9.5 10.5l1.319-1.157a1 1 0 011.003-.27l1.965.59A1 1 0 0114 10.621V11.5A1.5 1.5 0 0112.5 13C6.149 13 3 6.851 3 3.5z" stroke="currentColor" stroke-width="1.3"/></svg>
+																Téléphone
+															</dt>
+															<dd id="ui-phone">{{ app.user.phone ?? '—' }}</dd>
+														</div>
+													</dl>
+												</div>
+											</div>
+											<div id="userinfo-flash"></div>
+											<div class="nide-userinfo-card__action">
+												<button type="button" id="btn-edit-userinfo" class="btn btn-fill-out">
+													<svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M14.5 3.5l2 2L7 15H5v-2L14.5 3.5z" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+													Modifier mes informations
+												</button>
+											</div>
+										</div>
+
+										{# ── Vue formulaire ── #}
+										<div id="userinfo-form" class="d-none">
+											<div id="messageInfo"></div>
+
+											{{ form_start(editForm, {'attr': {'id': 'editUserForm', 'class': 'nide-userform'}}) }}
+											{{ form_errors(editForm) }}
+
+											<div class="nide-userform__section">
+												<h3 class="nide-userform__section-title">
+													<svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><circle cx="10" cy="7" r="3.5" stroke="currentColor" stroke-width="1.4"/><path d="M2.5 17c0-3.31 3.36-6 7.5-6s7.5 2.69 7.5 6" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+													Identité
+												</h3>
+												<div class="nide-userform__field nide-userform__field--full">
+													<label class="nide-userform__label" for="{{ editForm.civility.vars.id }}">Civilité</label>
+													{{ form_widget(editForm.civility, { attr: { class: 'nide-userform__input' } }) }}
+													{{ form_errors(editForm.civility) }}
+												</div>
+												<div class="nide-userform__row">
+													<div class="nide-userform__field">
+														<label class="nide-userform__label" for="{{ editForm.lastname.vars.id }}">Nom</label>
+														{{ form_widget(editForm.lastname, { attr: { class: 'nide-userform__input', placeholder: 'Votre nom' } }) }}
+														{{ form_errors(editForm.lastname) }}
+													</div>
+													<div class="nide-userform__field">
+														<label class="nide-userform__label" for="{{ editForm.firstname.vars.id }}">Prénom</label>
+														{{ form_widget(editForm.firstname, { attr: { class: 'nide-userform__input', placeholder: 'Votre prénom' } }) }}
+														{{ form_errors(editForm.firstname) }}
+													</div>
+												</div>
+											</div>
+
+											<div class="nide-userform__section">
+												<h3 class="nide-userform__section-title">
+													<svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M3 5a1 1 0 011-1h12a1 1 0 011 1v10a1 1 0 01-1 1H4a1 1 0 01-1-1V5z" stroke="currentColor" stroke-width="1.4"/><path d="M3 5l7 7 7-7" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+													Coordonnées
+												</h3>
+												<div class="nide-userform__field nide-userform__field--full">
+													<label class="nide-userform__label" for="{{ editForm.email.vars.id }}">
+														Adresse e-mail
+														<span class="nide-userform__hint">Un e-mail de confirmation sera envoyé en cas de modification</span>
+													</label>
+													{{ form_widget(editForm.email, { attr: { class: 'nide-userform__input', placeholder: 'Votre e-mail' } }) }}
+													{{ form_errors(editForm.email) }}
+												</div>
+												<div class="nide-userform__field nide-userform__field--full">
+													<label class="nide-userform__label" for="{{ editForm.phone.vars.id }}">
+														Téléphone
+														<span class="nide-userform__badge">Optionnel</span>
+													</label>
+													{{ form_widget(editForm.phone, { attr: { class: 'nide-userform__input', placeholder: 'Votre numéro de téléphone' } }) }}
+													{{ form_errors(editForm.phone) }}
+												</div>
+											</div>
+
+											<div class="nide-userform__footer">
+												<button type="submit" name="register" class="btn btn-fill-out">Enregistrer les modifications</button>
+												<button type="button" id="btn-cancel-userinfo" class="nide-userform__cancel">Annuler</button>
+											</div>
+
+											{{ form_end(editForm) }}
+										</div>
+									</div>
+								</div>
+
+								{# Mot de passe #}
+								<div class="tab-pane fade" id="password" role="tabpanel" aria-labelledby="password-tab">
+									<div class="nide-account__panel">
+										<h2 class="nide-account__panel-title">Sécurité du compte</h2>
+
+										{# ── Vue lecture ── #}
+										<div id="password-card">
+											<div class="nide-userinfo-card">
+												<div class="nide-userinfo-card__avatar nide-userinfo-card__avatar--lock" aria-hidden="true">
+													<svg viewBox="0 0 20 20" fill="none"><rect x="4" y="9" width="12" height="9" rx="1.5" stroke="currentColor" stroke-width="1.6"/><path d="M7 9V6.5a3 3 0 016 0V9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+												</div>
+												<div class="nide-userinfo-card__body">
+													<p class="nide-userinfo-card__fullname">Mot de passe</p>
+													<dl class="nide-userinfo-card__dl">
+														<div class="nide-userinfo-card__row">
+															<dt>
+																<svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M18 10a8 8 0 11-16 0 8 8 0 0116 0z" stroke="currentColor" stroke-width="1.3"/><path d="M13.5 10a3.5 3.5 0 11-7 0 3.5 3.5 0 017 0z" stroke="currentColor" stroke-width="1.3"/></svg>
+																Google
+															</dt>
+															<dd>
+																<span class="nide-account__login-status nide-account__login-status--{{ hasGoogleLogin ? 'on' : 'off' }}">
+																	{{ hasGoogleLogin ? 'activée' : 'non activée' }}
+																</span>
+															</dd>
+														</div>
+														<div class="nide-userinfo-card__row">
+															<dt>
+																<svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><rect x="2" y="7" width="12" height="8" rx="1.5" stroke="currentColor" stroke-width="1.3"/><path d="M5 7V5.5a3 3 0 016 0V7" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+																Mot de passe
+															</dt>
+															<dd>
+																<span class="nide-account__login-status nide-account__login-status--{{ hasLocalPassword ? 'on' : 'off' }}">
+																	{{ hasLocalPassword ? 'activé' : 'non activé' }}
+																</span>
+															</dd>
+														</div>
+													</dl>
+												</div>
+											</div>
+											<div id="password-flash"></div>
+											<div class="nide-userinfo-card__action">
+												<button type="button" id="btn-edit-password" class="btn btn-fill-out">
+													<svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><rect x="4" y="9" width="12" height="9" rx="1.5" stroke="currentColor" stroke-width="1.4"/><path d="M7 9V6.5a3 3 0 016 0V9" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+													{{ hasLocalPassword ? 'Changer le mot de passe' : 'Définir un mot de passe' }}
+												</button>
+											</div>
+										</div>
+
+										{# ── Vue formulaire ── #}
+										<div id="password-form" class="d-none">
+											{% if not hasLocalPassword and hasGoogleLogin %}
+												<div class="nide-account__info-alert" style="margin-bottom:1.25rem">
+													<svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><circle cx="10" cy="10" r="8" stroke="currentColor" stroke-width="1.4"/><path d="M10 9v5M10 7v.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+													Votre compte utilise actuellement Google. Vous pouvez définir un mot de passe pour vous connecter aussi avec votre e-mail.
+												</div>
+											{% endif %}
+
+											<div id="messageBox"></div>
+
+											<form id="passwordForm" class="nide-userform">
+												<div class="nide-userform__section">
+													<h3 class="nide-userform__section-title">
+														<svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><rect x="4" y="9" width="12" height="9" rx="1.5" stroke="currentColor" stroke-width="1.4"/><path d="M7 9V6.5a3 3 0 016 0V9" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+														{{ hasLocalPassword ? 'Modifier le mot de passe' : 'Définir un mot de passe' }}
+													</h3>
+
+													{% if hasLocalPassword %}
+														<div class="nide-userform__field nide-userform__field--full">
+															<label class="nide-userform__label" for="currentPassword">Mot de passe actuel</label>
+															<div class="nide-account__pw-field" id="old_password">
+																<input type="password" id="currentPassword" name="currentPassword" class="nide-userform__input" placeholder="••••••••" autocomplete="current-password" required>
+																<button class="nide-account__pw-toggle" type="button" onclick="togglePasswordVisibility('old_password', this)" aria-label="Afficher/masquer">
+																	<svg class="icon" aria-hidden="true"><use href="#icon-eye"></use></svg>
+																</button>
+															</div>
+														</div>
+													{% endif %}
+
+													<div class="nide-userform__row">
+														<div class="nide-userform__field">
+															<label class="nide-userform__label" for="newPassword">Nouveau mot de passe</label>
+															<div class="nide-account__pw-field" id="first_password">
+																<input type="password" id="newPassword" name="newPassword" class="nide-userform__input" placeholder="••••••••" autocomplete="new-password" required>
+																<button class="nide-account__pw-toggle" type="button" onclick="togglePasswordVisibility('first_password', this)" aria-label="Afficher/masquer">
+																	<svg class="icon" aria-hidden="true"><use href="#icon-eye"></use></svg>
+																</button>
+															</div>
+														</div>
+														<div class="nide-userform__field">
+															<label class="nide-userform__label" for="confirmPassword">Confirmer le mot de passe</label>
+															<div class="nide-account__pw-field" id="second_password">
+																<input type="password" id="confirmPassword" name="confirmPassword" class="nide-userform__input" placeholder="••••••••" autocomplete="new-password" required>
+																<button class="nide-account__pw-toggle" type="button" onclick="togglePasswordVisibility('second_password', this)" aria-label="Afficher/masquer">
+																	<svg class="icon" aria-hidden="true"><use href="#icon-eye"></use></svg>
+																</button>
+															</div>
+														</div>
+													</div>
+												</div>
+
+												<div class="nide-userform__footer">
+													<button type="button" onclick="submitPasswordChange()" class="btn btn-fill-out">
+														{{ hasLocalPassword ? 'Modifier le mot de passe' : 'Définir mon mot de passe' }}
+													</button>
+													<button type="button" id="btn-cancel-password" class="nide-userform__cancel">Annuler</button>
 												</div>
 											</form>
 										</div>
@@ -247,117 +508,29 @@
 									</div>
 								</div>
 
-								<div class="tab-pane fade" id="account-detail" role="tabpanel" aria-labelledby="account-detail-tab">
-									<div class="card">
-										<div class="card-header">
-											<h3>Informations</h3>
-										</div>
-										<div class="card-body">
-											<div id="messageInfo" class="mb-3"></div>
-
-											{% for message in app.flashes('error') %}
-												<div class="alert alert-danger">{{ message }}</div>
-											{% endfor %}
-
-											{% for message in app.flashes('success') %}
-												<div class="alert alert-success">{{ message }}</div>
-											{% endfor %}
-
-											{{ form_start(editForm, {'attr': {'id': 'editUserForm'}}) }}
-											{{ form_errors(editForm) }}
-											{{ form_row(editForm.email) }}
-											{{ form_row(editForm.civility) }}
-											{{ form_row(editForm.lastname) }}
-											{{ form_row(editForm.firstname) }}
-											{{ form_row(editForm.phone) }}
-											<div class="form-group mb-3">
-												<button type="submit" name="register" class="btn btn-fill-out btn-block">Modifier</button>
-											</div>
-											{{ form_end(editForm) }}
-										</div>
-									</div>
-								</div>
-
-                                <div class="tab-pane fade" id="password" role="tabpanel" aria-labelledby="account-detail-tab">
-                                    <div class="card">
-                                        <div class="card-header">
-                                            <h3>
-                                                {% if hasLocalPassword %}
-                                                    Changer de mot de passe
-                                                {% else %}
-                                                    Définir un mot de passe
-                                                {% endif %}
-                                            </h3>
-                                        </div>
-                                        <div class="card-body">
-                                            <div id="messageBox" class="mb-3"></div>
-
-                                            {% if not hasLocalPassword and hasGoogleLogin %}
-                                                <div class="alert alert-info">
-                                                    Votre compte utilise actuellement Google pour se connecter.
-                                                                        Vous pouvez définir un mot de passe pour aussi vous connecter avec votre email et mot de passe.
-                                                </div>
-                                            {% endif %}
-
-                                            <form id="passwordForm">
-                                                {% if hasLocalPassword %}
-                                                    <div class="form-group mb-3" style="position:relative" id="old_password">
-                                                        <input type="password" id="currentPassword" name="currentPassword" class="form-control" placeholder="Mot de passe actuel" autocomplete="current-password" required>
-                                                        <button class="btn" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;padding:0;color:#888;z-index:5" type="button" onclick="togglePasswordVisibility('old_password', this)">
-                                                            <svg class="icon" aria-hidden="true"><use href="#icon-eye"></use></svg>
-                                                        </button>
-                                                    </div>
-                                                {% endif %}
-
-                                                <div class="form-group mb-3" style="position:relative" id="first_password">
-                                                    <input type="password" id="newPassword" name="newPassword" class="form-control" placeholder="Nouveau mot de passe" autocomplete="new-password" required>
-                                                    <button class="btn" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;padding:0;color:#888;z-index:5" type="button" onclick="togglePasswordVisibility('first_password', this)">
-                                                        <svg class="icon" aria-hidden="true"><use href="#icon-eye"></use></svg>
-                                                    </button>
-                                                </div>
-
-                                                <div class="form-group mb-3" style="position:relative" id="second_password">
-                                                    <input type="password" id="confirmPassword" name="confirmPassword" class="form-control" placeholder="Confirmez le nouveau mot de passe" autocomplete="new-password" required>
-                                                    <button class="btn" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;padding:0;color:#888;z-index:5" type="button" onclick="togglePasswordVisibility('second_password', this)">
-                                                        <svg class="icon" aria-hidden="true"><use href="#icon-eye"></use></svg>
-                                                    </button>
-                                                </div>
-
-                                                <div class="form-group mb-3">
-                                                    <button type="button" onclick="submitPasswordChange()" class="btn btn-fill-out btn-block">
-                                                        {% if hasLocalPassword %}
-                                                            Modifier
-                                                        {% else %}
-                                                            Définir mon mot de passe
-                                                        {% endif %}
-                                                    </button>
-                                                </div>
-                                            </form>
-
-                                            <div class="mt-3">
-                                                <p class="mb-1">
-                                                    <strong>Connexion Google :</strong>
-                                                    {% if hasGoogleLogin %}activée{% else %}non activée
-                                                    {% endif %}
-                                                </p>
-                                                <p class="mb-0">
-                                                    <strong>Connexion par mot de passe :</strong>
-                                                    {% if hasLocalPassword %}activée{% else %}non activée
-                                                    {% endif %}
-                                                </p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
 							</div>
 						</div>
+						{# /content #}
+
+						<script>
+						(function () {
+							var hash = window.location.hash;
+							if (!hash) return;
+							var pane = document.querySelector('.tab-pane' + hash);
+							var link = document.querySelector('.nide-account__nav-link[href="' + hash + '"]');
+							if (!pane || !link) return;
+							document.querySelectorAll('.tab-pane').forEach(function (p) { p.classList.remove('active', 'show'); });
+							document.querySelectorAll('.nide-account__nav-link').forEach(function (l) { l.classList.remove('active'); });
+							pane.classList.add('active', 'show');
+							link.classList.add('active');
+						})();
+						</script>
+
 					</div>
 				</div>
-			</div>
-		</div>
+			</section>
+		</main>
 	</div>
-
 
 {% endblock %}
 

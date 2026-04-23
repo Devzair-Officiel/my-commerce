@@ -9,17 +9,59 @@ function setHtml(id, html) {
 
 // --- Infos compte (form editUserForm) ---
 function initAccountInfoForm() {
-  const form = document.getElementById("editUserForm");
+  const form    = document.getElementById("editUserForm");
+  const card    = document.getElementById("userinfo-card");
+  const formWrap = document.getElementById("userinfo-form");
+  const btnEdit   = document.getElementById("btn-edit-userinfo");
+  const btnCancel = document.getElementById("btn-cancel-userinfo");
   if (!form) return;
 
+  function showCard() {
+    card?.classList.remove("d-none");
+    formWrap?.classList.add("d-none");
+  }
+
+  function showForm() {
+    card?.classList.add("d-none");
+    formWrap?.classList.remove("d-none");
+    setHtml("messageInfo", "");
+  }
+
+  function updateCard(data) {
+    const civility  = form.querySelector("[name$='[civility]']")?.selectedOptions[0]?.text ?? "";
+    const firstname = form.querySelector("[name$='[firstname]']")?.value ?? "";
+    const lastname  = form.querySelector("[name$='[lastname]']")?.value ?? "";
+    const email     = form.querySelector("[name$='[email]']")?.value ?? "";
+    const phone     = form.querySelector("[name$='[phone]']")?.value;
+
+    const fullname = [civility !== "Choisir votre civilité" ? civility : "", firstname, lastname]
+      .filter(Boolean).join(" ");
+
+    const elName  = document.getElementById("ui-fullname");
+    const elEmail = document.getElementById("ui-email");
+    const elPhone = document.getElementById("ui-phone");
+
+    if (elName)  elName.textContent  = fullname || "—";
+    if (elEmail) elEmail.textContent = email || "—";
+    if (elPhone) elPhone.textContent = phone || "—";
+  }
+
+  function showCardFlash(message, type = "success") {
+    const el = document.getElementById("userinfo-flash");
+    if (!el) return;
+    el.innerHTML = `<div class="nide-account__alert nide-account__alert--${type}" style="margin-top:.75rem">${message}</div>`;
+    setTimeout(() => { el.innerHTML = ""; }, 5000);
+  }
+
+  btnEdit?.addEventListener("click", showForm);
+  btnCancel?.addEventListener("click", showCard);
+
   form.addEventListener("submit", async (event) => {
-      event.preventDefault();
-      
-      setHtml("messageInfo", "");
+    event.preventDefault();
+    setHtml("messageInfo", "");
 
     try {
       const formData = new FormData(form);
-
       const response = await fetch("/account", {
         method: "POST",
         body: formData,
@@ -33,34 +75,63 @@ function initAccountInfoForm() {
       const data = await response.json().catch(() => null);
 
       if (!response.ok || !data) {
-        setHtml("messageInfo", `<div class="alert alert-danger">Erreur lors de la mise à jour.</div>`);
+        setHtml("messageInfo", `<div class="nide-account__alert nide-account__alert--error">Erreur lors de la mise à jour.</div>`);
         return;
       }
 
       if (data.status === "success") {
-        showFlash(data.message ?? "Opération réussie.", "success");
+        updateCard(data);
+        showCard();
+        showCardFlash(data.message ?? "Informations mises à jour.", "success");
       } else if (data.status === "email_pending") {
-        showFlash(data.message, "info", { duration: 10000 });
+        updateCard(data);
+        showCard();
+        showCardFlash(data.message, "success");
       } else {
-        setHtml("messageInfo", `<div class="alert alert-danger">${data.message ?? "Erreur."}</div>`);
+        setHtml("messageInfo", `<div class="nide-account__alert nide-account__alert--error">${data.message ?? "Erreur."}</div>`);
       }
     } catch (e) {
-      setHtml("messageInfo", `<div class="alert alert-danger">${e.message}</div>`);
+      setHtml("messageInfo", `<div class="nide-account__alert nide-account__alert--error">${e.message}</div>`);
     }
   });
 }
 
 // --- Mot de passe --- //
 function initPasswordFeatures() {
+    const card     = document.getElementById("password-card");
+    const formWrap = document.getElementById("password-form");
+    const btnEdit   = document.getElementById("btn-edit-password");
+    const btnCancel = document.getElementById("btn-cancel-password");
+
+    function showPasswordCard() {
+        card?.classList.remove("d-none");
+        formWrap?.classList.add("d-none");
+        document.getElementById("passwordForm")?.reset();
+        setHtml("messageBox", "");
+    }
+
+    function showPasswordForm() {
+        card?.classList.add("d-none");
+        formWrap?.classList.remove("d-none");
+        setHtml("messageBox", "");
+    }
+
+    function showPasswordFlash(message, type = "success") {
+        const el = document.getElementById("password-flash");
+        if (!el) return;
+        el.innerHTML = `<div class="nide-account__alert nide-account__alert--${type}" style="margin-top:.75rem">${message}</div>`;
+        setTimeout(() => { el.innerHTML = ""; }, 5000);
+    }
+
+    btnEdit?.addEventListener("click", showPasswordForm);
+    btnCancel?.addEventListener("click", showPasswordCard);
+
     window.togglePasswordVisibility = function (groupId, toggleButton) {
         const group = document.getElementById(groupId);
         if (!group) return;
-
         const input = group.querySelector("input");
         if (!input) return;
-
         const useEl = toggleButton.querySelector("use");
-
         if (input.type === "password") {
             input.type = "text";
             if (useEl) useEl.setAttribute("href", "#icon-eye-off");
@@ -71,46 +142,36 @@ function initPasswordFeatures() {
     };
 
     window.submitPasswordChange = async function () {
-        const currentPasswordInput = document.getElementById("currentPassword");
-        const newPasswordInput = document.getElementById("newPassword");
-        const confirmPasswordInput = document.getElementById("confirmPassword");
-        const submitButton = document.querySelector('#passwordForm button[type="button"]');
+        const currentPasswordInput  = document.getElementById("currentPassword");
+        const newPasswordInput      = document.getElementById("newPassword");
+        const confirmPasswordInput  = document.getElementById("confirmPassword");
+        const submitButton          = document.querySelector('#passwordForm button[type="button"]:not(#btn-cancel-password)');
 
-        const currentPassword = currentPasswordInput?.value ?? "";
-        const newPassword = newPasswordInput?.value ?? "";
-        const confirmPassword = confirmPasswordInput?.value ?? "";
+        const currentPassword       = currentPasswordInput?.value ?? "";
+        const newPassword           = newPasswordInput?.value ?? "";
+        const confirmPassword       = confirmPasswordInput?.value ?? "";
         const requiresCurrentPassword = currentPasswordInput !== null;
 
         setHtml("messageBox", "");
 
         if (requiresCurrentPassword && !currentPassword) {
-            setHtml("messageBox", `<div class="alert alert-danger">Veuillez saisir votre mot de passe actuel.</div>`);
+            setHtml("messageBox", `<div class="nide-account__alert nide-account__alert--error">Veuillez saisir votre mot de passe actuel.</div>`);
             return;
         }
-
         if (!newPassword || !confirmPassword) {
-            setHtml("messageBox", `<div class="alert alert-danger">Veuillez remplir tous les champs requis.</div>`);
+            setHtml("messageBox", `<div class="nide-account__alert nide-account__alert--error">Veuillez remplir tous les champs requis.</div>`);
             return;
         }
-
         if (newPassword !== confirmPassword) {
-            setHtml("messageBox", `<div class="alert alert-danger">Les mots de passe ne correspondent pas.</div>`);
+            setHtml("messageBox", `<div class="nide-account__alert nide-account__alert--error">Les mots de passe ne correspondent pas.</div>`);
             return;
         }
 
         try {
-            if (submitButton) {
-                submitButton.disabled = true;
-            }
+            if (submitButton) submitButton.disabled = true;
 
-            const payload = {
-                newPassword,
-                confirmPassword,
-            };
-
-            if (requiresCurrentPassword) {
-                payload.currentPassword = currentPassword;
-            }
+            const payload = { newPassword, confirmPassword };
+            if (requiresCurrentPassword) payload.currentPassword = currentPassword;
 
             const result = await fetchJson("/api/change-password", {
                 method: "POST",
@@ -122,21 +183,12 @@ function initPasswordFeatures() {
                 body: JSON.stringify(payload),
             });
 
-            setHtml("messageBox", `<div class="alert alert-success">${result.message}</div>`);
-
-            const form = document.getElementById("passwordForm");
-            if (form) {
-                form.reset();
-            }
+            showPasswordCard();
+            showPasswordFlash(result.message);
         } catch (e) {
-            setHtml(
-                "messageBox",
-                `<div class="alert alert-danger">${e.message ?? "Une erreur est survenue."}</div>`
-            );
+            setHtml("messageBox", `<div class="nide-account__alert nide-account__alert--error">${e.message ?? "Une erreur est survenue."}</div>`);
         } finally {
-            if (submitButton) {
-                submitButton.disabled = false;
-            }
+            if (submitButton) submitButton.disabled = false;
         }
     };
 }

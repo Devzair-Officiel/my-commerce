@@ -2189,3 +2189,196 @@ footer .widget_title,
         height: 100svh;
     }
 }
+
+/* Contact page */
+@media (max-width: 991px) {
+    .nide-contact-page__body {
+        grid-template-columns: 1fr;
+    }
+
+    .nide-contact-page__aside {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+    }
+
+    .nide-contact__info-card--faq {
+        grid-column: 1 / -1;
+    }
+}
+
+@media (max-width: 575px) {
+    .nide-contact__row--2col {
+        grid-template-columns: 1fr;
+    }
+
+    .nide-contact-page__aside {
+        grid-template-columns: 1fr;
+    }
+
+    .nide-contact__info-card--faq {
+        grid-column: auto;
+    }
+}
+
+
+
+/* =============================================
+   MON COMPTE — Responsive
+   ============================================= */
+
+/* Empêche tout dépassement horizontal sur la page */
+.nide-account {
+    overflow-x: hidden;
+}
+.nide-account__layout,
+.nide-account__sidebar,
+.nide-account__content {
+    min-width: 0;
+    max-width: 100%;
+}
+
+/* ── ≤ 991px : tablette ── */
+@media only screen and (max-width: 991px) {
+
+    .nide-account__layout {
+        grid-template-columns: 1fr;
+        gap: 1.25rem;
+    }
+
+    .nide-account__sidebar { position: static; }
+
+    /* Nav : grille 3 colonnes (icône + texte) */
+    .nide-account__nav {
+        border-radius: 0 0 12px 12px;
+        overflow: hidden;
+    }
+
+    .nide-account__nav .nav {
+        flex-direction: row !important;
+        flex-wrap: wrap !important;
+        min-width: 0 !important;
+        width: 100%;
+    }
+
+    .nide-account__nav .nav-item {
+        flex: 1 1 33.333%;
+        min-width: 0;
+    }
+
+    .nide-account__nav-link {
+        border-left: none;
+        border-bottom: 3px solid transparent;
+        padding: .7rem .6rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        font-size: .82rem;
+        justify-content: center;
+    }
+
+    .nide-account__nav-link.active,
+    .nide-account__nav-link:hover {
+        border-left-color: transparent;
+        border-bottom-color: #c8963e;
+        background: #faf6ee;
+    }
+
+    .nide-account__nav-separator {
+        flex: 1 1 100%;
+        height: 1px;
+        width: 100%;
+        margin: 0;
+    }
+
+    .nide-account__nav-badge { display: none; }
+
+    /* Stats */
+    .nide-account__stats { gap: .75rem; }
+
+    /* Adresses : 2 colonnes */
+    .nide-addr-grid { grid-template-columns: 1fr 1fr; }
+
+    /* Formulaire sections : 1 colonne */
+    .nide-userform__section { grid-template-columns: 1fr; }
+}
+
+/* ── ≤ 767px : mobile ── */
+@media only screen and (max-width: 767px) {
+
+    .nide-account { padding: 2rem 0 3.5rem; }
+
+    .nide-account__panel { padding: 1.25rem 1rem 1.5rem; }
+
+    /* Nav : 2 colonnes (déconnexion pleine largeur) */
+    .nide-account__nav .nav-item { flex: 1 1 50%; }
+    .nide-account__nav .nav-item:last-child { flex: 1 1 100%; }
+
+    .nide-account__nav-link { font-size: .8rem; padding: .65rem .5rem; }
+
+    /* Stats */
+    .nide-account__stat-value { font-size: 1.5rem; }
+    .nide-account__stat-label { font-size: .72rem; }
+
+    /* Tables : masquer colonne statut */
+    .nide-account__table thead th:nth-child(3),
+    .nide-account__table tbody td:nth-child(3) { display: none; }
+
+    /* Carte user info */
+    .nide-userinfo-card {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+        padding: 1.1rem;
+    }
+
+    /* Formulaire : nom/prénom en 1 colonne */
+    .nide-userform__row { grid-template-columns: 1fr; gap: 0; }
+
+    .nide-userform__footer {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: .6rem;
+    }
+
+    /* Suivi colis */
+    .nide-tracking-step__icon { width: 28px; height: 28px; }
+    .nide-tracking-step__label { font-size: .65rem; }
+    .nide-account__tracking-meta { gap: .75rem 1.25rem; }
+}
+
+/* ── ≤ 575px : petit mobile ── */
+@media only screen and (max-width: 575px) {
+
+    .nide-account { padding: 1.25rem 0 2.5rem; }
+
+    .nide-account__panel { padding: 1rem .85rem 1.25rem; }
+
+    /* User card header : plus compact */
+    .nide-account__avatar { width: 36px; height: 36px; font-size: .9rem; }
+    .nide-account__user-name { font-size: .82rem; }
+
+    /* Adresses : 1 colonne */
+    .nide-addr-grid { grid-template-columns: 1fr; }
+
+    /* Stats : plus compactes */
+    .nide-account__stats { gap: .4rem; }
+    .nide-account__stat { padding: .9rem .4rem; }
+    .nide-account__stat-value { font-size: 1.25rem; }
+
+    /* Carte infos : DL en colonne */
+    .nide-userinfo-card__row { flex-direction: column; gap: .05rem; }
+    .nide-userinfo-card__row dt { min-width: unset; font-size: .75rem; }
+    .nide-userinfo-card__row dd { font-size: .85rem; }
+
+    /* Tables : masquer aussi la date */
+    .nide-account__table thead th:nth-child(2),
+    .nide-account__table tbody td:nth-child(2) { display: none; }
+
+    /* Tracking */
+    .nide-tracking-step__label { display: none; }
+    .nide-account__tracking-row { flex-direction: column; align-items: flex-start; }
+
+    /* Sous-pages : order detail */
+    .nide-account__panel-head { flex-direction: column; align-items: flex-start; }
+}

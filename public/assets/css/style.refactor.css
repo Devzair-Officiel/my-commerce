@@ -8,9 +8,9 @@
 	color-scheme: light;
 
 	/* Brand */
-	--nm-brand: #e98737;
-	--nm-brand-text: #b35500; /* darker variant for text on white, meets 4.5:1 */
-	--nm-brand-2: #0E93D8;
+	--nm-brand: #c8963e;
+	--nm-brand-text: #a07030;
+	--nm-brand-2: #c8963e;
 	/* occasional link/hover color in template */
 
 	/* Neutrals */
@@ -10943,3 +10943,1478 @@ select {
     border: none;
 }
 
+
+/* =============================================
+   PAGE FAQ DÉDIÉE — /faq-miel
+   ============================================= */
+.nide-faq-page {
+    padding: 4.5rem 0 5rem;
+    background: #fff;
+}
+
+.nide-faq-page__intro {
+    text-align: center;
+    max-width: 680px;
+    margin: 0 auto 3.5rem;
+}
+
+.nide-faq-page__title {
+    font-size: clamp(1.6rem, 3vw, 2.25rem);
+    font-weight: 300;
+    color: #1e1a14;
+    letter-spacing: -.01em;
+    margin-bottom: 1.25rem;
+}
+
+.nide-faq-page__lead {
+    font-size: .9rem;
+    color: #6e6253;
+    line-height: 1.85;
+    font-weight: 300;
+    margin: 0;
+}
+
+.nide-faq-page__empty {
+    text-align: center;
+    color: #a09080;
+    font-size: .9rem;
+    padding: 3rem 0;
+}
+
+/* Bloc CTA bas de page */
+.nide-faq-page__cta {
+    text-align: center;
+    margin-top: 3.5rem;
+    padding-top: 2.5rem;
+    border-top: 1px solid #ede8e0;
+}
+
+.nide-faq-page__cta p {
+    font-size: .9rem;
+    color: #6e6253;
+    margin-bottom: 1rem;
+}
+
+/* Limite la largeur de la liste FAQ sur cette page */
+.nide-faq-page .nide-faq__list {
+    max-width: 740px;
+    margin: 0 auto;
+}
+
+/* FAQ homepage — lien vers page complète */
+.nide-faq__more {
+    max-width: 740px;
+    margin: 1.75rem auto 0;
+    text-align: center;
+}
+
+
+/* =========================================================
+   PAGE CONTACT
+   ========================================================= */
+
+.nide-contact-page {
+    padding: 5rem 0 6rem;
+}
+
+.nide-contact-page__intro {
+    text-align: center;
+    max-width: 600px;
+    margin: 0 auto 3.5rem;
+}
+
+.nide-contact-page__title {
+    font-size: clamp(1.6rem, 3vw, 2.2rem);
+    font-weight: 700;
+    color: #1a1208;
+    margin: .5rem 0 1rem;
+    line-height: 1.25;
+}
+
+.nide-contact-page__lead {
+    font-size: .95rem;
+    color: #6e6253;
+    line-height: 1.8;
+    margin: 0;
+}
+
+/* Layout: form + aside */
+.nide-contact-page__body {
+    display: grid;
+    grid-template-columns: 1fr 320px;
+    gap: 3rem;
+    align-items: start;
+    max-width: 980px;
+    margin: 0 auto;
+}
+
+.nide-contact-page__form-col {
+    min-width: 0;
+}
+
+/* Flash success */
+.nide-contact__flash {
+    display: flex;
+    align-items: center;
+    gap: .6rem;
+    padding: 1rem 1.25rem;
+    border-radius: 8px;
+    font-size: .9rem;
+    margin-bottom: 1.5rem;
+}
+
+.nide-contact__flash--success {
+    background: #f0faf3;
+    color: #1e7d3a;
+    border: 1px solid #b2e0c0;
+}
+
+.nide-contact__flash svg {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+}
+
+/* Form */
+.nide-contact__form .nide-contact__field {
+    margin-bottom: 1.25rem;
+}
+
+.nide-contact__form .form-control {
+    border: 1px solid #ddd5c8;
+    border-radius: 8px;
+    padding: .75rem 1rem;
+    font-size: .9rem;
+    color: #1a1208;
+    background: #fdfcfa;
+    transition: border-color .2s, box-shadow .2s;
+}
+
+.nide-contact__form .form-control:focus {
+    border-color: #c8963e;
+    box-shadow: 0 0 0 3px rgba(200, 150, 62, .12);
+    outline: none;
+}
+
+/* 2-column row for name + email */
+.nide-contact__row--2col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+/* Consent checkbox */
+.nide-contact__field--consent {
+    display: flex;
+    align-items: flex-start;
+    gap: .65rem;
+}
+
+.nide-contact__field--consent input[type="checkbox"] {
+    width: 17px;
+    height: 17px;
+    flex-shrink: 0;
+    margin-top: 2px;
+    accent-color: #c8963e;
+    cursor: pointer;
+}
+
+.nide-contact__field--consent label {
+    font-size: .82rem;
+    color: #6e6253;
+    line-height: 1.55;
+    cursor: pointer;
+}
+
+/* Submit button */
+.nide-contact__form .btn-fill-out {
+    margin-top: .5rem;
+}
+
+/* Aside info cards */
+.nide-contact__info-card {
+    background: #fdfcfa;
+    border: 1px solid #ede8e0;
+    border-radius: 12px;
+    padding: 1.5rem 1.4rem;
+    margin-bottom: 1.25rem;
+}
+
+.nide-contact__info-card--faq {
+    background: #faf6ee;
+    border-color: #e8d9bf;
+    text-align: center;
+}
+
+.nide-contact__info-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: #faf0e0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1rem;
+    color: #c8963e;
+}
+
+.nide-contact__info-icon svg {
+    width: 20px;
+    height: 20px;
+}
+
+.nide-contact__info-label {
+    font-size: .9rem;
+    font-weight: 600;
+    color: #1a1208;
+    margin: 0 0 .35rem;
+}
+
+.nide-contact__info-text {
+    font-size: .82rem;
+    color: #6e6253;
+    line-height: 1.6;
+    margin: 0 0 .5rem;
+}
+
+.nide-contact__info-link {
+    font-size: .85rem;
+    color: #c8963e;
+    font-weight: 500;
+    text-decoration: none;
+    word-break: break-all;
+}
+
+.nide-contact__info-link:hover {
+    text-decoration: underline;
+}
+
+
+/* =========================================================
+   MON COMPTE
+   ========================================================= */
+
+.nide-account {
+    padding: 4rem 0 6rem;
+}
+
+/* Layout sidebar + content */
+.nide-account__layout {
+    display: grid;
+    grid-template-columns: 260px 1fr;
+    gap: 2.5rem;
+    align-items: start;
+}
+
+/* ── Sidebar ── */
+.nide-account__sidebar {
+    position: sticky;
+    top: 90px;
+}
+
+.nide-account__user-card {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.25rem 1.25rem 1rem;
+    background: #fdfcfa;
+    border: 1px solid #ede8e0;
+    border-radius: 12px 12px 0 0;
+    border-bottom: none;
+}
+
+.nide-account__avatar {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: #c8963e;
+    color: #fff;
+    font-size: 1.1rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    letter-spacing: 0;
+}
+
+.nide-account__user-name {
+    font-size: .9rem;
+    font-weight: 600;
+    color: #1a1208;
+    margin: 0 0 .15rem;
+    line-height: 1.3;
+}
+
+.nide-account__user-since {
+    font-size: .75rem;
+    color: #a09080;
+    margin: 0;
+}
+
+/* Nav */
+.nide-account__nav {
+    background: #fdfcfa;
+    border: 1px solid #ede8e0;
+    border-radius: 0 0 12px 12px;
+    overflow: hidden;
+}
+
+.nide-account__nav-link {
+    display: flex;
+    align-items: center;
+    gap: .7rem;
+    padding: .8rem 1.25rem;
+    font-size: .88rem;
+    color: #4a3f33;
+    text-decoration: none;
+    border-left: 3px solid transparent;
+    transition: background .18s, color .18s, border-color .18s;
+    cursor: pointer;
+}
+
+.nide-account__nav-link:hover {
+    background: #faf6ee;
+    color: #c8963e;
+    border-left-color: #e8d0a0;
+    text-decoration: none;
+}
+
+.nide-account__nav-link.active {
+    background: #faf6ee;
+    color: #c8963e;
+    border-left-color: #c8963e;
+    font-weight: 600;
+}
+
+.nide-account__nav-icon {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+}
+
+.nide-account__nav-icon svg {
+    width: 100%;
+    height: 100%;
+}
+
+.nide-account__nav-badge {
+    margin-left: auto;
+    background: #c8963e;
+    color: #fff;
+    font-size: .7rem;
+    font-weight: 700;
+    border-radius: 20px;
+    padding: 1px 7px;
+    line-height: 1.6;
+}
+
+.nide-account__nav-separator {
+    height: 1px;
+    background: #ede8e0;
+    margin: .25rem 0;
+    pointer-events: none;
+}
+
+.nide-account__nav-link--logout {
+    color: #9e4040;
+}
+
+.nide-account__nav-link--logout:hover {
+    background: #fff5f5;
+    color: #9e4040;
+    border-left-color: #f0b0b0;
+}
+
+/* ── Panels ── */
+.nide-account__panel {
+    background: #fdfcfa;
+    border: 1px solid #ede8e0;
+    border-radius: 12px;
+    padding: 2rem 2rem 2.25rem;
+}
+
+.nide-account__panel-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #1a1208;
+    margin: 0 0 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #ede8e0;
+}
+
+/* Dashboard */
+.nide-account__dashboard-welcome {
+    color: #4a3f33;
+    font-size: .9rem;
+    line-height: 1.8;
+    margin-bottom: 2rem;
+}
+
+.nide-account__dashboard-welcome p { margin: 0 0 .5rem; }
+
+.nide-account__stats {
+    display: flex;
+    gap: 1.5rem;
+}
+
+.nide-account__stat {
+    flex: 1;
+    text-align: center;
+    background: #faf6ee;
+    border: 1px solid #e8d9bf;
+    border-radius: 10px;
+    padding: 1.25rem .75rem;
+}
+
+.nide-account__stat-value {
+    display: block;
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #c8963e;
+    line-height: 1;
+    margin-bottom: .35rem;
+}
+
+.nide-account__stat-label {
+    font-size: .78rem;
+    color: #6e6253;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+}
+
+/* Tables */
+.nide-account__table-wrap {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.nide-account__table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: .87rem;
+}
+
+.nide-account__table thead th {
+    text-align: left;
+    padding: .6rem .85rem;
+    font-size: .75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    color: #a09080;
+    border-bottom: 1px solid #ede8e0;
+}
+
+.nide-account__table tbody td {
+    padding: .75rem .85rem;
+    color: #4a3f33;
+    border-bottom: 1px solid #f5f0e8;
+    vertical-align: middle;
+}
+
+.nide-account__table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.nide-account__table-preview {
+    color: #6e6253;
+    font-size: .82rem;
+}
+
+.nide-account__table-date {
+    white-space: nowrap;
+    color: #a09080;
+    font-size: .82rem;
+}
+
+.nide-account__table-action {
+    font-size: .82rem;
+    font-weight: 500;
+    color: #c8963e;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.nide-account__table-action:hover { text-decoration: underline; }
+
+.nide-account__table-action--danger { color: #9e4040; }
+
+/* Empty state */
+.nide-account__empty {
+    color: #a09080;
+    font-size: .88rem;
+    text-align: center;
+    padding: 2.5rem 0;
+    margin: 0;
+}
+
+/* Adresses */
+.nide-account__addr-actions {
+    margin-top: 1.5rem;
+}
+
+.nide-account__addr-form {
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid #ede8e0;
+}
+
+.nide-account__form-subtitle {
+    font-size: .95rem;
+    font-weight: 600;
+    color: #1a1208;
+    margin: 0 0 1.25rem;
+}
+
+.nide-account__label {
+    display: block;
+    font-size: .82rem;
+    font-weight: 500;
+    color: #4a3f33;
+    margin-bottom: .4rem;
+}
+
+.nide-account__label .required { color: #c8963e; }
+
+/* Info form */
+.nide-account__form .form-group,
+.nide-account__form .mb-3 {
+    margin-bottom: 1.1rem;
+}
+
+.nide-account__form .form-control {
+    border: 1px solid #ddd5c8;
+    border-radius: 8px;
+    padding: .7rem 1rem;
+    font-size: .88rem;
+    color: #1a1208;
+    background: #fff;
+    transition: border-color .2s, box-shadow .2s;
+}
+
+.nide-account__form .form-control:focus {
+    border-color: #c8963e;
+    box-shadow: 0 0 0 3px rgba(200,150,62,.12);
+    outline: none;
+}
+
+/* Password fields */
+.nide-account__pw-field {
+    position: relative;
+    margin-bottom: 1rem;
+}
+
+.nide-account__pw-field .form-control {
+    border: 1px solid #ddd5c8;
+    border-radius: 8px;
+    padding: .7rem 3rem .7rem 1rem;
+    font-size: .88rem;
+    width: 100%;
+    background: #fff;
+    transition: border-color .2s, box-shadow .2s;
+}
+
+.nide-account__pw-field .form-control:focus {
+    border-color: #c8963e;
+    box-shadow: 0 0 0 3px rgba(200,150,62,.12);
+    outline: none;
+}
+
+.nide-account__pw-toggle {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    color: #a09080;
+    display: flex;
+    align-items: center;
+}
+
+.nide-account__pw-toggle svg {
+    width: 18px;
+    height: 18px;
+}
+
+/* Info alert */
+.nide-account__info-alert {
+    display: flex;
+    align-items: flex-start;
+    gap: .65rem;
+    background: #f0f6ff;
+    border: 1px solid #b8d0f0;
+    border-radius: 8px;
+    padding: .9rem 1rem;
+    font-size: .85rem;
+    color: #2d4e7a;
+    margin-bottom: 1.5rem;
+    line-height: 1.55;
+}
+
+.nide-account__info-alert svg {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+    margin-top: 1px;
+}
+
+/* Login methods */
+.nide-account__login-methods {
+    display: flex;
+    flex-direction: column;
+    gap: .5rem;
+    margin-top: 1.75rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid #ede8e0;
+}
+
+.nide-account__login-method {
+    display: flex;
+    align-items: center;
+    gap: .55rem;
+    font-size: .82rem;
+    color: #4a3f33;
+}
+
+.nide-account__login-method svg {
+    width: 16px;
+    height: 16px;
+    color: #a09080;
+    flex-shrink: 0;
+}
+
+.nide-account__login-status {
+    margin-left: auto;
+    font-size: .75rem;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 20px;
+}
+
+.nide-account__login-status--on {
+    background: #edf7ef;
+    color: #2a7a3a;
+}
+
+.nide-account__login-status--off {
+    background: #f5f0e8;
+    color: #a09080;
+}
+
+
+/* ── Sous-pages compte (order_detail, message_detail, tracking) ── */
+
+.nide-account__panel-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: .5rem;
+    margin-bottom: 1.25rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #ede8e0;
+}
+
+.nide-account__panel-head .nide-account__panel-title {
+    margin: 0;
+    padding: 0;
+    border: none;
+}
+
+.nide-account__order-status {
+    font-size: .78rem;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 20px;
+    background: #f0faf3;
+    color: #2a7a3a;
+    border: 1px solid #b2e0c0;
+}
+
+/* Table tfoot */
+.nide-account__table-foot td {
+    padding: .6rem .85rem;
+    color: #4a3f33;
+    font-size: .87rem;
+    border-top: 1px solid #ede8e0;
+    border-bottom: none;
+}
+
+.nide-account__table-total td {
+    background: #faf6ee;
+    border-top: 2px solid #e8d9bf !important;
+    color: #1a1208;
+}
+
+/* Expédition tracking row */
+.nide-account__tracking-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-top: .75rem;
+}
+
+.nide-account__tracking-label {
+    font-size: .75rem;
+    color: #a09080;
+    margin-bottom: .2rem;
+}
+
+.nide-account__tracking-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem 2.5rem;
+}
+
+/* Point relais */
+.nide-account__pickup-card {
+    display: flex;
+    align-items: flex-start;
+    gap: .6rem;
+    background: #faf6ee;
+    border-color: #e8d9bf;
+    padding: 1rem 1.25rem;
+    border-radius: 10px;
+}
+
+/* Message detail */
+.nide-account__meta-list {
+    margin: 0 0 1.25rem;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: .4rem;
+}
+
+.nide-account__meta-row {
+    display: flex;
+    gap: 1rem;
+    font-size: .85rem;
+}
+
+.nide-account__meta-row dt {
+    color: #a09080;
+    font-weight: 500;
+    min-width: 70px;
+}
+
+.nide-account__meta-row dd {
+    color: #4a3f33;
+    margin: 0;
+}
+
+.nide-account__message-body {
+    background: #faf6ee;
+    border: 1px solid #ede8e0;
+    border-radius: 8px;
+    padding: 1.25rem 1.35rem;
+    font-size: .9rem;
+    color: #4a3f33;
+    line-height: 1.8;
+}
+
+/* ── Tracking timeline & progress bar ── */
+
+.nide-tracking-progress {
+    display: flex;
+    align-items: flex-start;
+    gap: 0;
+}
+
+.nide-tracking-step {
+    flex: 1;
+    text-align: center;
+    position: relative;
+}
+
+.nide-tracking-step::after {
+    content: "";
+    position: absolute;
+    top: 16px;
+    left: 50%;
+    width: 100%;
+    height: 3px;
+    background: #ede8e0;
+    z-index: 0;
+}
+
+.nide-tracking-step:last-child::after { display: none; }
+
+.nide-tracking-step.is-done::after { background: #c8963e; }
+
+.nide-tracking-step__icon {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: #ede8e0;
+    color: #a09080;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 6px;
+    position: relative;
+    z-index: 1;
+    font-size: 14px;
+    border: 3px solid #fff;
+    box-shadow: 0 0 0 2px #ddd5c8;
+    transition: background .2s, box-shadow .2s;
+}
+
+.nide-tracking-step.is-done .nide-tracking-step__icon {
+    background: #c8963e;
+    color: #fff;
+    box-shadow: 0 0 0 2px #c8963e;
+}
+
+.nide-tracking-step.is-current .nide-tracking-step__icon {
+    background: #fff;
+    color: #c8963e;
+    box-shadow: 0 0 0 2px #c8963e;
+}
+
+.nide-tracking-step.is-delivered .nide-tracking-step__icon {
+    background: #2a7a3a;
+    color: #fff;
+    box-shadow: 0 0 0 2px #2a7a3a;
+}
+
+.nide-tracking-step__label {
+    font-size: .72rem;
+    color: #a09080;
+    line-height: 1.2;
+}
+
+.nide-tracking-step.is-done .nide-tracking-step__label,
+.nide-tracking-step.is-current .nide-tracking-step__label {
+    color: #1a1208;
+    font-weight: 600;
+}
+
+/* Timeline */
+.nide-tracking-timeline {
+    position: relative;
+    padding-left: 2rem;
+}
+
+.nide-tracking-timeline::before {
+    content: "";
+    position: absolute;
+    left: 11px;
+    top: 8px;
+    bottom: 8px;
+    width: 2px;
+    background: #ede8e0;
+}
+
+.nide-tracking-event {
+    position: relative;
+    padding: 0 0 1.5rem 1.5rem;
+}
+
+.nide-tracking-event:last-child { padding-bottom: 0; }
+
+.nide-tracking-event__dot {
+    position: absolute;
+    left: -1.48rem;
+    top: 4px;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: #ede8e0;
+    border: 3px solid #fff;
+    box-shadow: 0 0 0 2px #ddd5c8;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 9px;
+    color: #a09080;
+}
+
+.nide-tracking-event.is-active .nide-tracking-event__dot {
+    background: #c8963e;
+    box-shadow: 0 0 0 2px #c8963e;
+    color: #fff;
+}
+
+.nide-tracking-event.is-delivered .nide-tracking-event__dot {
+    background: #2a7a3a;
+    box-shadow: 0 0 0 2px #2a7a3a;
+    color: #fff;
+}
+
+.nide-tracking-event.is-exception .nide-tracking-event__dot {
+    background: #9e4040;
+    box-shadow: 0 0 0 2px #9e4040;
+    color: #fff;
+}
+
+.nide-tracking-event__label {
+    font-weight: 600;
+    font-size: .88rem;
+    color: #1a1208;
+    line-height: 1.3;
+}
+
+.nide-tracking-event__date {
+    font-size: .78rem;
+    color: #a09080;
+    margin-top: 2px;
+}
+
+.nide-tracking-event__site {
+    font-size: .78rem;
+    color: #6e6253;
+    margin-top: 2px;
+}
+
+
+/* ── Cartes adresses ── */
+
+.nide-addr-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 1rem;
+}
+
+.nide-addr-card {
+    display: flex;
+    flex-direction: column;
+    border: 1px solid #ede8e0;
+    border-radius: 12px;
+    overflow: hidden;
+    background: #fff;
+    transition: box-shadow .2s, border-color .2s;
+}
+
+.nide-addr-card:hover {
+    border-color: #ddd0be;
+    box-shadow: 0 4px 16px rgba(90,60,20,.07);
+}
+
+.nide-addr-card__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: .5rem;
+    padding: .75rem 1rem;
+    background: #faf6ee;
+    border-bottom: 1px solid #ede8e0;
+}
+
+.nide-addr-card__type {
+    display: inline-flex;
+    align-items: center;
+    gap: .4rem;
+    font-size: .72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .07em;
+    padding: 3px 9px;
+    border-radius: 20px;
+}
+
+.nide-addr-card__type svg {
+    width: 14px;
+    height: 14px;
+    flex-shrink: 0;
+}
+
+.nide-addr-card__type--livraison {
+    background: #e8f4fd;
+    color: #2a5fa8;
+    border: 1px solid #bdd8f5;
+}
+
+.nide-addr-card__type--facturation {
+    background: #faf0e0;
+    color: #8a5e20;
+    border: 1px solid #e8d0a0;
+}
+
+.nide-addr-card__name {
+    font-size: .78rem;
+    color: #a09080;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100px;
+}
+
+.nide-addr-card__body {
+    flex: 1;
+    padding: 1rem 1rem .75rem;
+}
+
+.nide-addr-card__recipient {
+    font-weight: 600;
+    font-size: .88rem;
+    color: #1a1208;
+    margin: 0 0 .4rem;
+}
+
+.nide-addr-card__line {
+    font-size: .83rem;
+    color: #6e6253;
+    margin: 0;
+    line-height: 1.6;
+}
+
+.nide-addr-card__actions {
+    display: flex;
+    border-top: 1px solid #ede8e0;
+}
+
+.nide-addr-card__btn {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: .35rem;
+    padding: .6rem .5rem;
+    font-size: .78rem;
+    font-weight: 500;
+    color: #6e6253;
+    text-decoration: none;
+    transition: background .18s, color .18s;
+}
+
+.nide-addr-card__btn svg {
+    width: 14px;
+    height: 14px;
+    flex-shrink: 0;
+}
+
+.nide-addr-card__btn:hover {
+    background: #faf6ee;
+    color: #c8963e;
+    text-decoration: none;
+}
+
+.nide-addr-card__btn + .nide-addr-card__btn {
+    border-left: 1px solid #ede8e0;
+}
+
+.nide-addr-card__btn--danger:hover {
+    background: #fff5f5;
+    color: #9e4040;
+}
+
+
+/* ── Formulaire Mes informations ── */
+
+.nide-userform {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+
+.nide-userform__section {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: .25rem 1.25rem;
+    align-items: start;
+    padding: 1.5rem 0;
+    border-bottom: 1px solid #f0ebe2;
+}
+
+.nide-userform__section:first-of-type { padding-top: .25rem; }
+.nide-userform__section:last-of-type  { border-bottom: none; }
+
+.nide-userform__section-title {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    font-size: .78rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .09em;
+    color: #a09080;
+    margin: 0 0 .75rem;
+}
+
+.nide-userform__section-title svg {
+    width: 15px;
+    height: 15px;
+    flex-shrink: 0;
+}
+
+.nide-userform__field {
+    display: flex;
+    flex-direction: column;
+    gap: .35rem;
+    margin-bottom: .75rem;
+}
+
+.nide-userform__field--full {
+    grid-column: 1 / -1;
+}
+
+.nide-userform__row {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+.nide-userform__label {
+    display: flex;
+    align-items: baseline;
+    gap: .5rem;
+    font-size: .82rem;
+    font-weight: 600;
+    color: #4a3f33;
+}
+
+.nide-userform__hint {
+    font-size: .74rem;
+    font-weight: 400;
+    color: #a09080;
+}
+
+.nide-userform__badge {
+    font-size: .7rem;
+    font-weight: 600;
+    padding: 1px 7px;
+    border-radius: 20px;
+    background: #f0ebe2;
+    color: #a09080;
+    letter-spacing: .04em;
+}
+
+.nide-userform__input {
+    width: 100%;
+    border: 1px solid #ddd5c8;
+    border-radius: 8px;
+    padding: .7rem 1rem;
+    font-size: .88rem;
+    color: #1a1208;
+    background: #fff;
+    transition: border-color .2s, box-shadow .2s;
+    appearance: auto;
+}
+
+.nide-userform__input:focus {
+    border-color: #c8963e;
+    box-shadow: 0 0 0 3px rgba(200,150,62,.12);
+    outline: none;
+}
+
+.nide-userform__footer {
+    padding-top: 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+/* Alertes inline */
+.nide-account__alert {
+    display: flex;
+    align-items: center;
+    gap: .6rem;
+    padding: .85rem 1rem;
+    border-radius: 8px;
+    font-size: .87rem;
+    margin-bottom: 1.25rem;
+}
+
+.nide-account__alert--success {
+    background: #f0faf3;
+    color: #1e7d3a;
+    border: 1px solid #b2e0c0;
+}
+
+.nide-account__alert--error {
+    background: #fff5f5;
+    color: #9e4040;
+    border: 1px solid #f0c0c0;
+}
+
+
+/* ── Carte lecture infos utilisateur ── */
+
+.nide-userinfo-card {
+    display: flex;
+    align-items: flex-start;
+    gap: 1.5rem;
+    background: #faf6ee;
+    border: 1px solid #e8d9bf;
+    border-radius: 12px;
+    padding: 1.5rem 1.75rem;
+}
+
+.nide-userinfo-card__avatar {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: #c8963e;
+    color: #fff;
+    font-size: 1.35rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.nide-userinfo-card__body {
+    flex: 1;
+    min-width: 0;
+}
+
+.nide-userinfo-card__fullname {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #1a1208;
+    margin: 0 0 .9rem;
+    line-height: 1.25;
+}
+
+.nide-userinfo-card__dl {
+    display: flex;
+    flex-direction: column;
+    gap: .45rem;
+    margin: 0;
+}
+
+.nide-userinfo-card__row {
+    display: flex;
+    align-items: center;
+    gap: .6rem;
+    font-size: .87rem;
+}
+
+.nide-userinfo-card__row dt {
+    display: flex;
+    align-items: center;
+    gap: .3rem;
+    color: #a09080;
+    font-weight: 500;
+    min-width: 90px;
+    flex-shrink: 0;
+}
+
+.nide-userinfo-card__row dt svg {
+    width: 14px;
+    height: 14px;
+}
+
+.nide-userinfo-card__row dd {
+    color: #4a3f33;
+    margin: 0;
+    font-weight: 400;
+    word-break: break-all;
+}
+
+.nide-userinfo-card__action {
+    margin-top: 1.25rem;
+}
+
+.nide-userinfo-card__action .btn svg {
+    width: 15px;
+    height: 15px;
+    margin-right: .4rem;
+    vertical-align: middle;
+}
+
+/* Bouton annuler */
+.nide-userform__cancel {
+    background: none;
+    border: none;
+    font-size: .87rem;
+    color: #a09080;
+    cursor: pointer;
+    padding: .4rem .6rem;
+    transition: color .18s;
+}
+
+.nide-userform__cancel:hover { color: #4a3f33; }
+
+.nide-userinfo-card__avatar--lock {
+    background: #f0ebe2;
+    color: #c8963e;
+}
+
+.nide-userinfo-card__avatar--lock svg {
+    width: 26px;
+    height: 26px;
+}
+
+.nide-account__pw-field .nide-userform__input {
+    padding-right: 3rem;
+}
+
+
+/* =============================================
+   CHARTE GRAPHIQUE — Unification couleurs
+   Remplace #FF324D (rouge thème) par #c8963e (doré miel)
+   ============================================= */
+
+/* ── Bouton principal btn-fill-out ── */
+/* Les pseudo-elements remplissent le bouton en doré → texte blanc par défaut */
+.btn-fill-out {
+    border-color: #c8963e !important;
+    color: #fff !important;
+}
+
+.btn-fill-out::before,
+.btn-fill-out::after {
+    background-color: #c8963e !important;
+}
+
+/* Au hover les pseudo-éléments se rétractent → texte passe en doré */
+.btn-fill-out:hover {
+    color: #c8963e !important;
+    border-color: #c8963e !important;
+}
+
+/* ── Bouton secondaire btn-fill-line ── */
+.btn-fill-line {
+    border-color: #c8963e !important;
+    color: #c8963e !important;
+}
+
+.btn-fill-line::before,
+.btn-fill-line::after {
+    background-color: #c8963e !important;
+}
+
+.btn-fill-line:hover {
+    color: #fff !important;
+    border-color: #c8963e !important;
+}
+
+/* ── Liens & accents globaux ── */
+a {
+    color: #c8963e;
+}
+
+a:hover {
+    color: #a07030;
+}
+
+/* Textes colorés du thème */
+.text-primary,
+.theme_color,
+.color_primary {
+    color: #c8963e !important;
+}
+
+/* Backgrounds primaires */
+.bg_primary,
+.background_primary {
+    background-color: #c8963e !important;
+}
+
+/* ── Navigation active / hover ── */
+.navbar .navbar-nav > li > a:hover,
+.navbar .navbar-nav > li > a:focus,
+.navbar .navbar-nav > li.active > a,
+.nav-fixed .navbar .navbar-nav > li > a:hover {
+    color: #c8963e !important;
+}
+
+/* Breadcrumb */
+.breadcrumb-item a,
+.breadcrumb_content .breadcrumb-item a {
+    color: #c8963e;
+}
+
+/* ── Prix & badges ── */
+.price,
+.product_price ins,
+.pr_price,
+.price_color,
+.new_price {
+    color: #c8963e !important;
+}
+
+/* Badge promo / sale */
+.onsale,
+.badge-primary,
+.pr_flash {
+    background-color: #c8963e !important;
+    border-color: #c8963e !important;
+}
+
+/* ── Pagination ── */
+.page-item.active .page-link {
+    background-color: #c8963e !important;
+    border-color: #c8963e !important;
+    color: #fff !important;
+}
+
+.page-link {
+    color: #c8963e;
+}
+
+.page-link:hover {
+    color: #a07030;
+}
+
+/* ── Formulaires : focus ── */
+.form-control:focus,
+.form-select:focus {
+    border-color: #c8963e;
+    box-shadow: 0 0 0 3px rgba(200, 150, 62, .15);
+}
+
+/* ── Checkbox & radio accent ── */
+input[type="checkbox"],
+input[type="radio"] {
+    accent-color: #c8963e;
+}
+
+/* ── Éléments de la sidebar panier / wishlist ── */
+.cart_count,
+.wishlist_count {
+    background-color: #c8963e !important;
+}
+
+/* ── Barre de progression, loader ── */
+.progress-bar,
+#progressbar li.active::before {
+    background-color: #c8963e !important;
+}
+
+/* ── Tooltips & popovers ── */
+.tooltip-inner {
+    background-color: #c8963e;
+}
+
+/* ── Alerts & flash ── */
+.alert-primary {
+    background-color: #faf0e0;
+    border-color: #e8d0a0;
+    color: #7a5a20;
+}
+
+/* ── Headings : harmoniser la police ── */
+h1, h2, h3, h4, h5, h6,
+.h1, .h2, .h3, .h4, .h5, .h6 {
+    font-family: 'Poppins', sans-serif;
+    color: #1a1208;
+}
+
+/* Corps du texte */
+body,
+p,
+li {
+    font-family: 'Poppins', sans-serif;
+    color: #4a3f33;
+}
+
+/* ── Séparateurs ── */
+hr,
+.divider {
+    border-color: #ede8e0;
+}

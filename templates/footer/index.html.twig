@@ -31,7 +31,7 @@
 						</ul>
 					</div>
 				</div>
-				<div class="col-lg-2 col-md-3 col-sm-6 text-center">
+				<div class="col-lg-3 col-md-3 col-sm-6 text-center">
 					<div class="widget">
 						<h3 class="widget_title">Liens Utiles</h3>
 						<ul class="widget_links">
@@ -39,26 +39,14 @@
 							<li>
 								<a href="/page/{{page.slug}}"> {{page.title}} </a>
 							</li>
-							
 						{% endfor %}
+                            <li>
+								<a href="/faq-miel"> FAQ </a>
+							</li>
 						</ul>
 					</div>
 				</div>
-				<div class="col-lg-2 col-md-3 col-sm-6 text-center">
-					<div class="widget">
-						<h3 class="widget_title">Categories</h3>
-						<ul class="widget_links">
-							{% for category in globalMegaCategories %}
-								<li class="">
-									<a href="{{ path('app_category', {categoryName: category.slug}) }}">
-										{{category.title}}
-									</a>
-								</li>
-							{% endfor %}
-						</ul>
-					</div>
-				</div>
-				<div class="col-lg-2 col-md-6 col-sm-6 text-center">
+				<div class="col-lg-3 col-md-6 col-sm-6 text-center">
 					<div class="widget">
 						<h3 class="widget_title">Mon compte</h3>
 						<ul class="widget_links">

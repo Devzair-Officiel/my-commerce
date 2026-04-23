@@ -158,9 +158,15 @@ final class ProductCrudController extends AbstractCrudController
 
         // ----- TAB Relations
         yield FormField::addTab('Relations')->setIcon('fa fa-folder-tree');
-        yield FormField::addFieldset('Catégories')->setIcon('fa fa-layer-group')->collapsible();
+        yield FormField::addFieldset('Catégories')
+            ->setIcon('fa fa-layer-group')
+            ->collapsible()
+            ->renderCollapsed()
+            ->setHelp('Optionnel — les catégories ne sont pas obligatoires.');
 
-        yield AssociationField::new('categories', 'Catégories')->setRequired(true);
+        yield AssociationField::new('categories', 'Catégories')
+            ->setRequired(false)
+            ->setFormTypeOptions(['by_reference' => false]);
 
         yield FormField::addFieldset('Produit lié')
             ->setIcon('fa fa-link')

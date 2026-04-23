@@ -1,44 +1,85 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}{{globalSetting.website_name}} | Contact
-{% endblock %}
+{% block title %}Contactez-nous | {{ globalSetting.website_name }}{% endblock %}
 
 {% block body %}
-	{% include "page_head/index.html.twig" with {'page_name': 'Formulaire de contact'} %}
 
+	{% include 'page_head/index.html.twig' with {
+		'page_name': 'Contact',
+		breadcrumbs: [{ label: 'Contact' }]
+	} %}
 
-	<div class="main_content">
-		<div class="login_register_wrap section">
+	<main id="main-content">
+		<section class="nide-contact-page">
 			<div class="container">
-				<div class="row justify-content-center">
-					<div class="col-xl-9 col-md-10">
+
+				<div class="nide-contact-page__intro">
+					<span class="nide-faq__kicker">Contact</span>
+					<h1 class="nide-contact-page__title">Une question&nbsp;? Nous sommes là.</h1>
+					<p class="nide-contact-page__lead">Que ce soit pour en savoir plus sur nos miels, suivre une commande ou simplement nous partager votre retour, nous vous répondons sous 24&nbsp;h.</p>
+				</div>
+
+				<div class="nide-contact-page__body">
+
+					<div class="nide-contact-page__form-col">
 						{% for message in app.flashes('success') %}
-							<div class="alert alert-success mt-4 text-center">
-								{{message}}
+							<div class="nide-contact__flash nide-contact__flash--success">
+								<svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M4 10l4 4 8-8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+								{{ message }}
 							</div>
 						{% endfor %}
-						<div class="login_wrap">
-							<div class="padding_eight_all bg-white">
-								{{ form_start(form) }}
 
-								{{ form_row(form.email) }}
-								{{ form_row(form.subject) }}
-								{{ form_row(form.content) }}
+						{{ form_start(form, { attr: { class: 'nide-contact__form', novalidate: 'novalidate' } }) }}
 
-								{# IMPORTANT : rendre le champ captcha #}
-								{{ form_row(form.captcha) }}
-								{{ form_errors(form.captcha) }}
-
-								{{ form_row(form.submit) }}
-
-								{{ form_end(form) }}
-							</div>
+						<div class="nide-contact__row nide-contact__row--2col">
+							{{ form_row(form.name) }}
+							{{ form_row(form.email) }}
 						</div>
+
+						{{ form_row(form.subject) }}
+						{{ form_row(form.content) }}
+						{{ form_row(form.consent) }}
+
+						{{ form_row(form.captcha) }}
+						{{ form_errors(form.captcha) }}
+
+						{{ form_row(form.submit) }}
+
+						{{ form_end(form) }}
 					</div>
+
+					<aside class="nide-contact-page__aside">
+						<div class="nide-contact__info-card">
+							<div class="nide-contact__info-icon" aria-hidden="true">
+								<svg viewBox="0 0 24 24" fill="none"><path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+							</div>
+							<h2 class="nide-contact__info-label">Par e-mail</h2>
+							<p class="nide-contact__info-text">Réponse sous 24&nbsp;h les jours ouvrés.</p>
+							<a href="mailto:{{ globalSetting.email }}" class="nide-contact__info-link">{{ globalSetting.email }}</a>
+						</div>
+
+						<div class="nide-contact__info-card">
+							<div class="nide-contact__info-icon" aria-hidden="true">
+								<svg viewBox="0 0 24 24" fill="none"><path d="M12 22s-8-4.5-8-11.8A8 8 0 0112 2a8 8 0 018 8.2c0 7.3-8 11.8-8 11.8z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="10" r="2.5" stroke="currentColor" stroke-width="1.5"/></svg>
+							</div>
+							<h2 class="nide-contact__info-label">Basés en France</h2>
+							<p class="nide-contact__info-text">Apiculteurs engagés, nous travaillons directement avec nos ruchers dans le monde entier.</p>
+						</div>
+
+						<div class="nide-contact__info-card nide-contact__info-card--faq">
+							<p class="nide-contact__info-text">Vous cherchez une réponse rapide&nbsp;?</p>
+							<a href="{{ path('app_faq') }}" class="nide-trust__link">
+								Consulter la FAQ
+								<svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M4 10h12M11 5l5 5-5 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+							</a>
+						</div>
+					</aside>
+
 				</div>
+
 			</div>
-		</div>
-	</div>
+		</section>
+	</main>
 
 {% endblock %}
 
@@ -49,27 +90,16 @@
 
   <script>
     document.addEventListener('DOMContentLoaded', function () {
-      if (typeof grecaptcha === 'undefined') {
-        console.error('reCAPTCHA script not loaded');
-        return;
-      }
+      if (typeof grecaptcha === 'undefined') return;
 
-      const formEl = document.querySelector('form');
+      const formEl = document.querySelector('.nide-contact__form');
       const captchaInput = document.getElementById('contact_captcha');
 
-      if (!formEl || !captchaInput) {
-        console.error('Form or captcha input not found');
-        return;
-      }
+      if (!formEl || !captchaInput) return;
 
       formEl.addEventListener('submit', function (e) {
-        // Empêche l’envoi tant qu’on n’a pas le token
-        if (captchaInput.value) {
-          return; // déjà rempli
-        }
-
+        if (captchaInput.value) return;
         e.preventDefault();
-
         grecaptcha.ready(function () {
           grecaptcha.execute('{{ recaptcha3_site_key }}', { action: 'contact' })
             .then(function (token) {
