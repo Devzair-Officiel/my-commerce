@@ -11,6 +11,7 @@ services:
     environment:
       APP_ENV: prod
       APP_SECRET: ${APP_SECRET}
+      SERVER_NAME: "nidemiel.com"
     volumes:
       - uploads_data:/app/public/assets/images
       - videos_data:/app/public/assets/videos
