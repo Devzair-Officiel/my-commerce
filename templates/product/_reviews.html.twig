@@ -1,77 +1,85 @@
-<div class="reviews-section mt-4">
+<div class="nide-reviews">
 
-    {# --- Note moyenne --- #}
+    {# ── Note moyenne ── #}
     {% if averageRating is not null %}
-    <div class="rating_wrap mb-3">
-        <div class="rating">
-            <div class="product_rate" style="width: {{ ((averageRating / 5) * 100)|round }}%;"></div>
+    <div class="nide-reviews__summary">
+        <div class="nide-reviews__score">
+            <span class="nide-reviews__score-number">{{ averageRating|number_format(1, ',') }}</span>
+            <span class="nide-reviews__score-max">/5</span>
         </div>
-        <span class="rating_num ms-2">
-            {{ averageRating|number_format(1, ',') }}/5
-            ({{ reviews|length }} avis{{ reviews|length > 1 ? 's' : '' }})
-        </span>
+        <div class="nide-reviews__summary-right">
+            <div class="nide-reviews__stars-wrap">
+                {% for i in 1..5 %}
+                    <span class="nide-reviews__star {% if averageRating >= i %}nide-reviews__star--full{% elseif averageRating >= i - 0.5 %}nide-reviews__star--half{% endif %}">★</span>
+                {% endfor %}
+            </div>
+            <span class="nide-reviews__count">{{ reviews|length }} avis{{ reviews|length > 1 ? 's' : '' }}</span>
+        </div>
     </div>
     {% else %}
-    <p class="text-muted mb-3">Aucun avis pour ce produit.</p>
+    <p class="nide-reviews__empty">Aucun avis pour ce produit. Soyez le premier !</p>
     {% endif %}
 
-    {# --- Liste des avis approuvés --- #}
+    {# ── Liste des avis ── #}
     {% if reviews|length > 0 %}
-    <div class="reviews-list mb-4">
+    <div class="nide-reviews__list">
         {% for review in reviews %}
-        <div class="review-item border rounded p-3 mb-3">
-            <div class="d-flex justify-content-between align-items-center mb-1">
-                <div>
-                    {# Masquer partiellement le nom : "Jean D." → "Jea* D." #}
+        <div class="nide-review">
+            <div class="nide-review__header">
+                <div class="nide-review__avatar">
                     {% set firstName = review.user.firstName ?? '' %}
-                    {% set lastName  = review.user.lastName ?? '' %}
-                    {% if firstName|length > 3 %}
-                        {% set maskedFirst = firstName|slice(0, 3) ~ '*' %}
-                    {% elseif firstName|length > 0 %}
-                        {% set maskedFirst = firstName|slice(0, 1) ~ '*' %}
-                    {% else %}
-                        {% set maskedFirst = 'Anonyme' %}
-                    {% endif %}
-                    {% set maskedLast = lastName|length > 0 ? lastName|slice(0, 1) ~ '.' : '' %}
-                    <strong>{{ maskedFirst }} {{ maskedLast }}</strong>
+                    {{ firstName|length > 0 ? firstName|slice(0, 1)|upper : '?' }}
                 </div>
-                <div class="rating">
-                    <div class="product_rate" style="width: {{ ((review.rating / 5) * 100)|round }}%;"></div>
+                <div class="nide-review__meta">
+                    <span class="nide-review__author">
+                        {% set firstName = review.user.firstName ?? '' %}
+                        {% set lastName  = review.user.lastName ?? '' %}
+                        {% if firstName|length > 3 %}
+                            {{ firstName|slice(0, 3) }}*
+                        {% elseif firstName|length > 0 %}
+                            {{ firstName|slice(0, 1) }}*
+                        {% else %}
+                            Anonyme
+                        {% endif %}
+                        {{ lastName|length > 0 ? lastName|slice(0, 1) ~ '.' : '' }}
+                    </span>
+                    <span class="nide-review__date">{{ review.createdAt|date('d/m/Y', 'Europe/Paris') }}</span>
                 </div>
-                <small class="text-muted">{{ review.createdAt|date('d/m/Y', 'Europe/Paris') }}</small>
+                <div class="nide-review__stars">
+                    {% for i in 1..5 %}
+                        <span class="nide-reviews__star {% if review.rating >= i %}nide-reviews__star--full{% endif %}">★</span>
+                    {% endfor %}
+                </div>
             </div>
             {% if review.comment %}
-            <p class="mb-0 mt-2">{{ review.comment }}</p>
+            <p class="nide-review__comment">{{ review.comment }}</p>
             {% endif %}
         </div>
         {% endfor %}
     </div>
     {% endif %}
 
-    {# --- Formulaire d'avis --- #}
+    {# ── Formulaire ── #}
     {% if app.user %}
-        <div class="review-form-wrapper border rounded p-4 bg-light">
-            <h5 class="mb-3">
-                {% if userReview %}
-                    Modifier votre avis
-                {% else %}
-                    Laisser un avis
-                {% endif %}
-            </h5>
+        <div class="nide-review-form">
+            <h3 class="nide-review-form__title">
+                {% if userReview %}Modifier votre avis{% else %}Laisser un avis{% endif %}
+            </h3>
 
             {% if userReview and userReview.status.value == 'pending' %}
-            <div class="alert alert-info mb-3">
+            <div class="nide-review-form__notice">
+                <svg class="icon" aria-hidden="true"><use href="#icon-info"></use></svg>
                 Votre avis est en cours de modération et sera affiché prochainement.
             </div>
             {% endif %}
 
-            {{ form_start(reviewForm, { attr: { novalidate: 'novalidate' } }) }}
+            {{ form_start(reviewForm, { attr: { novalidate: 'novalidate', class: 'nide-review-form__form' } }) }}
 
-            <div class="mb-3">
-                {{ form_label(reviewForm.rating) }}
-                <div class="star-rating-input d-flex align-items-center gap-2">
+            <div class="nide-review-form__field">
+                {{ form_label(reviewForm.rating, null, { label_attr: { class: 'nide-review-form__label' } }) }}
+                <div class="nide-star-input">
                     {% for i in 1..5 %}
-                    <label class="star-label" for="star_{{ i }}">
+                    <label class="nide-star-input__label" for="star_{{ i }}">
                         <input
                             type="radio"
                             name="{{ reviewForm.rating.vars.full_name }}"
@@ -80,23 +88,22 @@
                             class="star-radio visually-hidden"
                             {% if reviewForm.rating.vars.value == i %}checked{% endif %}
                         >
-                        <span class="star-icon fs-4" data-value="{{ i }}" style="cursor:pointer; color: {{ reviewForm.rating.vars.value is not null and reviewForm.rating.vars.value >= i ? '#e37e03' : '#ccc' }};">★</span>
+                        <span class="nide-star-input__icon" data-value="{{ i }}">★</span>
                     </label>
                     {% endfor %}
-                    <small class="text-muted ms-1">(<span id="ratingDisplay">{{ reviewForm.rating.vars.value ?? '?' }}</span>/5)</small>
+                    <small class="nide-star-input__display">(<span id="ratingDisplay">{{ reviewForm.rating.vars.value ?? '?' }}</span>/5)</small>
                 </div>
                 {{ form_errors(reviewForm.rating) }}
-                {# Marquer le champ comme rendu pour éviter le re-affichage par form_end() #}
                 {% do reviewForm.rating.setRendered() %}
             </div>
 
-            <div class="mb-3">
-                {{ form_label(reviewForm.comment) }}
-                {{ form_widget(reviewForm.comment, { attr: { class: 'form-control' } }) }}
+            <div class="nide-review-form__field">
+                {{ form_label(reviewForm.comment, null, { label_attr: { class: 'nide-review-form__label' } }) }}
+                {{ form_widget(reviewForm.comment, { attr: { class: 'form-control nide-review-form__textarea' } }) }}
                 {{ form_errors(reviewForm.comment) }}
             </div>
 
-            <button type="submit" class="btn btn-fill-out">
+            <button type="submit" class="btn btn-fill-out nide-review-form__submit">
                 {% if userReview %}Mettre à jour mon avis{% else %}Soumettre mon avis{% endif %}
             </button>
 
@@ -105,29 +112,38 @@
 
         <script>
         (function () {
-            var radios = document.querySelectorAll('.star-radio');
-            var icons  = document.querySelectorAll('.star-icon');
+            var radios  = document.querySelectorAll('.star-radio');
+            var icons   = document.querySelectorAll('.nide-star-input__icon');
             var display = document.getElementById('ratingDisplay');
 
             function paintStars(value) {
                 icons.forEach(function (icon) {
-                    icon.style.color = parseInt(icon.dataset.value, 10) <= value ? '#e37e03' : '#ccc';
+                    var active = parseInt(icon.dataset.value, 10) <= value;
+                    icon.classList.toggle('nide-star-input__icon--active', active);
                 });
                 if (display) display.textContent = value;
             }
 
+            // Peindre l'état initial
+            var checked = document.querySelector('.star-radio:checked');
+            if (checked) paintStars(parseInt(checked.value, 10));
+
             radios.forEach(function (radio) {
-                radio.addEventListener('change', function () {
-                    paintStars(parseInt(this.value, 10));
-                });
+                radio.addEventListener('change', function () { paintStars(parseInt(this.value, 10)); });
             });
 
             icons.forEach(function (icon) {
+                icon.addEventListener('mouseover', function () {
+                    icons.forEach(function (ic) {
+                        ic.classList.toggle('nide-star-input__icon--hover', parseInt(ic.dataset.value, 10) <= parseInt(icon.dataset.value, 10));
+                    });
+                });
+                icon.addEventListener('mouseout', function () {
+                    icons.forEach(function (ic) { ic.classList.remove('nide-star-input__icon--hover'); });
+                });
                 icon.addEventListener('click', function () {
                     var val = parseInt(this.dataset.value, 10);
-                    radios.forEach(function (r) {
-                        r.checked = parseInt(r.value, 10) === val;
-                    });
+                    radios.forEach(function (r) { r.checked = parseInt(r.value, 10) === val; });
                     paintStars(val);
                 });
             });
@@ -135,7 +151,8 @@
         </script>
 
     {% else %}
-        <div class="alert alert-light border mt-3">
+        <div class="nide-review-form__login">
+            <svg class="icon" aria-hidden="true"><use href="#icon-user"></use></svg>
             <a href="{{ path('app_login') }}">Connectez-vous</a> pour laisser un avis sur ce produit.
         </div>
     {% endif %}

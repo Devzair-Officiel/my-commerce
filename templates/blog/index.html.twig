@@ -1,50 +1,124 @@
 {% extends 'base.html.twig' %}
 
-{% block title %} {{globalSetting.website_name}} | Blog
-{% endblock %}
+{% block title %}{{ globalSetting.website_name }} | Le blog du miel{% endblock %}
 
 {% block body %}
 
     {% include 'page_head/index.html.twig' with {
-        'page_name': "blog",
-        breadcrumbs: [
-            {
-                label: 'Blog',
-            },
-        ]
+        'page_name': 'Blog',
+        breadcrumbs: [{ label: 'Blog' }]
     } %}
 
-	<div class="container my-5">
-		<div id="arrival" role="tabpanel" aria-labelledby="arrival-tab" class="tab-pane fade show active">
-			<div class="row shop_container">
-				<div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4 ">
-					{% for blog in blogs %}
-						<div class="col">
-							<a href="/blog/{{blog.slug}}" class="blog_card">
-								<div class="card h-100 blog_card">
-									<div class="image-container">
-										<img
-											src="/assets/images/blogs/{{ blog.medias[0].thumbnailFilename }}"
-											class="card-img-top"
-											alt="{{ blog.medias[0].alt }}"
-											width="600" height="600"
-											loading="lazy"
-											decoding="async"
-										>
-									</div>
-									<div class="card-body">
-										<h3 class="card-title text-center">{{blog.title}}</h3>
-										<div class="card-text">
-											{{blog.description|normalize_editor_html|raw}}
-										</div>
-									</div>
-								</div>
-							</a>
-						</div>
-					{% endfor %}
-				</div>
-			</div>
-		</div>
-	</div>
+    <main class="nide-blog-index">
+
+        {# ── Contenu éditorial ── #}
+        <section class="nide-blog-editorial">
+            <div class="container">
+                <div class="nide-blog-editorial__inner">
+
+                    <span class="nide-blog-hero__kicker">Le blog</span>
+                    <h1 class="nide-blog-hero__title">Le blog du miel</h1>
+
+                    <div class="nide-blog-editorial__intro">
+                        <p>Mieux comprendre le miel aide souvent à mieux le choisir. Derrière un pot, il y a une origine, une texture, un goût, parfois une vraie singularité. Il y a aussi des questions simples que beaucoup se posent avant d'acheter&nbsp;: comment reconnaître un miel de qualité, comment le conserver, pourquoi l'origine compte, ou encore comment comparer plusieurs miels sans se tromper.</p>
+                        <p>Sur ce blog, nous partageons des articles clairs et utiles pour mieux découvrir le miel, affiner ses repères et choisir avec plus de confiance. Une approche simple, sérieuse et accessible, avec une attention particulière portée au goût, à la provenance et aux informations vraiment utiles.</p>
+                    </div>
+
+                    <div class="nide-blog-editorial__body">
+
+                        <h2>Comprendre le miel, sans le compliquer</h2>
+                        <p>Tous les miels n'ont pas le même caractère. Certains sont doux et floraux. D'autres sont plus denses, plus profonds, plus marqués en bouche. Leur texture peut varier, leur couleur aussi, tout comme leur façon d'évoluer dans le temps.</p>
+                        <p>Le but de ce blog est d'apporter des repères concrets. Pas de discours flou, pas de promesses inutiles. Seulement des contenus pensés pour aider à mieux lire un produit, mieux comprendre ses différences, et faire un choix plus juste selon ses goûts et ses attentes.</p>
+
+                        <h2>Ce que vous trouverez sur le blog</h2>
+
+                        <div class="nide-blog-editorial__themes">
+                            <div class="nide-blog-editorial__theme">
+                                <h3>Choisir un miel selon ce que l'on recherche</h3>
+                                <p>Certains recherchent un miel doux et facile à apprécier. D'autres préfèrent des profils plus intenses, plus persistants, avec un vrai caractère. Nous publions des articles pour aider à mieux situer les différents miels, sans les opposer de façon simpliste.</p>
+                            </div>
+                            <div class="nide-blog-editorial__theme">
+                                <h3>Mieux comprendre l'origine du miel</h3>
+                                <p>L'origine n'est pas un simple détail. Elle participe à la lecture du produit, à sa cohérence, à sa personnalité. Sans en faire un argument automatique, elle mérite d'être regardée avec attention.</p>
+                            </div>
+                            <div class="nide-blog-editorial__theme">
+                                <h3>Lire une fiche produit avec plus de recul</h3>
+                                <p>Texture, notes aromatiques, provenance, analyses, traçabilité&nbsp;: une bonne fiche produit doit aider à comprendre ce que l'on achète. Nous revenons sur les informations les plus utiles pour mieux les interpréter.</p>
+                            </div>
+                            <div class="nide-blog-editorial__theme">
+                                <h3>Conserver le miel dans de bonnes conditions</h3>
+                                <p>Cristallisation, température, stockage, durée de conservation&nbsp;: certaines questions reviennent souvent. Nous les abordons simplement, pour permettre une conservation adaptée et sans confusion.</p>
+                            </div>
+                        </div>
+
+                        <h2>Une approche centrée sur le goût, la provenance et la confiance</h2>
+                        <p>Le miel est un produit vivant, nuancé, parfois surprenant. On peut l'aimer pour sa douceur, pour sa longueur en bouche, pour sa texture lente, presque crémeuse, ou pour la netteté de ses notes aromatiques. Le comprendre un peu mieux permet souvent de l'apprécier davantage.</p>
+                        <p>C'est aussi pour cela que nous accordons de l'importance à la provenance des miels, à leur lecture gustative et aux éléments de réassurance qui aident à choisir plus sereinement.</p>
+
+                    </div>
+
+                    <div class="nide-blog-hero__links">
+                        <a href="/page/a-propos" class="nide-blog-hero__link">En savoir plus sur notre approche de sélection</a>
+                        <a href="{{ path('app_faq') }}" class="nide-blog-hero__link">Consulter la FAQ</a>
+                        <a href="/page/notre-boutique" class="nide-blog-hero__link">Découvrir notre sélection de miels</a>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+        {# ── Grille d'articles ── #}
+        <section class="nide-blog-grid-section">
+            <div class="container">
+                <div class="nide-blog-grid-section__head">
+                    <h2 class="nide-blog-grid-section__title">Nos derniers articles autour du miel</h2>
+                    <p class="nide-blog-grid-section__subtitle">Conseils de dégustation, repères pour choisir, questions fréquentes sur la qualité, l'origine ou la conservation&nbsp;: retrouve ici nos contenus pour mieux comprendre le miel et affiner tes choix.</p>
+                </div>
+
+                {% if blogs is empty %}
+                    <div class="nide-blog-empty">
+                        <svg viewBox="0 0 48 48" fill="none" aria-hidden="true"><rect x="8" y="10" width="32" height="28" rx="3" stroke="currentColor" stroke-width="1.6"/><path d="M16 18h16M16 24h10" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+                        <p>Aucun article disponible pour le moment.</p>
+                    </div>
+                {% else %}
+                    <div class="nide-blog-grid">
+                        {% for blog in blogs %}
+                            <article class="nide-blog-card">
+                                <a href="/blog/{{ blog.slug }}" class="nide-blog-card__img-wrap" tabindex="-1" aria-hidden="true">
+                                    {% if blog.medias[0] is defined %}
+                                        <img
+                                            src="/assets/images/blogs/{{ blog.medias[0].thumbnailFilename }}"
+                                            alt="{{ blog.medias[0].alt }}"
+                                            class="nide-blog-card__img"
+                                            width="600" height="400"
+                                            loading="{{ loop.index <= 3 ? 'eager' : 'lazy' }}"
+                                            decoding="async"
+                                        >
+                                    {% else %}
+                                        <div class="nide-blog-card__img-placeholder" aria-hidden="true">
+                                            <svg viewBox="0 0 48 48" fill="none"><rect x="6" y="10" width="36" height="28" rx="3" stroke="currentColor" stroke-width="1.4"/><circle cx="17" cy="21" r="4" stroke="currentColor" stroke-width="1.4"/><path d="M6 34l10-8 8 7 6-5 12 9" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>
+                                        </div>
+                                    {% endif %}
+                                </a>
+                                <div class="nide-blog-card__body">
+                                    <h3 class="nide-blog-card__title">
+                                        <a href="/blog/{{ blog.slug }}">{{ blog.title }}</a>
+                                    </h3>
+                                    <div class="nide-blog-card__excerpt">
+                                        {{ blog.description|normalize_editor_html|striptags|slice(0, 130) }}{% if blog.description|length > 130 %}…{% endif %}
+                                    </div>
+                                    <a href="/blog/{{ blog.slug }}" class="nide-blog-card__read-more" aria-label="Lire l'article : {{ blog.title }}">
+                                        Lire l'article
+                                        <svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M4 10h12M11 5l5 5-5 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                    </a>
+                                </div>
+                            </article>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+        </section>
+
+    </main>
 
 {% endblock %}

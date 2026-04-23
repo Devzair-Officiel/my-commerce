@@ -42,334 +42,367 @@
 	</script>
 {% endblock %}
 
-{% block title %}
-	{{globalSetting.website_name}}
-	|
-	{{product.title}}
-{% endblock %}
+{% block title %}{{ globalSetting.website_name }} | {{ product.title }}{% endblock %}
 
-{% block meta_description %}
-	Découvrez nos produits bio en ligne, limitrophe et partout en France,
-	{# {{ product.metaDescription }} #}
-{% endblock %}
+{% block meta_description %}Découvrez {{ product.title }} — {{ product.description|striptags|slice(0, 150) }}{% endblock %}
 
 {% set link_canonical = app.request.uri %}
 
 {% block body %}
 
-    {% set firstCategory = product.categories|first %}
-    {% include 'page_head/index.html.twig' with {
-        page_name: product.title,
-        breadcrumbs: firstCategory ? [
-            {
-                label: firstCategory.title,
-                url: path('app_category', { categoryName: firstCategory.slug})
-            },
-            { label: product.title }
-        ] : [
-            { label: product.title }
-        ]
-    } %}
-
+	{% set firstCategory = product.categories|first %}
+	{% include 'page_head/index.html.twig' with {
+		page_name: product.title,
+		breadcrumbs: firstCategory ? [
+			{
+				label: firstCategory.title,
+				url: path('app_category', { categoryName: firstCategory.slug })
+			},
+			{ label: product.title }
+		] : [
+			{ label: product.title }
+		]
+	} %}
 
 	<main id="main-content">
-	<div class="main_content">
-		<div class="section">
+		<div class="nide-product-page">
 			<div class="container">
-				<div class="row justify-content-center">
-					<div class="col-lg-6 col-md-11 mb-4 mb-md-3">
-						<div class="product-image">
-							{% set mainMedia = product.medias|first %}
-							<div class="product_img_box">
-								<img
-									id="product_img"
-									alt="{{ mainMedia ? mainMedia.alt : product.title }}"
-									src="{{ mainMedia ? '/assets/images/products/' ~ mainMedia.mediumFilename : '/assets/images/placeholder.png' }}"
-									width="800" height="800"
-									fetchpriority="high"
-									decoding="async"
-								>
-								{% if mainMedia %}
-								<a href="/assets/images/products/{{ mainMedia.filename }}" title="Zoom" class="product_img_zoom" aria-label="Agrandir l'image">
-									<svg class="icon" aria-hidden="true"><use href="#icon-zoom-in"></use></svg>
-								</a>
-								{% endif %}
-							</div>
 
-							<div id="pr_item_gallery" data-slides-to-show="4" data-slides-to-scroll="1" data-infinite="false" class="product_gallery_item slick_slider">
+				{# ── Fiche produit : galerie + infos ── #}
+				<div class="nide-product">
 
-								{% for image in product.medias %}
-									<div class="item">
-										<a href="javascript:void(0)" class="product_gallery_item {% if loop.first %}active{% endif %}" data-image="/assets/images/products/{{ image.mediumFilename }}" data-zoom-image="/assets/images/products/{{ image.filename }}" aria-label="Image {{ loop.index }} — {{ image.alt ?: product.title }}">
-											<img alt="" src="/assets/images/products/{{ image.thumbnailFilename }}" width="90" height="90" loading="lazy" decoding="async">
-										</a>
-									</div>
-								{% endfor %}
-							</div>
+					{# Galerie #}
+					<div class="nide-product__gallery">
+						{% set mainMedia = product.medias|first %}
+						<div class="nide-product__main-img">
+							<img
+								id="product_img"
+								alt="{{ mainMedia ? mainMedia.alt : product.title }}"
+								src="{{ mainMedia ? '/assets/images/products/' ~ mainMedia.mediumFilename : '/assets/images/placeholder.png' }}"
+								data-zoom-image="{{ mainMedia ? '/assets/images/products/' ~ mainMedia.filename : '' }}"
+								width="800" height="800"
+								fetchpriority="high"
+								decoding="async"
+							>
+							{% if mainMedia %}
+							<a href="/assets/images/products/{{ mainMedia.filename }}" title="Zoom" class="nide-product__zoom product_img_zoom" aria-label="Agrandir l'image">
+								<svg class="icon" aria-hidden="true"><use href="#icon-zoom-in"></use></svg>
+							</a>
+							{% endif %}
 						</div>
 
-					</div>
-					<div class="col-lg-6 col-md-11">
-						<div class="pr_detail">
-							<div class="product_description">
-								<h2 class="product_title">{{ product.title }}</h2>
-
-								{% if averageRating is not null %}
-								<div class="rating_wrap mb-2">
-									<div class="rating">
-										<div class="product_rate" style="width: {{ ((averageRating / 5) * 100)|round }}%;"></div>
-									</div>
-									<span class="rating_num"><strong>{{ averageRating }}</strong>/5 · {{ product.approvedReviewsCount }} avis</span>
-								</div>
-								{% endif %}
-
-								<div class="product_price">
-									{% if product.isOnSale %}
-										<span class="price">{{ (product.soldePrice / 100)|number_format(2, ',', ' ') }}€</span>
-										<del>{{ (product.regularPrice / 100)|number_format(2, ',', ' ') }}€</del>
-										<div class="on_sale"><span>-{{ product.discountPercentage }}%</span></div>
-									{% else %}
-										<span class="price">{{ (product.regularPrice / 100)|number_format(2, ',', ' ') }}€</span>
-									{% endif %}
-								</div>
-
-								{% if product.additionalInfos %}
-								<div class="product_additional_infos mt-2 mb-3">
-									{{ product.additionalInfos|normalize_editor_html|raw }}
-								</div>
-								{% endif %}
-
-								<div class="pr_desc">
-									<p>{{ product.description|normalize_editor_html|raw }}</p>
-								</div>
-
-								<div class="product_sort_info mt-3">
-									<ul>
-										<li>
-											<svg class="icon" aria-hidden="true"><use href="#icon-shield"></use></svg>
-											Produit certifié
-										</li>
-										<li>
-											<svg class="icon" aria-hidden="true"><use href="#icon-truck"></use></svg>
-											Livraison partout en France
-										</li>
-										<li>
-											<svg class="icon" aria-hidden="true"><use href="#icon-refresh"></use></svg>
-											Retour sous 30 jours
-										</li>
-										<li>
-											<svg class="icon" aria-hidden="true"><use href="#icon-lock"></use></svg>
-											Paiement sécurisé
-										</li>
-									</ul>
-								</div>
-							</div>
-							{% set inStock = availableStock is null or availableStock > 0 %}
-							<div class="my-2">
-								{% if inStock %}
-									<span class="badge bg-success"><svg class="icon me-1" aria-hidden="true"><use href="#icon-check"></use></svg>En stock{% if availableStock is not null %} ({{ availableStock }}){% endif %}</span>
-								{% else %}
-									<span class="badge bg-danger"><svg class="icon me-1" aria-hidden="true"><use href="#icon-x"></use></svg>Rupture de stock</span>
-								{% endif %}
-							</div>
-							<hr>
-							<div class="">
-								{% if inStock %}
-								<div class="cart-product-quantity">
-									<div class="quantity">
-										<input type="button" value="-" class="minus" aria-label="Diminuer la quantité">
-										<input type="text" name="quantity" value="1" aria-label="Quantité" size="4" class="qty" {% if availableStock is not null %}data-max="{{ availableStock }}"{% endif %}>
-										<input type="button" value="+" class="plus" aria-label="Augmenter la quantité">
-									</div>
-								</div>
-								<div class="cart_btn my-2">
-									<a href="/cart/add/{{product.id}}/1" class="btn btn-fill-out btn-addtocart btn-no-margin">
-										<svg class="icon" aria-hidden="true"><use href="#icon-cart"></use></svg>
-										Ajouter au panier
-									</a>
-									<a href="/checkout" class="btn btn-fill-out checkout btn-no-margin">
-										<svg class="icon" aria-hidden="true"><use href="#icon-credit-card"></use></svg>
-										Payer maintenant
+						{% if product.medias|length > 1 %}
+						<div id="pr_item_gallery" data-slides-to-show="4" data-slides-to-scroll="1" data-infinite="false" class="nide-product__thumbs product_gallery_item slick_slider">
+							{% for image in product.medias %}
+								<div class="nide-product__thumb-item">
+									<a href="javascript:void(0)"
+									   class="product_gallery_item {% if loop.first %}active{% endif %}"
+									   data-image="/assets/images/products/{{ image.mediumFilename }}"
+									   data-zoom-image="/assets/images/products/{{ image.filename }}"
+									   aria-label="Image {{ loop.index }} — {{ image.alt ?: product.title }}">
+										<img alt="" src="/assets/images/products/{{ image.thumbnailFilename }}" width="90" height="90" loading="lazy" decoding="async">
 									</a>
 								</div>
-								{% else %}
-								<div class="cart_btn my-2">
-									<button class="btn btn-light btn-no-margin" disabled>
-										<svg class="icon" aria-hidden="true"><use href="#icon-cart"></use></svg>
-										Indisponible
-									</button>
-								</div>
-								<div class="stock-alert-box mt-3">
-									{% set userEmail = app.user ? app.user.email : null %}
-									{% if stockAlertSubscribed %}
-										<p class="text-success small mb-1">
-											<svg class="icon me-1" aria-hidden="true"><use href="#icon-check"></use></svg>
-											Vous serez alerté dès le retour en stock.
-										</p>
-										<form class="stock-alert-form" data-action="{{ path('app_stock_alert_unsubscribe', { id: product.id }) }}" data-mode="unsubscribe">
-											<input type="hidden" name="email" value="{{ userEmail ?? '' }}">
-											<button type="submit" class="btn btn-sm btn-outline-secondary">Annuler l'alerte</button>
-										</form>
-									{% else %}
-										<p class="text-muted small mb-2">Recevez un e-mail dès que ce produit est disponible.</p>
-										<form class="stock-alert-form d-flex gap-2 flex-wrap" data-action="{{ path('app_stock_alert_subscribe', { id: product.id }) }}" data-mode="subscribe">
-											{% if not app.user %}
-												<input type="email" name="email" class="form-control form-control-sm" placeholder="votre@email.fr" required style="max-width:220px;">
-											{% else %}
-												<input type="hidden" name="email" value="{{ userEmail }}">
-											{% endif %}
-											<button type="submit" class="btn btn-sm btn-outline-dark">
-												<svg class="icon me-1" aria-hidden="true"><use href="#icon-bell"></use></svg>
-												M'alerter
-											</button>
-										</form>
-									{% endif %}
-									<div class="stock-alert-feedback small mt-1"></div>
-								</div>
-								{% endif %}
-								<div class="cart_btn">
-									<a href="/compare/add/{{product.id}}" class="add-to-compare" aria-label="Ajouter {{ product.title }} au comparatif">
-										<svg class="icon" aria-hidden="true"><use href="#icon-shuffle"></use></svg>
-									</a>
-									<a href="/wishlist/add/{{ product.id }}" class="add-to-wishlist mx-2" aria-label="Ajouter {{ product.title }} à la liste de souhaits">
-										<svg class="icon" aria-hidden="true"><use href="#icon-heart"></use></svg>
-									</a>
-								</div>
-							</div>
-							<hr>
-							<ul class="product-meta">
-								<li>
-									Catégorie:
-									{% for category in product.categories %}
-										<a href="/product/category/{{category.slug}}">{{category}}
-										</a>
-									{% endfor %}
-								</li>
-							</ul>
-							<div class="product_share">
-								<span>Réseaux sociaux:</span>
-								<ul class="social_icons">
-									<li>
-										<a href="https://www.facebook.com/sharer/sharer.php?u={{ app.request.uri|url_encode }}" aria-label="Partager sur Facebook" rel="noopener" target="_blank">
-											<svg class="icon icon--filled" aria-hidden="true"><use href="#icon-facebook"></use></svg>
-										</a>
-									</li>
-									<li>
-										<a href="https://twitter.com/intent/tweet?url={{ app.request.uri|url_encode }}&text={{ product.title|url_encode }}" aria-label="Partager sur Twitter" rel="noopener" target="_blank">
-											<svg class="icon icon--filled" aria-hidden="true"><use href="#icon-twitter"></use></svg>
-										</a>
-									</li>
-									<li>
-										<a href="https://www.instagram.com/" aria-label="Voir sur Instagram" rel="noopener" target="_blank">
-											<svg class="icon" aria-hidden="true"><use href="#icon-instagram"></use></svg>
-										</a>
-									</li>
-								</ul>
-							</div>
-						</div>
-					</div>
-				</div>
-				<div class="row">
-					<div class="col-12">
-						<div class="large_divider clearfix"></div>
-					</div>
-				</div>
-				<div class="row">
-					<div class="col-12">
-						<div class="tab-style3">
-							<ul role="tablist" class="nav nav-tabs">
-								<li class="nav-item" role="presentation">
-									<a id="Description-tab" data-bs-toggle="tab" href="#Description" role="tab" aria-controls="Description" aria-selected="true" class="nav-link active">Description</a>
-								</li>
-								{% if product.moreDescription %}
-								<li class="nav-item" role="presentation">
-									<a id="Additional-info-tab" data-bs-toggle="tab" href="#Additional-info" role="tab" aria-controls="Additional-info" aria-selected="false" class="nav-link">Plus d'infos</a>
-								</li>
-								{% endif %}
-								<li class="nav-item" role="presentation">
-									<a id="Reviews-tab" data-bs-toggle="tab" href="#Reviews" role="tab" aria-controls="Reviews" aria-selected="false" class="nav-link">Avis</a>
-								</li>
-							</ul>
-							<div class="tab-content shop_info_tab">
-								<div id="Description" role="tabpanel" aria-labelledby="Description-tab" class="tab-pane fade show active">
-									<div>{{ product.description|normalize_editor_html|raw}}</div>
-									<div style="border: 1px solid #e37e03; margin: 20px 25%"></div>
-									<p style="font-size: 20px; text-align: center">
-										Pour les achats de plusieurs kilos (Prix dégressif), appeler directement par téléphone.
-									</p>
-								</div>
-								{% if product.moreDescription %}
-								<div id="Additional-info" role="tabpanel" aria-labelledby="Additional-info-tab" class="tab-pane fade">
-									{{ product.moreDescription|normalize_editor_html|raw }}
-								</div>
-								{% endif %}
-								<div id="Reviews" role="tabpanel" aria-labelledby="Reviews-tab" class="tab-pane fade">
-									{% include 'product/_reviews.html.twig' %}
-								</div>
-							</div>
-						</div>
-					</div>
-				</div>
-				<div class="row">
-					<div class="col-12">
-						<div class="small_divider"></div>
-						<div class="divider"></div>
-						<div class="medium_divider"></div>
-					</div>
-				</div>
-				<div class="row shop_container">
-					{% if relatedProducts is not empty %}
-						<h3 class="my-4">Vous apprécierez également</h3>
-						<div class="row shop_container">
-							{% for related in relatedProducts %}
-								{% include "product/display_product.html.twig" with { product: related } only %}
 							{% endfor %}
 						</div>
-					{% endif %}
-				</div>
-				<div class="row justify-content-center mt-4">
+						{% endif %}
+					</div>
 
-					<p class="col-9 text-center">
-						Ce sont des produits d'exception qui traversent les frontières pour arriver à et partout en France. Profitez des meilleurs
-						<strong>miels</strong>,
-						<strong>huiles</strong>
-						et autres produits d'exception sur le marché actuellement.
-					</p>
+					{# Infos produit #}
+					<div class="nide-product__info">
+
+						{# H1 + accroche #}
+						<h1 class="nide-product__title">{{ product.title }}</h1>
+
+						{% if product.accroche %}
+						<p class="nide-product__accroche">{{ product.accroche }}</p>
+						{% endif %}
+
+						{% if averageRating is not null %}
+						<div class="nide-product__rating">
+							<div class="nide-product__stars">
+								<div class="nide-product__stars-fill" style="width: {{ ((averageRating / 5) * 100)|round }}%;"></div>
+							</div>
+							<span class="nide-product__rating-label">{{ averageRating }}/5 · {{ product.approvedReviewsCount }} avis</span>
+						</div>
+						{% endif %}
+
+						{# Prix #}
+						<div class="nide-product__price">
+							{% if product.isOnSale %}
+								<span class="nide-product__price-current">{{ (product.soldePrice / 100)|number_format(2, ',', ' ') }}&nbsp;€</span>
+								<span class="nide-product__price-old">{{ (product.regularPrice / 100)|number_format(2, ',', ' ') }}&nbsp;€</span>
+								<span class="nide-product__badge">-{{ product.discountPercentage }}&nbsp;%</span>
+							{% else %}
+								<span class="nide-product__price-current">{{ (product.regularPrice / 100)|number_format(2, ',', ' ') }}&nbsp;€</span>
+							{% endif %}
+						</div>
+
+						{# Bloc réassurance produit (additionalInfos) — rendu en paires Clé : Valeur #}
+						{% if product.weightGrams or product.additionalInfos %}
+						<div class="nide-product__attrs">
+							{% if product.weightGrams %}
+							<div class="nide-product__attr">
+								<span class="nide-product__attr-key">Poids net</span>
+								<span class="nide-product__attr-val">
+									{% if product.weightGrams >= 1000 %}
+										{{ (product.weightGrams / 1000)|number_format(1, ',') }}&nbsp;kg
+									{% else %}
+										{{ product.weightGrams }}&nbsp;g
+									{% endif %}
+								</span>
+							</div>
+							{% endif %}
+							{% if product.additionalInfos %}
+								{% set raw = product.additionalInfos
+									|replace({'<br>': '\n', '<br/>': '\n', '<br />': '\n', '</p>': '\n', '</li>': '\n', '&nbsp;': ' '})
+									|striptags %}
+								{% for line in raw|split('\n') %}
+									{% set line = line|trim %}
+									{% if ':' in line %}
+										{% set parts = line|split(':', 2) %}
+										<div class="nide-product__attr">
+											<span class="nide-product__attr-key">{{ parts[0]|trim }}</span>
+											<span class="nide-product__attr-val">{{ parts[1]|trim }}</span>
+										</div>
+									{% elseif line is not empty %}
+										<div class="nide-product__attr nide-product__attr--full">{{ line }}</div>
+									{% endif %}
+								{% endfor %}
+							{% endif %}
+						</div>
+						{% endif %}
+
+						{# Garanties génériques #}
+						<ul class="nide-product__reassurance">
+							<li>
+								<svg class="icon" aria-hidden="true"><use href="#icon-shield"></use></svg>
+								Produit certifié
+							</li>
+							<li>
+								<svg class="icon" aria-hidden="true"><use href="#icon-truck"></use></svg>
+								Livraison partout en France
+							</li>
+							<li>
+								<svg class="icon" aria-hidden="true"><use href="#icon-refresh"></use></svg>
+								Retour sous 30 jours
+							</li>
+							<li>
+								<svg class="icon" aria-hidden="true"><use href="#icon-lock"></use></svg>
+								Paiement sécurisé
+							</li>
+						</ul>
+
+						<div class="nide-product__divider"></div>
+
+						{# Stock #}
+						{% set inStock = availableStock is null or availableStock > 0 %}
+						<div class="nide-product__stock">
+							{% if inStock %}
+								<span class="nide-product__stock-badge nide-product__stock-badge--in">
+									<svg class="icon" aria-hidden="true"><use href="#icon-check"></use></svg>
+									En stock{% if availableStock is not null %} ({{ availableStock }}){% endif %}
+								</span>
+							{% else %}
+								<span class="nide-product__stock-badge nide-product__stock-badge--out">
+									<svg class="icon" aria-hidden="true"><use href="#icon-x"></use></svg>
+									Rupture de stock
+								</span>
+							{% endif %}
+						</div>
+
+						{# CTA #}
+						{% if inStock %}
+						<div class="nide-product__cta">
+							<div class="nide-product__qty">
+								<input type="button" value="-" class="minus" aria-label="Diminuer la quantité">
+								<input type="text" name="quantity" value="1" aria-label="Quantité" size="4" class="qty" {% if availableStock is not null %}data-max="{{ availableStock }}"{% endif %}>
+								<input type="button" value="+" class="plus" aria-label="Augmenter la quantité">
+							</div>
+							<a href="/cart/add/{{ product.id }}/1" class="btn btn-fill-out btn-addtocart">
+								<svg class="icon" aria-hidden="true"><use href="#icon-cart"></use></svg>
+								Ajouter au panier
+							</a>
+							<a href="/checkout" class="btn btn-fill-line nide-product__checkout">
+								<svg class="icon" aria-hidden="true"><use href="#icon-credit-card"></use></svg>
+								Payer maintenant
+							</a>
+							<a href="/cart" class="btn btn-fill-line nide-product__checkout">
+								<svg class="icon" aria-hidden="true"><use href="#icon-cart"></use></svg>
+								Voir mon panier
+							</a>
+						</div>
+						{% else %}
+						<div class="nide-product__cta">
+							<button class="btn btn-light" disabled>
+								<svg class="icon" aria-hidden="true"><use href="#icon-cart"></use></svg>
+								Indisponible
+							</button>
+						</div>
+						<div class="stock-alert-box nide-product__alert">
+							{% set userEmail = app.user ? app.user.email : null %}
+							{% if stockAlertSubscribed %}
+								<p class="nide-product__alert-msg nide-product__alert-msg--ok">
+									<svg class="icon" aria-hidden="true"><use href="#icon-check"></use></svg>
+									Vous serez alerté dès le retour en stock.
+								</p>
+								<form class="stock-alert-form" data-action="{{ path('app_stock_alert_unsubscribe', { id: product.id }) }}" data-mode="unsubscribe">
+									<input type="hidden" name="email" value="{{ userEmail ?? '' }}">
+									<button type="submit" class="btn btn-sm btn-outline-secondary">Annuler l'alerte</button>
+								</form>
+							{% else %}
+								<p class="nide-product__alert-msg">Recevez un e-mail dès que ce produit est disponible.</p>
+								<form class="stock-alert-form nide-product__alert-form" data-action="{{ path('app_stock_alert_subscribe', { id: product.id }) }}" data-mode="subscribe">
+									{% if not app.user %}
+										<input type="email" name="email" class="form-control form-control-sm" placeholder="votre@email.fr" required>
+									{% else %}
+										<input type="hidden" name="email" value="{{ userEmail }}">
+									{% endif %}
+									<button type="submit" class="btn btn-sm btn-outline-dark">
+										<svg class="icon" aria-hidden="true"><use href="#icon-bell"></use></svg>
+										M'alerter
+									</button>
+								</form>
+							{% endif %}
+							<div class="stock-alert-feedback small mt-1"></div>
+						</div>
+						{% endif %}
+
+						{# Actions secondaires #}
+						<div class="nide-product__actions">
+							<a href="/compare/add/{{ product.id }}" class="nide-product__action add-to-compare" aria-label="Ajouter {{ product.title }} au comparatif">
+								<svg class="icon" aria-hidden="true"><use href="#icon-shuffle"></use></svg>
+								Comparer
+							</a>
+							<a href="/wishlist/add/{{ product.id }}" class="nide-product__action add-to-wishlist" aria-label="Ajouter {{ product.title }} à la liste de souhaits">
+								<svg class="icon" aria-hidden="true"><use href="#icon-heart"></use></svg>
+								Favoris
+							</a>
+						</div>
+
+						<div class="nide-product__divider"></div>
+
+						{# Méta + partage #}
+						<div class="nide-product__meta">
+							{% if product.categories|length > 0 %}
+							<span class="nide-product__meta-label">Catégorie :</span>
+							{% for category in product.categories %}
+								<a href="/product/category/{{ category.slug }}" class="nide-product__meta-link">{{ category }}</a>{% if not loop.last %}, {% endif %}
+							{% endfor %}
+							{% endif %}
+						</div>
+
+						<div class="nide-product__share">
+							<span class="nide-product__share-label">Partager :</span>
+							<ul class="nide-product__share-list">
+								<li>
+									<a href="https://www.facebook.com/sharer/sharer.php?u={{ app.request.uri|url_encode }}" aria-label="Partager sur Facebook" rel="noopener" target="_blank">
+										<svg class="icon" aria-hidden="true"><use href="#icon-facebook"></use></svg>
+									</a>
+								</li>
+								<li>
+									<a href="https://twitter.com/intent/tweet?url={{ app.request.uri|url_encode }}&text={{ product.title|url_encode }}" aria-label="Partager sur X (Twitter)" rel="noopener" target="_blank">
+										<svg class="icon" aria-hidden="true"><use href="#icon-twitter"></use></svg>
+									</a>
+								</li>
+								<li>
+									<a href="https://www.instagram.com/" aria-label="Voir sur Instagram" rel="noopener" target="_blank">
+										<svg class="icon" aria-hidden="true"><use href="#icon-instagram"></use></svg>
+									</a>
+								</li>
+							</ul>
+						</div>
+
+					</div>{# /nide-product__info #}
+				</div>{# /nide-product #}
+
+				{# ── Onglets ── #}
+				<div class="nide-product__tabs">
+					<div class="tab-style3">
+						<ul role="tablist" class="nav nav-tabs">
+							<li class="nav-item" role="presentation">
+								<a id="Description-tab" data-bs-toggle="tab" href="#Description" role="tab" aria-controls="Description" aria-selected="true" class="nav-link active">Description</a>
+							</li>
+							{% if product.moreDescription %}
+							<li class="nav-item" role="presentation">
+								<a id="Additional-info-tab" data-bs-toggle="tab" href="#Additional-info" role="tab" aria-controls="Additional-info" aria-selected="false" class="nav-link">Plus d'infos</a>
+							</li>
+							{% endif %}
+							<li class="nav-item" role="presentation">
+								<a id="Reviews-tab" data-bs-toggle="tab" href="#Reviews" role="tab" aria-controls="Reviews" aria-selected="false" class="nav-link">Avis</a>
+							</li>
+						</ul>
+						<div class="tab-content shop_info_tab">
+							<div id="Description" role="tabpanel" aria-labelledby="Description-tab" class="tab-pane fade show active">
+								<div class="nide-page-content">{{ product.description|normalize_editor_html|raw }}</div>
+							</div>
+							{% if product.moreDescription %}
+							<div id="Additional-info" role="tabpanel" aria-labelledby="Additional-info-tab" class="tab-pane fade">
+								<div class="nide-page-content">{{ product.moreDescription|normalize_editor_html|raw }}</div>
+							</div>
+							{% endif %}
+							<div id="Reviews" role="tabpanel" aria-labelledby="Reviews-tab" class="tab-pane fade">
+								{% include 'product/_reviews.html.twig' %}
+							</div>
+						</div>
+					</div>
 				</div>
+
+				{# ── Produits liés ── #}
+				{% if relatedProducts is not empty %}
+				<div class="nide-product__related">
+					<h2 class="nide-product__related-title">Vous apprécierez également</h2>
+					<div class="row shop_container">
+						{% for related in relatedProducts %}
+							{% include "product/display_product.html.twig" with { product: related } only %}
+						{% endfor %}
+					</div>
+				</div>
+				{% endif %}
+
 			</div>
 		</div>
-	</div>
 	</main>
+
 {% endblock %}
 
 {% block javascripts %}
 {{ parent() }}
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-    const qtyInput = document.querySelector('input.qty');
-    if (!qtyInput) return;
+	const qtyInput = document.querySelector('input.qty');
+	if (!qtyInput) return;
 
-    // Synchronise le lien "Ajouter au panier" à chaque changement de quantité
-    function syncCartLink(qty) {
-        const link = document.querySelector('.btn-addtocart');
-        if (link) {
-            link.href = '/cart/add/{{ product.id }}/' + qty;
-        }
-    }
+	function syncCartLink(qty) {
+		const link = document.querySelector('.btn-addtocart');
+		if (link) {
+			link.href = '/cart/add/{{ product.id }}/' + qty;
+		}
+	}
 
-    // Le thème gère déjà +/- ; on écoute simplement les changements de valeur
-    qtyInput.addEventListener('change', function () {
-        syncCartLink(parseInt(this.value, 10) || 1);
-    });
+	qtyInput.addEventListener('change', function () {
+		syncCartLink(parseInt(this.value, 10) || 1);
+	});
 
-    // Délégation sur les clics +/- pour mettre à jour le lien après que le thème ait incrémenté
-    document.addEventListener('click', function (e) {
-        if (e.target.classList.contains('plus') || e.target.classList.contains('minus')) {
-            setTimeout(function () {
-                syncCartLink(parseInt(qtyInput.value, 10) || 1);
-            }, 0);
-        }
-    });
+	document.addEventListener('click', function (e) {
+		if (e.target.classList.contains('plus') || e.target.classList.contains('minus')) {
+			setTimeout(function () {
+				syncCartLink(parseInt(qtyInput.value, 10) || 1);
+			}, 0);
+		}
+	});
+
+	// Zoom image : suit la position du curseur
+	const zoomBox = document.querySelector('.nide-product__main-img');
+	if (zoomBox) {
+		zoomBox.addEventListener('mousemove', function (e) {
+			const rect = zoomBox.getBoundingClientRect();
+			const x = ((e.clientX - rect.left) / rect.width  * 100).toFixed(2);
+			const y = ((e.clientY - rect.top)  / rect.height * 100).toFixed(2);
+			zoomBox.style.setProperty('--zoom-x', x + '%');
+			zoomBox.style.setProperty('--zoom-y', y + '%');
+		});
+	}
 });
 </script>
 {% endblock %}

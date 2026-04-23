@@ -21,6 +21,7 @@ use EasyCorp\Bundle\EasyAdminBundle\Field\ImageField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\BooleanField;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use EasyCorp\Bundle\EasyAdminBundle\Field\CollectionField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\TextareaField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextEditorField;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
 
@@ -83,7 +84,7 @@ final class BlogCrudController extends AbstractCrudController
             ->setColumns(6);
 
         yield TextEditorField::new('description', 'Résumé')->setColumns(12);
-        yield TextEditorField::new('content', 'Contenu')->setColumns(12);
+        yield TextareaField::new('content', 'Contenu')->setColumns(12);
 
         yield FormField::addTab('Médias')->setIcon('fa fa-images');
 
@@ -101,6 +102,36 @@ final class BlogCrudController extends AbstractCrudController
 
         yield FormField::addTab('Publication')->setIcon('fa fa-eye');
         yield BooleanField::new('isPublished', 'Publié')->setColumns(6);
+
+        yield FormField::addTab('SEO')->setIcon('fa fa-magnifying-glass');
+
+        yield FormField::addFieldset('Référencement')
+            ->setIcon('fa fa-globe')
+            ->setHelp('Laisse vide pour utiliser les valeurs par défaut (titre et description de l\'article).');
+
+        yield TextField::new('seoTitle', 'Meta title')
+            ->setColumns(8)
+            ->setRequired(false)
+            ->setHelp('Max 70 caractères. Si vide : titre de l\'article suivi du nom du site.');
+
+        yield BooleanField::new('seoNoindex', 'Masquer des moteurs (noindex)')
+            ->setColumns(4);
+
+        yield TextareaField::new('seoDescription', 'Meta description')
+            ->setColumns(12)
+            ->setNumOfRows(3)
+            ->setRequired(false)
+            ->setHelp('Max 170 caractères. Si vide : générée depuis le résumé ou le contenu de l\'article.');
+
+        yield TextField::new('seoOgImage', 'Image Open Graph (URL)')
+            ->setColumns(8)
+            ->setRequired(false)
+            ->setHelp('URL de l\'image partagée sur les réseaux (1200×630 px). Si vide : première image de l\'article.');
+
+        yield TextField::new('seoCanonicalOverride', 'URL canonique (override)')
+            ->setColumns(8)
+            ->setRequired(false)
+            ->setHelp('Laisser vide sauf cas particulier (duplication de contenu).');
     }
 
     public function persistEntity(EntityManagerInterface $em, $entityInstance): void

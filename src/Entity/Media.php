@@ -185,6 +185,14 @@ class Media
         return \pathinfo($this->filename, \PATHINFO_FILENAME) . '-medium.webp';
     }
 
+    public function getLargeFilename(): string
+    {
+        if ($this->filename === null) {
+            return '';
+        }
+        return \pathinfo($this->filename, \PATHINFO_FILENAME) . '-large.webp';
+    }
+
     public function __toString(): string
     {
         return $this->filename ?? '';

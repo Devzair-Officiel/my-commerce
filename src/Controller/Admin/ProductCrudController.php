@@ -25,6 +25,7 @@ use EasyCorp\Bundle\EasyAdminBundle\Field\CollectionField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextEditorField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\AssociationField;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
+use EasyCorp\Bundle\EasyAdminBundle\Field\TextareaField;
 
 /**
  * Contrôleur EasyAdmin pour la gestion CRUD des produits (miels), incluant les médias, le stock, le prix et les champs SEO.
@@ -133,10 +134,22 @@ final class ProductCrudController extends AbstractCrudController
 
         // ----- TAB Contenu
         yield FormField::addTab('Contenu')->setIcon('fa fa-align-left');
-        yield FormField::addFieldset('Descriptions')->setIcon('fa fa-pen')->collapsible();
+        yield FormField::addFieldset('Description courte')->setIcon('fa fa-pen')->collapsible();
 
+        yield TextField::new('accroche', 'Accroche')
+            ->setHelp('Phrase courte affichée sous le titre — résume le caractère du produit en une ligne.')
+            ->setColumns(12);
         yield TextEditorField::new('description', 'Description courte')->setColumns(12);
-        yield TextEditorField::new('more_description', 'Description détaillée')->setColumns(12);
+
+        yield FormField::addFieldset('Description détaillée')
+            ->setIcon('fa fa-align-left')
+            ->collapsible()
+            ->renderCollapsed();
+
+        yield TextareaField::new('more_description', 'Description détaillée')
+            ->setColumns(12)
+            ->setNumOfRows(20)
+            ->setFormTypeOptions(['attr' => ['class' => 'form-control ea-textarea-resizable']]);
 
         yield FormField::addFieldset('Infos additionnelles')
             ->setIcon('fa fa-circle-info')

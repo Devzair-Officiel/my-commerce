@@ -99,7 +99,7 @@ export function displayCompare(compare = []) {
     return { id, title, slug, imgSrc, alt, isOnSale, priceCents, regularCents, inStock, product };
   });
 
-  let html = `<div class="compare-table">`;
+  let html = `<div class="compare-table" data-count="${products.length}">`;
 
   for (const row of rows) {
     const isImage   = row.key === "image";

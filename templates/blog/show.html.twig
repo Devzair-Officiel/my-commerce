@@ -1,50 +1,77 @@
 {% extends 'base.html.twig' %}
 
-{% block title %} {{globalSetting.website_name}} | Blog
-{% endblock %}
+{% block title %}{{ globalSetting.website_name }} | {{ blog.title }}{% endblock %}
 
 {% block stylesheets %}
-	{% if blog.medias[0] is defined %}
-		<link rel="preload" as="image" href="/assets/images/blogs/{{ blog.medias[0].mediumFilename }}" fetchpriority="high">
-	{% endif %}
+    {% if blog.medias[0] is defined %}
+        <link rel="preload" as="image" href="/assets/images/blogs/{{ blog.medias[0].mediumFilename }}" fetchpriority="high">
+    {% endif %}
 {% endblock %}
 
-{% block body %}    
+{% block body %}
+
     {% include 'page_head/index.html.twig' with {
-		page_name: blog.title,
-		breadcrumbs: [
-			{
-				label: 'Blog',
-				url: path('app_blog')
-			},
-			{
-				label: blog.title
-			}
-		]
-	} %}
+        page_name: blog.title,
+        breadcrumbs: [
+            { label: 'Blog', url: path('app_blog') },
+            { label: blog.title }
+        ]
+    } %}
 
+    <main class="nide-blog-show">
+        <div class="container">
+            <div class="nide-blog-show__layout">
 
-	<div class="container my-5">
-		<div id="arrival" role="tabpanel" aria-labelledby="arrival-tab" class="tab-pane fade show active">
-			<div class="row shop_container">
-				<h1>{{blog.title}}</h1>
-				{% if blog.medias[0] is defined %}
-					<div class="mb-4">
-						<img
-						src="/assets/images/blogs/{{ blog.medias[0].mediumFilename }}"
-						alt="{{ blog.medias[0].alt }}"
-						class="img-fluid rounded"
-						width="800" height="450"
-						fetchpriority="high"
-						decoding="async"
-					>
-					</div>
-				{% endif %}
-				<div>
-					{{blog.content|normalize_editor_html|raw}}
-				</div>
-			</div>
-		</div>
-	</div>
+                {# ── Article ── #}
+                <article class="nide-blog-article">
+
+                    <header class="nide-blog-article__header">
+                        <h1 class="nide-blog-article__title">{{ blog.title }}</h1>
+                    </header>
+
+                    {% if blog.medias[0] is defined %}
+                        <div class="nide-blog-article__hero-img">
+                            <img
+                                src="/assets/images/blogs/{{ blog.medias[0].largeFilename ?: blog.medias[0].filename }}"
+                                alt="{{ blog.medias[0].alt }}"
+                                width="1200" height="630"
+                                fetchpriority="high"
+                                decoding="async"
+                            >
+                        </div>
+                    {% endif %}
+
+                    <div class="nide-blog-article__content nide-page-content">
+                        {{ blog.content|normalize_editor_html|raw }}
+                    </div>
+
+                    <footer class="nide-blog-article__footer">
+                        <a href="{{ path('app_blog') }}" class="nide-blog-article__back">
+                            <svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M16 10H4M9 5l-5 5 5 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                            Retour au blog
+                        </a>
+                    </footer>
+                </article>
+
+                {# ── Sidebar ── #}
+                <aside class="nide-blog-sidebar" aria-label="À propos du blog">
+                    <div class="nide-blog-sidebar__card">
+                        <p class="nide-blog-sidebar__card-title">Le blog du miel</p>
+                        <p class="nide-blog-sidebar__card-text">Des articles pour mieux comprendre les miels, leurs profils gustatifs et choisir avec plus de recul.</p>
+                        <a href="{{ path('app_blog') }}" class="nide-blog-sidebar__link">Tous les articles</a>
+                    </div>
+                    <div class="nide-blog-sidebar__card">
+                        <p class="nide-blog-sidebar__card-title">Explorer</p>
+                        <ul class="nide-blog-sidebar__list">
+                            <li><a href="/page/notre-selection">Notre sélection de miels</a></li>
+                            <li><a href="{{ path('app_faq') }}">Questions fréquentes</a></li>
+                            <li><a href="/page/a-propos">Notre approche</a></li>
+                        </ul>
+                    </div>
+                </aside>
+
+            </div>
+        </div>
+    </main>
 
 {% endblock %}

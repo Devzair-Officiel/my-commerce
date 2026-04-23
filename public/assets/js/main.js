@@ -39,7 +39,7 @@ window.addEventListener("load", async () => {
   }
 
   // Cart dataset
-  const cartContainer = document.querySelector(".cart_content");
+  const cartContainer = document.querySelector(".cart_content, .nide-cart-page");
   const cart = safeJsonParse(cartContainer?.dataset?.cart, null);
 
   displayCart(cart);

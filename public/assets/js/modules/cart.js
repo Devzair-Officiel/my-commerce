@@ -29,12 +29,12 @@ function renderAddButton(productId, qty, stock) {
     const canAdd = Number.isFinite(stock) ? qty < stock : true;
 
     if (canAdd) {
-        return `<button type="button" class="plus" onclick="location.href='/cart/add/${productId}/1'" aria-label="Augmenter la quantité">+</button>`;
+        return `<a href="/cart/add/${productId}/1" class="plus" aria-label="Augmenter la quantité">+</a>`;
     }
 
-    return `<button type="button" class="plus" disabled title="Stock épuisé" aria-label="Stock épuisé" style="cursor:not-allowed;opacity:0.45;display:flex;align-items:center;justify-content:center;line-height:normal;">
+    return `<span class="plus" title="Stock épuisé" aria-label="Stock épuisé" style="cursor:not-allowed;opacity:0.45;display:flex;align-items:center;justify-content:center;line-height:normal;">
                 <svg class="icon" aria-hidden="true" style="width:16px;height:16px;"><use href="#icon-ban"></use></svg>
-            </button>`;
+            </span>`;
 }
 
 // ── Ligne du tableau panier ────────────────────────────────────────────────────
@@ -60,7 +60,7 @@ function renderCartRow(item) {
             </td>
             <td data-title="Quantité" class="product-quantity">
                 <div class="quantity">
-                    <button type="button" class="minus" onclick="location.href='/cart/remove/${product.id}/1'" aria-label="Diminuer la quantité">−</button>
+                    <a href="/cart/remove/${product.id}/1" class="minus" aria-label="Diminuer la quantité">−</a>
                     <input type="text" name="quantity" value="${qty}" title="Qty" size="4" class="qty">
                     ${renderAddButton(product.id, qty, stock)}
                 </div>
@@ -70,7 +70,7 @@ function renderCartRow(item) {
             <td data-title="Total TTC" class="product-subtotal">${formatPrice((sub_total   ?? 0) / 100)}</td>
             <td data-title="Supprimer" class="product-remove">
                 <a href="/cart/remove/${product.id}/${qty}" aria-label="Supprimer du panier">
-                    <svg class="icon" aria-hidden="true"><use href="#icon-x"></use></svg>
+                    <svg class="icon" aria-hidden="true"><use href="#icon-trash"></use></svg>
                 </a>
             </td>
         </tr>

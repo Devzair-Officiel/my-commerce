@@ -1,129 +1,129 @@
-<header class="header_wrap fixed-top header_with_topbar active" role="banner">
-	<div style="background-color: #b35500; text-align: center;">
-		<p style="color: white; font-style: italic; margin: 0;">
-			Profitez des frais de livraison OFFERTS à partir de 50€ d'achat
-		</p>
-	</div>
+<header class="nide-header header_wrap fixed-top active" role="banner">
 
-	<div class="top-header">
+	{# ── Bandeau promo ── #}
+	<div class="nide-header__promo">
 		<div class="container">
-			<div class="row align-items-center">
-				<div class="col-md-6">
-					<ul class="contact_detail text-center text-lg-start" aria-label="Informations de contact">
-						<li>
-							<svg class="icon" aria-hidden="true"><use href="#icon-phone"></use></svg>
-							<span>{{ globalSetting.phone }}</span>
-						</li>
-					</ul>
-				</div>
-
-				<div class="col-md-6">
-					<ul class="header_list text-center text-md-end">
-						<li>
-							<a href="/compare" aria-label="Comparateur">
-								<svg class="icon icon--xl" aria-hidden="true"><use href="#icon-shuffle"></use></svg>
-							</a>
-						</li>
-						<li>
-							<a href="/wishlist" aria-label="Liste d'envies">
-								<svg class="icon icon--xl" aria-hidden="true"><use href="#icon-heart"></use></svg>
-							</a>
-						</li>
-
-						{% if app.user %}
-							{% if is_granted('ROLE_ADMIN') %}
-								<li>
-									<a href="/admin" aria-label="Espace administrateur">
-										<svg class="icon icon--xl" aria-hidden="true"><use href="#icon-user"></use></svg>
-									</a>
-								</li>
-							{% else %}
-								<li>
-									<a href="/account" aria-label="Mon compte">
-										<svg class="icon icon--xl" aria-hidden="true"><use href="#icon-user"></use></svg>
-									</a>
-								</li>
-							{% endif %}
-							<li>
-								<a href="/logout" aria-label="Me déconnecter">
-									<svg class="icon icon--xl" aria-hidden="true"><use href="#icon-logout"></use></svg>
-								</a>
-							</li>
-						{% else %}
-							<li>
-								<a href="/login" aria-label="Connexion">Connexion</a>
-								/
-								<a href="/register" aria-label="Créer un compte">Créer un compte</a>
-							</li>
-						{% endif %}
-					</ul>
-				</div>
-			</div>
+			<p class="nide-header__promo-text">
+				<svg class="icon" aria-hidden="true"><use href="#icon-truck"></use></svg>
+				Livraison offerte dès 50&nbsp;€ d'achat
+			</p>
 		</div>
 	</div>
-	<div class="bottom_header dark_skin main_menu_uppercase">
-		<div class="container">
-			<nav class="navbar navbar-expand-lg" role="navigation">
-				<div class="d-flex align-items-center">
-					<a href="/" class="navbar-brand d-flex align-items-center" aria-label="Retour à l'accueil">
-						{% if globalSetting.logo_filename %}
-							<img src="/assets/images/setting/{{ globalSetting.logo_filename }}" alt="{{ globalSetting.logo_alt ?? globalSetting.website_name }}" width="160" height="48" fetchpriority="high" decoding="async">
-						{% else %}
-							<span style="font-size:1.4rem;font-weight:700;">{{ globalSetting.website_name }}</span>
-						{% endif %}
-					</a>
-				</div>
 
-				<button type="button" class="navbar-toggler collapsed" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-expanded="false" aria-label="Menu principal">
+	{# ── Barre principale ── #}
+	<div class="nide-header__bar bottom_header dark_skin main_menu_uppercase">
+		<div class="container">
+			<nav class="nide-header__nav navbar navbar-expand-lg" role="navigation" aria-label="Navigation principale">
+
+				{# Logo #}
+				<a href="/" class="nide-header__logo navbar-brand" aria-label="Retour à l'accueil">
+					{% if globalSetting.logo_filename %}
+						<img src="/assets/images/setting/{{ globalSetting.logo_filename }}"
+							 alt="{{ globalSetting.logo_alt ?? globalSetting.website_name }}"
+							 width="160" height="48" fetchpriority="high" decoding="async">
+					{% else %}
+						<span class="nide-header__logo-text">{{ globalSetting.website_name }}</span>
+					{% endif %}
+				</a>
+
+				{# Burger mobile #}
+				<button type="button" class="nide-header__burger navbar-toggler collapsed"
+						data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
+						aria-expanded="false" aria-label="Ouvrir le menu">
 					<svg class="icon" aria-hidden="true"><use href="#icon-menu"></use></svg>
 				</button>
 
-				<div class="collapse navbar-collapse justify-content-end" id="navbarSupportedContent">
-					<ul class="navbar-nav">
-						<li>
-							<a class="nav-link" href="/">Nos miels</a>
+				{# Menu principal #}
+				<div class="collapse navbar-collapse" id="navbarSupportedContent">
+					<ul class="nide-header__menu navbar-nav">
+						<li class="nide-header__menu-item">
+							<a class="nide-header__menu-link nav-link" href="/">Nos miels</a>
 						</li>
-						<li class="dropdown">
-							<a href="#" class="dropdown-toggle nav-link" data-bs-toggle="dropdown" aria-expanded="false">A propos</a>
-							<div class="dropdown-menu">
+						<li class="nide-header__menu-item dropdown">
+							<a href="#" class="nide-header__menu-link nav-link dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+								À propos
+								<svg class="icon nide-header__chevron" aria-hidden="true"><use href="#icon-chevron-down"></use></svg>
+							</a>
+							<div class="nide-header__dropdown dropdown-menu">
 								<ul>
 									{% for page in globalHeaderPages %}
 										<li>
-											<a class="dropdown-item nav-link nav_item" href="/page/{{ page.slug }}">{{ page.title }}</a>
+											<a class="nide-header__dropdown-link dropdown-item nav-link nav_item" href="/page/{{ page.slug }}">{{ page.title }}</a>
 										</li>
 									{% endfor %}
-                                    <li>
-                                        <a class="dropdown-item nav-link nav_item" href="/faq-miel"> FAQ </a>
-                                    </li>
+									<li>
+										<a class="nide-header__dropdown-link dropdown-item nav-link nav_item" href="/faq-miel">FAQ</a>
+									</li>
 								</ul>
 							</div>
 						</li>
-						<li>
-							<a class="nav-link" href="/blog">Blog</a>
+						<li class="nide-header__menu-item">
+							<a class="nide-header__menu-link nav-link" href="/blog">Blog</a>
 						</li>
-						<li>
-							<a class="nav-link nav_item" href="/contact">Contact</a>
+						<li class="nide-header__menu-item">
+							<a class="nide-header__menu-link nav-link" href="/contact">Contact</a>
 						</li>
 					</ul>
 				</div>
 
-				<ul class="navbar-nav attr-nav align-items-center">
-					<li>
-						<a href="#" class="nav-link search_trigger" aria-label="Recherche">
+				{# Actions #}
+				<ul class="nide-header__actions navbar-nav attr-nav align-items-center">
+
+					{# Téléphone #}
+					{% if globalSetting.phone %}
+					<li class="nide-header__action nide-header__action--phone d-none d-lg-flex">
+						<a href="tel:{{ globalSetting.phone|replace({' ': ''}) }}" class="nide-header__action-link" aria-label="Nous appeler">
+							<svg class="icon" aria-hidden="true"><use href="#icon-phone"></use></svg>
+							<span class="nide-header__phone-label">{{ globalSetting.phone }}</span>
+						</a>
+					</li>
+					{% endif %}
+
+					{# Recherche #}
+					<li class="nide-header__action">
+						<a href="#" class="nide-header__action-link nav-link search_trigger" aria-label="Rechercher">
 							<svg class="icon" aria-hidden="true"><use href="#icon-search"></use></svg>
 						</a>
 						<div class="search_wrap">
 							<form action="/product/search" method="get">
-								<input type="text" name="term" placeholder="Rechercher un miel..." class="form-control" aria-label="Champ de recherche">
-								<button type="submit" class="search_icon" aria-label="Valider la recherche">
+								<input type="text" name="term" placeholder="Rechercher un miel…" class="form-control" aria-label="Champ de recherche">
+								<button type="submit" class="search_icon" aria-label="Valider">
 									<svg class="icon" aria-hidden="true"><use href="#icon-search"></use></svg>
 								</button>
 							</form>
 						</div>
 					</li>
 
-					<li class="dropdown cart_dropdown">
-						<a href="#" class="nav-link cart_trigger" data-bs-toggle="dropdown" aria-label="Panier">
+					{# Comparateur #}
+					<li class="nide-header__action d-none d-lg-flex">
+						<a href="/compare" class="nide-header__action-link" aria-label="Comparateur">
+							<svg class="icon" aria-hidden="true"><use href="#icon-shuffle"></use></svg>
+						</a>
+					</li>
+
+					{# Wishlist #}
+					<li class="nide-header__action d-none d-lg-flex">
+						<a href="/wishlist" class="nide-header__action-link" aria-label="Liste d'envies">
+							<svg class="icon" aria-hidden="true"><use href="#icon-heart"></use></svg>
+						</a>
+					</li>
+
+					{# Compte #}
+					<li class="nide-header__action">
+						{% if app.user %}
+							<a href="{{ is_granted('ROLE_ADMIN') ? '/admin' : '/account' }}" class="nide-header__action-link" aria-label="Mon compte">
+								<svg class="icon" aria-hidden="true"><use href="#icon-user"></use></svg>
+							</a>
+						{% else %}
+							<a href="/login" class="nide-header__action-link" aria-label="Connexion">
+								<svg class="icon" aria-hidden="true"><use href="#icon-user"></use></svg>
+							</a>
+						{% endif %}
+					</li>
+
+					{# Panier #}
+					<li class="nide-header__action nide-header__action--cart dropdown cart_dropdown">
+						<a href="#" class="nide-header__cart-btn nav-link cart_trigger" data-bs-toggle="dropdown" aria-label="Panier">
 							<svg class="icon" aria-hidden="true"><use href="#icon-cart"></use></svg>
 							<span class="cart_count"></span>
 						</a>
@@ -131,15 +131,15 @@
 							<ul class="cart_list"></ul>
 							<div class="cart_footer">
 								<p class="cart_total_ht cart_total">
-									<strong>Sous-total HT:</strong>
+									<strong>Sous-total HT :</strong>
 									<span class="cart_price_value_ht"></span>
 								</p>
 								<p class="cart_taxe cart_total">
-									<strong>Taxe:</strong>
+									<strong>Taxe :</strong>
 									<span class="cart_taxe_value"></span>
 								</p>
 								<p class="cart_total_ttc cart_total">
-									<strong>Sous-total TTC:</strong>
+									<strong>Sous-total TTC :</strong>
 									<span class="cart_price_value_ttc"></span>
 								</p>
 								<p class="cart_buttons">
@@ -149,9 +149,10 @@
 							</div>
 						</div>
 					</li>
+
 				</ul>
 			</nav>
 		</div>
 	</div>
-</header>
 
+</header>

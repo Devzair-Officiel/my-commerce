@@ -40,6 +40,9 @@ class Product
     #[ORM\Column(length: 255)]
     private ?string $slug = null;
 
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $accroche = null;
+
     #[ORM\Column(length: 255)]
     #[Assert\NotBlank(message: 'La description est obligatoire.')]
     #[Assert\Length(
@@ -201,6 +204,17 @@ class Product
     {
         $this->slug = $slug;
 
+        return $this;
+    }
+
+    public function getAccroche(): ?string
+    {
+        return $this->accroche;
+    }
+
+    public function setAccroche(?string $accroche): static
+    {
+        $this->accroche = $accroche;
         return $this;
     }
 

@@ -1,51 +1,50 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}{{globalSetting.website_name}} | Panier
-{% endblock %}
+{% block title %}{{ globalSetting.website_name }} | Mon panier{% endblock %}
 
 {% block body %}
-	{% include "page_head/index.html.twig" with {'page_name': 'Panier'} %}
+	{% include "page_head/index.html.twig" with {'page_name': 'Mon panier'} %}
 
-	<div class="main_content cart_content"
-     data-cart='{{ cart|json_encode|e("html_attr") }}'>
-		<div class="section">
-			<div class="container">
-				<div class="row">
-					<div class="col-12">
-						<div class="table-responsive shop_cart_table">
-							<table class="table">
-								<thead>
-									<tr>
-										<th class="product-thumbnail">&nbsp;</th>
-										<th class="product-title">Produit</th>
-										<th class="product-price">Prix</th>
-										<th class="product-quantity">Quantité</th>
-										<th class="product-subtotal">Taxe</th>
-										<th class="product-subtotal">Total HT</th>
-										<th class="product-subtotal">Total TTC</th>
-										<th class="product-remove">Supprimer</th>
-									</tr>
-								</thead>
-								<tbody>
-									{% for item in cart.items %}
-										{% set img = item.product.image[0] ?? null %}
-										{% if img %}
-											{% set parts = img.filename|split('.') %}
-											{% set base = parts|slice(0, parts|length - 1)|join('.') %}
-											{% set thumbSrc = '/assets/images/products/' ~ base ~ '-thumb.webp' %}
-										{% else %}
-											{% set thumbSrc = '' %}
-										{% endif %}
+	<div class="nide-cart-page" data-cart='{{ cart|json_encode|e("html_attr") }}'>
+		<div class="container">
+			<div class="nide-cart-layout">
+
+				{# ── Tableau produits ── #}
+				<div class="nide-cart-items">
+					<div class="table-responsive shop_cart_table">
+						<table class="nide-cart-table">
+							<thead class="nide-cart-table__head">
+								<tr>
+									<th></th>
+									<th>Produit</th>
+									<th>Prix unitaire</th>
+									<th>Quantité</th>
+									<th>Taxe</th>
+									<th>Total HT</th>
+									<th>Total TTC</th>
+									<th></th>
+								</tr>
+							</thead>
+							<tbody>
+								{% for item in cart.items %}
+									{% set img = item.product.image[0] ?? null %}
+									{% if img %}
+										{% set parts = img.filename|split('.') %}
+										{% set base = parts|slice(0, parts|length - 1)|join('.') %}
+										{% set thumbSrc = '/assets/images/products/' ~ base ~ '-thumb.webp' %}
+									{% else %}
+										{% set thumbSrc = '/assets/images/placeholder.png' %}
+									{% endif %}
 									<tr>
 										<td class="product-thumbnail">
 											<a href="/produits/{{ item.product.slug }}">
-												<img width="50" height="50"
+												<img width="72" height="72"
 													alt="{{ img.alt ?? item.product.title }}"
 													src="{{ thumbSrc }}"
 													loading="lazy" decoding="async">
 											</a>
 										</td>
-										<td class="product-title"><a>{{ item.product.title }}</a></td>
+										<td class="product-title"><a href="/produits/{{ item.product.slug }}">{{ item.product.title }}</a></td>
 										<td class="product-price"></td>
 										<td class="product-quantity"></td>
 										<td class="product-subtotal"></td>
@@ -53,59 +52,48 @@
 										<td class="product-subtotal"></td>
 										<td class="product-remove"></td>
 									</tr>
-									{% endfor %}
-								</tbody>
-							</table>
-						</div>
+								{% endfor %}
+							</tbody>
+						</table>
 					</div>
 				</div>
-				<div class="row">
-					<div class="col-12">
-						<div class="medium_divider"></div>
-						<div class="divider center_icon">
-							<svg class="icon" aria-hidden="true"><use href="#icon-cart"></use></svg>
-						</div>
-						<div class="medium_divider"></div>
-					</div>
-				</div>
-				<div class="row">
-					<div class="col-md-6 offset-md-6">
-						<div class="border p-3 p-md-4">
-							<div class="heading_s1 mb-3">
-								<h6>Total du panier</h6>
-							</div>
-							<div class="table-responsive">
-								<table class="table">
-									<table class="table">
-										<tbody>
-											<tr>
-												<td class="cart_total_label">Total HT</td>
-												<td class="cart_sub_total_ht_amount"></td>
-											</tr>
-											<tr>
-												<td class="cart_total_label">Taxe</td>
-												<td class="cart_sub_total_taxe_amount"></td>
-											</tr>
-											<tr>
-												<td class="cart_total_label">Frais de livraison</td>
-												<td class="text-muted fst-italic">Calculés à l'étape suivante</td>
-											</tr>
-											<tr>
-												<td class="cart_total_label">Total TTC</td>
-												<td class="cart_total_amount">
-													<strong></strong>
-												</td>
-											</tr>
-										</tbody>
-									</table>
-								</table>
-							</div>
-							<a class="btn btn-fill-out" href="/checkout">Procéder au paiement</a>
-						</div>
-					</div>
-				</div>
-			</div>
 
+				{# ── Récapitulatif ── #}
+				<aside class="nide-cart-summary">
+					<h2 class="nide-cart-summary__title">Récapitulatif</h2>
+
+					<div class="nide-cart-summary__lines">
+						<div class="nide-cart-summary__line">
+							<span>Total HT</span>
+							<span class="cart_sub_total_ht_amount">—</span>
+						</div>
+						<div class="nide-cart-summary__line">
+							<span>Taxe</span>
+							<span class="cart_sub_total_taxe_amount">—</span>
+						</div>
+						<div class="nide-cart-summary__line">
+							<span>Livraison</span>
+							<span class="nide-cart-summary__shipping">Calculée à l'étape suivante</span>
+						</div>
+					</div>
+
+					<div class="nide-cart-summary__total">
+						<span>Total TTC</span>
+						<span class="cart_total_amount nide-cart-summary__total-amount">—</span>
+					</div>
+
+					<a href="/checkout" class="btn btn-fill-out nide-cart-summary__cta">
+						<svg class="icon" aria-hidden="true"><use href="#icon-credit-card"></use></svg>
+						Procéder au paiement
+					</a>
+
+					<a href="/" class="nide-cart-summary__continue">
+						<svg class="icon" aria-hidden="true"><use href="#icon-arrow-left"></use></svg>
+						Continuer mes achats
+					</a>
+				</aside>
+
+			</div>
 		</div>
 	</div>
 {% endblock %}

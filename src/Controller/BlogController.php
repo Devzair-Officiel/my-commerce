@@ -25,8 +25,8 @@ final class BlogController extends AbstractController
         $blogs = $this->blogRepo->findBy(['isPublished' => true]);
 
         $seo = $seoResolver->forStaticPage([
-            'title' => 'Blog Miel Naturel – Bienfaits, Recettes & Conseils Apiculture | ' . $this->brandName,
-            'description' => 'Bienfaits du miel, recettes naturelles, guide d\'achat et actus apiculture : le blog ' . $this->brandName . ' pour tout savoir sur les miels artisanaux du monde.',
+            'title' => "Blog miel : conseils, provenance, goût et choix du miel | $this->brandName" ,
+            'description' => 'Découvrez nos articles autour du miel : origine, goût, conservation, critères de qualité et conseils pour choisir un miel avec plus de confiance.',
             'route' => 'app_blog',
             'robots' => 'index,follow',
             'ogType' => 'website',

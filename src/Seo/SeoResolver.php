@@ -4,6 +4,7 @@ namespace App\Seo;
 
 use App\Entity\Blog;
 use App\Entity\Category;
+use App\Entity\Faq;
 use App\Entity\Media;
 use App\Entity\Product;
 use App\Repository\ReviewRepository;
@@ -466,7 +467,7 @@ final class SeoResolver
     /**
      * Construit le SEO de la page FAQ avec FAQPage JSON-LD.
      *
-     * @param array<int, array{question: string, answer: string}> $faqs
+     * @param Faq[] $faqs
      */
     public function forFaq(array $faqs, Request $request): SeoPayload
     {

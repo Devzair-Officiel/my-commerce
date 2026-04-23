@@ -22,8 +22,9 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
  */
 final class MediaFileManager
 {
-    private const THUMB_MAX  = 400;
-    private const MEDIUM_MAX = 600;
+    private const THUMB_MAX  = 650;  // cards (324px × 2x retina)
+    private const MEDIUM_MAX = 960;  // produit detail (660px) + blog cards (435px)
+    private const LARGE_MAX  = 1400; // hero article blog (1040px × ~1.35x)
 
     public function __construct(
         private Filesystem $fs,
@@ -147,6 +148,10 @@ final class MediaFileManager
             $manager->decode($sourcePath)
                 ->scaleDown(self::MEDIUM_MAX, self::MEDIUM_MAX)
                 ->save($dir . '/' . $base . '-medium.webp');
+
+            $manager->decode($sourcePath)
+                ->scaleDown(self::LARGE_MAX, self::LARGE_MAX)
+                ->save($dir . '/' . $base . '-large.webp');
         } catch (\Throwable) {
         }
     }
@@ -167,7 +172,7 @@ final class MediaFileManager
         }
 
         // Supprimer les variantes dans tous les cas (même si l'original est absent)
-        foreach (['-thumb', '-medium'] as $suffix) {
+        foreach (['-thumb', '-medium', '-large'] as $suffix) {
             foreach (array_unique(['webp', $ext]) as $varExt) {
                 if ($varExt === '') {
                     continue;
