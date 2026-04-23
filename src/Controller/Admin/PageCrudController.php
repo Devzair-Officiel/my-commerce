@@ -109,5 +109,36 @@ final class PageCrudController extends AbstractCrudController
         yield BooleanField::new('isFoot', 'Afficher en footer')
             ->setColumns(6)
             ->setHelp('Active si cette page doit apparaître dans le footer.');
+
+        // ===== TAB 3 : SEO =====
+        yield FormField::addTab('SEO')->setIcon('fa fa-magnifying-glass');
+
+        yield FormField::addPanel('Référencement')
+            ->setIcon('fa fa-globe')
+            ->setHelp('Laisse vide pour utiliser les valeurs par défaut (titre et description de la page).');
+
+        yield TextField::new('seoTitle', 'Meta title')
+            ->setColumns(8)
+            ->setRequired(false)
+            ->setHelp('Max 70 caractères. Si vide : titre de la page.');
+
+        yield BooleanField::new('seoNoindex', 'Masquer des moteurs (noindex)')
+            ->setColumns(4);
+
+        yield TextareaField::new('seoDescription', 'Meta description')
+            ->setColumns(12)
+            ->setNumOfRows(3)
+            ->setRequired(false)
+            ->setHelp('Max 170 caractères. Résumé affiché dans les résultats Google.');
+
+        yield TextField::new('seoOgImage', 'Image Open Graph (URL)')
+            ->setColumns(8)
+            ->setRequired(false)
+            ->setHelp('URL de l\'image partagée sur les réseaux (1200×630 px recommandé).');
+
+        yield TextField::new('seoCanonicalOverride', 'URL canonique (override)')
+            ->setColumns(8)
+            ->setRequired(false)
+            ->setHelp('Laisser vide sauf cas particulier (duplication de contenu).');
     }
 }

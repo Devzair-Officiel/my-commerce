@@ -1,8 +1,6 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}{{globalSetting.website_name}} | A propos
-	{{page.title}}
-{% endblock %}
+{% block title %} {{globalSetting.website_name}} | {{page.title}} {% endblock %}
 
 {% block body %}
 
@@ -11,9 +9,9 @@
 		breadcrumbs: [{ label: page.title }]
 	} %}
 
-	<div class="main_content">
-		<div class="section">
-			<div class="container">
+	<div class="main_content nide-page">
+		<div class="container">
+			<div class="nide-page-content">
 				{{ page.content|normalize_editor_html|raw }}
 			</div>
 		</div>
