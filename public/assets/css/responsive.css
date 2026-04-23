@@ -2159,36 +2159,7 @@ footer .widget_title,
     }
 }
 
-/* ---- Hero slider — hauteurs responsive ---- */
-/* Tablette (≤ 1199px) : déjà géré par le thème à 400px, on affine */
-@media only screen and (max-width: 1199px) {
-    .banner_section.slide_medium,
-    .banner_section.slide_medium .carousel-item,
-    .banner_section.slide_medium .banner_content_wrap,
-    .banner_section.slide_medium .banner_content_wrap .carousel-item {
-        height: 460px;
-    }
-}
-
-/* Mobile paysage & petite tablette (≤ 767px) */
-@media only screen and (max-width: 767px) {
-    .banner_section.slide_medium,
-    .banner_section.slide_medium .carousel-item,
-    .banner_section.slide_medium .banner_content_wrap,
-    .banner_section.slide_medium .banner_content_wrap .carousel-item {
-        height: 560px;
-    }
-}
-
-/* Mobile portrait (≤ 480px) — image portrait, plein écran */
-@media only screen and (max-width: 480px) {
-    .banner_section.slide_medium,
-    .banner_section.slide_medium .carousel-item,
-    .banner_section.slide_medium .banner_content_wrap,
-    .banner_section.slide_medium .banner_content_wrap .carousel-item {
-        height: 100svh;
-    }
-}
+/* ---- Hero slider — supprimé, géré dans style.refactor.css ---- */
 
 /* Contact page */
 @media (max-width: 991px) {
@@ -2381,4 +2352,123 @@ footer .widget_title,
 
     /* Sous-pages : order detail */
     .nide-account__panel-head { flex-direction: column; align-items: flex-start; }
+}
+
+/* ==========================================================
+   HERO BANNER — Responsive
+   ========================================================== */
+
+/* ── ≤ 1199px : grande tablette ── */
+@media only screen and (max-width: 1199px) {
+    .banner_section .banner_content h1,
+    .slider-video-item .banner_content h1 {
+        font-size: clamp(1.6rem, 3.5vw, 2.4rem) !important;
+    }
+}
+
+/* ── ≤ 991px : tablette ── */
+@media only screen and (max-width: 991px) {
+
+    /* Contrôles carousel toujours visibles sur tablette (pas de hover) */
+    .banner_section.slide_medium .carousel-control-prev,
+    .banner_section.slide_medium .carousel-control-next {
+        opacity: .7 !important;
+        width: 38px !important;
+        height: 38px !important;
+    }
+
+    /* Gradient de sortie plus petit */
+    .banner_section.shop_banner_slider::before {
+        height: 60px;
+    }
+
+    /* Kicker plus compact */
+    .banner-kicker {
+        font-size: .72rem !important;
+        padding: .25rem .7rem !important;
+        margin-bottom: .75rem !important;
+    }
+}
+
+/* ── ≤ 767px : mobile paysage ── */
+@media only screen and (max-width: 767px) {
+
+    /* Contenu pleine largeur */
+    .banner_section .col-lg-7.col-9,
+    .slider-video-item .col-lg-7.col-9 {
+        flex: 0 0 100%;
+        max-width: 100%;
+        padding: 0 1.25rem;
+    }
+
+    .banner_section .banner_content,
+    .slider-video-item .banner_content {
+        text-align: center;
+    }
+
+    /* Kicker centré */
+    .banner-kicker {
+        display: block;
+        text-align: center;
+        width: fit-content;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    /* Titre plus resserré */
+    .banner_section .banner_content h1,
+    .slider-video-item .banner_content h1 {
+        font-size: clamp(1.4rem, 5vw, 2rem) !important;
+        margin-bottom: 1rem !important;
+    }
+
+    /* Bouton centré */
+    .banner_section .banner_content .btn,
+    .slider-video-item .banner_content .btn {
+        display: inline-block;
+    }
+
+    /* Contrôles : plus petits, toujours visibles */
+    .banner_section.slide_medium .carousel-control-prev,
+    .banner_section.slide_medium .carousel-control-next {
+        width: 34px !important;
+        height: 34px !important;
+        opacity: .8 !important;
+    }
+    .banner_section.slide_medium .carousel-control-prev { left: 10px !important; }
+    .banner_section.slide_medium .carousel-control-next { right: 10px !important; }
+}
+
+/* ── ≤ 575px : petit mobile portrait ── */
+@media only screen and (max-width: 575px) {
+
+    /* Kicker masqué sur très petit écran pour aérer */
+    .banner-kicker { display: none; }
+
+    /* Titre lisible */
+    .banner_section .banner_content h1,
+    .slider-video-item .banner_content h1 {
+        font-size: clamp(1.3rem, 6vw, 1.7rem) !important;
+        text-shadow: 0 1px 10px rgba(0,0,0,.5) !important;
+    }
+
+    /* Overlay légèrement renforcé sur mobile pour le contraste */
+    .slider-video-item::after,
+    .banner_section.slide_medium .carousel-item.background_bg::after {
+        background: linear-gradient(
+            105deg,
+            rgb(10 6 2 / 55%) 0%,
+            rgb(10 6 2 / 28%) 50%,
+            rgb(10 6 2 / 06%) 100%
+        ) !important;
+    }
+
+    /* Gradient de sortie réduit */
+    .banner_section.shop_banner_slider::before { height: 40px; }
+
+    /* Contrôles masqués (swipe natif) */
+    .banner_section.slide_medium .carousel-control-prev,
+    .banner_section.slide_medium .carousel-control-next {
+        display: none !important;
+    }
 }

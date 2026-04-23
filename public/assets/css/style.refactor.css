@@ -771,32 +771,56 @@ button:focus:not(:focus-visible) {
     background-repeat: no-repeat;
 }
 
-.slider-video-item {
-    position: relative;
-    overflow: hidden;
-    height: 700px;
+/* ==========================================================
+   HERO BANNER — redesign
+   ========================================================== */
+
+/* ── Hauteurs ── */
+.slider-video-item,
+.banner_section.slide_medium,
+.banner_section.slide_medium .carousel-item,
+.banner_section.slide_medium .banner_content_wrap,
+.banner_section.slide_medium .banner_content_wrap .carousel-item {
+    height: 75vh !important;
+    min-height: 520px !important;
+    max-height: 800px !important;
 }
 
 @media only screen and (max-width: 1199px) {
-    .slider-video-item { height: 400px; }
+    .slider-video-item,
     .banner_section.slide_medium,
     .banner_section.slide_medium .carousel-item,
     .banner_section.slide_medium .banner_content_wrap,
-    .banner_section.slide_medium .banner_content_wrap .carousel-item { height: 400px; }
+    .banner_section.slide_medium .banner_content_wrap .carousel-item {
+        height: 65vh !important;
+        min-height: 440px !important;
+    }
 }
 @media only screen and (max-width: 991px) {
-    .slider-video-item { height: 350px; }
+    .slider-video-item,
     .banner_section.slide_medium,
     .banner_section.slide_medium .carousel-item,
     .banner_section.slide_medium .banner_content_wrap,
-    .banner_section.slide_medium .banner_content_wrap .carousel-item { height: 350px; }
+    .banner_section.slide_medium .banner_content_wrap .carousel-item {
+        height: 60vh !important;
+        min-height: 380px !important;
+    }
 }
 @media only screen and (max-width: 575px) {
-    .slider-video-item { height: 250px; }
+    .slider-video-item,
     .banner_section.slide_medium,
     .banner_section.slide_medium .carousel-item,
     .banner_section.slide_medium .banner_content_wrap,
-    .banner_section.slide_medium .banner_content_wrap .carousel-item { height: 250px; }
+    .banner_section.slide_medium .banner_content_wrap .carousel-item {
+        height: 70vh !important;
+        min-height: 340px !important;
+    }
+}
+
+/* ── Vidéo background ── */
+.slider-video-item {
+    position: relative;
+    overflow: hidden;
 }
 
 .slider-video-bg {
@@ -812,9 +836,111 @@ button:focus:not(:focus-visible) {
     z-index: 0;
 }
 
+/* ── Overlay gradient sur vidéo et slides ── */
+.slider-video-item::after,
+.banner_section.slide_medium .carousel-item.background_bg::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(105deg, rgb(10 6 2 / 42%) 0%, rgb(10 6 2 / 18%) 45%, rgb(10 6 2 / 04%) 100%);
+    z-index: 0;
+    pointer-events: none;
+}
+
+/* Gradient de sortie bas (transition douce vers la section suivante) */
+.banner_section.shop_banner_slider::before {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 90px;
+    background: linear-gradient(to bottom, transparent, #fff);
+    z-index: 3;
+    pointer-events: none;
+}
+
+/* ── Contenu centré verticalement ── */
 .slider-video-item .banner_slide_content {
-    position: relative;
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    display: flex;
+    align-items: center;
     z-index: 1;
+}
+
+/* ── Typographie hero ── */
+.banner_section .banner_content h1,
+.slider-video-item .banner_content h1 {
+    font-size: clamp(1.8rem, 4.5vw, 3.2rem) !important;
+    font-weight: 700 !important;
+    line-height: 1.2 !important;
+    color: #fff !important;
+    text-shadow: 0 2px 18px rgba(0,0,0,.35);
+    margin-bottom: 1.25rem !important;
+    letter-spacing: -.01em;
+}
+
+/* Kicker / surtitre avant le h1 */
+.banner_section .banner_content .banner-kicker {
+    display: inline-block;
+    font-size: .78rem;
+    font-weight: 600;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: #c8963e;
+    background: rgba(255,255,255,.1);
+    backdrop-filter: blur(4px);
+    border: 1px solid rgba(200,150,62,.45);
+    padding: .3rem .85rem;
+    border-radius: 20px;
+    margin-bottom: 1rem;
+}
+
+/* ── Bouton hero ── */
+.banner_section .btn-fill-out,
+.slider-video-item .btn-fill-out {
+    margin-top: .5rem !important;
+    padding: .7rem 2rem !important;
+    font-size: .82rem !important;
+    letter-spacing: .08em;
+    border-radius: 2px !important;
+}
+
+/* ── Contrôles carousel redessinés ── */
+.banner_section.slide_medium .carousel-control-prev,
+.banner_section.slide_medium .carousel-control-next {
+    width: 44px !important;
+    height: 44px !important;
+    background: rgba(255,255,255,.15) !important;
+    backdrop-filter: blur(6px);
+    border: 1px solid rgba(255,255,255,.3) !important;
+    border-radius: 50% !important;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+    opacity: 0;
+    transition: opacity .25s, background .25s !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 3;
+}
+.banner_section.slide_medium:hover .carousel-control-prev,
+.banner_section.slide_medium:hover .carousel-control-next {
+    opacity: 1 !important;
+}
+.banner_section.slide_medium .carousel-control-prev:hover,
+.banner_section.slide_medium .carousel-control-next:hover {
+    background: rgba(200,150,62,.75) !important;
+    border-color: #c8963e !important;
+}
+.banner_section.slide_medium .carousel-control-prev { left: 20px !important; right: auto !important; }
+.banner_section.slide_medium .carousel-control-next { right: 20px !important; left: auto !important; }
+.banner_section.slide_medium .carousel-control-prev .icon,
+.banner_section.slide_medium .carousel-control-next .icon {
+    width: 18px;
+    height: 18px;
+    color: #fff;
 }
 
 .bg_size_auto {
@@ -10159,7 +10285,6 @@ select {
    ============================================= */
 .nide-reassurance {
     background: #fff;
-    border-top: 1px solid #ede8e0;
     border-bottom: 1px solid #ede8e0;
     padding: 4rem 0;
 }
