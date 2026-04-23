@@ -28,6 +28,9 @@ class Sliders
     private ?string $button_text = null;
 
     #[ORM\Column(length: 255, nullable: true)]
+    private ?string $mediaSliderMobile = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
     private ?string $button_link = null;
 
     #[ORM\OneToOne(mappedBy: 'sliders', cascade: ['persist', 'remove'])]
@@ -46,6 +49,9 @@ class Sliders
 
     public function getButtonLink(): ?string { return $this->button_link; }
     public function setButtonLink(?string $button_link): static { $this->button_link = $button_link; return $this; }
+
+    public function getMediaSliderMobile(): ?string { return $this->mediaSliderMobile; }
+    public function setMediaSliderMobile(?string $filename): static { $this->mediaSliderMobile = $filename; return $this; }
 
     public function getMediaSlider(): ?Media { return $this->mediaSlider; }
 

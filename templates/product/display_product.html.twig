@@ -1,72 +1,77 @@
 <div class="col-lg-3 col-md-4 col-6">
-	<div class="product">
-		<div class="product_img">
+	<div class="nide-card">
+
+		{# Image #}
+		<div class="nide-card__media">
 			{% set thumb = product.medias|first %}
-			<a href="/produits/{{product.slug}}" tabindex="-1" aria-hidden="true">
+			<a href="/produits/{{ product.slug }}" class="nide-card__img-link" tabindex="-1" aria-hidden="true">
 				<img
-					alt=""
+					class="nide-card__img"
+					alt="{{ product.title }}"
 					src="{{ thumb ? '/assets/images/products/' ~ thumb.thumbnailFilename : '/assets/images/placeholder.png' }}"
 					width="400" height="400"
 					loading="lazy"
 					decoding="async"
 				>
 			</a>
-			<div class="product_action_box">
-				<ul class="list_none pr_action_btn">
-					{% if product.stock != 0 %}
-						<li>
-							<a href="/cart/add/{{product.id}}/1" data-product-id="{{ product.id }}" class="add-to-cart" title="Ajouter au panier" aria-label="Ajouter {{ product.title }} au panier">
-								<svg class="icon" aria-hidden="true"><use href="#icon-cart"></use></svg>
-							</a>
-						</li>
-					{% endif %}
+
+			{# Actions rapides #}
+			<ul class="nide-card__actions list_none" aria-label="Actions rapides">
+				{% if product.stock != 0 %}
 					<li>
-						<a href="/compare/add/{{product.id}}" class="add-to-compare" title="Ajouter au comparatif" aria-label="Ajouter {{ product.title }} au comparatif">
-							<svg class="icon" aria-hidden="true"><use href="#icon-shuffle"></use></svg>
+						<a href="/cart/add/{{ product.id }}/1" data-product-id="{{ product.id }}" class="nide-card__action add-to-cart" title="Ajouter au panier" aria-label="Ajouter {{ product.title }} au panier">
+							<svg class="icon" aria-hidden="true"><use href="#icon-cart"></use></svg>
 						</a>
 					</li>
-					<li>
-						<a href="/wishlist/add/{{ product.id }}" class="add-to-wishlist" title="Ajouter a la liste des souhaits" aria-label="Ajouter {{ product.title }} à la liste de souhaits">
-							<svg class="icon" aria-hidden="true"><use href="#icon-heart"></use></svg>
-						</a>
-					</li>
-				</ul>
-			</div>
+				{% endif %}
+				<li>
+					<a href="/compare/add/{{ product.id }}" class="nide-card__action add-to-compare" title="Comparer" aria-label="Ajouter {{ product.title }} au comparatif">
+						<svg class="icon" aria-hidden="true"><use href="#icon-shuffle"></use></svg>
+					</a>
+				</li>
+				<li>
+					<a href="/wishlist/add/{{ product.id }}" class="nide-card__action add-to-wishlist" title="Wishlist" aria-label="Ajouter {{ product.title }} à la liste de souhaits">
+						<svg class="icon" aria-hidden="true"><use href="#icon-heart"></use></svg>
+					</a>
+				</li>
+			</ul>
 		</div>
-		<a href="/produits/{{product.slug}}">
-			<div class="product_info">
-				<h3 class="product_title">
-					{{product.title}}
-				</h3>
-				<div class="product_price">
+
+		{# Infos #}
+		<a href="/produits/{{ product.slug }}" class="nide-card__body">
+
+			{% if product.originCountry %}
+				<span class="nide-card__origin">{{ product.originCountry|country_name('fr') }}</span>
+			{% endif %}
+
+			<h3 class="nide-card__title">{{ product.title }}</h3>
+
+			{% if product.tastingProfile %}
+				<p class="nide-card__tasting">{{ product.tastingProfile }}</p>
+			{% endif %}
+
+			<div class="nide-card__footer">
+				<div class="nide-card__price">
 					{% if product.isOnSale %}
-						<span class="price">{{ (product.soldePrice / 100)|number_format(2, ',', ' ') }}€</span>
-						<del>
-							{{ (product.regularPrice / 100)|number_format(2, ',', ' ') }}€
-						</del>
-						<div class="on_sale">
-							<span>-{{ product.discountPercentage }}%</span>	
-						</div>
+						<span class="nide-card__price--current">{{ (product.soldePrice / 100)|number_format(2, ',', ' ') }}&nbsp;€</span>
+						<span class="nide-card__price--old">{{ (product.regularPrice / 100)|number_format(2, ',', ' ') }}&nbsp;€</span>
+						<span class="nide-card__badge">-{{ product.discountPercentage }}%</span>
 					{% else %}
-						<span class="price">{{ (product.regularPrice / 100)|number_format(2, ',', ' ') }}
-							€</span>
+						<span class="nide-card__price--current">{{ (product.regularPrice / 100)|number_format(2, ',', ' ') }}&nbsp;€</span>
 					{% endif %}
 				</div>
 
 				{% set rating = product_rating(product.id) %}
-				<div class="rating_wrap">
-					<div class="rating">
-						<div class="product_rate" style="width: {{ rating.count > 0 ? ((rating.average / 5) * 100)|round : 0 }}%;"></div>
+				{% if rating.count > 0 %}
+					<div class="nide-card__rating" aria-label="Note : {{ rating.average|number_format(1, ',') }} sur 5">
+						<div class="nide-card__stars" aria-hidden="true">
+							<span class="nide-card__stars-fill" style="width: {{ ((rating.average / 5) * 100)|round }}%"></span>
+						</div>
+						<span class="nide-card__rating-count">({{ rating.count }})</span>
 					</div>
-					<span class="rating_num">
-						{% if rating.count > 0 %}
-							{{ rating.average|number_format(1, ',') }}/5 ({{ rating.count }})
-						{% else %}
-							Aucun avis
-						{% endif %}
-					</span>
-				</div>
+				{% endif %}
 			</div>
+
 		</a>
 	</div>
 </div>

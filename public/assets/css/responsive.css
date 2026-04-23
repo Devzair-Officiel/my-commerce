@@ -2037,3 +2037,155 @@ footer .widget_title,
 	height: 48px;
 }
 }
+
+/* =============================================
+   NIDE — Responsive (tablette & mobile)
+   ============================================= */
+
+/* ---- ≤ 991px — tablette ---- */
+@media only screen and (max-width: 991px) {
+
+    .nide-reassurance { padding: 2.5rem 0; }
+
+    /* 2 colonnes : piliers 1 et 2 côte à côte, pilier 3 pleine largeur */
+    .nide-reassurance__list { flex-wrap: wrap; }
+    .nide-reassurance__item { flex: 1 1 50%; max-width: 50%; }
+    .nide-reassurance__item:nth-child(3) {
+        flex: 1 1 100%;
+        max-width: 100%;
+        border-top: 1px solid #ede8e0;
+    }
+    .nide-reassurance__item:nth-child(3)::before { display: none; }
+
+    /* Trust : colonne unique */
+    .nide-trust__inner { flex-direction: column; gap: 2.5rem; }
+    .nide-trust__deco-col { order: -1; flex: 0 0 auto; }
+    .nide-trust__deco { width: 160px; height: 176px; }
+    .nide-trust__stat-num { font-size: 2.25rem; }
+}
+
+/* ---- ≤ 767px — mobile ---- */
+@media only screen and (max-width: 767px) {
+
+    /* Reassurance : 1 colonne, layout colonne centré */
+    .nide-reassurance__item {
+        flex: 1 1 100%;
+        max-width: 100%;
+        padding: 1.5rem 1.5rem;
+        border-top: 1px solid #ede8e0;
+    }
+    .nide-reassurance__item:first-child { border-top: none; }
+    .nide-reassurance__item:nth-child(3) { border-top: 1px solid #ede8e0; }
+    .nide-reassurance__item + .nide-reassurance__item::before { display: none; }
+    .nide-reassurance__icon { width: 56px; height: 56px; margin-bottom: 1rem; }
+
+    /* Intro sélection */
+    .nide-selection-intro { margin-bottom: 2rem; }
+    .nide-selection-intro__title { font-size: 1.4rem; }
+    .nide-selection-intro__body p { font-size: .85rem; }
+
+    /* Tabs : largeur égale, pleine ligne */
+    .nide-tabs .nav-tabs,
+    .nide-tabs .nide-tabs__list {
+        flex-wrap: nowrap;
+        justify-content: stretch;
+    }
+    .nide-tabs .nav-item {
+        flex: 1;
+        text-align: center;
+    }
+    .nide-tabs .nav-tabs .nav-link,
+    .nide-tabs .nide-tabs__link {
+        display: block !important;
+        width: 100%;
+        padding: .65rem .5rem !important;
+        font-size: .68rem !important;
+        letter-spacing: .08em !important;
+        white-space: nowrap;
+        text-align: center;
+    }
+
+    /* Cards */
+    .nide-card { margin-bottom: 14px; }
+    .nide-card__body { padding: .8rem .9rem .9rem; }
+    .nide-card__title { font-size: .875rem; }
+    .nide-card__tasting { font-size: .725rem; margin-bottom: .6rem; }
+    .nide-card__price--current { font-size: .9rem; }
+    .nide-card__footer { flex-wrap: wrap; gap: .3rem; }
+    .nide-card__actions {
+        opacity: 1;
+        transform: none;
+        flex-direction: row;
+        gap: 4px;
+        bottom: 8px;
+        right: 8px;
+    }
+    .nide-card__action { width: 30px; height: 30px; }
+
+    /* Trust */
+    .nide-trust { padding: 3rem 0; }
+    .nide-trust__title { font-size: 1.4rem; }
+    .nide-trust__body p { font-size: .85rem; }
+    .nide-trust__deco { width: 130px; height: 143px; }
+
+    /* FAQ */
+    .nide-faq { padding: 3rem 0; }
+    .nide-faq__title { font-size: 1.4rem; }
+    .nide-faq__question { font-size: .875rem; padding: 1rem 0; }
+    .nide-faq__answer { font-size: .825rem; padding-bottom: 1rem; }
+}
+
+/* ---- ≤ 480px — petit mobile ---- */
+@media only screen and (max-width: 480px) {
+
+    .nide-reassurance { padding: 1.5rem 0; }
+    .nide-reassurance__item { padding: 1.1rem 1rem; }
+    .nide-reassurance__icon { width: 48px; height: 48px; }
+    .nide-reassurance__title { font-size: 1.05rem; }
+    .nide-reassurance__text { font-size: .8rem; }
+
+    /* Sur très petit écran, masquer origin/tasting dans les demi-colonnes */
+    .col-6 .nide-card .nide-card__origin,
+    .col-6 .nide-card .nide-card__tasting { display: none; }
+
+    .nide-trust__link { font-size: .75rem; }
+    .nide-faq__question { font-size: .825rem; }
+}
+
+/* ---- Slider : image mobile ---- */
+@media only screen and (max-width: 767px) {
+    .carousel-item.background_bg {
+        background-image: var(--slide-bg-mobile) !important;
+    }
+}
+
+/* ---- Hero slider — hauteurs responsive ---- */
+/* Tablette (≤ 1199px) : déjà géré par le thème à 400px, on affine */
+@media only screen and (max-width: 1199px) {
+    .banner_section.slide_medium,
+    .banner_section.slide_medium .carousel-item,
+    .banner_section.slide_medium .banner_content_wrap,
+    .banner_section.slide_medium .banner_content_wrap .carousel-item {
+        height: 460px;
+    }
+}
+
+/* Mobile paysage & petite tablette (≤ 767px) */
+@media only screen and (max-width: 767px) {
+    .banner_section.slide_medium,
+    .banner_section.slide_medium .carousel-item,
+    .banner_section.slide_medium .banner_content_wrap,
+    .banner_section.slide_medium .banner_content_wrap .carousel-item {
+        height: 560px;
+    }
+}
+
+/* Mobile portrait (≤ 480px) — image portrait, plein écran */
+@media only screen and (max-width: 480px) {
+    .banner_section.slide_medium,
+    .banner_section.slide_medium .carousel-item,
+    .banner_section.slide_medium .banner_content_wrap,
+    .banner_section.slide_medium .banner_content_wrap .carousel-item {
+        height: 100svh;
+    }
+}

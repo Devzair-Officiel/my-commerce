@@ -121,10 +121,13 @@ final class ProductCrudController extends AbstractCrudController
         // yield TextField::new('brand', 'Marque')->setColumns(4);
         yield IntegerField::new('weightGrams', 'Poid')
             ->setHelp('Mettre le poid net en gramme')
-            ->setColumns(4);
+            ->setColumns(3);
 
         
-        yield CountryField::new('originCountry', 'Pays d’origine')->setColumns(4);
+        yield CountryField::new('originCountry', "Pays d'origine")->setColumns(4);
+        yield TextField::new('tastingProfile', 'Profil gustatif')
+            ->setHelp("Ex. : Floral, boisé, caramélisé — une ligne courte")
+            ->setColumns(5);
 
 
 
@@ -168,11 +171,6 @@ final class ProductCrudController extends AbstractCrudController
 
         // ----- TAB Médias
         yield FormField::addTab('Médias')->setIcon('fa fa-images');
-
-        yield FormField::addFieldset('Aperçu')->setIcon('fa fa-image')->collapsible();
-        yield ImageField::new('coverFilename', 'Image principale')
-            ->setBasePath('/assets/images/products')
-            ->hideOnForm();
 
         yield FormField::addFieldset('Galerie')->setIcon('fa fa-camera')->collapsible();
 

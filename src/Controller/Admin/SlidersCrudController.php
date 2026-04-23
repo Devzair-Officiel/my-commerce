@@ -70,11 +70,19 @@ final class SlidersCrudController extends AbstractCrudController
 
         yield FormField::addTab('Média')->setIcon('fa fa-image');
         yield FormField::addPanel('Image du slider')->setIcon('fa fa-image')->setHelp('Formats recommandés : JPG, PNG ou WebP.');
-        yield ImageField::new('mediaSlider.filename', 'Image')
-            ->setColumns(12)
+        yield ImageField::new('mediaSlider.filename', 'Image desktop')
+            ->setColumns(6)
             ->setBasePath('/assets/images/sliders')
             ->setUploadDir('public/assets/images/sliders')
             ->setUploadedFileNamePattern('[slug]-[timestamp].[extension]')
+            ->setHelp('Format paysage recommandé (ex. 1920×800).')
+            ->setRequired(false);
+        yield ImageField::new('mediaSliderMobile', 'Image mobile')
+            ->setColumns(6)
+            ->setBasePath('/assets/images/sliders')
+            ->setUploadDir('public/assets/images/sliders')
+            ->setUploadedFileNamePattern('[slug]-mobile-[timestamp].[extension]')
+            ->setHelp('Format portrait recommandé (ex. 768×1024). Si vide, l\'image desktop est utilisée.')
             ->setRequired(false);
     }
 

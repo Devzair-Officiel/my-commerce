@@ -67,6 +67,10 @@ class Product
     #[ORM\Column(length: 80, nullable: true)]
     private ?string $originCountry = null;
 
+    #[ORM\Column(length: 255, nullable: true)]
+    #[Assert\Length(max: 255)]
+    private ?string $tastingProfile = null;
+
     #[ORM\Column(nullable: true)]
     #[Assert\PositiveOrZero(message: 'Le stock ne peut pas être négatif.')]
     private ?int $stock = null;
@@ -243,6 +247,16 @@ class Product
     public function setOriginCountry(?string $v): self
     {
         $this->originCountry = $v;
+        return $this;
+    }
+
+    public function getTastingProfile(): ?string
+    {
+        return $this->tastingProfile;
+    }
+    public function setTastingProfile(?string $v): self
+    {
+        $this->tastingProfile = $v;
         return $this;
     }
 

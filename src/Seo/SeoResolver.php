@@ -472,8 +472,8 @@ final class SeoResolver
         $searchUrl = rtrim($request->getSchemeAndHttpHost(), '/') . '/product/search?term={search_term_string}';
 
         $canonical = $homeUrl;
-        $title = 'Acheter du Miel Naturel en Ligne | Miels Artisanaux du Monde | ' . $this->brandName;
-        $description = 'Achetez en ligne des miels naturels et artisanaux sélectionnés à la source : miel de thym, manuka, jujubier… Livraison offerte dès 50€ en France.';
+        $title = 'Nidemiel — Une sélection de miels choisis avec attention';
+        $description = 'Nidemiel propose une sélection resserrée de miels choisis pour leur origine, leur profil gustatif et la clarté des informations fournies. Miel de jujubier du Yémen, Manuka, thym, avec analyses disponibles.';
         $robots = 'index,follow';
         $image = $this->toAbsoluteIfNeeded($this->defaultOgImage, $request);
 

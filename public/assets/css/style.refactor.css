@@ -9031,24 +9031,40 @@ select {
 
 /* Boutons modernes, compacts */
 .cart_list li.mini_cart_item .mini_btn {
-	width: 32px;
-	height: 32px;
+	width: 28px;
+	height: 28px;
 	border: 1px solid rgba(0, 0, 0, .15);
-	border-radius: 8px;
+	border-radius: 6px;
 	background: #fff;
 	padding: 0;
-	line-height: 1;
 	cursor: pointer;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 16px;
+	line-height: 1;
+	color: #333;
+	text-decoration: none;
+	flex-shrink: 0;
+}
+
+.cart_list li.mini_cart_item .mini_btn:hover {
+	background: #f5f0e8;
+	border-color: #c8a96e;
+	color: #1e1a14;
 }
 
 /* Input quantité compact */
 .cart_list li.mini_cart_item .mini_qty {
-	width: 44px;
-	height: 32px;
+	width: 38px;
+	height: 28px;
 	border: 1px solid rgba(0, 0, 0, .15);
-	border-radius: 8px;
+	border-radius: 6px;
 	background: #fff;
 	text-align: center;
+	font-size: 13px;
+	padding: 0;
+	line-height: 28px;
 }
 
 /* Poubelle alignée, sans float existant de .item_remove */
@@ -10137,3 +10153,793 @@ select {
     background: #fff5eb;
     color: #b35500;
 }
+
+/* =============================================
+   BLOC RÉASSURANCE — page d'accueil
+   ============================================= */
+.nide-reassurance {
+    background: #fff;
+    border-top: 1px solid #ede8e0;
+    border-bottom: 1px solid #ede8e0;
+    padding: 4rem 0;
+}
+
+.nide-reassurance__list {
+    display: flex;
+    align-items: stretch;
+    justify-content: center;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    flex-wrap: wrap;
+}
+
+/* Pilier */
+.nide-reassurance__item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    flex: 1 1 260px;
+    max-width: 340px;
+    padding: 2rem 3rem;
+    position: relative;
+    opacity: 0;
+    transform: translateY(20px);
+    animation: nide-fadeUp .65s cubic-bezier(.22,.61,.36,1) forwards;
+    animation-delay: var(--delay, 0s);
+}
+
+/* Séparateur vertical entre piliers */
+.nide-reassurance__item + .nide-reassurance__item::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 15%;
+    height: 70%;
+    width: 1px;
+    background: linear-gradient(to bottom, transparent, #d9cfc0 30%, #d9cfc0 70%, transparent);
+}
+
+@media (max-width: 767px) {
+    .nide-reassurance__item + .nide-reassurance__item::before { display: none; }
+    .nide-reassurance__item {
+        padding: 2rem 1.5rem;
+        border-top: 1px solid #ede8e0;
+    }
+    .nide-reassurance__item:first-child { border-top: none; }
+}
+
+/* Cercle icône */
+.nide-reassurance__icon {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    border: 1px solid #c8a96e;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #c8a96e;
+    margin-bottom: 1.5rem;
+    flex-shrink: 0;
+    transition: border-color .3s ease, color .3s ease, transform .35s cubic-bezier(.34,1.56,.64,1);
+    background: #fff;
+}
+
+.nide-reassurance__item:hover .nide-reassurance__icon {
+    color: #a07828;
+    border-color: #a07828;
+    transform: translateY(-4px);
+}
+
+.nide-reassurance__icon svg {
+    width: 28px;
+    height: 28px;
+    transition: transform .35s cubic-bezier(.34,1.56,.64,1);
+}
+
+.nide-reassurance__item:hover .nide-reassurance__icon svg {
+    transform: scale(1.12);
+}
+
+/* Étiquette uppercase */
+.nide-reassurance__label {
+    display: block;
+    font-size: .6875rem;
+    font-weight: 500;
+    letter-spacing: .18em;
+    text-transform: uppercase;
+    color: #c8a96e;
+    margin-bottom: .75rem;
+}
+
+/* Titre principal */
+.nide-reassurance__title {
+    display: block;
+    font-size: 1.25rem;
+    font-weight: 300;
+    color: #c0b49e;
+    letter-spacing: .01em;
+    margin-bottom: .75rem;
+    line-height: 1.3;
+}
+
+/* Trait décoratif */
+.nide-reassurance__sep {
+    display: block;
+    width: 28px;
+    height: 1px;
+    background: #c8a96e;
+    margin: 0 auto .9rem;
+    opacity: .6;
+}
+
+/* Texte corps */
+.nide-reassurance__text {
+    font-size: .875rem;
+    color: #999;
+    line-height: 1.7;
+    margin: 0;
+    font-weight: 300;
+}
+
+@keyframes nide-fadeUp {
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* =============================================
+   INTRO SÉLECTION — page d'accueil
+   ============================================= */
+.nide-selection-intro {
+    text-align: center;
+    max-width: 640px;
+    margin: 0 auto 3.5rem;
+    padding-top: .5rem;
+}
+
+.nide-selection-intro__kicker {
+    display: inline-block;
+    font-size: .6875rem;
+    font-weight: 500;
+    letter-spacing: .2em;
+    text-transform: uppercase;
+    color: #c8a96e;
+    margin-bottom: 1rem;
+}
+
+.nide-selection-intro__title {
+    font-size: clamp(1.6rem, 3vw, 2.25rem);
+    font-weight: 300;
+    color: #1e1a14;
+    letter-spacing: -.01em;
+    line-height: 1.2;
+    margin-bottom: 1.5rem;
+}
+
+.nide-selection-intro__body {
+    position: relative;
+    padding-top: 1.25rem;
+}
+
+.nide-selection-intro__body::before {
+    content: '';
+    display: block;
+    width: 36px;
+    height: 1px;
+    background: #c8a96e;
+    margin: 0 auto 1.25rem;
+    opacity: .7;
+}
+
+.nide-selection-intro__body p {
+    font-size: .9rem;
+    color: #6e6253;
+    line-height: 1.8;
+    font-weight: 300;
+    margin-bottom: .75rem;
+}
+
+.nide-selection-intro__body p:last-child {
+    margin-bottom: 0;
+}
+
+/* =============================================
+   TABS SÉLECTION — style minimaliste
+   Surcharge totale Bootstrap pour .nide-tabs
+   ============================================= */
+.nide-tabs {
+    margin-bottom: 2.5rem;
+}
+
+/* Écrase la bordure Bootstrap sur le ul */
+.nide-tabs .nav-tabs,
+.nide-tabs .nide-tabs__list {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: nowrap;
+    border-bottom: 1px solid #e8e0d4 !important;
+    padding: 0;
+    margin: 0;
+    gap: 0;
+}
+
+/* Écrase tout sur le li */
+.nide-tabs .nav-item {
+    margin: 0;
+}
+
+/* Écrase tout sur le lien — Bootstrap en premier, notre style par-dessus */
+.nide-tabs .nav-tabs .nav-link,
+.nide-tabs .nide-tabs__link {
+    display: inline-block !important;
+    padding: .65rem 1.75rem !important;
+    font-size: .775rem !important;
+    font-weight: 500 !important;
+    letter-spacing: .14em !important;
+    text-transform: uppercase !important;
+    color: #a09080 !important;
+    text-decoration: none !important;
+    background: none !important;
+    border: none !important;
+    border-bottom: 2px solid transparent !important;
+    border-radius: 0 !important;
+    margin-bottom: -1px !important;
+    transition: color .2s ease, border-color .2s ease !important;
+    white-space: nowrap;
+}
+
+.nide-tabs .nav-tabs .nav-link:hover,
+.nide-tabs .nide-tabs__link:hover {
+    color: #1e1a14 !important;
+    border-bottom-color: #e0d4b8 !important;
+    background: none !important;
+}
+
+.nide-tabs .nav-tabs .nav-link.active,
+.nide-tabs .nide-tabs__link.active {
+    color: #1e1a14 !important;
+    border-bottom-color: #c8a96e !important;
+    background: none !important;
+}
+
+/* =============================================
+   NIDE CARD — carte produit redessinée
+   ============================================= */
+
+.nide-card {
+    position: relative;
+    background: #fff;
+    border: 1px solid #ece6db;
+    border-radius: 4px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 24px;
+    transition: transform .35s cubic-bezier(.22,.61,.36,1),
+                box-shadow .35s cubic-bezier(.22,.61,.36,1),
+                border-color .35s ease;
+}
+
+.nide-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 16px 40px rgba(60,40,10,.09);
+    border-color: #d9cdb8;
+}
+
+/* — Media — */
+.nide-card__media {
+    position: relative;
+    overflow: hidden;
+    aspect-ratio: 1 / 1;
+    background: #f9f6f1;
+}
+
+.nide-card__img-link {
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+
+.nide-card__img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform .55s cubic-bezier(.22,.61,.36,1);
+}
+
+.nide-card:hover .nide-card__img {
+    transform: scale(1.04);
+}
+
+/* — Overlay actions — */
+.nide-card__actions {
+    position: absolute;
+    bottom: 12px;
+    right: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    opacity: 0;
+    transform: translateX(10px);
+    transition: opacity .25s ease, transform .25s ease;
+}
+
+.nide-card:hover .nide-card__actions {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+.nide-card__action {
+    width: 36px;
+    height: 36px;
+    background: #fff;
+    border: 1px solid #ece6db;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #7a6a55;
+    text-decoration: none;
+    transition: background .2s ease, color .2s ease, border-color .2s ease;
+}
+
+.nide-card__action:hover {
+    background: #1e1a14;
+    color: #fff;
+    border-color: #1e1a14;
+}
+
+.nide-card__action .icon {
+    width: 15px;
+    height: 15px;
+}
+
+/* — Badge promo — */
+.nide-card__badge {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    background: #1e1a14;
+    color: #fff;
+    font-size: .65rem;
+    font-weight: 600;
+    letter-spacing: .06em;
+    padding: 3px 8px;
+    border-radius: 2px;
+}
+
+/* — Body — */
+.nide-card__body {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    padding: 1.1rem 1.25rem 1.25rem;
+    text-decoration: none;
+    color: inherit;
+    border-top: 1px solid #f0ebe2;
+    transition: border-color .3s ease;
+}
+
+.nide-card__body:hover {
+    text-decoration: none;
+    color: inherit;
+}
+
+.nide-card:hover .nide-card__body {
+    border-top-color: #c8a96e;
+}
+
+/* Origine */
+.nide-card__origin {
+    display: block;
+    font-size: .625rem;
+    font-weight: 500;
+    letter-spacing: .18em;
+    text-transform: uppercase;
+    color: #c8a96e;
+    margin-bottom: .45rem;
+}
+
+/* Titre */
+.nide-card__title {
+    font-size: .9375rem;
+    font-weight: 500;
+    color: #1e1a14;
+    line-height: 1.35;
+    margin: 0 0 .4rem;
+    letter-spacing: -.01em;
+}
+
+/* Profil gustatif */
+.nide-card__tasting {
+    font-size: .775rem;
+    color: #a09080;
+    font-style: italic;
+    font-weight: 300;
+    line-height: 1.4;
+    margin: 0 0 .9rem;
+}
+
+/* Footer prix + étoiles */
+.nide-card__footer {
+    margin-top: auto;
+    padding-top: .85rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: .5rem;
+    border-top: 1px solid #f0ebe2;
+}
+
+/* Prix */
+.nide-card__price {
+    display: flex;
+    align-items: baseline;
+    gap: .45rem;
+    flex-wrap: wrap;
+}
+
+.nide-card__price--current {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #1e1a14;
+    letter-spacing: -.01em;
+}
+
+.nide-card__price--old {
+    font-size: .775rem;
+    color: #c0b4a2;
+    text-decoration: line-through;
+}
+
+/* Étoiles */
+.nide-card__rating {
+    display: flex;
+    align-items: center;
+    gap: .3rem;
+    flex-shrink: 0;
+}
+
+.nide-card__stars {
+    position: relative;
+    width: 64px;
+    height: 11px;
+    font-size: 11px;
+    color: #e0d4c0;
+    letter-spacing: 2px;
+}
+
+.nide-card__stars::before,
+.nide-card__stars-fill::before {
+    content: '★★★★★';
+    position: absolute;
+    top: 0;
+    left: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    line-height: 1;
+}
+
+.nide-card__stars::before {
+    color: #e0d4c0;
+}
+
+.nide-card__stars-fill {
+    position: absolute;
+    top: 0;
+    left: 0;
+    overflow: hidden;
+    height: 100%;
+}
+
+.nide-card__stars-fill::before {
+    color: #c8a96e;
+}
+
+.nide-card__rating-count {
+    font-size: .7rem;
+    color: #b0a090;
+    font-weight: 400;
+}
+
+/* Responsive — mobile : actions toujours visibles */
+@media (max-width: 575px) {
+    .nide-card__actions {
+        opacity: 1;
+        transform: none;
+        flex-direction: row;
+        bottom: 8px;
+        right: 8px;
+    }
+    .nide-card__action {
+        width: 32px;
+        height: 32px;
+    }
+}
+
+/* =============================================
+   BLOC CONFIANCE — page d'accueil
+   ============================================= */
+.nide-trust {
+    background: #faf7f2;
+    border-top: 1px solid #ede8e0;
+    border-bottom: 1px solid #ede8e0;
+    padding: 5rem 0;
+    overflow: hidden;
+}
+
+.nide-trust__inner {
+    display: flex;
+    align-items: center;
+    gap: 5rem;
+}
+
+@media (max-width: 991px) {
+    .nide-trust__inner { flex-direction: column; gap: 3rem; }
+    .nide-trust__deco-col { order: -1; }
+}
+
+/* — Colonne texte — */
+.nide-trust__text-col {
+    flex: 1 1 0;
+    min-width: 0;
+    opacity: 0;
+    transform: translateX(-28px);
+    transition: opacity .7s ease, transform .7s ease;
+}
+
+.nide-trust__text-col.nide-visible {
+    opacity: 1;
+    transform: none;
+}
+
+.nide-trust__kicker {
+    display: inline-block;
+    font-size: .6875rem;
+    font-weight: 500;
+    letter-spacing: .2em;
+    text-transform: uppercase;
+    color: #c8a96e;
+    margin-bottom: 1rem;
+}
+
+.nide-trust__title {
+    font-size: clamp(1.5rem, 2.8vw, 2.1rem);
+    font-weight: 300;
+    color: #1e1a14;
+    line-height: 1.25;
+    letter-spacing: -.01em;
+    margin-bottom: 1.75rem;
+}
+
+.nide-trust__body p {
+    font-size: .9rem;
+    color: #6e6253;
+    line-height: 1.85;
+    font-weight: 300;
+    margin-bottom: 1rem;
+}
+
+.nide-trust__body p:last-child { margin-bottom: 0; }
+
+.nide-trust__link {
+    display: inline-flex;
+    align-items: center;
+    gap: .5rem;
+    margin-top: 1.75rem;
+    font-size: .8125rem;
+    font-weight: 500;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: #1e1a14;
+    text-decoration: none;
+    border-bottom: 1px solid #c8a96e;
+    padding-bottom: 2px;
+    transition: color .2s ease, gap .25s ease;
+}
+
+.nide-trust__link:hover {
+    color: #c8a96e;
+    gap: .85rem;
+    text-decoration: none;
+}
+
+.nide-trust__link svg {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+    transition: transform .25s ease;
+}
+
+.nide-trust__link:hover svg { transform: translateX(4px); }
+
+/* — Colonne déco — */
+.nide-trust__deco-col {
+    flex: 0 0 260px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transform: translateX(28px);
+    transition: opacity .7s ease .15s, transform .7s ease .15s;
+}
+
+.nide-trust__deco-col.nide-visible {
+    opacity: 1;
+    transform: none;
+}
+
+.nide-trust__deco {
+    position: relative;
+    width: 200px;
+    height: 220px;
+}
+
+.nide-trust__hex {
+    width: 100%;
+    height: 100%;
+    animation: nide-hex-spin 30s linear infinite;
+    transform-origin: center;
+}
+
+@keyframes nide-hex-spin {
+    from { transform: rotate(0deg); }
+    to   { transform: rotate(360deg); }
+}
+
+.nide-trust__stat {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    gap: .35rem;
+}
+
+.nide-trust__stat-num {
+    font-size: 3rem;
+    font-weight: 200;
+    color: #1e1a14;
+    letter-spacing: -.03em;
+    line-height: 1;
+}
+
+.nide-trust__stat-label {
+    font-size: .725rem;
+    font-weight: 400;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: #c8a96e;
+    line-height: 1.5;
+}
+
+/* =============================================
+   BLOC FAQ — page d'accueil
+   ============================================= */
+.nide-faq {
+    background: #fff;
+    padding: 5rem 0;
+    border-top: 1px solid #ede8e0;
+}
+
+/* En-tête */
+.nide-faq__header {
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+.nide-faq__kicker {
+    display: inline-block;
+    font-size: .6875rem;
+    font-weight: 500;
+    letter-spacing: .2em;
+    text-transform: uppercase;
+    color: #c8a96e;
+    margin-bottom: .9rem;
+}
+
+.nide-faq__title {
+    font-size: clamp(1.5rem, 2.8vw, 2rem);
+    font-weight: 300;
+    color: #1e1a14;
+    letter-spacing: -.01em;
+    margin-bottom: .6rem;
+}
+
+.nide-faq__subtitle {
+    font-size: .875rem;
+    color: #a09080;
+    font-weight: 300;
+    margin: 0;
+}
+
+/* Liste */
+.nide-faq__list {
+    max-width: 740px;
+    margin: 0 auto;
+}
+
+/* Item */
+.nide-faq__item {
+    border-bottom: 1px solid #ede8e0;
+    opacity: 0;
+    transform: translateY(14px);
+    animation: nide-fadeUp .5s ease forwards;
+}
+
+.nide-faq__item:first-child {
+    border-top: 1px solid #ede8e0;
+}
+
+/* Délai en cascade */
+.nide-faq__item:nth-child(1)  { animation-delay: .05s; }
+.nide-faq__item:nth-child(2)  { animation-delay: .12s; }
+.nide-faq__item:nth-child(3)  { animation-delay: .19s; }
+.nide-faq__item:nth-child(4)  { animation-delay: .26s; }
+.nide-faq__item:nth-child(5)  { animation-delay: .33s; }
+.nide-faq__item:nth-child(6)  { animation-delay: .40s; }
+.nide-faq__item:nth-child(n+7){ animation-delay: .47s; }
+
+/* Bouton question */
+.nide-faq__question {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.5rem;
+    padding: 1.25rem 0;
+    background: none;
+    border: none;
+    cursor: pointer;
+    text-align: left;
+    font-size: .9375rem;
+    font-weight: 400;
+    color: #1e1a14;
+    line-height: 1.45;
+    transition: color .2s ease;
+}
+
+.nide-faq__question:hover {
+    color: #c8a96e;
+}
+
+/* Icône chevron */
+.nide-faq__icon {
+    flex-shrink: 0;
+    width: 22px;
+    height: 22px;
+    color: #c8a96e;
+    transition: transform .3s cubic-bezier(.34,1.56,.64,1);
+}
+
+.nide-faq__icon svg {
+    width: 100%;
+    height: 100%;
+}
+
+/* Rotation quand ouvert — Bootstrap met aria-expanded=true sur le bouton */
+.nide-faq__question[aria-expanded="true"] .nide-faq__icon {
+    transform: rotate(180deg);
+}
+
+/* Texte réponse */
+.nide-faq__answer {
+    padding: 0 1.5rem 1.35rem 0;
+    font-size: .875rem;
+    color: #6e6253;
+    line-height: 1.85;
+    font-weight: 300;
+}
+
+/* Override Bootstrap accordion */
+.nide-faq__list .accordion-collapse {
+    border: none;
+}
+
