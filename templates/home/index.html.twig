@@ -14,8 +14,12 @@
 			<link rel="preload" as="video" href="/assets/videos/hero/{{ heroVideo }}" type="video/mp4">
 		{% endif %}
 	{% elseif sliders|length > 0 %}
-		{# Préchargement de l'image LCP (1ère slide du carousel) #}
-		<link rel="preload" as="image" href="/assets/images/sliders/{{ sliders[0].mediaSlider }}" fetchpriority="high">
+		{# Préchargement de l'image LCP (1ère slide, variant WebP large) #}
+		{% set _s0 = sliders[0].mediaSlider|split('.')|slice(0, -1)|join('.') %}
+		<link rel="preload" as="image"
+			href="/assets/images/sliders/{{ _s0 }}-large.webp"
+			imagesizes="100vw"
+			fetchpriority="high">
 	{% endif %}
 {% endblock %}
 
@@ -55,17 +59,28 @@
 			<div id="carouselExampleControls" data-bs-ride="carousel" class="carousel slide carousel-fade light_arrow">
 				<div class="carousel-inner">
 					{% for slider in sliders %}
-						{% set imgDesktop = '/assets/images/sliders/' ~ slider.mediaSlider %}
-						{% set imgMobile = slider.mediaSliderMobile ? '/assets/images/sliders/' ~ slider.mediaSliderMobile : imgDesktop %}
+						{% set _base    = slider.mediaSlider|split('.')|slice(0, -1)|join('.') %}
+						{% set imgDesktop = '/assets/images/sliders/' ~ _base ~ '-large.webp' %}
+						{% set _baseM   = slider.mediaSliderMobile ? slider.mediaSliderMobile|split('.')|slice(0, -1)|join('.') : null %}
+						{% set imgMobile  = _baseM ? '/assets/images/sliders/' ~ _baseM ~ '-large.webp' : imgDesktop %}
 						<div class="{{ loop.first ? 'carousel-item background_bg active' : 'lazyload carousel-item background_bg' }}"
-							{% if loop.first %}
-								style="--slide-bg-desktop: url('{{ imgDesktop }}'); --slide-bg-mobile: url('{{ imgMobile }}'); background-image: var(--slide-bg-desktop);"
-							{% else %}
+							{% if not loop.first %}
 								data-img-src="{{ imgDesktop }}"
 								data-img-mobile="{{ imgMobile }}"
 							{% endif %}
 							aria-label="{{ slider.title ? slider.title : (slider.description ? slider.description|striptags : 'Slide ' ~ loop.index) }}"
 							role="img">
+							{% if loop.first %}
+								<img src="{{ imgDesktop }}"
+									srcset="{{ imgMobile }} 767w, {{ imgDesktop }} 1440w"
+									sizes="100vw"
+									alt="{{ slider.title ?? '' }}"
+									class="slide-lcp-img"
+									fetchpriority="high"
+									loading="eager"
+									decoding="sync"
+									width="1440" height="680">
+							{% endif %}
 							<div class="banner_slide_content">
 								<div class="container">
 									<div class="row">

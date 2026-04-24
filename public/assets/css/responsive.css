@@ -2637,48 +2637,214 @@ footer .widget_title,
     }
 }
 
-/* ── Header responsive ── */
+/* ── Header responsive — masquer menu desktop + afficher burger ── */
 @media only screen and (max-width: 991px) {
-    .nide-header__nav {
-        flex-wrap: wrap;
-        gap: 0;
-        padding: .5rem 0;
-    }
-    .nide-header__logo {
-        margin-right: auto;
-    }
-    #navbarSupportedContent {
-        order: 3;
-        width: 100%;
-        border-top: 1px solid #ede8e0;
-        padding: .75rem 0;
-        margin-top: .5rem;
-    }
-    .nide-header__menu {
-        flex-direction: column;
-        gap: 0;
-    }
-    .nide-header__menu-link {
-        padding: .65rem .5rem !important;
-        font-size: .85rem !important;
-    }
-    .nide-header__dropdown {
-        position: static !important;
-        box-shadow: none !important;
-        border: none !important;
-        border-left: 2px solid #ede8e0 !important;
-        border-radius: 0 !important;
-        padding: 0 0 0 1rem !important;
-        margin-top: 0 !important;
-        background: transparent !important;
-    }
-    .nide-header__actions {
-        margin-left: 0;
-    }
-    .nide-header__action--phone {
-        display: none !important;
-    }
+    .nide-header__menu { display: none !important; }
+    .nide-header__action--desktop-only { display: none !important; }
+    .nide-header__action--phone { display: none !important; }
+    .nide-header__action--burger { display: flex !important; }
+    .nide-header__nav { gap: 0; }
 }
+
+/* ── Burger animé ── */
+.nide-header__action--burger { display: none; }
+
+.nide-header__burger {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 5px;
+    width: 38px;
+    height: 38px;
+    padding: 6px;
+    background: none;
+    border: none;
+    cursor: pointer;
+}
+.nide-burger__bar {
+    display: block;
+    width: 22px;
+    height: 2px;
+    background: #3a3028;
+    border-radius: 2px;
+    transition: transform .28s ease, opacity .2s ease;
+    transform-origin: center;
+}
+.nide-header__burger.is-open .nide-burger__bar:nth-child(1) {
+    transform: translateY(7px) rotate(45deg);
+}
+.nide-header__burger.is-open .nide-burger__bar:nth-child(2) {
+    opacity: 0;
+    transform: scaleX(0);
+}
+.nide-header__burger.is-open .nide-burger__bar:nth-child(3) {
+    transform: translateY(-7px) rotate(-45deg);
+}
+
+/* ── Overlay ── */
+.nide-nav-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(20, 12, 4, .5);
+    z-index: 1049;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .3s ease;
+}
+.nide-nav-overlay.is-open {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+/* ── Drawer ── */
+.nide-nav-drawer {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: min(320px, 88vw);
+    background: #fff;
+    z-index: 1050;
+    display: flex;
+    flex-direction: column;
+    transform: translateX(100%);
+    transition: transform .32s cubic-bezier(.4, 0, .2, 1);
+    box-shadow: -6px 0 32px rgba(0,0,0,.14);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+}
+.nide-nav-drawer.is-open {
+    transform: translateX(0);
+}
+
+/* En-tête du drawer */
+.nide-nav-drawer__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid #ede8e0;
+    flex-shrink: 0;
+}
+.nide-nav-drawer__brand img { display: block; }
+.nide-nav-drawer__close {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    border: none;
+    background: #f5f1ea;
+    border-radius: 50%;
+    color: #3a3028;
+    cursor: pointer;
+    padding: 0;
+    flex-shrink: 0;
+    transition: background .15s;
+}
+.nide-nav-drawer__close:hover { background: #ede8e0; }
+.nide-nav-drawer__close .icon { width: 14px; height: 14px; }
+
+/* Items menu */
+.nide-nav-drawer__menu {
+    list-style: none;
+    margin: 0;
+    padding: .5rem 0;
+    flex: 1;
+}
+.nide-nav-drawer__item {
+    border-bottom: 1px solid #f5f1ea;
+}
+.nide-nav-drawer__link,
+.nide-nav-drawer__toggle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding: .95rem 1.25rem;
+    font-size: .98rem;
+    font-weight: 500;
+    color: #3a3028;
+    text-decoration: none;
+    background: none;
+    border: none;
+    cursor: pointer;
+    transition: color .15s, background .15s;
+    text-align: left;
+}
+.nide-nav-drawer__link:hover,
+.nide-nav-drawer__toggle:hover {
+    color: #c8963e;
+    background: #fdf9f3;
+}
+.nide-nav-drawer__arrow {
+    width: 15px;
+    height: 15px;
+    flex-shrink: 0;
+    transition: transform .25s ease;
+    color: #a09080;
+}
+.nide-nav-drawer__toggle[aria-expanded="true"] .nide-nav-drawer__arrow {
+    transform: rotate(180deg);
+}
+
+/* Sous-menu accordéon */
+.nide-nav-drawer__sub {
+    list-style: none;
+    margin: 0;
+    padding: .25rem 0 .5rem;
+    background: #faf9f7;
+    border-left: 3px solid #c8963e;
+    margin-left: 1.25rem;
+    border-radius: 0 0 0 4px;
+    overflow: hidden;
+    max-height: 0;
+    transition: max-height .3s ease;
+}
+.nide-nav-drawer__sub:not([hidden]) {
+    max-height: 400px;
+}
+.nide-nav-drawer__sub-link {
+    display: block;
+    padding: .6rem 1rem;
+    font-size: .9rem;
+    color: #6c5c4a;
+    text-decoration: none;
+    transition: color .15s, padding-left .15s;
+}
+.nide-nav-drawer__sub-link:hover {
+    color: #c8963e;
+    padding-left: 1.25rem;
+}
+
+/* Footer du drawer */
+.nide-nav-drawer__footer {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1px;
+    background: #ede8e0;
+    border-top: 1px solid #ede8e0;
+    flex-shrink: 0;
+}
+.nide-nav-drawer__quick {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: .35rem;
+    padding: .9rem .5rem;
+    font-size: .78rem;
+    font-weight: 500;
+    color: #6c5c4a;
+    text-decoration: none;
+    background: #fff;
+    transition: color .15s, background .15s;
+    text-align: center;
+}
+.nide-nav-drawer__quick:hover {
+    color: #c8963e;
+    background: #fdf9f3;
+}
+.nide-nav-drawer__quick .icon { width: 18px; height: 18px; }
 
 /* ── Cart page responsive ── */
 @media (max-width: 991px) {
