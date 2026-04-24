@@ -33,6 +33,7 @@ final class SlidersCrudController extends AbstractCrudController
             ->setEntityLabelInPlural('Sliders')
             ->setPageTitle(Crud::PAGE_INDEX, 'Sliders')
             ->setPageTitle(Crud::PAGE_NEW, 'Créer un slider')
+            ->setPageTitle(Crud::PAGE_DETAIL, fn(Sliders $s) => sprintf('Slider : %s', $s->getTitle() ?: 'Sans titre'))
             ->setPageTitle(Crud::PAGE_EDIT, fn(Sliders $s) => sprintf('Modifier : %s', $s->getTitle() ?: 'Slider'))
             ->setDefaultSort(['id' => 'DESC'])
             ->setSearchFields(['id', 'title', 'description', 'button_text', 'button_link'])
@@ -76,14 +77,20 @@ final class SlidersCrudController extends AbstractCrudController
             ->setUploadDir('public/assets/images/sliders')
             ->setUploadedFileNamePattern('[slug]-[timestamp].[extension]')
             ->setHelp('Format paysage recommandé (ex. 1920×800).')
-            ->setRequired(false);
+            ->setRequired(false)
+            ->hideOnDetail();
         yield ImageField::new('mediaSliderMobile', 'Image mobile')
             ->setColumns(6)
             ->setBasePath('/assets/images/sliders')
             ->setUploadDir('public/assets/images/sliders')
             ->setUploadedFileNamePattern('[slug]-mobile-[timestamp].[extension]')
             ->setHelp('Format portrait recommandé (ex. 768×1024). Si vide, l\'image desktop est utilisée.')
-            ->setRequired(false);
+            ->setRequired(false)
+            ->hideOnDetail();
+        if ($pageName === Crud::PAGE_DETAIL) {
+            yield TextField::new('mediaSlider.filename', 'Image desktop')->formatValue(static fn($v) => $v ?: '—');
+            yield TextField::new('mediaSliderMobile', 'Image mobile')->formatValue(static fn($v) => $v ?: '—');
+        }
     }
 
     public function createEntity(string $entityFqcn): Sliders

@@ -14,10 +14,9 @@
 			<link rel="preload" as="video" href="/assets/videos/hero/{{ heroVideo }}" type="video/mp4">
 		{% endif %}
 	{% elseif sliders|length > 0 %}
-		{# Préchargement de l'image LCP (1ère slide, variant WebP large) #}
-		{% set _s0 = sliders[0].mediaSlider|split('.')|slice(0, -1)|join('.') %}
+		{# Préchargement LCP — image originale (toujours disponible) #}
 		<link rel="preload" as="image"
-			href="/assets/images/sliders/{{ _s0 }}-large.webp"
+			href="/assets/images/sliders/{{ sliders[0].mediaSlider }}"
 			imagesizes="100vw"
 			fetchpriority="high">
 	{% endif %}
@@ -59,27 +58,40 @@
 			<div id="carouselExampleControls" data-bs-ride="carousel" class="carousel slide carousel-fade light_arrow">
 				<div class="carousel-inner">
 					{% for slider in sliders %}
-						{% set _base    = slider.mediaSlider|split('.')|slice(0, -1)|join('.') %}
-						{% set imgDesktop = '/assets/images/sliders/' ~ _base ~ '-large.webp' %}
-						{% set _baseM   = slider.mediaSliderMobile ? slider.mediaSliderMobile|split('.')|slice(0, -1)|join('.') : null %}
-						{% set imgMobile  = _baseM ? '/assets/images/sliders/' ~ _baseM ~ '-large.webp' : imgDesktop %}
+						{# Chemins — original (toujours présent) + webp large (si généré) #}
+						{% set _orig    = slider.mediaSlider|split('.')|slice(0, -1)|join('.') %}
+						{% set imgDesktopOriginal = '/assets/images/sliders/' ~ slider.mediaSlider %}
+						{% set imgDesktopWebp     = '/assets/images/sliders/' ~ _orig ~ '-large.webp' %}
+						{% set _origM             = slider.mediaSliderMobile ? slider.mediaSliderMobile|split('.')|slice(0, -1)|join('.') : null %}
+						{% set imgMobileOriginal  = slider.mediaSliderMobile ? '/assets/images/sliders/' ~ slider.mediaSliderMobile : imgDesktopOriginal %}
+						{% set imgMobileWebp      = _origM ? '/assets/images/sliders/' ~ _origM ~ '-large.webp' : imgDesktopWebp %}
+						{# Alias courts utilisés par le JS lazy-loader #}
+						{% set imgDesktop = imgDesktopOriginal %}
+						{% set imgMobile  = imgMobileOriginal %}
 						<div class="{{ loop.first ? 'carousel-item background_bg active' : 'lazyload carousel-item background_bg' }}"
 							{% if not loop.first %}
 								data-img-src="{{ imgDesktop }}"
 								data-img-mobile="{{ imgMobile }}"
+								data-img-webp="{{ imgDesktopWebp }}"
+								data-img-mobile-webp="{{ imgMobileWebp }}"
 							{% endif %}
 							aria-label="{{ slider.title ? slider.title : (slider.description ? slider.description|striptags : 'Slide ' ~ loop.index) }}"
 							role="img">
 							{% if loop.first %}
-								<img src="{{ imgDesktop }}"
-									srcset="{{ imgMobile }} 767w, {{ imgDesktop }} 1440w"
-									sizes="100vw"
-									alt="{{ slider.title ?? '' }}"
-									class="slide-lcp-img"
-									fetchpriority="high"
-									loading="eager"
-									decoding="sync"
-									width="1440" height="680">
+								{# <picture> : WebP si disponible, PNG/JPG original en fallback #}
+								<picture>
+									<source media="(max-width: 767px)" srcset="{{ imgMobileWebp }}" type="image/webp">
+									<source srcset="{{ imgDesktopWebp }}" type="image/webp">
+									<img src="{{ imgDesktopOriginal }}"
+										srcset="{{ imgMobileOriginal }} 767w, {{ imgDesktopOriginal }} 1440w"
+										sizes="100vw"
+										alt="{{ slider.title ?? '' }}"
+										class="slide-lcp-img"
+										fetchpriority="high"
+										loading="eager"
+										decoding="sync"
+										width="1440" height="680">
+								</picture>
 							{% endif %}
 							<div class="banner_slide_content">
 								<div class="container">

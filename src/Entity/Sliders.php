@@ -38,6 +38,11 @@ class Sliders
 
     public function getId(): ?int { return $this->id; }
 
+    public function __toString(): string
+    {
+        return $this->title ?? ('Slider #' . ($this->id ?? '?'));
+    }
+
     public function getTitle(): ?string { return $this->title; }
     public function setTitle(?string $title): static { $this->title = $title; return $this; }
 
