@@ -14390,6 +14390,10 @@ hr,
 
 /* ── Dropdown ── */
 .nide-header__dropdown {
+    position: absolute !important;
+    top: 100% !important;
+    left: 0 !important;
+    z-index: 1000 !important;
     min-width: 210px;
     border: 1px solid #ede8e0 !important;
     border-radius: 10px !important;

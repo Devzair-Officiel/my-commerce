@@ -43,13 +43,11 @@ class Product
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $accroche = null;
 
-    #[ORM\Column(length: 255)]
+    #[ORM\Column(type: Types::TEXT)]
     #[Assert\NotBlank(message: 'La description est obligatoire.')]
     #[Assert\Length(
         min: 10,
-        max: 255,
         minMessage: 'La description doit contenir au moins {{ limit }} caractères.',
-        maxMessage: 'La description ne doit pas dépasser {{ limit }} caractères.'
     )]
     private ?string $description = null;
 

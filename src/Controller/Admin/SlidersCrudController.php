@@ -50,7 +50,7 @@ final class SlidersCrudController extends AbstractCrudController
 
     public function configureFields(string $pageName): iterable
     {
-        yield IdField::new('id')->hideOnForm();
+        yield IdField::new('id')->onlyOnIndex();
 
         if (Crud::PAGE_INDEX === $pageName) {
             yield TextField::new('title', 'Titre');
