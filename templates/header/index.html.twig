@@ -31,6 +31,15 @@
 					<li class="nide-header__menu-item">
 						<a class="nide-header__menu-link nav-link" href="/">Nos miels</a>
 					</li>
+					<li class="nide-header__menu-item">
+						<a class="nide-header__menu-link nav-link nide-header__menu-link--pro" href="/grossiste-miel">
+							Miels en gros
+							<span class="nide-header__pro-badge">Pro</span>
+						</a>
+					</li>
+					<li class="nide-header__menu-item">
+						<a class="nide-header__menu-link nav-link" href="/page/qualite-et-analyses">Qualité &amp; analyses</a>
+					</li>
 					<li class="nide-header__menu-item dropdown">
 						<a href="#" class="nide-header__menu-link nav-link dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
 							À propos
@@ -38,14 +47,10 @@
 						</a>
 						<div class="nide-header__dropdown dropdown-menu">
 							<ul>
-								{% for page in globalHeaderPages %}
-									<li>
-										<a class="nide-header__dropdown-link dropdown-item nav-link nav_item" href="/page/{{ page.slug }}">{{ page.title }}</a>
-									</li>
-								{% endfor %}
-								<li>
-									<a class="nide-header__dropdown-link dropdown-item nav-link nav_item" href="/faq-miel">FAQ</a>
-								</li>
+								<li><a class="nide-header__dropdown-link dropdown-item nav-link nav_item" href="/page/notre-boutique">Notre boutique</a></li>
+								<li><a class="nide-header__dropdown-link dropdown-item nav-link nav_item" href="/page/notre-selection">Notre sélection</a></li>
+								<li><a class="nide-header__dropdown-link dropdown-item nav-link nav_item" href="/page/provenance">Provenance</a></li>
+								<li><a class="nide-header__dropdown-link dropdown-item nav-link nav_item" href="/faq-miel">FAQ</a></li>
 							</ul>
 						</div>
 					</li>
@@ -178,15 +183,24 @@
 			<li class="nide-nav-drawer__item">
 				<a class="nide-nav-drawer__link" href="/">Nos miels</a>
 			</li>
+			<li class="nide-nav-drawer__item">
+				<a class="nide-nav-drawer__link nide-nav-drawer__link--pro" href="/grossiste-miel">
+					Miels en gros
+					<span class="nide-header__pro-badge">Pro</span>
+				</a>
+			</li>
+			<li class="nide-nav-drawer__item">
+				<a class="nide-nav-drawer__link" href="/page/qualite-et-analyses">Qualité &amp; analyses</a>
+			</li>
 			<li class="nide-nav-drawer__item nide-nav-drawer__item--has-sub">
 				<button class="nide-nav-drawer__link nide-nav-drawer__toggle" type="button" aria-expanded="false">
 					À propos
 					<svg class="icon nide-nav-drawer__arrow" aria-hidden="true"><use href="#icon-chevron-down"></use></svg>
 				</button>
 				<ul class="nide-nav-drawer__sub" hidden>
-					{% for page in globalHeaderPages %}
-						<li><a class="nide-nav-drawer__sub-link" href="/page/{{ page.slug }}">{{ page.title }}</a></li>
-					{% endfor %}
+					<li><a class="nide-nav-drawer__sub-link" href="/page/notre-boutique">Notre boutique</a></li>
+					<li><a class="nide-nav-drawer__sub-link" href="/page/notre-selection">Notre sélection</a></li>
+					<li><a class="nide-nav-drawer__sub-link" href="/page/provenance">Provenance</a></li>
 					<li><a class="nide-nav-drawer__sub-link" href="/faq-miel">FAQ</a></li>
 				</ul>
 			</li>

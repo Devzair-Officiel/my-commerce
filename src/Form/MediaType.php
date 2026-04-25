@@ -42,6 +42,11 @@ class MediaType extends AbstractType
             ->add('isCover', CheckboxType::class, [
                 'required' => false,
                 'label' => 'Image principale',
+            ])
+            ->add('isWholesale', CheckboxType::class, [
+                'required' => false,
+                'label' => 'Image grossiste',
+                'help' => 'Affichée uniquement sur la fiche vente en gros.',
             ]);
     }
 

@@ -1,112 +1,126 @@
-<footer class="footer_dark">
-	<div class="footer_top">
+<footer class="nide-footer" role="contentinfo">
+
+	<div class="nide-footer__body">
 		<div class="container">
-			<div class="row ">
-				<div class="col-lg-3 col-md-6 col-sm-12 text-center">
-					<div class="widget">
-						<div class="footer_logo">
-							<a href="/" aria-label="{{ globalSetting.website_name }} — Accueil">
-								<h2>{{ globalSetting.website_name }}</h2>
-							</a>
-						</div>
-						<p>{{ globalSetting.description }}</p>
-					</div>
-					<div class="widget">
-						<ul class="social_icons social_white">
-							<li>
-								<a target="_blank" href="{{ globalSetting.facebookLink}}" aria-label="{{ globalSetting.website_name }} sur Facebook" rel="noopener">
-									<svg class="icon icon--filled" aria-hidden="true"><use href="#icon-facebook"></use></svg>
-								</a>
-							</li>
-							<li>
-								<a target="_blank" href="{{ globalSetting.youtubeLink}}" aria-label="{{ globalSetting.website_name }} sur YouTube" rel="noopener">
-									<svg class="icon icon--filled" aria-hidden="true"><use href="#icon-youtube"></use></svg>
-								</a>
-							</li>
-							<li>
-								<a target="_blank" href="{{ globalSetting.instaLink}}" aria-label="{{ globalSetting.website_name }} sur Instagram" rel="noopener">
-									<svg class="icon" aria-hidden="true"><use href="#icon-instagram"></use></svg>
-								</a>
-							</li>
-						</ul>
-					</div>
-				</div>
-				<div class="col-lg-3 col-md-3 col-sm-6 text-center">
-					<div class="widget">
-						<h3 class="widget_title">Liens Utiles</h3>
-						<ul class="widget_links">
-							{% for page in globalFooterPages %}
-							<li>
-								<a href="/page/{{page.slug}}"> {{page.title}} </a>
-							</li>
-						{% endfor %}
-                            <li>
-								<a href="/faq-miel"> FAQ </a>
-							</li>
-						</ul>
-					</div>
-				</div>
-				<div class="col-lg-3 col-md-6 col-sm-6 text-center">
-					<div class="widget">
-						<h3 class="widget_title">Mon compte</h3>
-						<ul class="widget_links">
-							<li>
-								<a href="{{ path('app_account') }}">Dashboard</a>
-							</li>
-							<li>
-								<a href="{{ path('app_login') }}">Connexion</a>
-							</li>
-							<li>
-								<a href="{{ path('app_register') }}">Créer un compte</a>
-							</li>
-						</ul>
-					</div>
-				</div>
-				<div class="col-lg-3 col-md-4 col-sm-6 text-center">
-					<div class="widget">
-						<h3 class="widget_title">Contact Info</h3>
-						<ul class="contact_info contact_info_light">
-							<li>
-								<svg class="icon" aria-hidden="true"><use href="#icon-location"></use></svg>
-								<p>{{ globalSetting.street}} - {{ globalSetting.code_postal}} {{ globalSetting.city}}</p>
-							</li>
-							<li>
-								<svg class="icon" aria-hidden="true"><use href="#icon-mail"></use></svg>
-								<a href="{{globalSetting.email}}"> {{globalSetting.email}} </a>
-							</li>
-							<li>
-								<svg class="icon" aria-hidden="true"><use href="#icon-phone"></use></svg>
-								<p>+{{ globalSetting.phone}}</p>
-							</li>
-						</ul>
-					</div>
-				</div>
-			</div>
-		</div>
-	</div>
-	<div class="bottom_footer border-top-tran">
-		<div class="container">
-			<div class="row mb-2">
-				<div class="col-12 text-center">
-					<a href="{{ path('app_page', {slug: 'mentions-legales'}) }}" class="footer-legal-link me-3">Mentions légales</a>
-					<a href="{{ path('app_page', {slug: 'politique-de-confidentialite'}) }}" class="footer-legal-link me-3">Politique de confidentialité</a>
-					<a href="{{ path('app_page', {slug: 'cgv'}) }}" class="footer-legal-link">Conditions générales de vente</a>
-				</div>
-			</div>
-			<div class="row">
-				<div class="col-md-6 d-flex align-items-center">
-					{% if globalSetting.copyrightUrl %}
-						<a href="{{ globalSetting.copyrightUrl }}" target="_blank" rel="noopener">
-							<p class="mb-0 text-center text-md-start">{{ globalSetting.copyright }}</p>
-						</a>
-					{% else %}
-						<p class="mb-0 text-center text-md-start">{{ globalSetting.copyright }}</p>
+			<div class="nide-footer__grid">
+
+				{# ── Colonne marque ── #}
+				<div class="nide-footer__col nide-footer__col--brand">
+					<a href="/" class="nide-footer__logo" aria-label="{{ globalSetting.website_name }} — Accueil">
+						{% if globalSetting.logo_filename %}
+							<img src="/assets/images/setting/{{ globalSetting.logo_filename }}"
+								 alt="{{ globalSetting.website_name }}"
+								 width="140" height="42" loading="lazy">
+						{% else %}
+							<span class="nide-footer__logo-text">{{ globalSetting.website_name }}</span>
+						{% endif %}
+					</a>
+					{% if globalSetting.description %}
+						<p class="nide-footer__tagline">{{ globalSetting.description }}</p>
 					{% endif %}
+					<ul class="nide-footer__social">
+						{% if globalSetting.facebookLink %}
+						<li>
+							<a href="{{ globalSetting.facebookLink }}" target="_blank" rel="noopener"
+							   aria-label="{{ globalSetting.website_name }} sur Facebook" class="nide-footer__social-link">
+								<svg class="icon" aria-hidden="true"><use href="#icon-facebook"></use></svg>
+							</a>
+						</li>
+						{% endif %}
+						{% if globalSetting.instaLink %}
+						<li>
+							<a href="{{ globalSetting.instaLink }}" target="_blank" rel="noopener"
+							   aria-label="{{ globalSetting.website_name }} sur Instagram" class="nide-footer__social-link">
+								<svg class="icon" aria-hidden="true"><use href="#icon-instagram"></use></svg>
+							</a>
+						</li>
+						{% endif %}
+						{% if globalSetting.youtubeLink %}
+						<li>
+							<a href="{{ globalSetting.youtubeLink }}" target="_blank" rel="noopener"
+							   aria-label="{{ globalSetting.website_name }} sur YouTube" class="nide-footer__social-link">
+								<svg class="icon" aria-hidden="true"><use href="#icon-youtube"></use></svg>
+							</a>
+						</li>
+						{% endif %}
+					</ul>
 				</div>
-				<div class="col-md-6 d-flex justify-content-end">
-					<button onclick="window.reopenCookieConsent?.()" class="btn-cookie-manage">🍪 Gérer mes cookies</button>
+
+				{# ── Liens utiles ── #}
+				<div class="nide-footer__col">
+					<h3 class="nide-footer__heading">Liens utiles</h3>
+					<ul class="nide-footer__links">
+						{% for page in globalFooterPages %}
+							<li><a href="/page/{{ page.slug }}">{{ page.title }}</a></li>
+						{% endfor %}
+						<li><a href="/faq-miel">FAQ</a></li>
+					</ul>
 				</div>
+
+				{# ── Mon compte ── #}
+				<div class="nide-footer__col">
+					<h3 class="nide-footer__heading">Mon compte</h3>
+					<ul class="nide-footer__links">
+						<li><a href="{{ path('app_account') }}">Mon espace</a></li>
+						<li><a href="{{ path('app_login') }}">Connexion</a></li>
+						<li><a href="{{ path('app_register') }}">Créer un compte</a></li>
+						<li><a href="/cart">Mon panier</a></li>
+					</ul>
+				</div>
+
+				{# ── Contact ── #}
+				<div class="nide-footer__col">
+					<h3 class="nide-footer__heading">Contact</h3>
+					<ul class="nide-footer__contact">
+						{% if globalSetting.street %}
+						<li>
+							<svg class="icon" aria-hidden="true"><use href="#icon-location"></use></svg>
+							<span>{{ globalSetting.street }}, {{ globalSetting.code_postal }} {{ globalSetting.city }}</span>
+						</li>
+						{% endif %}
+						{% if globalSetting.email %}
+						<li>
+							<svg class="icon" aria-hidden="true"><use href="#icon-mail"></use></svg>
+							<a href="mailto:{{ globalSetting.email }}">{{ globalSetting.email }}</a>
+						</li>
+						{% endif %}
+						{% if globalSetting.phone %}
+						<li>
+							<svg class="icon" aria-hidden="true"><use href="#icon-phone"></use></svg>
+							<a href="tel:{{ globalSetting.phone|replace({' ': ''}) }}">{{ globalSetting.phone }}</a>
+						</li>
+						{% endif %}
+					</ul>
+				</div>
+
 			</div>
 		</div>
 	</div>
+
+	{# ── Barre basse ── #}
+	<div class="nide-footer__bottom">
+		<div class="container">
+			<div class="nide-footer__bottom-inner">
+
+				<p class="nide-footer__copy">
+					{% if globalSetting.copyrightUrl %}
+						<a href="{{ globalSetting.copyrightUrl }}" target="_blank" rel="noopener">{{ globalSetting.copyright }}</a>
+					{% else %}
+						{{ globalSetting.copyright }}
+					{% endif %}
+				</p>
+
+				<nav class="nide-footer__legal" aria-label="Liens légaux">
+					<a href="{{ path('app_page', {slug: 'mentions-legales'}) }}">Mentions légales</a>
+					<a href="{{ path('app_page', {slug: 'politique-de-confidentialite'}) }}">Confidentialité</a>
+					<a href="{{ path('app_page', {slug: 'cgv'}) }}">CGV</a>
+					<button type="button" onclick="window.reopenCookieConsent?.()" class="nide-footer__cookie-btn">
+						Cookies
+					</button>
+				</nav>
+
+			</div>
+		</div>
+	</div>
+
 </footer>

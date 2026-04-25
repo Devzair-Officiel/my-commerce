@@ -41,5 +41,8 @@ final class FaqCrudController extends AbstractCrudController
             ->setFormTypeOption('attr', ['rows' => 4]);
         yield BooleanField::new('isActive', 'Visible')
             ->renderAsSwitch(true);
+        yield BooleanField::new('isWholesale', 'Page grossiste')
+            ->renderAsSwitch(true)
+            ->setHelp('Activé → affiché sur /grossiste-miel. Désactivé → affiché sur /faq-miel.');
     }
 }

@@ -99,6 +99,18 @@ class ProductRepository extends ServiceEntityRepository
             ->getResult();
     }
 
+    public function findWholesaleProducts(): array
+    {
+        return $this->createQueryBuilder('p')
+            ->leftJoin('p.medias', 'm')->addSelect('m')
+            ->leftJoin('p.wholesaleTiers', 'wt')->addSelect('wt')
+            ->where('p.isWholesaleAvailable = true')
+            ->andWhere('p.isAvailable = true')
+            ->orderBy('p.title', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
     public function findByCategoriesForLayout(array $categoryIds): array
     {
         return $this->createQueryBuilder('p')

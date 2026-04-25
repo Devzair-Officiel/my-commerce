@@ -146,10 +146,39 @@ final class BlogCrudController extends AbstractCrudController
     public function updateEntity(EntityManagerInterface $em, $entityInstance): void
     {
         if ($entityInstance instanceof Blog) {
+            $this->deleteRemovedBlogMediaFiles($em, $entityInstance);
             $this->handleBlogMediaUploads($entityInstance);
         }
 
         parent::updateEntity($em, $entityInstance);
+    }
+
+    /**
+     * Supprime les fichiers des médias retirés de la collection blog.
+     * Nécessaire car la relation ManyToMany ne déclenche pas orphanRemoval.
+     */
+    private function deleteRemovedBlogMediaFiles(EntityManagerInterface $em, Blog $blog): void
+    {
+        $uow = $em->getUnitOfWork();
+        $uow->computeChangeSets();
+
+        // Médias actuellement en base pour ce blog
+        $original = $uow->getOriginalEntityData($blog);
+        if (!isset($original['medias'])) {
+            return;
+        }
+
+        /** @var \Doctrine\ORM\PersistentCollection $originalCollection */
+        $originalCollection = $blog->getMedias();
+        if (!$originalCollection instanceof \Doctrine\ORM\PersistentCollection) {
+            return;
+        }
+
+        foreach ($originalCollection->getDeleteDiff() as $removedMedia) {
+            if ($removedMedia instanceof Media) {
+                $this->files->removeFile($removedMedia);
+            }
+        }
     }
 
     private function handleBlogMediaUploads(Blog $blog): void

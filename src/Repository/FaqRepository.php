@@ -16,11 +16,23 @@ class FaqRepository extends ServiceEntityRepository
         parent::__construct($registry, Faq::class);
     }
 
-    /** @return Faq[] */
+    /** @return Faq[] FAQ particuliers (non grossiste) */
     public function findActive(): array
     {
         return $this->createQueryBuilder('f')
             ->where('f.isActive = true')
+            ->andWhere('f.isWholesale = false')
+            ->orderBy('f.position', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    /** @return Faq[] FAQ dédiée à la page grossiste */
+    public function findActiveWholesale(): array
+    {
+        return $this->createQueryBuilder('f')
+            ->where('f.isActive = true')
+            ->andWhere('f.isWholesale = true')
             ->orderBy('f.position', 'ASC')
             ->getQuery()
             ->getResult();

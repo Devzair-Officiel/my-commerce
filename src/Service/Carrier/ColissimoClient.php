@@ -350,6 +350,7 @@ final class ColissimoClient
                       <lastName>{$e($recipient['lastName'] ?? '')}</lastName>
                       <firstName>{$e($recipient['firstName'] ?? '')}</firstName>
                       <line2>{$e($recipient['line2'] ?? '')}</line2>
+                      <line3>{$e($recipient['line3'] ?? '')}</line3>
                       <countryCode>{$e($recipient['countryCode'] ?? 'FR')}</countryCode>
                       <city>{$e($recipient['city'] ?? '')}</city>
                       <zipCode>{$e($recipient['zipCode'] ?? '')}</zipCode>

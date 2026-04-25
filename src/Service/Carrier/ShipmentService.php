@@ -130,6 +130,19 @@ final class ShipmentService
      *
      * @return array{lastName: string, firstName: string, line2: string, address: string, city: string, postalCode: string, countryCode: string}
      */
+    /**
+     * Format snapshot (toMultilineSnapshot) :
+     *   Ligne 0 : clientName (prénom nom)
+     *   Ligne 1 : (alias) — optionnel, entre parenthèses
+     *   Ligne N : rue
+     *   Ligne N+1 : code_postal ville
+     *   Ligne N+2 : state — optionnel
+     *   Ligne N+3 : moreDetails (complément) — optionnel
+     *
+     * Colissimo convention :
+     *   line2 = rue (line1 est réservé société)
+     *   line3 = complément d'adresse (bât., appt.)
+     */
     private function extractRecipient(Order $order): array
     {
         $raw = $order->getShippingAddress();
@@ -137,45 +150,59 @@ final class ShipmentService
             throw new \RuntimeException('Adresse de livraison manquante sur la commande.');
         }
 
-        // Supprimer les lignes vides et renuméroter
         $lines = array_values(array_filter(
             array_map('trim', explode("\n", $raw)),
             static fn(string $l): bool => $l !== ''
         ));
 
-        // Ligne "code_postal ville" : on cherche la première ligne qui commence par des chiffres
-        $postalCode = '';
-        $city       = '';
-        $street     = '';
+        $postalCode  = '';
+        $city        = '';
+        $street      = '';
+        $complement  = '';
+        $postalIndex = null;
 
+        // Trouver la ligne "code_postal ville"
         foreach ($lines as $i => $line) {
             if (preg_match('/^(\d{4,6})\s+(.+)$/', $line, $m)) {
-                $postalCode = $m[1];
-                $city       = $m[2];
-                // La ligne précédente est la rue
-                $street = $lines[$i - 1] ?? '';
+                $postalCode  = $m[1];
+                $city        = $m[2];
+                $postalIndex = $i;
                 break;
             }
         }
 
-        // Nom complet : première ligne (client_name)
-        $fullName  = $lines[0] ?? '';
-        $nameParts = explode(' ', $fullName, 2);
-        $firstName = $nameParts[0] ?? '';
-        $lastName  = $nameParts[1] ?? $order->getUser()?->getLastname() ?? '';
+        if ($postalIndex !== null) {
+            // La rue est la ligne juste avant le code postal (en ignorant les alias entre parenthèses)
+            for ($j = $postalIndex - 1; $j >= 1; $j--) {
+                if (!preg_match('/^\(.*\)$/', $lines[$j])) {
+                    $street = $lines[$j];
+                    break;
+                }
+            }
+            // Le complément (moreDetails) est la ligne après code postal si elle n'est pas un état
+            $after = $lines[$postalIndex + 1] ?? '';
+            if ($after !== '' && !preg_match('/^[A-ZÀ-Ü][\w\s\-]{3,}$/', $after)) {
+                $complement = $after;
+            }
+        }
 
-        // Fallback si le parsing n'a rien trouvé
         if ($street === '' && isset($lines[1])) {
             $street = $lines[1];
         }
 
+        // Nom : première ligne — Colissimo attend lastName + firstName séparés
+        $fullName  = $lines[0] ?? '';
+        $nameParts = explode(' ', $fullName, 2);
+        $firstName = $nameParts[0] ?? '';
+        $lastName  = $nameParts[1] ?? '';
+
         return [
             'lastName'    => $lastName  !== '' ? $lastName  : ($order->getUser()?->getLastname()  ?? ''),
             'firstName'   => $firstName !== '' ? $firstName : ($order->getUser()?->getFirstname() ?? ''),
-            'line2'       => $street,
-            'address'     => $street,
+            'line2'       => $street,      // rue principale (convention Colissimo)
+            'line3'       => $complement,  // complément (bât., appt.)
             'city'        => $city,
-            'zipCode'     => $postalCode,  // generateLabel
+            'zipCode'     => $postalCode,  // generateLabel domicile
             'postalCode'  => $postalCode,  // generateLabelPickupPoint
             'countryCode' => 'FR',
         ];

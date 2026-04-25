@@ -31,6 +31,9 @@ class Media
     #[ORM\Column(nullable: true)]
     private ?bool $isCover = null;
 
+    #[ORM\Column(nullable: true)]
+    private ?bool $isWholesale = false;
+
     private ?UploadedFile $upload = null;
 
     #[ORM\ManyToOne(inversedBy: 'medias')]
@@ -111,6 +114,9 @@ class Media
 
         return $this;
     }
+
+    public function isWholesale(): ?bool { return $this->isWholesale; }
+    public function setIsWholesale(?bool $isWholesale): static { $this->isWholesale = $isWholesale; return $this; }
 
     public function setUpload(?UploadedFile $file): void
     {

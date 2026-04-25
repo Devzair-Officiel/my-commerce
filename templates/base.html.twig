@@ -64,13 +64,22 @@
 
 		{# Préconnexion aux ressources critiques #}
 		<link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+		{# Polices — display=swap évite le FOUT (flash de texte invisible) qui génère du CLS #}
+		<link rel="stylesheet"
+			href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Roboto:wght@400;700&display=swap"
+			media="print" onload="this.media='all'">
+		<noscript>
+			<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Roboto:wght@400;700&display=swap">
+		</noscript>
 
 		{# CSS critique bloquant #}
-		<link rel="stylesheet" href="/assets/bootstrap/css/bootstrap.min.css"/>
-		<link rel="stylesheet" href="/assets/css/style.refactor.css?v=1.1.4"/>
+		<link rel="stylesheet" href="/assets/bootstrap/css/bootstrap.min.css?v=1"/>
+		<link rel="stylesheet" href="/assets/css/style.refactor.css?v=1.1.5"/>
 
-		{# CSS responsive (bloquant — requis pour le layout mobile) #}
-		<link rel="stylesheet" href="/assets/css/responsive.css"/>
+		{# CSS responsive — bloquant : requis dès le premier rendu pour éviter les sauts de layout #}
+		<link rel="stylesheet" href="/assets/css/responsive.css?v=1.1.5"/>
 
 		{# Animations — non-bloquant (aucun impact sur le rendu initial) #}
 		<link rel="stylesheet" href="/assets/css/animate.css" media="print" onload="this.media='all'">

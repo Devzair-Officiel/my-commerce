@@ -1,0 +1,298 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Achat miel en gros — Grossiste miel artisanal | {{ globalSetting.website_name }}{% endblock %}
+
+{% block stylesheets %}
+    {# Préchargement LCP hero grossiste — version optimisée 1440px #}
+    <link rel="preload" as="image"
+        href="/assets/images/header-grossiste-large.webp"
+        type="image/webp"
+        fetchpriority="high">
+{% endblock %}
+
+{% block body %}
+
+{% include 'page_head/index.html.twig' with {
+	'page_name': 'Miels en gros',
+	breadcrumbs: [{ label: 'Miels en gros' }]
+} %}
+
+{# ── Hero ── #}
+{#
+    Image de fond : placez votre fichier dans /assets/images/grossiste/hero-grossiste.jpg
+    Dimensions recommandées : 1920 × 800 px, format WebP ou JPEG optimisé (< 200 ko)
+    Alt vide car décorative (le contenu textuel porte l'information)
+#}
+<section
+    class="nide-gros__hero"
+    style="background-image: url('/assets/images/header-grossiste-large.webp');"
+    role="region"
+    aria-label="Présentation de l'offre grossiste"
+>
+    {# Image LCP déclarative pour que les navigateurs la préchargent correctement #}
+    <img
+        src="/assets/images/header-grossiste-large.webp"
+        alt=""
+        aria-hidden="true"
+        fetchpriority="high"
+        loading="eager"
+        decoding="async"
+        width="1920"
+        height="800"
+        class="nide-gros__hero-bg-img"
+    >
+
+	<div class="nide-gros__hero-overlay" aria-hidden="true"></div>
+
+	<div class="container nide-gros__hero-container">
+		<div class="nide-gros__hero-inner">
+			<div class="nide-gros__hero-content">
+				<span class="nide-gros__hero-badge">Vente en gros</span>
+				<h1 class="nide-gros__hero-title">Miel artisanal<br>pour professionnels</h1>
+				<p class="nide-gros__hero-sub">
+					Revendeurs, épiceries fines, restaurants, boutiques bio — approvisionnez-vous directement auprès d'un producteur. Miels certifiés, analyses disponibles, conditionnements adaptés à votre activité.
+				</p>
+				<div class="nide-gros__hero-actions">
+					<a href="#grossiste-produits" class="btn btn-fill-out">Voir les miels en gros</a>
+					<a href="/contact" class="nide-gros__hero-link">
+						<svg class="icon" aria-hidden="true"><use href="#icon-mail"></use></svg>
+						Demander un devis
+					</a>
+				</div>
+			</div>
+			<div class="nide-gros__hero-badges">
+				<div class="nide-gros__trust-item">
+					<svg class="icon" aria-hidden="true"><use href="#icon-check-circle"></use></svg>
+					<span>Analyses laboratoire disponibles</span>
+				</div>
+				<div class="nide-gros__trust-item">
+					<svg class="icon" aria-hidden="true"><use href="#icon-package"></use></svg>
+					<span>Conditionnements sur mesure</span>
+				</div>
+				<div class="nide-gros__trust-item">
+					<svg class="icon" aria-hidden="true"><use href="#icon-truck"></use></svg>
+					<span>Livraison France entière</span>
+				</div>
+				<div class="nide-gros__trust-item">
+					<svg class="icon" aria-hidden="true"><use href="#icon-user"></use></svg>
+					<span>Interlocuteur dédié</span>
+				</div>
+			</div>
+		</div>
+	</div>
+</section>
+
+{# ── À qui s'adresse l'offre ── #}
+<section class="nide-gros__targets">
+	<div class="container">
+		<h2 class="nide-gros__section-title">Qui nous approvisionnons</h2>
+		<div class="nide-gros__targets-grid">
+			<div class="nide-gros__target-card">
+				<svg class="icon" aria-hidden="true"><use href="#icon-store"></use></svg>
+				<strong>Épiceries fines & boutiques bio</strong>
+				<p>Référencement de miels d'exception, étiquetage personnalisable sur demande.</p>
+			</div>
+			<div class="nide-gros__target-card">
+				<svg class="icon" aria-hidden="true"><use href="#icon-chef"></use></svg>
+				<strong>Restaurateurs & traiteurs</strong>
+				<p>Formats professionnels, miels de caractère pour sublimer vos recettes.</p>
+			</div>
+			<div class="nide-gros__target-card">
+				<svg class="icon" aria-hidden="true"><use href="#icon-users"></use></svg>
+				<strong>Achats groupés & associations</strong>
+				<p>Commande collective avec tarifs dégressifs dès 5 kg par référence.</p>
+			</div>
+			<div class="nide-gros__target-card">
+				<svg class="icon" aria-hidden="true"><use href="#icon-gift"></use></svg>
+				<strong>Coffrets & cadeaux d'entreprise</strong>
+				<p>Sélection sur mesure, emballages soignés pour vos événements professionnels.</p>
+			</div>
+		</div>
+	</div>
+</section>
+
+{# ── Conditions grossiste ── #}
+<section class="nide-gros__conditions">
+	<div class="container">
+		<div class="nide-gros__conditions-grid">
+			<div class="nide-gros__condition-block">
+				<div class="nide-gros__condition-icon">
+					<svg class="icon" aria-hidden="true"><use href="#icon-package"></use></svg>
+				</div>
+				<h3>Formats disponibles</h3>
+				<ul>
+					<li>Pots 250 g, 500 g, 1 kg</li>
+					<li>Seaux 5 kg, 10 kg, 15 kg</li>
+					<li>Fûts 25 kg sur devis</li>
+				</ul>
+			</div>
+			<div class="nide-gros__condition-block">
+				<div class="nide-gros__condition-icon">
+					<svg class="icon" aria-hidden="true"><use href="#icon-tag"></use></svg>
+				</div>
+				<h3>Prix dégressifs</h3>
+				<ul>
+					<li>À partir de 5 kg : −10 %</li>
+					<li>À partir de 15 kg : −15 %</li>
+					<li>À partir de 30 kg : tarif sur devis</li>
+				</ul>
+			</div>
+			<div class="nide-gros__condition-block">
+				<div class="nide-gros__condition-icon">
+					<svg class="icon" aria-hidden="true"><use href="#icon-truck"></use></svg>
+				</div>
+				<h3>Livraison</h3>
+				<ul>
+					<li>Colissimo & transporteur palettisé</li>
+					<li>Livraison offerte dès 200 € HT</li>
+					<li>Retrait possible sur place</li>
+				</ul>
+			</div>
+			<div class="nide-gros__condition-block">
+				<div class="nide-gros__condition-icon">
+					<svg class="icon" aria-hidden="true"><use href="#icon-file"></use></svg>
+				</div>
+				<h3>Commande minimum</h3>
+				<ul>
+					<li>5 kg par référence</li>
+					<li>Achat direct en ligne ou devis</li>
+					<li>Paiement CB, virement, chèque</li>
+				</ul>
+			</div>
+		</div>
+	</div>
+</section>
+
+{# ── Catalogue produits en gros ── #}
+<section class="nide-gros__catalog" id="grossiste-produits">
+	<div class="container">
+		<h2 class="nide-gros__section-title">Notre catalogue grossiste</h2>
+		<p class="nide-gros__section-sub">Chaque fiche détaille les formats, quantités minimales et prix par palette.</p>
+
+		<div class="nide-gros__products-grid">
+			{% for product in products %}
+			{% set cover = product.coverFilename %}
+			<article class="nide-gros__product-card">
+				<a href="/grossiste-miel/{{ product.slug }}-en-gros" class="nide-gros__product-img-link">
+					{% if cover %}
+						<img src="/assets/images/products/{{ cover }}"
+							 alt="{{ product.title }}"
+							 width="340" height="260" loading="lazy"
+							 class="nide-gros__product-img">
+					{% else %}
+						<div class="nide-gros__product-img-placeholder">
+							<svg class="icon" aria-hidden="true"><use href="#icon-image"></use></svg>
+						</div>
+					{% endif %}
+					<span class="nide-gros__product-badge">Vente en gros</span>
+				</a>
+				<div class="nide-gros__product-body">
+					<h3 class="nide-gros__product-name">
+						<a href="/grossiste-miel/{{ product.slug }}-en-gros">{{ product.title }}</a>
+					</h3>
+					{% if product.accroche %}
+						<p class="nide-gros__product-accroche">{{ product.accroche }}</p>
+					{% endif %}
+					{% if product.originCountry %}
+						<div class="nide-gros__product-origin">
+							<svg class="icon" aria-hidden="true"><use href="#icon-location"></use></svg>
+							Origine : {{ product.originCountry }}
+						</div>
+					{% endif %}
+					<div class="nide-gros__product-footer">
+						<div class="nide-gros__product-price">
+							{% if product.wholesaleTiers|length > 0 %}
+								À partir de {{ (product.wholesaleTiers|first.unitPriceCents / 100)|format_currency('EUR') }}<span class="nide-gros__product-unit"> / kg</span>
+							{% else %}
+								{{ (product.regularPrice / 100)|format_currency('EUR') }}<span class="nide-gros__product-unit"> / unité</span>
+							{% endif %}
+						</div>
+						<a href="/grossiste-miel/{{ product.slug }}-en-gros" class="nide-gros__product-cta">
+							Voir les tarifs gros
+							<svg class="icon" aria-hidden="true"><use href="#icon-chevron-right"></use></svg>
+						</a>
+					</div>
+				</div>
+			</article>
+			{% endfor %}
+		</div>
+	</div>
+</section>
+
+{# ── Garanties qualité ── #}
+<section class="nide-gros__quality">
+	<div class="container">
+		<div class="nide-gros__quality-inner">
+			<div class="nide-gros__quality-text">
+				<h2>Qualité certifiée, analyses disponibles</h2>
+				<p>
+					Chaque lot de miel fait l'objet d'une analyse en laboratoire indépendant : humidité, HMF, activité diastasique, recherche de résidus. Les résultats sont disponibles sur simple demande pour chaque référence commandée.
+				</p>
+				<a href="/page/qualite-et-analyses" class="nide-gros__quality-link">
+					<svg class="icon" aria-hidden="true"><use href="#icon-check-circle"></use></svg>
+					Voir nos analyses & certifications
+				</a>
+			</div>
+			<div class="nide-gros__quality-list">
+				<div class="nide-gros__quality-item">
+					<svg class="icon" aria-hidden="true"><use href="#icon-check"></use></svg>
+					Humidité conforme (max 18,5 %)
+				</div>
+				<div class="nide-gros__quality-item">
+					<svg class="icon" aria-hidden="true"><use href="#icon-check"></use></svg>
+					HMF contrôlé (max 40 mg/kg)
+				</div>
+				<div class="nide-gros__quality-item">
+					<svg class="icon" aria-hidden="true"><use href="#icon-check"></use></svg>
+					Sans antibiotiques ni pesticides détectés
+				</div>
+				<div class="nide-gros__quality-item">
+					<svg class="icon" aria-hidden="true"><use href="#icon-check"></use></svg>
+					Traçabilité lot par lot
+				</div>
+			</div>
+		</div>
+	</div>
+</section>
+
+{# ── FAQ Grossiste ── #}
+<span id="faq-pro"></span>
+{% if faqs|length > 0 %}
+<section class="nide-gros__faq">
+	<div class="container">
+		<h2 class="nide-gros__section-title">Questions fréquentes — Achat en gros</h2>
+		<div class="nide-gros__faq-list">
+			{% for faq in faqs %}
+			<details class="nide-gros__faq-item">
+				<summary class="nide-gros__faq-question">{{ faq.question }}</summary>
+				<div class="nide-gros__faq-answer">{{ faq.answer }}</div>
+			</details>
+			{% endfor %}
+		</div>
+	</div>
+</section>
+{% endif %}
+
+{# ── CTA contact ── #}
+<section class="nide-gros__cta">
+	<div class="container">
+		<div class="nide-gros__cta-inner">
+			<h2>Vous avez un projet spécifique ?</h2>
+			<p>Volumes importants, étiquetage, formats particuliers — parlons-en. Réponse sous 24 h.</p>
+			<div class="nide-gros__cta-actions">
+				<a href="/contact" class="btn btn-fill-out">
+					<svg class="icon" aria-hidden="true"><use href="#icon-mail"></use></svg>
+					Nous contacter
+				</a>
+				{% if globalSetting.phone %}
+				<a href="tel:{{ globalSetting.phone|replace({' ': ''}) }}" class="nide-gros__cta-phone">
+					<svg class="icon" aria-hidden="true"><use href="#icon-phone"></use></svg>
+					{{ globalSetting.phone }}
+				</a>
+				{% endif %}
+			</div>
+		</div>
+	</div>
+</section>
+
+{% endblock %}

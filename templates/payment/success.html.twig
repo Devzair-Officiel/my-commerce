@@ -1,37 +1,137 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}
-	{{globalSetting.website_name}}
-	| Payment success
-{% endblock %}
-
+{% block title %}{{ globalSetting.website_name }} | Commande confirmée{% endblock %}
 
 {% block body %}
+<div class="nide-success">
+	<div class="container">
 
-	{% include "page_head/index.html.twig" with {'page_name': "✅ Commande validé" } %}
+		{# ── Hero confirmation ── #}
+		<div class="nide-success__hero">
+			<div class="nide-success__check">
+				<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+					<polyline points="20 6 9 17 4 12"></polyline>
+				</svg>
+			</div>
+			<h1 class="nide-success__title">Commande confirmée !</h1>
+			<p class="nide-success__subtitle">
+				Merci pour votre achat. Un e-mail de confirmation vous a été envoyé avec tous les détails.
+			</p>
+			{% if order is defined and order and order.orderReference %}
+				<div class="nide-success__ref">
+					N° de commande : <strong>{{ order.orderReference }}</strong>
+				</div>
+			{% endif %}
+		</div>
 
-	<div class="section">
-		<div class="container">
-			<div class="row justify-content-center">
-				<div class="col-md-8">
-					<div class="text-center order_complete">
-						<svg class="icon icon--xl" aria-hidden="true"><use href="#icon-check-circle"></use></svg>
-						<div class="heading_s1">
-							<h3>Votre commande a bien été prise en compte</h3>
+		{% if order is defined and order %}
+		<div class="nide-success__body">
+
+			{# ── Récapitulatif des articles ── #}
+			{% if order.orderDetails|length > 0 %}
+			<div class="nide-success__card">
+				<h2 class="nide-success__card-title">
+					<svg class="icon" aria-hidden="true"><use href="#icon-package"></use></svg>
+					Votre commande
+				</h2>
+				<ul class="nide-success__items">
+					{% for detail in order.orderDetails %}
+					<li class="nide-success__item">
+						<div class="nide-success__item-img-wrap">
+							{% if detail.productImageUrl %}
+								<img src="{{ detail.productImageUrl }}" width="56" height="56" loading="lazy"
+									 alt="{{ detail.productImageAlt ?? detail.productName }}"
+									 class="nide-success__item-img">
+							{% else %}
+								<div class="nide-success__item-placeholder">
+									<svg class="icon" aria-hidden="true"><use href="#icon-image"></use></svg>
+								</div>
+							{% endif %}
+							<span class="nide-success__item-qty">{{ detail.quantity }}</span>
 						</div>
-						<p>
-							Merci pour votre achat. Nous avons bien reçu votre commande et nous vous enverrons un email de confirmation avec les détails de votre commande.
-						</p>
-						{% if order is defined and order %}
-							<p class="text-muted">Commande : {{ order.orderReference }}</p>
+						<div class="nide-success__item-info">
+							<span class="nide-success__item-name">{{ detail.productName }}</span>
+							<span class="nide-success__item-unit">{{ (detail.unitPriceCents / 100)|format_currency('EUR') }} / unité</span>
+						</div>
+						<span class="nide-success__item-total">
+							{{ (detail.lineTotalCents / 100)|format_currency('EUR') }}
+						</span>
+					</li>
+					{% endfor %}
+				</ul>
+
+				<div class="nide-success__totals">
+					<div class="nide-success__total-line">
+						<span>Sous-total HT</span>
+						<span>{{ (order.itemsTotalHtCents / 100)|format_currency('EUR') }}</span>
+					</div>
+					{% if order.taxAmountCents %}
+					<div class="nide-success__total-line">
+						<span>TVA</span>
+						<span>{{ (order.taxAmountCents / 100)|format_currency('EUR') }}</span>
+					</div>
+					{% endif %}
+					<div class="nide-success__total-line">
+						<span>{{ order.carrierNameSnapshot }}</span>
+						{% if order.carrierPriceSnapshotCents == 0 %}
+							<span class="nide-success__free">Offerte</span>
+						{% else %}
+							<span>{{ (order.carrierPriceSnapshotCents / 100)|format_currency('EUR') }}</span>
 						{% endif %}
-						<a href="{{ path('app_account') }}" class="btn btn-fill-out">
-							Retour vers mon compte
-						</a>
+					</div>
+					<div class="nide-success__grand-total">
+						<span>Total TTC</span>
+						<span>{{ (order.orderTotalTtcCents / 100)|format_currency('EUR') }}</span>
 					</div>
 				</div>
 			</div>
-		</div>
-	</div>
+			{% endif %}
 
+			{# ── Informations livraison ── #}
+			{% if order.shippingAddress or order.billingAddress %}
+			<div class="nide-success__card">
+				<h2 class="nide-success__card-title">
+					<svg class="icon" aria-hidden="true"><use href="#icon-truck"></use></svg>
+					Livraison
+				</h2>
+				<div class="nide-success__addresses">
+					{% if order.shippingAddress %}
+					<div class="nide-success__address-block">
+						<div class="nide-success__address-label">Adresse de livraison</div>
+						<div class="nide-success__address-text">{{ order.shippingAddress|nl2br }}</div>
+					</div>
+					{% endif %}
+					{% if order.billingAddress %}
+					<div class="nide-success__address-block">
+						<div class="nide-success__address-label">Adresse de facturation</div>
+						<div class="nide-success__address-text">{{ order.billingAddress|nl2br }}</div>
+					</div>
+					{% endif %}
+				</div>
+				{% if order.paidAt %}
+				<div class="nide-success__meta">
+					<svg class="icon" aria-hidden="true"><use href="#icon-calendar"></use></svg>
+					Payé le {{ order.paidAt|date('d/m/Y à H:i') }}
+				</div>
+				{% endif %}
+			</div>
+			{% endif %}
+
+		</div>
+		{% endif %}
+
+		{# ── Actions ── #}
+		<div class="nide-success__actions">
+			<a href="{{ path('app_account') }}" class="btn btn-fill-out nide-success__btn-primary">
+				<svg class="icon" aria-hidden="true"><use href="#icon-user"></use></svg>
+				Voir mes commandes
+			</a>
+			<a href="{{ path('app_home') }}" class="nide-success__btn-secondary">
+				<svg class="icon" aria-hidden="true"><use href="#icon-arrow-left"></use></svg>
+				Continuer mes achats
+			</a>
+		</div>
+
+	</div>
+</div>
 {% endblock %}

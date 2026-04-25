@@ -203,6 +203,27 @@ final class ProductCrudController extends AbstractCrudController
             ->renderExpanded(true);
 
         // ----- TAB SEO & Visibilité
+        yield FormField::addTab('Vente en gros')->setIcon('fa fa-truck-ramp-box');
+
+        yield FormField::addFieldset('Activation')->setIcon('fa fa-toggle-on')->collapsible();
+        yield BooleanField::new('isWholesaleAvailable', 'Disponible en gros')->setColumns(4)
+            ->setHelp('Active ce produit dans la section "Miels en gros".');
+        yield IntegerField::new('wholesaleMinQtyKg', 'Quantité minimale (kg)')->setColumns(4)
+            ->setHelp('Ex : 5 pour 5 kg minimum par commande.');
+
+        yield FormField::addFieldset('Paliers de prix')->setIcon('fa fa-tags')->collapsible();
+        yield CollectionField::new('wholesaleTiers', 'Paliers de prix')
+            ->setEntryType(\App\Form\WholesaleTierType::class)
+            ->setColumns(12)
+            ->allowAdd()
+            ->allowDelete()
+            ->setHelp('Ajoutez autant de paliers que nécessaire. Ils seront triés par quantité croissante.');
+
+        yield FormField::addFieldset('Texte professionnel')->setIcon('fa fa-align-left')->collapsible();
+        yield TextEditorField::new('wholesaleDescription', 'Résumé professionnel')
+            ->setColumns(12)
+            ->setHelp('Ce texte remplace "Informations complémentaires" sur la fiche grossiste. Angle pro : conditionnement, usage, stockage…');
+
         yield FormField::addTab('SEO & Visibilité')->setIcon('fa fa-bullhorn');
 
         yield FormField::addFieldset('Visibilité')->setIcon('fa fa-eye')->collapsible();

@@ -26,6 +26,9 @@ class Faq
     #[ORM\Column]
     private bool $isActive = true;
 
+    #[ORM\Column]
+    private bool $isWholesale = false;
+
     public function getId(): ?int { return $this->id; }
 
     public function getQuestion(): ?string { return $this->question; }
@@ -39,4 +42,7 @@ class Faq
 
     public function isActive(): bool { return $this->isActive; }
     public function setIsActive(bool $isActive): static { $this->isActive = $isActive; return $this; }
+
+    public function isWholesale(): bool { return $this->isWholesale; }
+    public function setIsWholesale(bool $isWholesale): static { $this->isWholesale = $isWholesale; return $this; }
 }

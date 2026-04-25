@@ -4,7 +4,7 @@
 		{# Image #}
 		<div class="nide-card__media">
 			{% set thumb = product.medias|first %}
-			<a href="/produits/{{ product.slug }}" class="nide-card__img-link" tabindex="-1" aria-hidden="true">
+			<a href="/miels/{{ product.slug }}" class="nide-card__img-link" tabindex="-1" aria-hidden="true">
 				<img
 					class="nide-card__img"
 					alt="{{ product.title }}"
@@ -38,7 +38,7 @@
 		</div>
 
 		{# Infos #}
-		<a href="/produits/{{ product.slug }}" class="nide-card__body">
+		<a href="/miels/{{ product.slug }}" class="nide-card__body">
 
 			{% if product.originCountry %}
 				<span class="nide-card__origin">{{ product.originCountry|country_name('fr') }}</span>

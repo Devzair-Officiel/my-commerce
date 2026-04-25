@@ -4,6 +4,7 @@ namespace App\Entity;
 
 use App\Trait\SeoFieldsTrait;
 use App\Trait\DateTrait;
+use App\Entity\WholesaleTier;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use App\Repository\ProductRepository;
@@ -110,6 +111,23 @@ class Product
     #[ORM\Column(nullable: true)]
     private ?bool $isSpecialOffer = null;
 
+    #[ORM\Column(nullable: true)]
+    private ?bool $isWholesaleAvailable = false;
+
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    private ?string $wholesaleDescription = null;
+
+    #[ORM\Column(nullable: true)]
+    #[Assert\Positive(message: 'La quantité minimale doit être positive.')]
+    private ?int $wholesaleMinQtyKg = null;
+
+    /**
+     * @var Collection<int, WholesaleTier>
+     */
+    #[ORM\OneToMany(mappedBy: 'product', targetEntity: WholesaleTier::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
+    #[ORM\OrderBy(['minQtyKg' => 'ASC'])]
+    private Collection $wholesaleTiers;
+
     /**
      * @var Collection<int, Media>
      */
@@ -142,6 +160,7 @@ class Product
         $this->wishlists = new ArrayCollection();
         $this->relatedProducts = new ArrayCollection();
         $this->reviews = new ArrayCollection();
+        $this->wholesaleTiers = new ArrayCollection();
     }
 
     // ---------------------------------------------------------------------
@@ -522,8 +541,9 @@ class Product
 
             $alt = $media->getAlt();
             $data[] = [
-                'filename' => $filename,
-                'alt' => (\is_string($alt) && $alt !== '') ? $alt : null,
+                'filename'    => $filename,
+                'alt'         => (\is_string($alt) && $alt !== '') ? $alt : null,
+                'isWholesale' => $media->isWholesale() ?? false,
             ];
         }
 
@@ -531,6 +551,41 @@ class Product
     }
 
     
+
+    // ---------------------------------------------------------------------
+    // Wholesale
+    // ---------------------------------------------------------------------
+
+    public function isWholesaleAvailable(): ?bool { return $this->isWholesaleAvailable; }
+    public function setIsWholesaleAvailable(?bool $v): static { $this->isWholesaleAvailable = $v; return $this; }
+
+    public function getWholesaleDescription(): ?string { return $this->wholesaleDescription; }
+    public function setWholesaleDescription(?string $v): static { $this->wholesaleDescription = $v; return $this; }
+
+    public function getWholesaleMinQtyKg(): ?int { return $this->wholesaleMinQtyKg; }
+    public function setWholesaleMinQtyKg(?int $v): static { $this->wholesaleMinQtyKg = $v; return $this; }
+
+    /** @return Collection<int, WholesaleTier> */
+    public function getWholesaleTiers(): Collection { return $this->wholesaleTiers; }
+
+    public function addWholesaleTier(WholesaleTier $tier): static
+    {
+        if (!$this->wholesaleTiers->contains($tier)) {
+            $this->wholesaleTiers->add($tier);
+            $tier->setProduct($this);
+        }
+        return $this;
+    }
+
+    public function removeWholesaleTier(WholesaleTier $tier): static
+    {
+        if ($this->wholesaleTiers->removeElement($tier)) {
+            if ($tier->getProduct() === $this) {
+                $tier->setProduct(null);
+            }
+        }
+        return $this;
+    }
 
     // ---------------------------------------------------------------------
     // Misc

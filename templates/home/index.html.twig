@@ -14,10 +14,15 @@
 			<link rel="preload" as="video" href="/assets/videos/hero/{{ heroVideo }}" type="video/mp4">
 		{% endif %}
 	{% elseif sliders|length > 0 %}
-		{# Préchargement LCP — image originale (toujours disponible) #}
+		{# Préchargement LCP — WebP prioritaire, fallback PNG #}
+		{% set _lcpSlug = sliders[0].mediaSlider|split('.')|slice(0, -1)|join('.') %}
+		{% set _lcpWebp = '/assets/images/sliders/' ~ _lcpSlug ~ '-large.webp' %}
+		{% set _lcpPng  = '/assets/images/sliders/' ~ sliders[0].mediaSlider %}
 		<link rel="preload" as="image"
-			href="/assets/images/sliders/{{ sliders[0].mediaSlider }}"
+			href="{{ _lcpWebp }}"
+			imagesrcset="{{ _lcpWebp }} 1440w, {{ _lcpPng }} 1440w"
 			imagesizes="100vw"
+			type="image/webp"
 			fetchpriority="high">
 	{% endif %}
 {% endblock %}

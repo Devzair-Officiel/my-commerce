@@ -1,64 +1,10 @@
 {% extends 'checkout.html.twig' %}
 
-{% block title %}Miel World | check!{% endblock %}
+{% block title %}{{ globalSetting.website_name }} | Finaliser ma commande{% endblock %}
 
 {% block stylesheets %}
-	{# Font Awesome supprimé — icônes migrées vers SVG sprite Lucide #}
 	<link rel="stylesheet" href="/assets/css/stripe.css">
 	<style>
-		/* ── Address cards ──────────────────────────────────── */
-		.address-card-item {
-			border: 2px solid #e5e7eb;
-			border-radius: 10px;
-			padding: 14px 16px;
-			cursor: pointer;
-			display: flex;
-			align-items: flex-start;
-			gap: 12px;
-			transition: border-color .15s, background .15s, box-shadow .15s;
-			background: #fff;
-			margin-bottom: 10px;
-			outline: none;
-		}
-		.address-card-item:hover {
-			border-color: #adb5bd;
-			box-shadow: 0 2px 8px rgba(0,0,0,.08);
-		}
-		.address-card-item--active {
-			border-color: #0d6efd;
-			background: #f0f5ff;
-			box-shadow: 0 0 0 3px rgba(13,110,253,.12);
-		}
-		.address-card-icon {
-			width: 26px;
-			height: 26px;
-			border-radius: 50%;
-			border: 2px solid #dee2e6;
-			display: flex;
-			align-items: center;
-			justify-content: center;
-			flex-shrink: 0;
-			margin-top: 2px;
-			color: transparent;
-			transition: all .15s;
-		}
-		.address-card-item--active .address-card-icon {
-			background: #0d6efd;
-			border-color: #0d6efd;
-			color: #fff;
-		}
-		.address-card-name {
-			font-weight: 600;
-			font-size: 14px;
-			color: #1a1a1a;
-		}
-		.address-card-details {
-			font-size: 13px;
-			color: #6b7280;
-			line-height: 1.5;
-			margin-top: 3px;
-		}
-
 		/* ── Pickup point modal ─────────────────────────────── */
 		#colissimo-modal .modal-dialog { max-width: min(920px, 98vw); margin: 10px auto; }
 		#colissimo-modal .modal-content { border: none; border-radius: 12px; overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,.22); }
@@ -66,35 +12,26 @@
 		#colissimo-modal .modal-header .modal-title { font-size: 14px; font-weight: 700; }
 		#colissimo-modal .modal-body { padding: 0 !important; height: 540px; background: #fff; display: flex; flex-direction: column; overflow: hidden; }
 		@media (max-width: 767px) { #colissimo-modal .modal-body { height: 75vh; max-height: 600px; } }
-
-		/* Layout wrap */
 		.pup-wrap { display: flex; flex: 1; min-height: 0; overflow: hidden; }
-
-		/* Sidebar */
 		.pup-sidebar { display: flex; flex-direction: column; width: 320px; flex-shrink: 0; border-right: 1px solid #ececec; background: #fff; min-width: 0; }
 		@media (max-width: 767px) { .pup-sidebar { width: 100%; border-right: none; } }
-
-		/* Search */
 		.pup-search-bar { display: flex; gap: 8px; padding: 10px 12px; border-bottom: 1px solid #f0f0f0; flex-shrink: 0; align-items: center; background: #fafafa; }
 		.pup-zip { flex: 1; font-size: 13px; border: 1px solid #ddd; border-radius: 6px; padding: 5px 10px; outline: none; }
-		.pup-zip:focus { border-color: #E87722; box-shadow: 0 0 0 3px rgba(232,119,34,.1); }
-		.pup-search-bar .pup-search-btn { background: #E87722; color: #fff; border: none; border-radius: 6px; padding: 7px 12px !important; cursor: pointer; flex-shrink: 0; display: flex; align-items: center; justify-content: center; width: auto !important; min-width: unset !important; max-width: unset !important; line-height: 1; }
-		.pup-search-btn:hover { background: #d06a18; }
+		.pup-zip:focus { border-color: #c8963e; box-shadow: 0 0 0 3px rgba(200,150,62,.12); }
+		.pup-search-bar .pup-search-btn { background: #c8963e; color: #fff; border: none; border-radius: 6px; padding: 7px 12px !important; cursor: pointer; flex-shrink: 0; display: flex; align-items: center; justify-content: center; width: auto !important; min-width: unset !important; max-width: unset !important; line-height: 1; }
+		.pup-search-btn:hover { background: #b07830; }
 		.pup-search-btn:disabled { opacity: .5; cursor: not-allowed; }
-
-		/* List */
 		.pup-list { flex: 1; overflow-y: auto; }
 		.pup-item { padding: 11px 14px; cursor: pointer; border-bottom: 1px solid #f5f5f5; transition: background .1s; outline: none; }
-		.pup-item:hover { background: #fffaf6; }
-		.pup-item:focus { background: #fffaf6; }
-		.pup-item--active { background: #fff5ec; border-left: 3px solid #E87722; padding-left: 11px; }
+		.pup-item:hover, .pup-item:focus { background: #fffaf5; }
+		.pup-item--active { background: #fdf4e7; border-left: 3px solid #c8963e; padding-left: 11px; }
 		.pup-item-top { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 2px; }
 		.pup-item-name { font-size: 12px; font-weight: 700; color: #1a1a1a; text-transform: capitalize; line-height: 1.3; }
-		.pup-item-dist { font-size: 11px; color: #E87722; font-weight: 600; white-space: nowrap; flex-shrink: 0; }
+		.pup-item-dist { font-size: 11px; color: #c8963e; font-weight: 600; white-space: nowrap; flex-shrink: 0; }
 		.pup-item-addr { font-size: 11px; color: #6b7280; margin-bottom: 5px; }
 		.pup-item-hours { margin-top: 5px; }
 		.pup-today-open { font-size: 11px; color: #1a1a1a; }
-		.pup-today-open strong { color: #c05e10; }
+		.pup-today-open strong { color: #b07830; }
 		.pup-today-closed { font-size: 11px; color: #6b7280; }
 		.pup-today-closed strong { color: #6b7280; }
 		.pup-hours-details { margin-top: 3px; }
@@ -106,95 +43,23 @@
 		.pup-hours-day { color: #6b7280; width: 28px; font-weight: 600; }
 		.pup-hours-val { color: #374151; }
 		.pup-hours-closed { color: #6b7280; font-style: italic; }
-		.pup-hours-today .pup-hours-day { color: #c05e10; }
+		.pup-hours-today .pup-hours-day { color: #b07830; }
 		.pup-hours-today .pup-hours-val { color: #1a1a1a; font-weight: 600; }
 		@keyframes spin { to { transform: rotate(360deg); } }
-		.pup-select-btn { margin-top: 6px; font-size: 11px; font-weight: 700; color: #E87722; border: 1px solid #E87722; border-radius: 4px; padding: 3px 10px; background: none; cursor: pointer; display: none; }
+		.pup-select-btn { margin-top: 6px; font-size: 11px; font-weight: 700; color: #c8963e; border: 1px solid #c8963e; border-radius: 4px; padding: 3px 10px; background: none; cursor: pointer; display: none; }
 		.pup-item--active .pup-select-btn { display: inline-block; }
-		.pup-select-btn:hover { background: #E87722; color: #fff; }
-
-		/* Map */
+		.pup-select-btn:hover { background: #c8963e; color: #fff; }
 		.pup-map-wrap { flex: 1; position: relative; min-width: 0; overflow: hidden; }
 		@media (max-width: 767px) { .pup-map-wrap { display: none; } }
 		.pup-map { position: absolute; inset: 0; }
-
-		/* Markers Colissimo */
 		.pup-marker { transition: filter .15s; filter: drop-shadow(0 1px 3px rgba(0,0,0,.4)); opacity: .75; }
-		.pup-marker-active { filter: drop-shadow(0 2px 8px rgba(232,119,34,.8)) !important; opacity: 1 !important; }
-
-		/* Zip autocomplete */
+		.pup-marker-active { filter: drop-shadow(0 2px 8px rgba(200,150,62,.8)) !important; opacity: 1 !important; }
 		.pup-ac-list { position: absolute; top: 100%; left: 0; right: 0; z-index: 2000; background: #fff; border: 1px solid #e5e7eb; border-radius: 8px; box-shadow: 0 4px 16px rgba(0,0,0,.12); list-style: none; margin: 3px 0 0; padding: 4px 0; max-height: 220px; overflow-y: auto; }
 		.pup-ac-item { padding: 7px 12px; cursor: pointer; font-size: 12px; transition: background .1s; }
-		.pup-ac-item:hover, .pup-ac-item--active { background: #fff5ec; }
+		.pup-ac-item:hover, .pup-ac-item--active { background: #fdf4e7; }
 		.pup-ac-label { color: #374151; }
-
-		/* States */
 		.pup-loading { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; gap: 12px; color: #888; font-size: 14px; }
 		.pup-error { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: #888; font-size: 13px; text-align: center; padding: 24px; gap: 8px; }
-
-		/* ── Bouton "Choisir un point relais" ───────────────── */
-		#pickup-open-btn {
-			background: none;
-			border: 2px dashed #ccc;
-			border-radius: 12px;
-			cursor: pointer;
-			width: 100%;
-			padding: 16px;
-			display: flex;
-			align-items: center;
-			gap: 14px;
-			transition: border-color .25s ease, background .25s ease, box-shadow .25s ease, transform .15s ease;
-		}
-		#pickup-open-btn:hover {
-			border-color: #E87722;
-			background: #fff8f3;
-			box-shadow: 0 4px 16px rgba(232,119,34,.12);
-			transform: translateY(-1px);
-		}
-		#pickup-open-btn:active {
-			transform: translateY(0);
-			box-shadow: none;
-		}
-		#pickup-open-btn .pickup-btn-chevron {
-			transition: transform .25s ease;
-		}
-		#pickup-open-btn:hover .pickup-btn-chevron {
-			transform: translateX(4px);
-		}
-
-		/* ── Adresse point relais sélectionné ───────────────── */
-		.pickup-selected {
-            margin: auto;
-            padding: 7px 14px;
-		}
-
-
-		/* ── Carrier options ────────────────────────────────── */
-		.carrier-option {
-			transition: border-color .15s, background .15s;
-		}
-		.carrier-option--active {
-			border-color: #0d6efd !important;
-			background: #f0f5ff;
-		}
-
-		/* ── Section headings ───────────────────────────────── */
-		.checkout-section-title {
-			font-size: 15px;
-			font-weight: 700;
-			color: #374151;
-			margin-bottom: 12px;
-			display: flex;
-			align-items: center;
-			gap: 8px;
-		}
-		.checkout-section-title::after {
-			content: '';
-			flex: 1;
-			height: 1px;
-			background: #e5e7eb;
-		}
-        
 	</style>
 {% endblock %}
 
@@ -203,513 +68,459 @@
 {% endblock %}
 
 {% block body %}
-	{% set total_products = 0 %}
-	{% for item in cart.items %}
-		{% set total_products = total_products + (item.quantity ?? 0) %}
-	{% endfor %}
+{% set total_products = 0 %}
+{% for item in cart.items %}
+	{% set total_products = total_products + (item.quantity ?? 0) %}
+{% endfor %}
 
-	<div
-		class="main_content"
-		data-stripe-public-key="{{ stripe_public_key }}"
-		data-cart="{{ cart_json|e('html_attr') }}"
-		data-orderid="{{ orderId }}"
-		data-colissimo-token="{{ colissimo_token }}"
-		data-colissimo-zipcode="{{ addresses|first ? addresses|first.codePostal : '' }}"
-		data-colissimo-city="{{ addresses|first ? addresses|first.city : '' }}"
-		data-address-api="{{ address_api }}"
-		data-address-csrf="{{ csrf_token('address_api') }}"
-		data-countries-url="{{ asset('assets/data/countries.json') }}"
-	>
-		<div class="section">
-			<div class="container">
-				<div class="row">
-					<div class="col-12 mb-3">
-						<div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
-							<a href="{{ path('app_cart') }}" class="btn btn-outline-secondary btn-sm" aria-label="Revenir au panier">
-								<svg class="icon me-1" aria-hidden="true"><use href="#icon-arrow-left"></use></svg>
-								Revenir au panier
-							</a>
+<div class="nide-checkout main_content"
+	data-stripe-public-key="{{ stripe_public_key }}"
+	data-cart="{{ cart_json|e('html_attr') }}"
+	data-orderid="{{ orderId }}"
+	data-colissimo-token="{{ colissimo_token }}"
+	data-colissimo-zipcode="{{ addresses|first ? addresses|first.codePostal : '' }}"
+	data-colissimo-city="{{ addresses|first ? addresses|first.city : '' }}"
+	data-address-api="{{ address_api }}"
+	data-address-csrf="{{ csrf_token('address_api') }}"
+	data-countries-url="{{ asset('assets/data/countries.json') }}">
 
-							<div class="d-flex align-items-center gap-2 flex-wrap">
-								<h1 class="mb-0" style="font-size:1.4rem;">Checkout</h1>
-							</div>
+	<div class="container">
 
-							<div class="badge bg-light text-dark border">
-								{{ total_products }} produit{% if total_products > 1 %}s{% endif %} dans le panier
-							</div>
-						</div>
-						<hr>
-					</div>
-				</div>
+		{# ── En-tête ── #}
+		<div class="nide-checkout__header">
+			<a href="{{ path('app_cart') }}" class="nide-checkout__back">
+				<svg class="icon" aria-hidden="true"><use href="#icon-arrow-left"></use></svg>
+				Panier
+			</a>
+			<div class="nide-checkout__steps">
+				<span class="nide-checkout__step nide-checkout__step--active">
+					<span class="nide-checkout__step-num">1</span> Livraison
+				</span>
+				<span class="nide-checkout__step-sep" aria-hidden="true"></span>
+				<span class="nide-checkout__step">
+					<span class="nide-checkout__step-num">2</span> Paiement
+				</span>
+			</div>
+			<span class="nide-checkout__count">
+				{{ total_products }} article{% if total_products > 1 %}s{% endif %}
+			</span>
+		</div>
 
-				<div class="row">
-					<div class="col-md-6">
+		<div class="nide-checkout__body">
 
-						{# ── Mode de livraison ──────────────────────────────── #}
-						{% if carriers|length > 0 %}
-						<div class="mb-3">
-							<div class="checkout-section-title {% if carriers|length == 1 %}d-none{% endif %}">
-								<svg class="icon" aria-hidden="true" style="color:#6b7280; width:13px; height:13px;"><use href="#icon-truck"></use></svg>
-								Mode de livraison
-							</div>
-							<div class="carrier-list {% if carriers|length == 1 %}d-none{% endif %}" role="radiogroup" aria-label="Mode de livraison">
-								{% for carrier in carriers %}
-									<label class="carrier-option d-flex align-items-center gap-3 p-3 border rounded mb-2"
-										   style="cursor:pointer"
-										   data-carrier-id="{{ carrier.id }}"
-										   data-has-pickup="{{ carrier.hasPickupPoints() ? 'true' : 'false' }}"
-										   data-price="{{ carrier.price }}">
-										<input type="radio" name="carrier" value="{{ carrier.id }}" class="carrier-radio">
-										<div class="flex-grow-1 d-flex align-items-center gap-2">
-											{% if carrier.hasPickupPoints() %}
-												<img src="https://www.colissimo.fr/favicon.ico" alt="Colissimo" width="20" height="20" style="flex-shrink:0;">
-											{% endif %}
-											<div>
-												<div class="fw-semibold">{{ carrier.name }}</div>
-												{% if carrier.deliveryDelay %}
-													<div class="text-muted small">{{ carrier.deliveryDelay }}</div>
-												{% endif %}
-											</div>
-										</div>
-										<div class="fw-bold text-nowrap">
-											{% if carrier.price == 0 or cart.sub_total >= cart.free_shipping_threshold %}
-												<span class="text-success">Offert</span>
-											{% else %}
-												{{ (carrier.price / 100)|format_currency('EUR') }}
-											{% endif %}
-										</div>
-									</label>
-								{% endfor %}
-							</div>
+			{# ══ Colonne gauche — formulaire ══ #}
+			<div class="nide-checkout__form-col">
 
-							{# ── Point relais — juste sous la liste des transporteurs ── #}
-							<div id="pickup-point-section" class="mt-2 d-none">
-
-								{# Bouton d'ouverture du widget #}
-								<div id="pickup-open-btn-wrapper">
-									<button type="button" id="pickup-open-btn">
-										<img src="https://www.colissimo.fr/favicon.ico" alt="Colissimo" width="30" height="30" style="flex-shrink:0;">
-										<div style="text-align:left; flex:1;">
-											<div style="font-weight:600; font-size:14px; color:#222;">Choisir un point relais Colissimo</div>
-											<div style="font-size:12px; color:#888; margin-top:2px;">Bureaux de poste, relais commerçants…</div>
-										</div>
-										<svg class="icon pickup-btn-chevron" aria-hidden="true" style="color:#aaa; width:12px; height:12px; flex-shrink:0;"><use href="#icon-chevron-right"></use></svg>
-									</button>
-								</div>
-
-								{# Récapitulatif du point relais choisi #}
-								<div id="pickup-selected" class="d-none">
-									<div class="address-card-item address-card-item--active">
-										<div id="pickup-selected-label"></div>
-										<button type="button" class="btn btn-fill-line pickup-selected">
-											<svg class="icon" aria-hidden="true"><use href="#icon-pen"></use></svg> Changer de point de retrait
-										</button>
+				{# ── Mode de livraison ── #}
+				{% if carriers|length > 0 %}
+				<div class="nide-checkout__section">
+					<h2 class="nide-checkout__section-title">
+						<svg class="icon" aria-hidden="true"><use href="#icon-truck"></use></svg>
+						Mode de livraison
+					</h2>
+					<div class="nide-carrier-list {% if carriers|length == 1 %}d-none{% endif %}" role="radiogroup" aria-label="Mode de livraison">
+						{% for carrier in carriers %}
+							<label class="nide-carrier-option carrier-option"
+								   data-carrier-id="{{ carrier.id }}"
+								   data-has-pickup="{{ carrier.hasPickupPoints() ? 'true' : 'false' }}"
+								   data-price="{{ carrier.price }}">
+								<input type="radio" name="carrier" value="{{ carrier.id }}" class="carrier-radio nide-carrier-option__radio">
+								<div class="nide-carrier-option__body">
+									{% if carrier.hasPickupPoints() %}
+										<img src="https://www.colissimo.fr/favicon.ico" alt="Colissimo" width="22" height="22" class="nide-carrier-option__logo">
+									{% else %}
+										<span class="nide-carrier-option__icon">
+											<svg class="icon" aria-hidden="true"><use href="#icon-truck"></use></svg>
+										</span>
+									{% endif %}
+									<div class="nide-carrier-option__info">
+										<span class="nide-carrier-option__name">{{ carrier.name }}</span>
+										{% if carrier.deliveryDelay %}
+											<span class="nide-carrier-option__delay">{{ carrier.deliveryDelay }}</span>
+										{% endif %}
 									</div>
 								</div>
-							</div>
-						</div>
-
-						{# ── Téléphone requis pour point relais ───────────── #}
-						<div id="pickup-phone-section" class="mb-3 d-none">
-							<label for="pickup-phone" class="form-label fw-semibold" style="font-size:13px;">
-								<svg class="icon me-1" aria-hidden="true" style="color:#6b7280;"><use href="#icon-phone"></use></svg>
-								Numéro de portable <span class="text-danger">*</span>
-								<span class="text-muted fw-normal" style="font-size:12px;">(requis pour recevoir le SMS d'arrivée)</span>
+								<div class="nide-carrier-option__price">
+									{% if carrier.price == 0 or cart.sub_total >= cart.free_shipping_threshold %}
+										<span class="nide-carrier-option__free">Offert</span>
+									{% else %}
+										{{ (carrier.price / 100)|format_currency('EUR') }}
+									{% endif %}
+								</div>
 							</label>
-							<input type="tel" id="pickup-phone" name="pickup_phone"
-								   class="form-control form-control-sm"
-								   placeholder="06 00 00 00 00"
-								   inputmode="tel"
-								   maxlength="20"
-								   value="{{ app.user.phone ?? '' }}">
-							<div id="pickup-phone-error" class="text-danger small mt-1 d-none">Veuillez saisir votre numéro de portable.</div>
-						</div>
-
-						{% endif %}
-
-						{# ── Modale sélecteur points relais (Leaflet + OSM) ── #}
-						<div class="modal fade" id="colissimo-modal" tabindex="-1" aria-labelledby="colissimoModalLabel" aria-hidden="true">
-							<div class="modal-dialog modal-dialog-centered">
-								<div class="modal-content">
-									<div class="modal-header">
-										<div class="d-flex align-items-center gap-2">
-											<img src="https://www.colissimo.fr/favicon.ico" alt="Colissimo" width="22" height="22">
-											<div>
-												<h5 class="modal-title mb-0" id="colissimoModalLabel">Choisir un point relais</h5>
-												<div class="text-muted" style="font-size:11px; line-height:1.2;">Colissimo — La Poste</div>
-											</div>
-										</div>
-										<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
-									</div>
-									<div class="modal-body" id="colissimo-modal-body"></div>
-								</div>
-							</div>
-						</div>
-
-						{# ── Adresse de livraison (mode domicile) ─────────── #}
-						<div id="shipping-address-section" class="mb-4">
-							<div class="checkout-section-title">
-								<svg class="icon" aria-hidden="true" style="color:#6b7280; width:13px; height:13px;"><use href="#icon-location"></use></svg>
-								Adresse de livraison
-							</div>
-
-							{# Select caché — utilisé par le JS pour lire la valeur #}
-							<select id="shipping_address" name="shipping_address" class="d-none" aria-hidden="true" tabindex="-1">
-								<option value=""></option>
-								{% for address in addresses %}
-									<option value="{{ address.id }}">{{ address.clientName }}</option>
-								{% endfor %}
-							</select>
-
-							{% if addresses|length == 0 %}
-								<div class="alert alert-warning mt-2" role="status">
-									Vous n'avez aucune adresse enregistrée. Ajoutez-en une pour continuer.
-								</div>
-							{% endif %}
-
-							{# Cartes adresses #}
-							<div id="shipping-address-cards">
-								{% for address in addresses %}
-									<div class="address-card-item" data-address-id="{{ address.id }}" role="button" tabindex="0" aria-label="{{ address.clientName }}, {{ address.street }}, {{ address.codePostal }} {{ address.city }}">
-										<div class="address-card-icon">
-											<svg class="icon" aria-hidden="true" style="width:11px; height:11px;"><use href="#icon-check"></use></svg>
-										</div>
-										<div>
-											<div class="address-card-name">{{ address.clientName }}</div>
-											<div class="address-card-details">
-												{{ address.street }}{% if address.moreDetails %}, {{ address.moreDetails }}{% endif %}<br>
-												{{ address.codePostal }} {{ address.city }}<br>
-												{{ address.state }}
-											</div>
-										</div>
-									</div>
-								{% endfor %}
-							</div>
-
-							<div class="mt-2">
-								<a href="#" class="btn btn-outline-secondary btn-sm" id="checkout-add-address-btn">
-									<svg class="icon me-1" aria-hidden="true"><use href="#icon-plus"></use></svg>Ajouter une adresse de livraison
-								</a>
-							</div>
-
-							<div id="checkout-add-address-form" class="card mt-3 d-none border-0 shadow-sm">
-								<div class="card-body">
-									<h3 class="card-title mb-3 fw-bold" style="font-size:1rem;">Nouvelle adresse</h3>
-
-									<form id="checkoutAddressForm">
-										<div class="row g-3">
-											<input type="hidden" name="address_type" value="livraison">
-
-											<div class="form-group col-md-12">
-												<label class="form-label small fw-semibold">Nom de l'adresse <span class="text-danger">*</span></label>
-												<input required class="form-control form-control-sm" name="name" type="text">
-											</div>
-
-											<div class="form-group col-md-12">
-												<label class="form-label small fw-semibold">Nom du destinataire <span class="text-danger">*</span></label>
-												<input required class="form-control form-control-sm" name="client_name" type="text">
-											</div>
-
-											<div class="form-group col-md-8">
-												<label class="form-label small fw-semibold">Rue <span class="text-danger">*</span></label>
-												<div class="position-relative">
-													<input required class="form-control form-control-sm address-street-input" name="street" type="text" autocomplete="off" placeholder="Commencez à taper votre adresse…">
-													<ul class="address-suggestions list-unstyled" role="listbox" aria-label="Suggestions d'adresse"></ul>
-												</div>
-											</div>
-
-											<div class="form-group col-md-4">
-												<label class="form-label small fw-semibold">Code postal <span class="text-danger">*</span></label>
-												<input required class="form-control form-control-sm address-code-postal-input" name="code_postal" type="text" inputmode="numeric" maxlength="10">
-											</div>
-
-											<div class="form-group col-md-8">
-												<label class="form-label small fw-semibold">Ville <span class="text-danger">*</span></label>
-												<input required class="form-control form-control-sm address-city-input" name="city" type="text">
-											</div>
-
-											<div class="form-group col-md-4">
-												<label class="form-label small fw-semibold">Pays <span class="text-danger">*</span></label>
-												<select class="form-select form-select-sm" name="state" id="checkout-state" required></select>
-											</div>
-
-											<div class="form-group col-md-12">
-												<label class="form-label small fw-semibold">Complément (optionnel)</label>
-												<input class="form-control form-control-sm" name="more_details" type="text" maxlength="500">
-											</div>
-
-											<div class="col-md-12 d-flex gap-2">
-												<button type="submit" class="btn btn-fill-out btn-sm">Enregistrer</button>
-												<button type="button" class="btn btn-outline-secondary btn-sm" id="checkout-cancel-address">
-													Annuler
-												</button>
-											</div>
-										</div>
-									</form>
-								</div>
-							</div>
-						</div>{# fin shipping-address-section #}
-
-						{# ── Adresse de facturation ──────────────────────── #}
-						<div class="mb-4">
-							<div class="checkout-section-title">
-								<svg class="icon" aria-hidden="true" style="color:#6b7280; width:13px; height:13px;"><use href="#icon-file"></use></svg>
-								Adresse de facturation
-							</div>
-
-							{# Select caché — utilisé par le JS pour lire la valeur #}
-							<select id="billing_address" name="billing_address" class="d-none" aria-hidden="true" tabindex="-1">
-								<option value=""></option>
-								{% for address in addresses %}
-									<option value="{{ address.id }}">{{ address.clientName }}</option>
-								{% endfor %}
-							</select>
-
-							{% if addresses|length == 0 %}
-								<div class="alert alert-warning mt-2" role="status">
-									Vous n'avez aucune adresse enregistrée. Ajoutez-en une pour continuer.
-								</div>
-							{% endif %}
-
-							{# Cartes adresses #}
-							<div id="billing-address-cards">
-								{% for address in addresses %}
-									<div class="address-card-item" data-address-id="{{ address.id }}" role="button" tabindex="0" aria-label="{{ address.clientName }}, {{ address.street }}, {{ address.codePostal }} {{ address.city }}">
-										<div class="address-card-icon">
-											<svg class="icon" aria-hidden="true" style="width:11px; height:11px;"><use href="#icon-check"></use></svg>
-										</div>
-										<div>
-											<div class="address-card-name">{{ address.clientName }}</div>
-											<div class="address-card-details">
-												{{ address.street }}{% if address.moreDetails %}, {{ address.moreDetails }}{% endif %}<br>
-												{{ address.codePostal }} {{ address.city }}<br>
-												{{ address.state }}
-											</div>
-										</div>
-									</div>
-								{% endfor %}
-							</div>
-
-							<div class="mt-2">
-								<a href="#" class="btn btn-outline-secondary btn-sm" id="checkout-add-billing-btn">
-									<svg class="icon me-1" aria-hidden="true"><use href="#icon-plus"></use></svg>Ajouter une adresse de facturation
-								</a>
-							</div>
-
-							<div id="checkout-add-billing-form" class="card mt-3 d-none border-0 shadow-sm">
-								<div class="card-body">
-									<h3 class="card-title mb-3 fw-bold" style="font-size:1rem;">Nouvelle adresse de facturation</h3>
-
-									<form id="checkoutBillingAddressForm">
-										<div class="row g-3">
-											<div class="form-group col-md-12">
-												<label class="form-label small fw-semibold">Nom de l'adresse <span class="text-danger">*</span></label>
-												<input required class="form-control form-control-sm" name="name" type="text">
-											</div>
-
-											<div class="form-group col-md-12">
-												<label class="form-label small fw-semibold">Nom du destinataire <span class="text-danger">*</span></label>
-												<input required class="form-control form-control-sm" name="client_name" type="text">
-											</div>
-
-											<div class="form-group col-md-8">
-												<label class="form-label small fw-semibold">Rue <span class="text-danger">*</span></label>
-												<div class="position-relative">
-													<input required class="form-control form-control-sm address-street-input" name="street" type="text" autocomplete="off" placeholder="Commencez à taper votre adresse…">
-													<ul class="address-suggestions list-unstyled" role="listbox" aria-label="Suggestions d'adresse"></ul>
-												</div>
-											</div>
-
-											<div class="form-group col-md-4">
-												<label class="form-label small fw-semibold">Code postal <span class="text-danger">*</span></label>
-												<input required class="form-control form-control-sm address-code-postal-input" name="code_postal" type="text" inputmode="numeric" maxlength="10">
-											</div>
-
-											<div class="form-group col-md-8">
-												<label class="form-label small fw-semibold">Ville <span class="text-danger">*</span></label>
-												<input required class="form-control form-control-sm address-city-input" name="city" type="text">
-											</div>
-
-											<div class="form-group col-md-4">
-												<label class="form-label small fw-semibold">Pays <span class="text-danger">*</span></label>
-												<select class="form-select form-select-sm" name="state" id="checkout-billing-state" required></select>
-											</div>
-
-											<div class="form-group col-md-12">
-												<label class="form-label small fw-semibold">Complément (optionnel)</label>
-												<input class="form-control form-control-sm" name="more_details" type="text" maxlength="500">
-											</div>
-
-											<div class="col-md-12 d-flex gap-2">
-												<button type="submit" class="btn btn-fill-out btn-sm">Enregistrer</button>
-												<button type="button" class="btn btn-outline-secondary btn-sm" id="checkout-cancel-billing">
-													Annuler
-												</button>
-											</div>
-										</div>
-									</form>
-								</div>
-							</div>
-						</div>
-
-						{# ── Commentaire ──────────────────────────────────── #}
-						<div class="mb-4">
-							<div class="checkout-section-title">
-								<svg class="icon" aria-hidden="true" style="color:#6b7280; width:13px; height:13px;"><use href="#icon-message"></use></svg>
-								Commentaire
-							</div>
-							<label class="visually-hidden" for="comment">Commentaire</label>
-							<textarea
-								class="form-control"
-								name="comment"
-								id="comment"
-								rows="4"
-								maxlength="2000"
-								placeholder="(Optionnel) Indications pour la livraison…"
-							></textarea>
-							<small class="text-muted">2000 caractères max.</small>
-						</div>
+						{% endfor %}
 					</div>
 
-					<div class="col-md-6">
-						<div class="order_review">
-							<div class="heading_s1 d-flex justify-content-between align-items-center">
-								<h2 class="mb-0" style="font-size:1.1rem;">Votre commande</h2>
-								<span class="text-muted small">
-									{{ total_products }} article{% if total_products > 1 %}s{% endif %}
-								</span>
-							</div>
-
-							<div class="table-responsive order_table mt-3">
-								<table class="table">
-									<thead>
-										<tr>
-											<th>Produit</th>
-											<th class="text-end">Total</th>
-										</tr>
-									</thead>
-									<tbody>
-										{% for item in cart.items %}
-											{% set unit_price_cents = item.product.soldePrice ?? item.product.regularPrice ?? 0 %}
-											<tr>
-												<td>
-													<div class="d-flex align-items-center gap-2">
-														<img
-															src="/assets/images/products/{{ item.product.image[0].filename }}"
-															width="36"
-															height="36"
-															loading="lazy"
-															alt="{{ item.product.image[0].alt }}"
-														/>
-														<div>
-															<div class="fw-semibold">{{ item.product.title }}</div>
-															<div class="small text-muted">
-																<span class="product-qty">{{ item.quantity }}</span>
-																×
-																<span class="product-price">{{ (unit_price_cents / 100)|format_currency('EUR') }}</span>
-															</div>
-														</div>
-													</div>
-												</td>
-												<td class="text-end">
-													{{ (unit_price_cents * item.quantity / 100)|format_currency('EUR') }}
-												</td>
-											</tr>
-										{% endfor %}
-									</tbody>
-
-									<tfoot>
-										<tr>
-											<th>Sous-total HT</th>
-											<td class="text-end">{{ (cart.sub_total_ht / 100)|format_currency('EUR') }}</td>
-										</tr>
-										<tr>
-											<th>TVA</th>
-											<td class="text-end">{{ (cart.taxe / 100)|format_currency('EUR') }}</td>
-										</tr>
-										<tr>
-											<th id="checkout-shipping-label">
-												{% if cart.carrier.free_shipping %}
-													Livraison offerte
-												{% else %}
-													Frais de livraison
-												{% endif %}
-											</th>
-											<td class="text-end" id="checkout-shipping-price">
-												{% if cart.carrier.free_shipping %}
-													Offert
-												{% else %}
-													{{ (cart.carrier.price / 100)|format_currency('EUR') }}
-												{% endif %}
-											</td>
-										</tr>
-										<tr>
-											<th>Total TTC</th>
-											<td class="text-end fw-bold" id="checkout-total">
-												{{ (cart.sub_total_with_carrier / 100)|format_currency('EUR') }}
-											</td>
-										</tr>
-									</tfoot>
-								</table>
-							</div>
-
-							{% if not cart.carrier.free_shipping and cart.free_shipping_remaining > 0 %}
-								<div class="alert alert-info mt-2" role="status">
-									🎁 Livraison offerte dès 50 € d'achat — encore
-									<strong>{{ (cart.free_shipping_remaining / 100)|format_currency('EUR') }}</strong>
+					{# Point relais #}
+					<div id="pickup-point-section" class="mt-3 d-none">
+						<div id="pickup-open-btn-wrapper">
+							<button type="button" id="pickup-open-btn" class="nide-pickup-btn">
+								<img src="https://www.colissimo.fr/favicon.ico" alt="Colissimo" width="28" height="28">
+								<div class="nide-pickup-btn__text">
+									<strong>Choisir un point relais Colissimo</strong>
+									<span>Bureaux de poste, relais commerçants…</span>
 								</div>
-							{% endif %}
-
-							<div class="alert alert-info mt-2 mb-0" id="checkout-hint" role="status">
-								Complète les informations de livraison et de facturation pour afficher le bouton de paiement.
-							</div>
-
-							<div class="payment-button d-none">
-								<button id="open-payment-modal" class="btn btn-fill-out btn-block" type="button">
-									Payer maintenant — <span id="checkout-pay-total">{{ (cart.sub_total_with_carrier / 100)|format_currency('EUR') }}</span>
+								<svg class="icon pickup-btn-chevron" aria-hidden="true"><use href="#icon-chevron-right"></use></svg>
+							</button>
+						</div>
+						<div id="pickup-selected" class="d-none">
+							<div class="nide-address-card nide-address-card--active">
+								<div id="pickup-selected-label"></div>
+								<button type="button" class="nide-checkout__link pickup-selected">
+									<svg class="icon" aria-hidden="true"><use href="#icon-pen"></use></svg> Changer
 								</button>
 							</div>
 						</div>
 					</div>
+
+					{# Téléphone point relais #}
+					<div id="pickup-phone-section" class="mt-3 d-none">
+						<label for="pickup-phone" class="nide-checkout__label">
+							<svg class="icon" aria-hidden="true"><use href="#icon-phone"></use></svg>
+							Numéro de portable <span class="nide-checkout__required">*</span>
+							<span class="nide-checkout__hint">requis pour le SMS d'arrivée</span>
+						</label>
+						<input type="tel" id="pickup-phone" name="pickup_phone"
+							   class="nide-checkout__input"
+							   placeholder="06 00 00 00 00"
+							   inputmode="tel" maxlength="20"
+							   value="{{ app.user.phone ?? '' }}">
+						<div id="pickup-phone-error" class="nide-checkout__error d-none">Veuillez saisir votre numéro de portable.</div>
+					</div>
 				</div>
-			</div>
-		</div>
-	</div>
+				{% endif %}
 
-	<div
-		class="modal fade"
-		id="staticBackdrop"
-		data-bs-backdrop="static"
-		data-bs-keyboard="false"
-		tabindex="-1"
-		aria-labelledby="staticBackdropLabel"
-		aria-hidden="true"
-	>
-		<div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
-			<div class="modal-content">
-				<div class="modal-header">
-					<h5 class="modal-title visually-hidden" id="staticBackdropLabel">Paiement</h5>
-					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
-				</div>
+				{# ── Adresse de livraison ── #}
+				<div class="nide-checkout__section" id="shipping-address-section">
+					<h2 class="nide-checkout__section-title">
+						<svg class="icon" aria-hidden="true"><use href="#icon-location"></use></svg>
+						Adresse de livraison
+					</h2>
 
-				<div class="modal-body">
-					<div id="stripe-method">
-						<form id="payment-form">
-							<div id="link-authentication-element"></div>
-							<div id="payment-element"></div>
+					<select id="shipping_address" name="shipping_address" class="d-none" aria-hidden="true" tabindex="-1">
+						<option value=""></option>
+						{% for address in addresses %}
+							<option value="{{ address.id }}">{{ address.clientName }}</option>
+						{% endfor %}
+					</select>
 
-							<button id="submit" type="submit">
-								<div class="spinner hidden" id="spinner"></div>
-								<span id="button-text">Payer maintenant</span>
-							</button>
+					{% if addresses|length == 0 %}
+						<div class="nide-checkout__alert nide-checkout__alert--warning">
+							<svg class="icon" aria-hidden="true"><use href="#icon-alert-triangle"></use></svg>
+							Vous n'avez aucune adresse enregistrée. Ajoutez-en une pour continuer.
+						</div>
+					{% endif %}
 
-							<div id="payment-message" class="hidden" aria-live="polite"></div>
+					<div id="shipping-address-cards" class="nide-address-cards">
+						{% for address in addresses %}
+							<div class="nide-address-card address-card-item"
+								 data-address-id="{{ address.id }}"
+								 role="button" tabindex="0"
+								 aria-label="{{ address.clientName }}, {{ address.street }}, {{ address.codePostal }} {{ address.city }}">
+								<div class="nide-address-card__radio address-card-icon">
+									<svg class="icon" aria-hidden="true"><use href="#icon-check"></use></svg>
+								</div>
+								<div class="nide-address-card__body">
+									<div class="nide-address-card__name address-card-name">{{ address.clientName }}</div>
+									<div class="nide-address-card__details address-card-details">
+										{{ address.street }}{% if address.moreDetails %}, {{ address.moreDetails }}{% endif %}<br>
+										{{ address.codePostal }} {{ address.city }}<br>
+										{{ address.state }}
+									</div>
+								</div>
+							</div>
+						{% endfor %}
+					</div>
+
+					<button type="button" class="nide-checkout__add-btn" id="checkout-add-address-btn">
+						<svg class="icon" aria-hidden="true"><use href="#icon-plus"></use></svg>
+						Ajouter une adresse
+					</button>
+
+					<div id="checkout-add-address-form" class="nide-checkout__address-form d-none">
+						<h3 class="nide-checkout__form-title">Nouvelle adresse</h3>
+						<form id="checkoutAddressForm">
+							<div class="nide-checkout__fields">
+								<input type="hidden" name="address_type" value="livraison">
+								<div class="nide-checkout__field nide-checkout__field--full">
+									<label class="nide-checkout__label">Nom de l'adresse <span class="nide-checkout__required">*</span></label>
+									<input required class="nide-checkout__input" name="name" type="text">
+								</div>
+								<div class="nide-checkout__field nide-checkout__field--full">
+									<label class="nide-checkout__label">Nom du destinataire <span class="nide-checkout__required">*</span></label>
+									<input required class="nide-checkout__input" name="client_name" type="text">
+								</div>
+								<div class="nide-checkout__field nide-checkout__field--grow">
+									<label class="nide-checkout__label">Rue <span class="nide-checkout__required">*</span></label>
+									<div class="position-relative">
+										<input required class="nide-checkout__input address-street-input" name="street" type="text" autocomplete="off" placeholder="Commencez à taper…">
+										<ul class="address-suggestions list-unstyled" role="listbox" aria-label="Suggestions d'adresse"></ul>
+									</div>
+								</div>
+								<div class="nide-checkout__field nide-checkout__field--short">
+									<label class="nide-checkout__label">Code postal <span class="nide-checkout__required">*</span></label>
+									<input required class="nide-checkout__input address-code-postal-input" name="code_postal" type="text" inputmode="numeric" maxlength="10">
+								</div>
+								<div class="nide-checkout__field nide-checkout__field--grow">
+									<label class="nide-checkout__label">Ville <span class="nide-checkout__required">*</span></label>
+									<input required class="nide-checkout__input address-city-input" name="city" type="text">
+								</div>
+								<div class="nide-checkout__field nide-checkout__field--short">
+									<label class="nide-checkout__label">Pays <span class="nide-checkout__required">*</span></label>
+									<select class="nide-checkout__select" name="state" id="checkout-state" required></select>
+								</div>
+								<div class="nide-checkout__field nide-checkout__field--full">
+									<label class="nide-checkout__label">Complément (optionnel)</label>
+									<input class="nide-checkout__input" name="more_details" type="text" maxlength="500">
+								</div>
+								<div class="nide-checkout__field nide-checkout__field--full nide-checkout__field--actions">
+									<button type="submit" class="btn btn-fill-out btn-sm">Enregistrer</button>
+									<button type="button" class="nide-checkout__cancel-btn" id="checkout-cancel-address">Annuler</button>
+								</div>
+							</div>
 						</form>
 					</div>
 				</div>
+
+				{# ── Adresse de facturation ── #}
+				<div class="nide-checkout__section">
+					<h2 class="nide-checkout__section-title">
+						<svg class="icon" aria-hidden="true"><use href="#icon-file"></use></svg>
+						Adresse de facturation
+					</h2>
+
+					<select id="billing_address" name="billing_address" class="d-none" aria-hidden="true" tabindex="-1">
+						<option value=""></option>
+						{% for address in addresses %}
+							<option value="{{ address.id }}">{{ address.clientName }}</option>
+						{% endfor %}
+					</select>
+
+					{% if addresses|length == 0 %}
+						<div class="nide-checkout__alert nide-checkout__alert--warning">
+							<svg class="icon" aria-hidden="true"><use href="#icon-alert-triangle"></use></svg>
+							Vous n'avez aucune adresse enregistrée.
+						</div>
+					{% endif %}
+
+					<div id="billing-address-cards" class="nide-address-cards">
+						{% for address in addresses %}
+							<div class="nide-address-card address-card-item"
+								 data-address-id="{{ address.id }}"
+								 role="button" tabindex="0"
+								 aria-label="{{ address.clientName }}, {{ address.street }}, {{ address.codePostal }} {{ address.city }}">
+								<div class="nide-address-card__radio address-card-icon">
+									<svg class="icon" aria-hidden="true"><use href="#icon-check"></use></svg>
+								</div>
+								<div class="nide-address-card__body">
+									<div class="nide-address-card__name address-card-name">{{ address.clientName }}</div>
+									<div class="nide-address-card__details address-card-details">
+										{{ address.street }}{% if address.moreDetails %}, {{ address.moreDetails }}{% endif %}<br>
+										{{ address.codePostal }} {{ address.city }}<br>
+										{{ address.state }}
+									</div>
+								</div>
+							</div>
+						{% endfor %}
+					</div>
+
+					<button type="button" class="nide-checkout__add-btn" id="checkout-add-billing-btn">
+						<svg class="icon" aria-hidden="true"><use href="#icon-plus"></use></svg>
+						Ajouter une adresse
+					</button>
+
+					<div id="checkout-add-billing-form" class="nide-checkout__address-form d-none">
+						<h3 class="nide-checkout__form-title">Nouvelle adresse de facturation</h3>
+						<form id="checkoutBillingAddressForm">
+							<div class="nide-checkout__fields">
+								<div class="nide-checkout__field nide-checkout__field--full">
+									<label class="nide-checkout__label">Nom de l'adresse <span class="nide-checkout__required">*</span></label>
+									<input required class="nide-checkout__input" name="name" type="text">
+								</div>
+								<div class="nide-checkout__field nide-checkout__field--full">
+									<label class="nide-checkout__label">Nom du destinataire <span class="nide-checkout__required">*</span></label>
+									<input required class="nide-checkout__input" name="client_name" type="text">
+								</div>
+								<div class="nide-checkout__field nide-checkout__field--grow">
+									<label class="nide-checkout__label">Rue <span class="nide-checkout__required">*</span></label>
+									<div class="position-relative">
+										<input required class="nide-checkout__input address-street-input" name="street" type="text" autocomplete="off" placeholder="Commencez à taper…">
+										<ul class="address-suggestions list-unstyled" role="listbox" aria-label="Suggestions d'adresse"></ul>
+									</div>
+								</div>
+								<div class="nide-checkout__field nide-checkout__field--short">
+									<label class="nide-checkout__label">Code postal <span class="nide-checkout__required">*</span></label>
+									<input required class="nide-checkout__input address-code-postal-input" name="code_postal" type="text" inputmode="numeric" maxlength="10">
+								</div>
+								<div class="nide-checkout__field nide-checkout__field--grow">
+									<label class="nide-checkout__label">Ville <span class="nide-checkout__required">*</span></label>
+									<input required class="nide-checkout__input address-city-input" name="city" type="text">
+								</div>
+								<div class="nide-checkout__field nide-checkout__field--short">
+									<label class="nide-checkout__label">Pays <span class="nide-checkout__required">*</span></label>
+									<select class="nide-checkout__select" name="state" id="checkout-billing-state" required></select>
+								</div>
+								<div class="nide-checkout__field nide-checkout__field--full">
+									<label class="nide-checkout__label">Complément (optionnel)</label>
+									<input class="nide-checkout__input" name="more_details" type="text" maxlength="500">
+								</div>
+								<div class="nide-checkout__field nide-checkout__field--full nide-checkout__field--actions">
+									<button type="submit" class="btn btn-fill-out btn-sm">Enregistrer</button>
+									<button type="button" class="nide-checkout__cancel-btn" id="checkout-cancel-billing">Annuler</button>
+								</div>
+							</div>
+						</form>
+					</div>
+				</div>
+
+				{# ── Commentaire ── #}
+				<div class="nide-checkout__section">
+					<h2 class="nide-checkout__section-title">
+						<svg class="icon" aria-hidden="true"><use href="#icon-message"></use></svg>
+						Commentaire <span class="nide-checkout__section-optional">optionnel</span>
+					</h2>
+					<label class="visually-hidden" for="comment">Commentaire de commande</label>
+					<textarea class="nide-checkout__textarea" name="comment" id="comment" rows="3" maxlength="2000"
+						placeholder="Indications pour la livraison, instructions particulières…"></textarea>
+					<span class="nide-checkout__hint">2000 caractères max.</span>
+				</div>
+
+			</div>{# fin form-col #}
+
+			{# ══ Colonne droite — récapitulatif ══ #}
+			<aside class="nide-checkout__summary" aria-label="Récapitulatif de commande">
+
+				<div class="nide-checkout__summary-header">
+					<h2 class="nide-checkout__summary-title">Votre commande</h2>
+					<span class="nide-checkout__summary-count">{{ total_products }} article{% if total_products > 1 %}s{% endif %}</span>
+				</div>
+
+				{# Articles #}
+				<ul class="nide-checkout__items">
+					{% for item in cart.items %}
+						{% set unit_price_cents = item.product.soldePrice ?? item.product.regularPrice ?? 0 %}
+						<li class="nide-checkout__item">
+							<div class="nide-checkout__item-img-wrap">
+								<img src="/assets/images/products/{{ item.product.image[0].filename }}"
+									 width="52" height="52" loading="lazy"
+									 alt="{{ item.product.image[0].alt }}"
+									 class="nide-checkout__item-img">
+								<span class="nide-checkout__item-qty">{{ item.quantity }}</span>
+							</div>
+							<div class="nide-checkout__item-info">
+								<span class="nide-checkout__item-name">{{ item.product.title }}</span>
+								<span class="nide-checkout__item-unit">{{ (unit_price_cents / 100)|format_currency('EUR') }} / unité</span>
+							</div>
+							<span class="nide-checkout__item-total">
+								{{ (unit_price_cents * item.quantity / 100)|format_currency('EUR') }}
+							</span>
+						</li>
+					{% endfor %}
+				</ul>
+
+				{# Totaux #}
+				<div class="nide-checkout__totals">
+					<div class="nide-checkout__total-line">
+						<span>Sous-total HT</span>
+						<span>{{ (cart.sub_total_ht / 100)|format_currency('EUR') }}</span>
+					</div>
+					<div class="nide-checkout__total-line">
+						<span>TVA</span>
+						<span>{{ (cart.taxe / 100)|format_currency('EUR') }}</span>
+					</div>
+					<div class="nide-checkout__total-line" id="checkout-shipping-label">
+						<span>
+							{% if cart.carrier.free_shipping %}Livraison offerte{% else %}Livraison{% endif %}
+						</span>
+						<span id="checkout-shipping-price">
+							{% if cart.carrier.free_shipping %}
+								<span class="nide-checkout__free">Offerte</span>
+							{% else %}
+								{{ (cart.carrier.price / 100)|format_currency('EUR') }}
+							{% endif %}
+						</span>
+					</div>
+				</div>
+
+				<div class="nide-checkout__grand-total">
+					<span>Total TTC</span>
+					<span id="checkout-total">{{ (cart.sub_total_with_carrier / 100)|format_currency('EUR') }}</span>
+				</div>
+
+				{% if not cart.carrier.free_shipping and cart.free_shipping_remaining > 0 %}
+					<div class="nide-checkout__shipping-hint">
+						<svg class="icon" aria-hidden="true"><use href="#icon-gift"></use></svg>
+						Plus que <strong>{{ (cart.free_shipping_remaining / 100)|format_currency('EUR') }}</strong> pour la livraison offerte
+					</div>
+				{% endif %}
+
+				<div class="nide-checkout__cta-hint" id="checkout-hint">
+					<svg class="icon" aria-hidden="true"><use href="#icon-info"></use></svg>
+					Complétez vos adresses de livraison et de facturation pour accéder au paiement.
+				</div>
+
+				<div class="payment-button d-none">
+					<button id="open-payment-modal" class="btn btn-fill-out nide-checkout__pay-btn" type="button">
+						<svg class="icon" aria-hidden="true"><use href="#icon-credit-card"></use></svg>
+						Payer — <span id="checkout-pay-total">{{ (cart.sub_total_with_carrier / 100)|format_currency('EUR') }}</span>
+					</button>
+				</div>
+
+				<div class="nide-checkout__secure">
+					<svg class="icon" aria-hidden="true"><use href="#icon-lock"></use></svg>
+					Paiement sécurisé par Stripe
+				</div>
+
+			</aside>
+
+		</div>{# fin body #}
+	</div>
+</div>
+
+{# ── Modale Colissimo ── #}
+<div class="modal fade" id="colissimo-modal" tabindex="-1" aria-labelledby="colissimoModalLabel" aria-hidden="true">
+	<div class="modal-dialog modal-dialog-centered">
+		<div class="modal-content">
+			<div class="modal-header">
+				<div class="d-flex align-items-center gap-2">
+					<img src="https://www.colissimo.fr/favicon.ico" alt="Colissimo" width="22" height="22">
+					<div>
+						<h5 class="modal-title mb-0" id="colissimoModalLabel">Choisir un point relais</h5>
+						<div class="text-muted" style="font-size:11px;">Colissimo — La Poste</div>
+					</div>
+				</div>
+				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+			</div>
+			<div class="modal-body" id="colissimo-modal-body"></div>
+		</div>
+	</div>
+</div>
+
+{# ── Modale Stripe ── #}
+<div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false"
+	 tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+	<div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h5 class="modal-title visually-hidden" id="staticBackdropLabel">Paiement</h5>
+				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+			</div>
+			<div class="modal-body">
+				<div id="stripe-method">
+					<form id="payment-form">
+						<div id="link-authentication-element"></div>
+						<div id="payment-element"></div>
+						<button id="submit" type="submit">
+							<div class="spinner hidden" id="spinner"></div>
+							<span id="button-text">Payer maintenant</span>
+						</button>
+						<div id="payment-message" class="hidden" aria-live="polite"></div>
+					</form>
+				</div>
 			</div>
 		</div>
 	</div>
+</div>
 {% endblock %}
 
 {% block javascripts %}

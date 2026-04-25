@@ -33,7 +33,7 @@ final class ProductController extends AbstractController
         private readonly string $brandName,
     ) {}
 
-    #[Route('/produits/{slug}', name: 'app_product_by_slug', requirements: [
+    #[Route('/miels/{slug}', name: 'app_product_by_slug', requirements: [
         'slug' => '[a-z0-9-]+',
     ])]
     public function showProduct(

@@ -49,10 +49,24 @@
 
 	# Cache long durée pour les assets statiques (CSS, JS, fonts, images)
 	@staticAssets {
-		path /assets/css/* /assets/js/* /assets/fonts/* /assets/images/* /favicon/*
+		path /assets/css/* /assets/js/* /assets/fonts/* /assets/images/* /assets/videos/* /favicon/*
 		file
 	}
 	header @staticAssets Cache-Control "public, max-age=31536000, immutable"
+
+	# Headers de performance pour les images
+	@images {
+		path /assets/images/*
+		file
+	}
+	header @images Vary "Accept"
+
+	# Forcer le type MIME WebP pour les fichiers .webp
+	@webp {
+		path *.webp
+		file
+	}
+	header @webp Content-Type "image/webp"
 
 	@phpRoute {
 		not path /.well-known/mercure*

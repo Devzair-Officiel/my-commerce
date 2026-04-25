@@ -1,0 +1,247 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ product.title }} en gros — Achat professionnel | {{ globalSetting.website_name }}{% endblock %}
+
+{% block body %}
+
+{% include 'page_head/index.html.twig' with {
+	'page_name': product.title ~ ' — Vente en gros',
+	breadcrumbs: [
+		{ label: 'Miels en gros', url: path('app_grossiste_index') },
+		{ label: product.title }
+	]
+} %}
+
+{# ── Fiche produit grossiste ── #}
+<section class="nide-gros__show">
+	<div class="container">
+		<div class="nide-gros__show-grid">
+
+			{# ── Galerie ── #}
+			<div class="nide-gros__show-gallery">
+				{% if media|length > 0 %}
+					<div class="nide-gros__show-main-img">
+						<img src="/assets/images/products/{{ media[0].filename }}"
+							 alt="{{ media[0].alt ?? product.title }}"
+							 width="520" height="520" loading="eager" fetchpriority="high"
+							 class="nide-gros__show-img">
+					</div>
+					{% if media|length > 1 %}
+					<div class="nide-gros__show-thumbs">
+						{% for img in media %}
+							<img src="/assets/images/products/{{ img.filename }}"
+								 alt="{{ img.alt ?? product.title }}"
+								 width="80" height="80" loading="lazy"
+								 class="nide-gros__show-thumb">
+						{% endfor %}
+					</div>
+					{% endif %}
+				{% endif %}
+				<div class="nide-gros__show-badge-pro">
+					<svg class="icon" aria-hidden="true"><use href="#icon-check-circle"></use></svg>
+					Offre professionnelle
+				</div>
+			</div>
+
+			{# ── Infos produit ── #}
+			<div class="nide-gros__show-info">
+
+				<div class="nide-gros__show-header">
+					<span class="nide-gros__show-label">Vente en gros</span>
+					<h1 class="nide-gros__show-title">{{ product.title }}</h1>
+					{% if product.accroche %}
+						<p class="nide-gros__show-accroche">{{ product.accroche }}</p>
+					{% endif %}
+				</div>
+
+				{% if product.originCountry %}
+				<div class="nide-gros__show-origin">
+					<svg class="icon" aria-hidden="true"><use href="#icon-location"></use></svg>
+					Origine : <strong>{{ product.originCountry }}</strong>
+				</div>
+				{% endif %}
+
+				{# Prix dégressifs #}
+				<div class="nide-gros__show-pricing">
+					<h2 class="nide-gros__show-pricing-title">Tarifs dégressifs</h2>
+					{% if product.wholesaleTiers|length > 0 %}
+					<table class="nide-gros__pricing-table">
+						<thead>
+							<tr>
+								<th>Quantité</th>
+								<th>Prix unitaire</th>
+								<th>Remise</th>
+							</tr>
+						</thead>
+						<tbody>
+							{% set basePrice = product.regularPrice %}
+							{% for tier in product.wholesaleTiers %}
+							{% set discount = basePrice > 0 ? (((basePrice - tier.unitPriceCents) / basePrice) * 100)|round : 0 %}
+							<tr{% if tier.unitPriceCents < basePrice %} class="nide-gros__pricing-row--highlight"{% endif %}>
+								<td>{{ tier.label ?? ('À partir de ' ~ tier.minQtyKg ~ ' kg') }}</td>
+								<td>{{ (tier.unitPriceCents / 100)|format_currency('EUR') }}</td>
+								<td>
+									{% if discount > 0 %}
+										<span class="nide-gros__pricing-discount">−{{ discount }} %</span>
+									{% else %}
+										—
+									{% endif %}
+								</td>
+							</tr>
+							{% endfor %}
+						</tbody>
+					</table>
+					{% else %}
+					<p class="nide-gros__pricing-empty">
+						Tarifs sur devis — <a href="/contact">contactez-nous</a>
+					</p>
+					{% endif %}
+				</div>
+
+				{# Formats #}
+				<div class="nide-gros__show-formats">
+					<h2 class="nide-gros__show-section-title">
+						<svg class="icon" aria-hidden="true"><use href="#icon-package"></use></svg>
+						Formats & conditionnements
+					</h2>
+					<div class="nide-gros__formats-grid">
+						<div class="nide-gros__format-item">
+							<strong>Pots verre</strong>
+							<span>250 g · 500 g · 1 kg</span>
+						</div>
+						<div class="nide-gros__format-item">
+							<strong>Seaux alimentaires</strong>
+							<span>5 kg · 10 kg · 15 kg</span>
+						</div>
+						<div class="nide-gros__format-item">
+							<strong>Vrac / Fûts</strong>
+							<span>25 kg — sur devis</span>
+						</div>
+						<div class="nide-gros__format-item">
+							<strong>Quantité minimale</strong>
+							<span>5 kg par référence</span>
+						</div>
+					</div>
+				</div>
+
+				{# CTA #}
+				<div class="nide-gros__show-actions">
+					<a href="/checkout" class="btn btn-fill-out nide-gros__show-btn-primary">
+						<svg class="icon" aria-hidden="true"><use href="#icon-cart"></use></svg>
+						Commander en ligne
+					</a>
+					<a href="/contact" class="nide-gros__show-btn-secondary">
+						<svg class="icon" aria-hidden="true"><use href="#icon-mail"></use></svg>
+						Demander un devis
+					</a>
+				</div>
+
+				{# Réassurances #}
+				<div class="nide-gros__show-trust">
+					<div class="nide-gros__show-trust-item">
+						<svg class="icon" aria-hidden="true"><use href="#icon-check-circle"></use></svg>
+						Analyse labo disponible sur demande
+					</div>
+					<div class="nide-gros__show-trust-item">
+						<svg class="icon" aria-hidden="true"><use href="#icon-truck"></use></svg>
+						Livraison offerte dès 200 € HT
+					</div>
+					<div class="nide-gros__show-trust-item">
+						<svg class="icon" aria-hidden="true"><use href="#icon-file"></use></svg>
+						Facture professionnelle fournie
+					</div>
+				</div>
+
+			</div>{# fin show-info #}
+		</div>{# fin show-grid #}
+	</div>
+</section>
+
+{# ── Description détaillée — collapsibles ── #}
+{% if product.description or product.wholesaleDescription %}
+<section class="nide-gros__show-desc">
+	<div class="container">
+
+		{% if product.description %}
+		<details class="nide-gros__collapse" open>
+			<summary class="nide-gros__collapse-toggle">
+				<svg class="icon" aria-hidden="true"><use href="#icon-info"></use></svg>
+				À propos de ce miel
+				<svg class="icon nide-gros__collapse-chevron" aria-hidden="true"><use href="#icon-chevron-down"></use></svg>
+			</summary>
+			<div class="nide-gros__collapse-body">
+				<div class="nide-gros__show-desc-grid">
+					<div class="nide-gros__show-desc-text">{{ product.description|normalize_editor_html|raw }}</div>
+					{% if product.tastingProfile %}
+					<div class="nide-gros__show-tasting">
+						<svg class="icon" aria-hidden="true"><use href="#icon-star"></use></svg>
+						<strong>Profil gustatif :</strong> {{ product.tastingProfile }}
+					</div>
+					{% endif %}
+				</div>
+			</div>
+		</details>
+		{% endif %}
+
+		{% if product.wholesaleDescription %}
+		<details class="nide-gros__collapse" open>
+			<summary class="nide-gros__collapse-toggle nide-gros__collapse-toggle--pro">
+				<svg class="icon" aria-hidden="true"><use href="#icon-truck"></use></svg>
+				Informations professionnelles
+				<svg class="icon nide-gros__collapse-chevron" aria-hidden="true"><use href="#icon-chevron-down"></use></svg>
+			</summary>
+			<div class="nide-gros__collapse-body">
+				<div class="nide-gros__show-desc-text">{{ product.wholesaleDescription|normalize_editor_html|raw }}</div>
+			</div>
+		</details>
+		{% endif %}
+
+	</div>
+</section>
+{% endif %}
+
+{# ── Autres miels en gros ── #}
+{% if relatedProducts|length > 0 %}
+<section class="nide-gros__related">
+	<div class="container">
+		<h2 class="nide-gros__section-title">Autres miels disponibles en gros</h2>
+		<div class="nide-gros__related-grid">
+			{% for related in relatedProducts %}
+			{% set cover = related.coverFilename %}
+			<a href="/grossiste-miel/{{ related.slug }}-en-gros" class="nide-gros__related-card">
+				{% if cover %}
+					<img src="/assets/images/products/{{ cover }}"
+						 alt="{{ related.title }}" width="180" height="140" loading="lazy">
+				{% endif %}
+				<div class="nide-gros__related-info">
+					<strong>{{ related.title }}</strong>
+					<span>À partir de {{ (related.regularPrice / 100)|format_currency('EUR') }}</span>
+				</div>
+			</a>
+			{% endfor %}
+		</div>
+	</div>
+</section>
+{% endif %}
+
+{# ── CTA bas de page ── #}
+<section class="nide-gros__cta">
+	<div class="container">
+		<div class="nide-gros__cta-inner">
+			<h2>Besoin d'un volume important ou d'un format spécifique ?</h2>
+			<p>Nous étudions toutes les demandes professionnelles. Réponse sous 24 h.</p>
+			<div class="nide-gros__cta-actions">
+				<a href="/contact" class="btn btn-fill-out">
+					<svg class="icon" aria-hidden="true"><use href="#icon-mail"></use></svg>
+					Demander un devis
+				</a>
+				<a href="/grossiste-miel" class="nide-gros__cta-back">
+					<svg class="icon" aria-hidden="true"><use href="#icon-arrow-left"></use></svg>
+					Retour au catalogue grossiste
+				</a>
+			</div>
+		</div>
+	</div>
+</section>
+
+{% endblock %}

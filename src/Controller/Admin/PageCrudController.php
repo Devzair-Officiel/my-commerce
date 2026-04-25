@@ -13,6 +13,8 @@ use EasyCorp\Bundle\EasyAdminBundle\Field\IdField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\SlugField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextareaField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
+use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGenerator;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 /**
  * Contrôleur EasyAdmin pour la gestion CRUD des pages statiques du site (mentions légales, CGV, etc.).
@@ -35,25 +37,29 @@ final class PageCrudController extends AbstractCrudController
             ->setPaginatorPageSize(25);
     }
 
+    public function __construct(private readonly UrlGeneratorInterface $urlGenerator) {}
+
     public function configureActions(Actions $actions): Actions
     {
+        $viewOnSite = Action::new('viewOnSite', 'Voir la page', 'fa fa-eye')
+            ->linkToUrl(function (Page $page): string {
+                return $this->urlGenerator->generate('app_page', ['slug' => $page->getSlug()]);
+            })
+            ->setHtmlAttributes(['target' => '_blank', 'rel' => 'noopener noreferrer']);
+
         return $actions
             ->add(Crud::PAGE_EDIT, Action::INDEX)
             ->add(Crud::PAGE_INDEX, Action::DETAIL)
             ->add(Crud::PAGE_EDIT, Action::DETAIL)
-            ->reorder(Crud::PAGE_INDEX, [Action::EDIT, Action::DETAIL, Action::DELETE]);
+            ->add(Crud::PAGE_INDEX, $viewOnSite)
+            ->add(Crud::PAGE_EDIT, $viewOnSite)
+            ->reorder(Crud::PAGE_INDEX, [Action::EDIT, 'viewOnSite', Action::DETAIL, Action::DELETE]);
     }
 
     public function configureFields(string $pageName): iterable
     {
-        yield IdField::new('id')->hideOnForm();
-
-        /**
-         * =====================================================
-         * INDEX — simple & lisible
-         * =====================================================
-         */
         if (Crud::PAGE_INDEX === $pageName) {
+            yield IdField::new('id');
             yield TextField::new('title', 'Titre');
             yield TextField::new('slug', 'Slug');
             yield BooleanField::new('isHead', 'Header');
@@ -62,14 +68,9 @@ final class PageCrudController extends AbstractCrudController
             return;
         }
 
-        /**
-         * =====================================================
-         * FORM / DETAIL — structuré
-         * =====================================================
-         */
-
         // ===== TAB 1 : CONTENU =====
         yield FormField::addTab('Contenu')->setIcon('fa fa-file-lines');
+        yield IdField::new('id')->hideOnForm();
 
         yield FormField::addPanel('Informations')
             ->setIcon('fa fa-pen-to-square');

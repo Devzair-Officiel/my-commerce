@@ -4,62 +4,193 @@
     <meta charset="UTF-8">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: DejaVu Sans, sans-serif; font-size: 11px; color: #222; }
-        .page { padding: 36px 44px; }
+
+        body {
+            font-family: DejaVu Sans, sans-serif;
+            font-size: 10.5px;
+            color: #1a1a1a;
+            background: #fff;
+        }
+
+        .page { padding: 38px 48px 48px; }
+
+        /* ── Bande dorée en haut ── */
+        .top-bar {
+            background: #c8963e;
+            height: 5px;
+            margin: -38px -48px 32px;
+        }
 
         /* ── En-tête ── */
-        .header { display: table; width: 100%; margin-bottom: 32px; }
-        .header-left, .header-right { display: table-cell; vertical-align: top; }
-        .header-left { width: 55%; }
-        .header-right { width: 45%; text-align: right; }
+        .header { display: table; width: 100%; margin-bottom: 28px; }
+        .header-left  { display: table-cell; vertical-align: top; width: 55%; }
+        .header-right { display: table-cell; vertical-align: top; width: 45%; text-align: right; }
 
-        .logo-img { max-height: 52px; max-width: 180px; }
-        .logo-text { font-size: 22px; font-weight: bold; color: #e37e03; }
+        .logo-img  { max-height: 54px; max-width: 180px; }
+        .logo-text { font-size: 20px; font-weight: bold; color: #c8963e; letter-spacing: 0.5px; }
 
-        .seller-info { margin-top: 8px; font-size: 10.5px; color: #555; line-height: 1.7; }
+        .seller-name { font-size: 13px; font-weight: bold; color: #1a1a1a; margin-bottom: 5px; }
+        .seller-info { font-size: 9.5px; color: #666; line-height: 1.75; margin-top: 6px; }
 
-        .invoice-title { font-size: 28px; font-weight: bold; color: #333; letter-spacing: 1px; }
-        .invoice-meta { margin-top: 6px; font-size: 11px; color: #555; line-height: 1.8; }
-        .invoice-meta strong { color: #222; }
+        .invoice-label {
+            display: inline-block;
+            font-size: 9px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: #c8963e;
+            border: 1.5px solid #c8963e;
+            padding: 3px 10px;
+            border-radius: 2px;
+            margin-bottom: 8px;
+        }
+        .invoice-number { font-size: 22px; font-weight: bold; color: #1a1a1a; line-height: 1.1; }
+        .invoice-meta   { margin-top: 6px; font-size: 10px; color: #666; line-height: 1.8; }
+        .invoice-meta strong { color: #1a1a1a; }
 
-        /* ── Client ── */
-        .client-block { margin-bottom: 24px; }
-        .client-label { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: #999; margin-bottom: 5px; }
-        .client-name { font-weight: bold; font-size: 12px; margin-bottom: 2px; }
-        .client-line { font-size: 11px; color: #444; line-height: 1.6; }
+        /* ── Séparateur ── */
+        .divider { border: none; border-top: 1px solid #e8e8e8; margin: 20px 0; }
 
-        /* ── Référence ── */
-        .ref-bar { background: #f7f7f7; border-left: 3px solid #e37e03; padding: 8px 12px; margin-bottom: 24px; font-size: 11px; color: #555; }
+        /* ── Bloc client / commande ── */
+        .info-row { display: table; width: 100%; margin-bottom: 24px; }
+        .info-cell { display: table-cell; vertical-align: top; width: 50%; }
 
-        /* ── Tableau ── */
-        table.items { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
-        table.items thead th { background: #e37e03; color: #fff; padding: 8px 10px; text-align: left; font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .block-label {
+            font-size: 8.5px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+            color: #999;
+            margin-bottom: 6px;
+            padding-bottom: 4px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        .client-name  { font-size: 11.5px; font-weight: bold; color: #1a1a1a; margin-bottom: 3px; }
+        .client-line  { font-size: 10px; color: #555; line-height: 1.7; }
+
+        .order-ref-box {
+            background: #fdf7ee;
+            border: 1px solid #e8d5b0;
+            border-radius: 4px;
+            padding: 10px 12px;
+        }
+        .order-ref-line { font-size: 10px; color: #555; line-height: 1.9; }
+        .order-ref-line strong { color: #1a1a1a; }
+
+        /* ── Tableau articles ── */
+        table.items {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 22px;
+        }
+        table.items thead tr {
+            background: #1a1a1a;
+        }
+        table.items thead th {
+            color: #fff;
+            padding: 9px 11px;
+            font-size: 8.5px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            text-align: left;
+        }
         table.items thead th.right { text-align: right; }
-        table.items tbody tr:nth-child(even) { background: #fafafa; }
-        table.items tbody td { padding: 7px 10px; border-bottom: 1px solid #eee; font-size: 11px; }
+
+        table.items tbody tr { background: #fff; }
+        table.items tbody tr.alt { background: #fafafa; }
+        table.items tbody td {
+            padding: 8px 11px;
+            border-bottom: 1px solid #f0f0f0;
+            font-size: 10.5px;
+            color: #333;
+            vertical-align: top;
+        }
         table.items tbody td.right { text-align: right; }
+        table.items tbody td.product-name { font-weight: bold; color: #1a1a1a; }
+
+        table.items tfoot td {
+            padding: 7px 11px;
+            font-size: 10px;
+            color: #888;
+            font-style: italic;
+            border-top: 1px solid #f0f0f0;
+        }
 
         /* ── Totaux ── */
-        .totals { float: right; width: 260px; margin-bottom: 30px; }
-        .total-row { display: table; width: 100%; padding: 5px 0; border-bottom: 1px solid #eee; }
-        .total-label { display: table-cell; color: #555; }
-        .total-value { display: table-cell; text-align: right; font-weight: bold; }
-        .total-row.grand { border-top: 2px solid #e37e03; border-bottom: none; margin-top: 4px; padding-top: 8px; }
+        .totals-wrap { display: table; width: 100%; margin-bottom: 32px; }
+        .totals-left  { display: table-cell; vertical-align: top; width: 55%; }
+        .totals-right { display: table-cell; vertical-align: top; width: 45%; }
+
+        .totals-box {
+            border: 1px solid #e8e8e8;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        .total-row { display: table; width: 100%; }
+        .total-row + .total-row { border-top: 1px solid #f0f0f0; }
+        .total-label { display: table-cell; padding: 7px 12px; color: #666; font-size: 10px; }
+        .total-value { display: table-cell; padding: 7px 12px; text-align: right; font-size: 10px; color: #1a1a1a; font-weight: bold; white-space: nowrap; }
+
+        .total-row.grand {
+            background: #c8963e;
+        }
         .total-row.grand .total-label,
-        .total-row.grand .total-value { font-size: 14px; color: #e37e03; }
+        .total-row.grand .total-value {
+            color: #fff;
+            font-size: 12px;
+            font-weight: bold;
+            padding: 10px 12px;
+        }
 
-        .clearfix { clear: both; }
+        /* ── Badge payé ── */
+        .paid-badge {
+            display: inline-block;
+            background: #2e7d32;
+            color: #fff;
+            font-size: 9px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            padding: 4px 12px;
+            border-radius: 2px;
+            margin-top: 10px;
+        }
 
-        /* ── Mentions légales ── */
-        .legal { margin-top: 30px; padding-top: 14px; border-top: 1px solid #ddd; font-size: 9.5px; color: #888; line-height: 1.7; }
+        /* ── Pied de page / mentions ── */
+        .footer-bar {
+            border-top: 2px solid #c8963e;
+            padding-top: 14px;
+            margin-top: 10px;
+        }
+        .legal {
+            font-size: 8.5px;
+            color: #999;
+            line-height: 1.75;
+        }
+        .legal-title {
+            font-size: 9px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            color: #bbb;
+            margin-bottom: 5px;
+        }
 
-        .divider { border: none; border-top: 1px solid #e8e8e8; margin: 20px 0; }
+        .page-number {
+            text-align: right;
+            font-size: 8.5px;
+            color: #bbb;
+            margin-top: 10px;
+        }
     </style>
 </head>
 <body>
 <div class="page">
 
-    {# ── En-tête : logo + infos vendeur à gauche | titre facture à droite ── #}
+    <div class="top-bar"></div>
+
+    {# ── En-tête ── #}
     <div class="header">
         <div class="header-left">
             {% if logoPath %}
@@ -69,119 +200,145 @@
             {% endif %}
             <div class="seller-info">
                 {% if seller.street %}{{ seller.street }}<br>{% endif %}
-                {{ seller.code_postal }} {{ seller.city }}{% if seller.state %}, {{ seller.state }}{% endif %}<br>
+                {% if seller.code_postal or seller.city %}{{ seller.code_postal }} {{ seller.city }}<br>{% endif %}
                 {% if seller.siret %}SIRET : {{ seller.siret }}<br>{% endif %}
                 {% if seller.phone %}Tél : {{ seller.phone }}<br>{% endif %}
                 {% if seller.email %}{{ seller.email }}{% endif %}
             </div>
         </div>
         <div class="header-right">
-            <div class="invoice-title">FACTURE</div>
+            <div class="invoice-label">Facture</div>
+            <div class="invoice-number">{{ invoice.invoiceNumber }}</div>
             <div class="invoice-meta">
-                <strong>N°</strong> {{ invoice.invoiceNumber }}<br>
-                <strong>Date :</strong> {{ invoice.issuedAt ? invoice.issuedAt|date('d/m/Y', 'Europe/Paris') : '—' }}
+                <strong>Date :</strong> {{ invoice.issuedAt ? invoice.issuedAt|date('d/m/Y', 'Europe/Paris') : '—' }}<br>
+                {% if order.paidAt %}
+                    <strong>Payée le :</strong> {{ order.paidAt|date('d/m/Y', 'Europe/Paris') }}
+                {% endif %}
             </div>
+            <div class="paid-badge">✓ Payée</div>
         </div>
     </div>
 
     <hr class="divider">
 
-    {# ── Facturé à ── #}
-    <div class="client-block">
-        <div class="client-label">Facturé à</div>
-        {% set customerName = (order.user.firstname ?? '') ~ ' ' ~ (order.user.lastname ?? '') %}
-        {% if billingAddress %}
-            <div class="client-name">{{ billingAddress.client_name ?? customerName|trim }}</div>
-            <div class="client-line">
-                {% if billingAddress.street ?? false %}{{ billingAddress.street }}<br>{% endif %}
-                {{ billingAddress.code_postal ?? '' }} {{ billingAddress.city ?? '' }}<br>
-                {% if billingAddress.state ?? false %}{{ billingAddress.state }}<br>{% endif %}
-                {{ order.user.email }}
-            </div>
-        {% else %}
-            {% if customerName|trim %}
-                <div class="client-name">{{ customerName|trim }}</div>
+    {# ── Infos client + commande ── #}
+    <div class="info-row">
+        <div class="info-cell">
+            <div class="block-label">Facturé à</div>
+            {% set customerName = (order.user.firstname ?? '') ~ ' ' ~ (order.user.lastname ?? '') %}
+            {% if billingAddress %}
+                <div class="client-name">{{ billingAddress.client_name ?? customerName|trim }}</div>
+                <div class="client-line">
+                    {% if billingAddress.street ?? false %}{{ billingAddress.street }}<br>{% endif %}
+                    {{ billingAddress.code_postal ?? '' }} {{ billingAddress.city ?? '' }}<br>
+                    {% if billingAddress.state ?? false %}{{ billingAddress.state }}<br>{% endif %}
+                    {{ order.user.email }}
+                </div>
+            {% else %}
+                {% if customerName|trim %}
+                    <div class="client-name">{{ customerName|trim }}</div>
+                {% endif %}
+                <div class="client-line">{{ order.user.email }}</div>
             {% endif %}
-            <div class="client-line">{{ order.user.email }}</div>
-        {% endif %}
-    </div>
-
-    {# ── Référence commande ── #}
-    <div class="ref-bar">
-        Référence commande : <strong>{{ order.orderReference }}</strong>
-        &nbsp;|&nbsp;
-        Payée le : <strong>{{ seller.paid_at ?? '—' }}</strong>
-        &nbsp;|&nbsp;
-        Mode de paiement : <strong>{{ seller.payment_method_name ?? '—' }}</strong>
+        </div>
+        <div class="info-cell" style="padding-left: 24px;">
+            <div class="block-label">Détail commande</div>
+            <div class="order-ref-box">
+                <div class="order-ref-line"><strong>Référence :</strong> {{ order.orderReference }}</div>
+                <div class="order-ref-line"><strong>Transporteur :</strong> {{ order.carrierNameSnapshot }}</div>
+                {% if seller.payment_method_name ?? false %}
+                    <div class="order-ref-line"><strong>Paiement :</strong> {{ seller.payment_method_name }}</div>
+                {% endif %}
+            </div>
+        </div>
     </div>
 
     {# ── Lignes de commande ── #}
     <table class="items">
         <thead>
             <tr>
-                <th style="width: 45%;">Désignation</th>
-                <th class="right" style="width: 20%;">Prix unitaire</th>
+                <th style="width: 46%;">Désignation</th>
+                <th class="right" style="width: 18%;">Prix unitaire HT</th>
                 <th class="right" style="width: 10%;">Qté</th>
-                <th class="right" style="width: 25%;">Total</th>
+                <th class="right" style="width: 14%;">TVA</th>
+                <th class="right" style="width: 12%;">Total TTC</th>
             </tr>
         </thead>
         <tbody>
             {% for line in order.orderDetails %}
-            <tr>
-                <td>{{ line.productName }}</td>
+            <tr{% if loop.index is even %} class="alt"{% endif %}>
+                <td class="product-name">{{ line.productName }}</td>
                 <td class="right">{{ (line.unitPriceCents / 100)|number_format(2, ',', ' ') }} €</td>
                 <td class="right">{{ line.quantity }}</td>
+                <td class="right" style="color: #888; font-size: 9.5px;">
+                    {% if line.taxAmountCents is defined and line.taxAmountCents %}
+                        {{ (line.taxAmountCents / 100)|number_format(2, ',', ' ') }} €
+                    {% else %}
+                        —
+                    {% endif %}
+                </td>
                 <td class="right">{{ (line.lineTotalCents / 100)|number_format(2, ',', ' ') }} €</td>
             </tr>
             {% endfor %}
             {% if order.carrierPriceSnapshotCents > 0 %}
-            <tr>
-                <td>Frais de livraison — {{ order.carrierNameSnapshot }}</td>
-                <td class="right">{{ (order.carrierPriceSnapshotCents / 100)|number_format(2, ',', ' ') }} €</td>
-                <td class="right">1</td>
-                <td class="right">{{ (order.carrierPriceSnapshotCents / 100)|number_format(2, ',', ' ') }} €</td>
+            <tr{% if order.orderDetails|length is even %} class="alt"{% endif %}>
+                <td class="product-name" style="color: #555; font-weight: normal; font-style: italic;">Frais de livraison — {{ order.carrierNameSnapshot }}</td>
+                <td class="right" style="font-style: italic; color: #555;">{{ (order.carrierPriceSnapshotCents / 100)|number_format(2, ',', ' ') }} €</td>
+                <td class="right" style="font-style: italic; color: #555;">1</td>
+                <td class="right" style="color: #888; font-size: 9.5px;">—</td>
+                <td class="right" style="font-style: italic; color: #555;">{{ (order.carrierPriceSnapshotCents / 100)|number_format(2, ',', ' ') }} €</td>
             </tr>
             {% endif %}
         </tbody>
     </table>
 
     {# ── Totaux ── #}
-    <div class="totals">
-        <div class="total-row">
-            <span class="total-label">Sous-total HT</span>
-            <span class="total-value">{{ (order.itemsTotalHtCents / 100)|number_format(2, ',', ' ') }} €</span>
-        </div>
-        {% if order.carrierPriceSnapshotCents > 0 %}
-        <div class="total-row">
-            <span class="total-label">Livraison</span>
-            <span class="total-value">{{ (order.carrierPriceSnapshotCents / 100)|number_format(2, ',', ' ') }} €</span>
-        </div>
-        {% endif %}
-        {% if taxAmountCents > 0 %}
-        <div class="total-row">
-            <span class="total-label">TVA</span>
-            <span class="total-value">{{ (taxAmountCents / 100)|number_format(2, ',', ' ') }} €</span>
-        </div>
-        {% else %}
-        <div class="total-row">
-            <span class="total-label">TVA</span>
-            <span class="total-value">Non applicable</span>
-        </div>
-        {% endif %}
-        <div class="total-row grand">
-            <span class="total-label">Total TTC</span>
-            <span class="total-value">{{ (order.orderTotalTtcCents / 100)|number_format(2, ',', ' ') }} €</span>
+    <div class="totals-wrap">
+        <div class="totals-left"></div>
+        <div class="totals-right">
+            <div class="totals-box">
+                <div class="total-row">
+                    <span class="total-label">Sous-total HT</span>
+                    <span class="total-value">{{ (order.itemsTotalHtCents / 100)|number_format(2, ',', ' ') }} €</span>
+                </div>
+                {% if order.carrierPriceSnapshotCents > 0 %}
+                <div class="total-row">
+                    <span class="total-label">Livraison</span>
+                    <span class="total-value">{{ (order.carrierPriceSnapshotCents / 100)|number_format(2, ',', ' ') }} €</span>
+                </div>
+                {% endif %}
+                <div class="total-row">
+                    <span class="total-label">TVA</span>
+                    <span class="total-value">
+                        {% if taxAmountCents > 0 %}
+                            {{ (taxAmountCents / 100)|number_format(2, ',', ' ') }} €
+                        {% else %}
+                            Non applicable
+                        {% endif %}
+                    </span>
+                </div>
+                <div class="total-row grand">
+                    <span class="total-label">Total TTC</span>
+                    <span class="total-value">{{ (order.orderTotalTtcCents / 100)|number_format(2, ',', ' ') }} €</span>
+                </div>
+            </div>
         </div>
     </div>
 
-    <div class="clearfix"></div>
-
-    {# ── Mentions légales ── #}
-    <div class="legal">
-        {% if invoice.notes %}
-            {% for line in invoice.notes|split("\n") %}{{ line }}<br>{% endfor %}
+    {# ── Pied de page ── #}
+    <div class="footer-bar">
+        {% if invoice.notes or seller.legal_mentions is defined %}
+        <div class="legal-title">Mentions légales</div>
+        <div class="legal">
+            {% if invoice.notes %}
+                {% for line in invoice.notes|split("\n") %}{{ line }}<br>{% endfor %}
+            {% endif %}
+            {% if seller.legal_mentions is defined and seller.legal_mentions %}
+                {{ seller.legal_mentions }}
+            {% endif %}
+        </div>
         {% endif %}
-        {% if seller.legal_mentions %}<br>{{ seller.legal_mentions }}{% endif %}
+        <div class="page-number">{{ seller.website_name }} — {{ invoice.invoiceNumber }}</div>
     </div>
 
 </div>

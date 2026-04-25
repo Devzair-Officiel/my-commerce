@@ -2880,3 +2880,81 @@ footer .widget_title,
         display: none;
     }
 }
+
+/* ── Footer responsive ── */
+@media (max-width: 991px) {
+    .nide-footer__grid {
+        grid-template-columns: 1fr 1fr;
+    }
+    .nide-footer__col--brand {
+        grid-column: 1 / -1;
+    }
+}
+
+@media (max-width: 575px) {
+    .nide-footer__grid {
+        grid-template-columns: 1fr;
+    }
+    .nide-footer__col--brand { grid-column: auto; }
+    .nide-footer__bottom-inner {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: .75rem;
+    }
+}
+
+/* ── Checkout responsive ── */
+@media (max-width: 991px) {
+    .nide-checkout__body {
+        grid-template-columns: 1fr;
+    }
+    .nide-checkout__summary {
+        position: static;
+    }
+}
+
+@media (max-width: 575px) {
+    .nide-checkout__header {
+        gap: .75rem;
+    }
+    .nide-checkout__steps {
+        order: 3;
+        width: 100%;
+        justify-content: flex-start;
+    }
+    .nide-checkout__count { display: none; }
+    .nide-checkout__section { padding: 1rem; }
+    .nide-checkout__fields { grid-template-columns: 1fr; }
+    .nide-checkout__field--full,
+    .nide-checkout__field--grow,
+    .nide-checkout__field--short { grid-column: auto; }
+    .nide-checkout__field--actions { flex-wrap: wrap; }
+    .nide-carrier-option { flex-wrap: wrap; }
+}
+
+/* ── Grossiste responsive ── */
+@media (max-width: 1199px) {
+    .nide-gros__targets-grid,
+    .nide-gros__conditions-grid { grid-template-columns: repeat(2, 1fr); }
+    .nide-gros__products-grid { grid-template-columns: repeat(2, 1fr); }
+    .nide-gros__related-grid { grid-template-columns: repeat(3, 1fr); }
+}
+@media (max-width: 991px) {
+    .nide-gros__hero-inner { grid-template-columns: 1fr; }
+    .nide-gros__hero-badges { flex-direction: row; flex-wrap: wrap; }
+    .nide-gros__trust-item { flex: 1 1 calc(50% - .5rem); }
+    .nide-gros__show-grid { grid-template-columns: 1fr; }
+    .nide-gros__show-desc-grid { grid-template-columns: 1fr; }
+    .nide-gros__quality-inner { grid-template-columns: 1fr; }
+    .nide-gros__related-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 575px) {
+    .nide-gros__hero-title { font-size: 1.7rem; }
+    .nide-gros__targets-grid,
+    .nide-gros__conditions-grid,
+    .nide-gros__products-grid,
+    .nide-gros__related-grid { grid-template-columns: 1fr; }
+    .nide-gros__trust-item { flex: 1 1 100%; }
+    .nide-gros__formats-grid { grid-template-columns: 1fr; }
+    .nide-gros__cta-inner { padding: 2rem 1.25rem; }
+}
