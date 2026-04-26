@@ -48,7 +48,7 @@ function renderCartRow(item) {
     return `
         <tr>
             <td class="product-thumbnail">
-                <a href="/produits/${product.slug ?? ""}">
+                <a href="/miels/${product.slug ?? ""}">
                     <img width="50" height="50" alt="${productImageAlt(product)}" src="${productImageSrc(product)}" loading="lazy" decoding="async">
                 </a>
             </td>
@@ -85,7 +85,7 @@ function renderMiniCartItem({ product, quantity }) {
 
     return `
         <li class="mini_cart_item">
-            <a href="/produits/${product.slug ?? ""}" class="mini_cart_link">
+            <a href="/miels/${product.slug ?? ""}" class="mini_cart_link">
                 <img width="50" height="50" alt="${productImageAlt(product)}" src="${productImageSrc(product)}">
                 <span class="mini_cart_title">${product.title ?? ""}</span>
             </a>

@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Repository\FaqLinkRepository;
 use App\Repository\FaqRepository;
 use App\Seo\SeoResolver;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -17,7 +18,7 @@ final class FaqController extends AbstractController
 {
     #[Route('/faq-miel', name: 'app_faq')]
     #[Cache(smaxage: 3600, vary: ['Accept-Language'])]
-    public function index(FaqRepository $faqRepository, SeoResolver $seoResolver, Request $request): Response
+    public function index(FaqRepository $faqRepository, FaqLinkRepository $faqLinkRepository, SeoResolver $seoResolver, Request $request): Response
     {
         $faqsBySection = $faqRepository->findActiveGroupedBySection();
         $faqs = $faqRepository->findActive();
@@ -26,6 +27,7 @@ final class FaqController extends AbstractController
         return $this->render('faq/index.html.twig', [
             'faqsBySection' => $faqsBySection,
             'faqs'          => $faqs,
+            'faqLinks'      => $faqLinkRepository->findActive(),
             'seo'           => $seo,
         ]);
     }

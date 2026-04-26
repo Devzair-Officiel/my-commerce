@@ -22,65 +22,95 @@
                     </p>
 				</div>
 
-				{% if faqsBySection is not empty %}
-					{% set isFirstItem = true %}
-					{% for section, sectionFaqs in faqsBySection %}
-						{% set sectionIndex = loop.index %}
-						{% set isFirstSection = loop.first %}
-						<div class="nide-faq__section">
-							{% if section %}
-								<button
-									class="nide-faq__section-toggle"
-									type="button"
-									data-bs-toggle="collapse"
-									data-bs-target="#faq-section-{{ sectionIndex }}"
-									aria-expanded="{{ isFirstSection ? 'true' : 'false' }}"
-									aria-controls="faq-section-{{ sectionIndex }}"
-								>
-									<h2 class="nide-faq__section-title">{{ section }}</h2>
-									<span class="nide-faq__section-icon" aria-hidden="true">
-										<svg viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-									</span>
-								</button>
-							{% endif %}
-							<div id="faq-section-{{ sectionIndex }}" class="collapse {% if isFirstSection %}show{% endif %}">
-								<div class="nide-faq__list" id="faqAccordion-{{ sectionIndex }}">
-									{% for faq in sectionFaqs %}
-										<div class="nide-faq__item {% if isFirstItem %}is-open{% endif %}">
-											<button
-												class="nide-faq__question"
-												type="button"
-												data-bs-toggle="collapse"
-												data-bs-target="#faq-p-{{ faq.id }}"
-												aria-expanded="{{ isFirstItem ? 'true' : 'false' }}"
-												aria-controls="faq-p-{{ faq.id }}"
-												id="faq-p-heading-{{ faq.id }}"
-											>
-												<span>{{ faq.question }}</span>
-												<span class="nide-faq__icon" aria-hidden="true">
-													<svg viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-												</span>
-											</button>
-											<div
-												id="faq-p-{{ faq.id }}"
-												class="accordion-collapse collapse {% if isFirstItem %}show{% endif %}"
-												aria-labelledby="faq-p-heading-{{ faq.id }}"
-												data-bs-parent="#faqAccordion-{{ sectionIndex }}"
-											>
-												<div class="nide-faq__answer">
-													{{ faq.answer|nl2br }}
+				<div class="nide-faq-page__body">
+
+					<div class="nide-faq-page__main">
+						{% if faqsBySection is not empty %}
+							{% set isFirstItem = true %}
+							{% for section, sectionFaqs in faqsBySection %}
+								{% set sectionIndex = loop.index %}
+								{% set isFirstSection = loop.first %}
+								<div class="nide-faq__section" id="faq-section-{{ sectionIndex }}">
+									{% if section %}
+										<button
+											class="nide-faq__section-toggle"
+											type="button"
+											data-bs-toggle="collapse"
+											data-bs-target="#faq-section-body-{{ sectionIndex }}"
+											aria-expanded="{{ isFirstSection ? 'true' : 'false' }}"
+											aria-controls="faq-section-body-{{ sectionIndex }}"
+										>
+											<h2 class="nide-faq__section-title">{{ section }}</h2>
+											<span class="nide-faq__section-icon" aria-hidden="true">
+												<svg viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+											</span>
+										</button>
+									{% endif %}
+									<div id="faq-section-body-{{ sectionIndex }}" class="collapse {% if isFirstSection %}show{% endif %}">
+										<div class="nide-faq__list" id="faqAccordion-{{ sectionIndex }}">
+											{% for faq in sectionFaqs %}
+												<div class="nide-faq__item {% if isFirstItem %}is-open{% endif %}">
+													<button
+														class="nide-faq__question"
+														type="button"
+														data-bs-toggle="collapse"
+														data-bs-target="#faq-p-{{ faq.id }}"
+														aria-expanded="{{ isFirstItem ? 'true' : 'false' }}"
+														aria-controls="faq-p-{{ faq.id }}"
+														id="faq-p-heading-{{ faq.id }}"
+													>
+														<span>{{ faq.question }}</span>
+														<span class="nide-faq__icon" aria-hidden="true">
+															<svg viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+														</span>
+													</button>
+													<div
+														id="faq-p-{{ faq.id }}"
+														class="accordion-collapse collapse {% if isFirstItem %}show{% endif %}"
+														aria-labelledby="faq-p-heading-{{ faq.id }}"
+														data-bs-parent="#faqAccordion-{{ sectionIndex }}"
+													>
+														<div class="nide-faq__answer">
+															{{ faq.answer|nl2br }}
+														</div>
+													</div>
 												</div>
-											</div>
+												{% set isFirstItem = false %}
+											{% endfor %}
 										</div>
-										{% set isFirstItem = false %}
-									{% endfor %}
+									</div>
 								</div>
-							</div>
+							{% endfor %}
+						{% else %}
+							<p class="nide-faq-page__empty">Aucune question disponible pour le moment.</p>
+						{% endif %}
+
+					</div>
+
+					{% if faqLinks is not empty %}
+					<aside class="nide-faq-page__sidebar">
+						<div class="nide-faq-sidebar__card">
+							<h3 class="nide-faq-sidebar__title">À lire aussi</h3>
+							<ul class="nide-faq-sidebar__list">
+								{% for link in faqLinks %}
+									<li class="nide-faq-sidebar__item">
+										<a href="{{ link.url }}" class="nide-faq-sidebar__link">
+											<svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M4 10h12M11 5l5 5-5 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+											<span>
+												<strong>{{ link.label }}</strong>
+												{% if link.description %}
+													<em>{{ link.description }}</em>
+												{% endif %}
+											</span>
+										</a>
+									</li>
+								{% endfor %}
+							</ul>
 						</div>
-					{% endfor %}
-				{% else %}
-					<p class="nide-faq-page__empty">Aucune question disponible pour le moment.</p>
-				{% endif %}
+					</aside>
+					{% endif %}
+
+				</div>
 
 				<div class="nide-faq-page__cta">
 					<p>Vous ne trouvez pas la réponse à votre question&nbsp;?</p>

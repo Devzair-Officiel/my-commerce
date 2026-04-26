@@ -2959,3 +2959,8 @@ footer .widget_title,
     .nide-gros__formats-grid { grid-template-columns: 1fr; }
     .nide-gros__cta-inner { padding: 2rem 1.25rem; }
 }
+
+@media (max-width: 991px) {
+    .nide-faq-page__body { grid-template-columns: 1fr; }
+    .nide-faq-page__sidebar { position: static; }
+}

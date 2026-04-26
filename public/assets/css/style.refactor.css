@@ -11161,6 +11161,75 @@ select {
     margin: 0 auto;
 }
 
+/* Layout principal + sidebar */
+.nide-faq-page__body {
+    display: grid;
+    grid-template-columns: 1fr 260px;
+    gap: 3rem;
+    align-items: start;
+}
+.nide-faq-page__main {
+    min-width: 0;
+}
+
+/* Sidebar liens utiles */
+.nide-faq-page__sidebar {
+    position: sticky;
+    top: 120px;
+}
+.nide-faq-sidebar__card {
+    border: 1px solid var(--color-border, #e5e5e5);
+    border-radius: 10px;
+    padding: 1.25rem 1.25rem 1rem;
+}
+.nide-faq-sidebar__title {
+    font-size: 0.9rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--color-text-muted, #888);
+    margin: 0 0 1rem;
+}
+.nide-faq-sidebar__list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+.nide-faq-sidebar__link {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+    text-decoration: none;
+    color: var(--color-text, #1a1a1a);
+    font-size: 0.9rem;
+    line-height: 1.4;
+    transition: color 0.2s;
+}
+.nide-faq-sidebar__link:hover {
+    color: var(--color-primary, #c8922a);
+}
+.nide-faq-sidebar__link svg {
+    flex-shrink: 0;
+    width: 16px;
+    height: 16px;
+    margin-top: 3px;
+    color: var(--color-primary, #c8922a);
+}
+.nide-faq-sidebar__link strong {
+    display: block;
+    font-weight: 600;
+}
+.nide-faq-sidebar__link em {
+    display: block;
+    font-style: normal;
+    font-size: 0.8rem;
+    color: var(--color-text-muted, #888);
+    margin-top: 1px;
+}
+
 /* Sections H2 */
 .nide-faq__section {
     margin-bottom: 2rem;
@@ -13611,6 +13680,7 @@ hr,
     font-weight: 600;
     font-size: .9rem;
     border-radius: 8px;
+    white-space: nowrap;
 }
 
 /* Bouton payer maintenant */

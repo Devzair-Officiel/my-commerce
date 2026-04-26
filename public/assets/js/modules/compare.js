@@ -124,7 +124,7 @@ export function displayCompare(compare = []) {
           : "";
         cell = `
           <div class="compare-cell compare-cell--image">
-            <a href="/produits/${slug}" class="compare-cell__img-wrap">
+            <a href="/miels/${slug}" class="compare-cell__img-wrap">
               <img src="${imgSrc}" alt="${alt}" width="260" height="260" loading="lazy" decoding="async">
               ${saleBadge}
             </a>
@@ -132,7 +132,7 @@ export function displayCompare(compare = []) {
       } else if (isTitle) {
         cell = `
           <div class="compare-cell compare-cell--title">
-            <h3><a href="/produits/${slug}">${title}</a></h3>
+            <h3><a href="/miels/${slug}">${title}</a></h3>
           </div>`;
       } else if (row.key === "price") {
         const priceHtml   = formatPrice(priceCents / 100);

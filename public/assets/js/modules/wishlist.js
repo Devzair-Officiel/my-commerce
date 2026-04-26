@@ -118,7 +118,7 @@ export function displayWishlist(wishlist = []) {
       `
       <div class="col-lg-3 col-md-4 col-sm-6" data-product-id="${id}">
         <div class="wishlist-card">
-          <a href="/produits/${slug}" class="wishlist-card__img-wrap">
+          <a href="/miels/${slug}" class="wishlist-card__img-wrap">
             <img
               src="${imgSrc}"
               alt="${alt}"
@@ -134,7 +134,7 @@ export function displayWishlist(wishlist = []) {
 
           <div class="wishlist-card__body">
             <h3 class="wishlist-card__title">
-              <a href="/produits/${slug}">${title}</a>
+              <a href="/miels/${slug}">${title}</a>
             </h3>
 
             ${description ? `<p class="wishlist-card__desc">${description}</p>` : ""}

@@ -36,7 +36,7 @@ function renderResults(dropdown, results, term) {
         li.className = "search-dropdown__item";
         li.setAttribute("role", "option");
         li.innerHTML = `
-            <a href="/produits/${escapeHtml(product.slug)}" class="search-dropdown__link">
+            <a href="/miels/${escapeHtml(product.slug)}" class="search-dropdown__link">
                 <img src="${src}" alt="${escapeHtml(product.thumbAlt ?? product.title)}" class="search-dropdown__img" width="48" height="48">
                 <span class="search-dropdown__info">
                     <span class="search-dropdown__title">${escapeHtml(product.title)}</span>
