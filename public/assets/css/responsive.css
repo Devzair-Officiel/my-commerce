@@ -2942,7 +2942,7 @@ footer .widget_title,
 @media (max-width: 991px) {
     .nide-gros__hero-inner { grid-template-columns: 1fr; }
     .nide-gros__hero-badges { flex-direction: row; flex-wrap: wrap; }
-    .nide-gros__trust-item { flex: 1 1 calc(50% - .5rem); }
+    .nide-gros__trust-item { flex: 1 1 100%; }
     .nide-gros__show-grid { grid-template-columns: 1fr; }
     .nide-gros__show-desc-grid { grid-template-columns: 1fr; }
     .nide-gros__quality-inner { grid-template-columns: 1fr; }
@@ -2954,7 +2954,8 @@ footer .widget_title,
     .nide-gros__conditions-grid,
     .nide-gros__products-grid,
     .nide-gros__related-grid { grid-template-columns: 1fr; }
-    .nide-gros__trust-item { flex: 1 1 100%; }
+    .nide-gros__trust-item { flex: 1 1 100%; font-size: .72rem; padding: .6rem .8rem; }
+    .nide-gros__hero-badges { width: 100%; }
     .nide-gros__formats-grid { grid-template-columns: 1fr; }
     .nide-gros__cta-inner { padding: 2rem 1.25rem; }
 }

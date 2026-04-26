@@ -90,28 +90,39 @@
 {% block javascripts %}
   {{ parent() }}
 
-<script src="https://www.google.com/recaptcha/api.js?render={{ recaptcha3_site_key }}"></script>
-
   <script>
-    document.addEventListener('DOMContentLoaded', function () {
-      if (typeof grecaptcha === 'undefined') return;
+    (function () {
+      var siteKey = '{{ recaptcha3_site_key }}';
+      var loaded = false;
 
-      const formEl = document.querySelector('.nide-contact__form');
-      const captchaInput = document.getElementById('contact_captcha');
+      function loadRecaptcha(cb) {
+        if (loaded) { cb && grecaptcha.ready(cb); return; }
+        loaded = true;
+        var s = document.createElement('script');
+        s.src = 'https://www.google.com/recaptcha/api.js?render=' + siteKey;
+        s.onload = function () { cb && grecaptcha.ready(cb); };
+        document.head.appendChild(s);
+      }
 
-      if (!formEl || !captchaInput) return;
+      document.addEventListener('DOMContentLoaded', function () {
+        var formEl = document.querySelector('.nide-contact__form');
+        var captchaInput = document.getElementById('contact_captcha');
+        if (!formEl || !captchaInput) return;
 
-      formEl.addEventListener('submit', function (e) {
-        if (captchaInput.value) return;
-        e.preventDefault();
-        grecaptcha.ready(function () {
-          grecaptcha.execute('{{ recaptcha3_site_key }}', { action: 'contact' })
-            .then(function (token) {
+        // Précharger au premier focus sur le formulaire
+        formEl.addEventListener('focusin', function () { loadRecaptcha(); }, { once: true });
+
+        formEl.addEventListener('submit', function (e) {
+          if (captchaInput.value) return;
+          e.preventDefault();
+          loadRecaptcha(function () {
+            grecaptcha.execute(siteKey, { action: 'contact' }).then(function (token) {
               captchaInput.value = token;
               formEl.submit();
             });
+          });
         });
       });
-    });
+    })();
   </script>
 {% endblock %}

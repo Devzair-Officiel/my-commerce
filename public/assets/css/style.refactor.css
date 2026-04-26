@@ -1,3 +1,7 @@
+/* Offset ancres pour compenser le header sticky (102px) */
+[id] { scroll-margin-top: 110px; }
+html { scroll-behavior: auto !important; }
+
 /* ==========================================================
    NIDEMIEL THEME TOKENS (CSS Custom Properties)
    - Light is default (no visual change)
@@ -15703,7 +15707,7 @@ hr,
 }
 .nide-gros__hero-inner {
 	display: grid;
-	grid-template-columns: 1fr 280px;
+	grid-template-columns: 1fr 320px;
 	gap: 3rem;
 	align-items: center;
 }
