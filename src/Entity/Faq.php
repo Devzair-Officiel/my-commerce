@@ -29,6 +29,9 @@ class Faq
     #[ORM\Column]
     private bool $isWholesale = false;
 
+    #[ORM\Column(length: 100, nullable: true)]
+    private ?string $section = null;
+
     public function getId(): ?int { return $this->id; }
 
     public function getQuestion(): ?string { return $this->question; }
@@ -45,4 +48,7 @@ class Faq
 
     public function isWholesale(): bool { return $this->isWholesale; }
     public function setIsWholesale(bool $isWholesale): static { $this->isWholesale = $isWholesale; return $this; }
+
+    public function getSection(): ?string { return $this->section; }
+    public function setSection(?string $section): static { $this->section = $section; return $this; }
 }

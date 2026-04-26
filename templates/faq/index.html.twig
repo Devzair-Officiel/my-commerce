@@ -16,40 +16,68 @@
 				<div class="nide-faq-page__intro">
 					<span class="nide-faq__kicker">FAQ</span>
 					<h1 class="nide-faq-page__title">Questions fréquentes sur nos miels</h1>
-					<p class="nide-faq-page__lead">Choisir un miel en ligne soulève souvent les mêmes questions&nbsp;: origine, goût, conservation, cristallisation, analyses, traçabilité. Cette FAQ rassemble les réponses les plus utiles pour vous aider à choisir avec plus de clarté et de confiance.</p>
+					<p class="nide-faq-page__lead">
+                        Choisir un miel en ligne soulève souvent les mêmes questions. Comment reconnaître un miel de qualité ? Pourquoi l’origine est-elle importante ? Le miel cristallise-t-il naturellement ? Comment le conserver dans de bonnes conditions ?
+                        Cette FAQ a été pensée pour répondre simplement à ces questions, avec une approche claire, sérieuse et utile. Vous y trouverez des repères concrets pour mieux comprendre les différences entre les miels, lire une fiche produit avec plus de recul, et choisir une référence adaptée à vos goûts.
+                    </p>
 				</div>
 
-				{% if faqs is not empty %}
-					<div class="nide-faq__list" id="faqAccordion">
-						{% for faq in faqs %}
-							<div class="nide-faq__item {% if loop.first %}is-open{% endif %}">
+				{% if faqsBySection is not empty %}
+					{% set isFirstItem = true %}
+					{% for section, sectionFaqs in faqsBySection %}
+						{% set sectionIndex = loop.index %}
+						{% set isFirstSection = loop.first %}
+						<div class="nide-faq__section">
+							{% if section %}
 								<button
-									class="nide-faq__question"
+									class="nide-faq__section-toggle"
 									type="button"
 									data-bs-toggle="collapse"
-									data-bs-target="#faq-p-{{ faq.id }}"
-									aria-expanded="{{ loop.first ? 'true' : 'false' }}"
-									aria-controls="faq-p-{{ faq.id }}"
-									id="faq-p-heading-{{ faq.id }}"
+									data-bs-target="#faq-section-{{ sectionIndex }}"
+									aria-expanded="{{ isFirstSection ? 'true' : 'false' }}"
+									aria-controls="faq-section-{{ sectionIndex }}"
 								>
-									<span>{{ faq.question }}</span>
-									<span class="nide-faq__icon" aria-hidden="true">
+									<h2 class="nide-faq__section-title">{{ section }}</h2>
+									<span class="nide-faq__section-icon" aria-hidden="true">
 										<svg viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
 									</span>
 								</button>
-								<div
-									id="faq-p-{{ faq.id }}"
-									class="accordion-collapse collapse {% if loop.first %}show{% endif %}"
-									aria-labelledby="faq-p-heading-{{ faq.id }}"
-									data-bs-parent="#faqAccordion"
-								>
-									<div class="nide-faq__answer">
-										{{ faq.answer|nl2br }}
-									</div>
+							{% endif %}
+							<div id="faq-section-{{ sectionIndex }}" class="collapse {% if isFirstSection %}show{% endif %}">
+								<div class="nide-faq__list" id="faqAccordion-{{ sectionIndex }}">
+									{% for faq in sectionFaqs %}
+										<div class="nide-faq__item {% if isFirstItem %}is-open{% endif %}">
+											<button
+												class="nide-faq__question"
+												type="button"
+												data-bs-toggle="collapse"
+												data-bs-target="#faq-p-{{ faq.id }}"
+												aria-expanded="{{ isFirstItem ? 'true' : 'false' }}"
+												aria-controls="faq-p-{{ faq.id }}"
+												id="faq-p-heading-{{ faq.id }}"
+											>
+												<span>{{ faq.question }}</span>
+												<span class="nide-faq__icon" aria-hidden="true">
+													<svg viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+												</span>
+											</button>
+											<div
+												id="faq-p-{{ faq.id }}"
+												class="accordion-collapse collapse {% if isFirstItem %}show{% endif %}"
+												aria-labelledby="faq-p-heading-{{ faq.id }}"
+												data-bs-parent="#faqAccordion-{{ sectionIndex }}"
+											>
+												<div class="nide-faq__answer">
+													{{ faq.answer|nl2br }}
+												</div>
+											</div>
+										</div>
+										{% set isFirstItem = false %}
+									{% endfor %}
 								</div>
 							</div>
-						{% endfor %}
-					</div>
+						</div>
+					{% endfor %}
 				{% else %}
 					<p class="nide-faq-page__empty">Aucune question disponible pour le moment.</p>
 				{% endif %}
@@ -79,4 +107,28 @@
 		</section>
 	</main>
 
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+{% if faqs is not empty %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {% for faq in faqs %}
+    {
+      "@type": "Question",
+      "name": {{ faq.question|json_encode|raw }},
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": {{ faq.answer|striptags|json_encode|raw }}
+      }
+    }{% if not loop.last %},{% endif %}
+    {% endfor %}
+  ]
+}
+</script>
+{% endif %}
 {% endblock %}

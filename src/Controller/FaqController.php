@@ -19,12 +19,14 @@ final class FaqController extends AbstractController
     #[Cache(smaxage: 3600, vary: ['Accept-Language'])]
     public function index(FaqRepository $faqRepository, SeoResolver $seoResolver, Request $request): Response
     {
+        $faqsBySection = $faqRepository->findActiveGroupedBySection();
         $faqs = $faqRepository->findActive();
         $seo  = $seoResolver->forFaq($faqs, $request);
 
         return $this->render('faq/index.html.twig', [
-            'faqs' => $faqs,
-            'seo'  => $seo,
+            'faqsBySection' => $faqsBySection,
+            'faqs'          => $faqs,
+            'seo'           => $seo,
         ]);
     }
 }

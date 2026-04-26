@@ -22,9 +22,22 @@ class FaqRepository extends ServiceEntityRepository
         return $this->createQueryBuilder('f')
             ->where('f.isActive = true')
             ->andWhere('f.isWholesale = false')
-            ->orderBy('f.position', 'ASC')
+            ->orderBy('f.section', 'ASC')
+            ->addOrderBy('f.position', 'ASC')
             ->getQuery()
             ->getResult();
+    }
+
+    /** @return array<string, Faq[]> FAQs groupées par section */
+    public function findActiveGroupedBySection(): array
+    {
+        $faqs = $this->findActive();
+        $grouped = [];
+        foreach ($faqs as $faq) {
+            $section = $faq->getSection() ?? '';
+            $grouped[$section][] = $faq;
+        }
+        return $grouped;
     }
 
     /** @return Faq[] FAQ dédiée à la page grossiste */
