@@ -19,6 +19,8 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Response;
+use App\Service\StockAllocatorInterface;
+use Symfony\Component\Lock\LockFactory;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Routing\Attribute\Route;
 
@@ -33,6 +35,8 @@ class CheckoutController extends AbstractController
         private readonly EntityManagerInterface $em,
         private readonly OrderRepository $orderRepo,
         private readonly RequestStack $requestStack,
+        private readonly LockFactory $lockFactory,
+        private readonly StockAllocatorInterface $stockAllocator,
     ) {}
 
     #[Route('/checkout', name: 'app_checkout', methods: ['GET'])]
@@ -55,7 +59,13 @@ class CheckoutController extends AbstractController
 
         $addresses = $addressRepo->findBy(['user' => $user], ['id' => 'DESC']);
         $carriers  = $carrierRepo->findAll();
-        $order     = $this->createDraftOrderFromCart($user, $cart);
+
+        try {
+            $order = $this->createDraftOrderFromCart($user, $cart);
+        } catch (\RuntimeException $e) {
+            $this->addFlash('danger', $e->getMessage());
+            return $this->redirectToRoute('app_cart');
+        }
 
         // Token widget Colissimo pour la sélection de point relais
         $colissimoToken = '';
@@ -139,6 +149,20 @@ class CheckoutController extends AbstractController
 
     private function createDraftOrderFromCart(User $user, array $cart): Order
     {
+        // Verrou par utilisateur : empêche deux onglets/requêtes simultanées
+        // de créer deux commandes brouillon pour le même panier.
+        $lock = $this->lockFactory->createLock('checkout_draft_' . $user->getId(), ttl: 10);
+        $lock->acquire(blocking: true);
+
+        try {
+            return $this->buildDraftOrder($user, $cart);
+        } finally {
+            $lock->release();
+        }
+    }
+
+    private function buildDraftOrder(User $user, array $cart): Order
+    {
         $draft = $this->orderRepo->findOneBy([
             'user' => $user,
             'fulfillmentStatus' => FulfillmentStatus::Draft,
@@ -150,6 +174,13 @@ class CheckoutController extends AbstractController
         }
 
         $order = $draft ?? new Order();
+
+        // Libère l'éventuelle réservation AVANT de remplacer les lignes,
+        // sinon on restaurerait les mauvaises quantités (nouvelles vs anciennes).
+        if ($order->isStockReserved()) {
+            $this->stockAllocator->releaseStockReservation($order);
+        }
+
         $order->setUser($user);
         $order->setFulfillmentStatus(FulfillmentStatus::Draft);
         $order->generateOrderReferenceIfMissing();
@@ -224,6 +255,13 @@ class CheckoutController extends AbstractController
         }
 
         $this->em->persist($order);
+
+        // Réserve le stock dès le checkout : empêche un autre client d'acheter
+        // les mêmes articles pendant que celui-ci est en cours de paiement.
+        // Si le stock est insuffisant, une RuntimeException est levée et
+        // l'utilisateur est redirigé vers son panier (voir index()).
+        $this->stockAllocator->reserveStockForDraftOrder($order);
+
         $this->em->flush();
 
         return $order;

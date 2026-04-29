@@ -433,6 +433,11 @@ final class CartService
      *
      * @param array{name?:string, price?:int} $carrier
      */
+    public function applyFreeShippingThreshold(int $carrierPriceCents, int $itemsTotalTtcCents): int
+    {
+        return $itemsTotalTtcCents >= $this->freeShippingThresholdCents ? 0 : $carrierPriceCents;
+    }
+
     private function applyFreeShippingIfEligible(array $carrier, int $itemsTotalTtcCents): array
     {
         $eligible = $itemsTotalTtcCents >= $this->freeShippingThresholdCents;

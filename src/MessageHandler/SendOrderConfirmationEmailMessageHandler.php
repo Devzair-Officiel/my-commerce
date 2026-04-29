@@ -9,6 +9,7 @@ use App\Repository\OrderRepository;
 use App\Service\Invoice\InvoiceBuilder;
 use App\Service\Invoice\InvoicePdfRenderer;
 use Doctrine\ORM\EntityManagerInterface;
+use Psr\Log\LoggerInterface;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
@@ -27,6 +28,7 @@ final readonly class SendOrderConfirmationEmailMessageHandler
         private MailerInterface        $mailer,
         private InvoiceBuilder         $invoiceBuilder,
         private InvoicePdfRenderer     $pdfRenderer,
+        private LoggerInterface        $logger,
         private string $mailFromAddress,
         private string $mailFromName,
     ) {}
@@ -69,7 +71,15 @@ final readonly class SendOrderConfirmationEmailMessageHandler
             ])
             ->addPart(new DataPart($pdfContent, $filename, 'application/pdf'));
 
-        $this->mailer->send($email);
+        try {
+            $this->mailer->send($email);
+        } catch (\Throwable $e) {
+            $this->logger->error('Échec envoi email confirmation commande', [
+                'order_id' => $order->getId(),
+                'error'    => $e->getMessage(),
+            ]);
+            throw $e; // Messenger retentera automatiquement
+        }
 
         $order->markConfirmationEmailSent();
         $this->em->flush();

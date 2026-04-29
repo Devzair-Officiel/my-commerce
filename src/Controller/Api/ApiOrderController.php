@@ -6,6 +6,7 @@ use App\Entity\User;
 use App\Repository\AddressRepository;
 use App\Repository\CarrierRepository;
 use App\Repository\OrderRepository;
+use App\Service\CartService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -27,6 +28,7 @@ final class ApiOrderController extends AbstractController
         CarrierRepository $carrierRepo,
         EntityManagerInterface $em,
         ValidatorInterface $validator,
+        CartService $cartService,
     ): JsonResponse {
         $this->denyAccessUnlessGranted('ROLE_USER');
 
@@ -91,13 +93,14 @@ final class ApiOrderController extends AbstractController
             $carrier = $carrierRepo->find($carrierId);
             if ($carrier) {
                 $oldCarrierPrice = $order->getCarrierPriceSnapshotCents();
-                $newCarrierPrice = $carrier->getPrice();
+
+                $itemsTotal = $order->getItemsTotalHtCents() + (int) $order->getTaxAmountCents();
+                $newCarrierPrice = $cartService->applyFreeShippingThreshold($carrier->getPrice(), $itemsTotal);
 
                 $order->setCarrier($carrier);
                 $order->setCarrierNameSnapshot($carrier->getName());
                 $order->setCarrierPriceSnapshotCents($newCarrierPrice);
 
-                // Recalculer le total TTC : soustraire l'ancien carrier, ajouter le nouveau
                 $newTotal = $order->getOrderTotalTtcCents() - $oldCarrierPrice + $newCarrierPrice;
                 $order->setOrderTotalTtcCents(max(0, $newTotal));
             }

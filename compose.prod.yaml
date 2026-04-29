@@ -30,6 +30,31 @@ services:
       - path: .env.prod.local
         required: false
 
+  netdata:
+    image: netdata/netdata:stable
+    restart: unless-stopped
+    pid: host
+    network_mode: host
+    cap_add:
+      - SYS_PTRACE
+      - SYS_ADMIN
+    security_opt:
+      - apparmor:unconfined
+    environment:
+      # Accès protégé par mot de passe — définir NETDATA_PASSWORD dans .env.prod.local
+      NETDATA_CLAIM_TOKEN: ""
+    volumes:
+      - netdata_config:/etc/netdata
+      - netdata_lib:/var/lib/netdata
+      - netdata_cache:/var/cache/netdata
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /etc/os-release:/host/etc/os-release:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+
 volumes:
   uploads_data:
   videos_data:
+  netdata_config:
+  netdata_lib:
+  netdata_cache:

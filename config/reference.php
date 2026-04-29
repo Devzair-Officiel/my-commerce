@@ -409,7 +409,7 @@ namespace Symfony\Component\DependencyInjection\Loader\Configurator;
  *         enabled?: bool, // Default: false
  *     },
  *     lock?: bool|string|array{ // Lock configuration
- *         enabled?: bool, // Default: false
+ *         enabled?: bool, // Default: true
  *         resources?: array<string, string|list<scalar|null>>,
  *     },
  *     semaphore?: bool|string|array{ // Semaphore configuration

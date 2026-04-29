@@ -20,6 +20,7 @@ use EasyCorp\Bundle\EasyAdminBundle\Context\AdminContext;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
 use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGenerator;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Lock\LockFactory;
 use Symfony\Component\Messenger\MessageBusInterface;
 use EasyCorp\Bundle\EasyAdminBundle\Field\ChoiceField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\DateTimeField;
@@ -44,6 +45,7 @@ final class OrderCrudController extends AbstractCrudController
         private readonly OrderRepository $orderRepository,
         private readonly MessageBusInterface $bus,
         private readonly ShipmentService $shipmentService,
+        private readonly LockFactory $lockFactory,
     ) {}
 
     public static function getEntityFqcn(): string
@@ -130,6 +132,15 @@ final class OrderCrudController extends AbstractCrudController
             );
         }
 
+        $lock = $this->lockFactory->createLock('order_refund_' . $order->getId(), ttl: 30);
+
+        if (!$lock->acquire()) {
+            $this->addFlash('warning', 'Un remboursement est déjà en cours pour cette commande.');
+            return $this->redirect(
+                $urlGenerator->setController(self::class)->setAction(Action::DETAIL)->setEntityId($order->getId())->generateUrl()
+            );
+        }
+
         try {
             $this->refundService->refundOrder($order);
             $this->em->flush();
@@ -142,6 +153,8 @@ final class OrderCrudController extends AbstractCrudController
                 'Erreur lors du remboursement : %s',
                 $e->getMessage(),
             ));
+        } finally {
+            $lock->release();
         }
 
         return $this->redirect(
@@ -172,6 +185,15 @@ final class OrderCrudController extends AbstractCrudController
             );
         }
 
+        $lock = $this->lockFactory->createLock('order_refund_email_' . $order->getId(), ttl: 30);
+
+        if (!$lock->acquire()) {
+            $this->addFlash('warning', 'L\'envoi de l\'email est déjà en cours pour cette commande.');
+            return $this->redirect(
+                $urlGenerator->setController(self::class)->setAction(Action::DETAIL)->setEntityId($order->getId())->generateUrl()
+            );
+        }
+
         try {
             // Marquer comme envoyé immédiatement pour que le bouton se désactive dès le rechargement
             $order->markRefundEmailSent();
@@ -186,6 +208,8 @@ final class OrderCrudController extends AbstractCrudController
                 'Erreur lors de l\'envoi de l\'email : %s',
                 $e->getMessage(),
             ));
+        } finally {
+            $lock->release();
         }
 
         return $this->redirect(

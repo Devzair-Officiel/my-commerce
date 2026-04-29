@@ -136,6 +136,13 @@ class Order
     private ?\DateTimeImmutable $paidAt = null;
 
     /**
+     * Horodatage de la réservation de stock au checkout. Null = pas encore réservé.
+     * La réservation est libérée si le paiement échoue ou est annulé.
+     */
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
+    private ?\DateTimeImmutable $stockReservedAt = null;
+
+    /**
      * Horodatage du décrément de stock. Sert de guard contre les doubles décréments.
      */
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
@@ -373,6 +380,28 @@ class Order
     {
         $this->paymentFailureReason = $reason;
         return $this;
+    }
+
+    public function getStockReservedAt(): ?\DateTimeImmutable
+    {
+        return $this->stockReservedAt;
+    }
+
+    public function markStockReserved(): static
+    {
+        $this->stockReservedAt = new \DateTimeImmutable();
+        return $this;
+    }
+
+    public function clearStockReservation(): static
+    {
+        $this->stockReservedAt = null;
+        return $this;
+    }
+
+    public function isStockReserved(): bool
+    {
+        return $this->stockReservedAt !== null;
     }
 
     public function getStockDecrementedAt(): ?\DateTimeImmutable

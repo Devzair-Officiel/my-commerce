@@ -11,7 +11,7 @@ use Psr\Log\LoggerInterface;
 use App\Enum\FulfillmentStatus;
 use App\Message\SendOrderConfirmationEmailMessage;
 use App\Repository\PaymentMethodRepository;
-use App\Service\StockAllocator;
+use App\Service\StockAllocatorInterface;
 use App\Entity\StripeWebhookEvent;
 use App\Repository\OrderRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -36,7 +36,7 @@ final class StripeWebhookController extends AbstractController
         private readonly EntityManagerInterface $em,
         private readonly OrderRepository $orderRepository,
         private readonly PaymentMethodRepository $paymentMethodRepository,
-        private readonly StockAllocator $stockAllocator,
+        private readonly StockAllocatorInterface $stockAllocator,
         private readonly MessageBusInterface $messageBus,
         #[Autowire(service: 'limiter.stripe_webhook')]
         private readonly RateLimiterFactory $stripeWebhookLimiter,
@@ -115,8 +115,10 @@ final class StripeWebhookController extends AbstractController
 
                 $this->em->lock($order, LockMode::PESSIMISTIC_WRITE);
 
-                // Ne jamais rétrograder une commande payée
-                if ($order->getPaymentStatus() === PaymentStatus::Paid) {
+                // Ne jamais rétrograder une commande payée, sauf pour un remboursement légitime
+                if ($order->getPaymentStatus() === PaymentStatus::Paid
+                    && $event->type !== 'charge.refunded'
+                ) {
                     return;
                 }
 
@@ -136,13 +138,19 @@ final class StripeWebhookController extends AbstractController
                         throw new \RuntimeException('Amount mismatch.');
                     }
 
-                    // Guard: décrémenter le stock une seule fois même si le webhook est rejoué
+                    // Guard: décrémenter le stock une seule fois même si le webhook est rejoué.
+                    // Si le stock a été réservé au checkout, on le confirme simplement sans
+                    // toucher aux quantités (déjà décrémentées). Sinon on décrémente maintenant
+                    // (cas de migration ou commande sans réservation préalable).
                     if (!$order->isStockDecremented()) {
                         try {
-                            $this->stockAllocator->decrementStockForPaidOrder($order);
+                            if (!$order->isStockReserved()) {
+                                $this->stockAllocator->decrementStockForPaidOrder($order);
+                            }
+                            $order->clearStockReservation();
                             $order->markStockDecremented();
                         } catch (\RuntimeException $e) {
-                            // Stock insuffisant après paiement → remboursement automatique
+                            // Stock insuffisant (ancien flux sans réservation) → remboursement auto
                             $this->logger->critical('Stock insuffisant après paiement, remboursement déclenché', [
                                 'order_id'       => $order->getId(),
                                 'payment_intent' => $piId,
@@ -194,6 +202,7 @@ final class StripeWebhookController extends AbstractController
                     }
                     $order->setPaymentStatus(PaymentStatus::Failed);
                     $order->setPaymentFailureReason($reason);
+                    $this->stockAllocator->releaseStockReservation($order);
 
                     $this->logger->warning('Paiement échoué', [
                         'order_id'       => $order->getId(),
@@ -210,6 +219,7 @@ final class StripeWebhookController extends AbstractController
 
                     $order->setPaymentStatus(PaymentStatus::Failed);
                     $order->setPaymentFailureReason($reason);
+                    $this->stockAllocator->releaseStockReservation($order);
 
                     $this->logger->warning('Paiement annulé', [
                         'order_id'       => $order->getId(),

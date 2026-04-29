@@ -11,6 +11,7 @@ framework:
         cookie_samesite: lax
         # Bon réflexe : JS ne peut pas lire le cookie de session
         cookie_httponly: true
+        cookie_lifetime: 0
 
     serializer:
         enabled: true
