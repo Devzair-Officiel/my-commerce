@@ -4,6 +4,7 @@ namespace App\Entity;
 
 use App\Trait\SeoFieldsTrait;
 use App\Trait\DateTrait;
+use App\Entity\ProductLot;
 use App\Entity\WholesaleTier;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
@@ -153,6 +154,11 @@ class Product
     #[ORM\OneToMany(mappedBy: 'product', targetEntity: Review::class, cascade: ['remove'], orphanRemoval: true)]
     private Collection $reviews;
 
+    /** @var Collection<int, ProductLot> */
+    #[ORM\OneToMany(targetEntity: ProductLot::class, mappedBy: 'product', cascade: ['persist', 'remove'], orphanRemoval: true)]
+    #[ORM\OrderBy(['receivedAt' => 'DESC'])]
+    private Collection $lots;
+
     public function __construct()
     {
         $this->categories = new ArrayCollection();
@@ -161,6 +167,18 @@ class Product
         $this->relatedProducts = new ArrayCollection();
         $this->reviews = new ArrayCollection();
         $this->wholesaleTiers = new ArrayCollection();
+        $this->lots = new ArrayCollection();
+    }
+
+    /** @return Collection<int, ProductLot> */
+    public function getLots(): Collection { return $this->lots; }
+
+    public function getCurrentLot(): ?ProductLot
+    {
+        foreach ($this->lots as $lot) {
+            if ($lot->isCurrent()) return $lot;
+        }
+        return null;
     }
 
     // ---------------------------------------------------------------------

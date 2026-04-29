@@ -10,6 +10,7 @@ use App\Entity\Address;
 use App\Entity\Carrier;
 use App\Entity\Contact;
 use App\Entity\Product;
+use App\Entity\ProductLot;
 use App\Entity\Setting;
 use App\Entity\Sliders;
 use App\Entity\Category;
@@ -111,6 +112,7 @@ final class DashboardController extends AbstractDashboardController
 
         yield MenuItem::section('Catalogue');
         yield MenuItem::linkToCrud('Produits', 'fa fa-box', Product::class);
+        yield MenuItem::linkToCrud('Numéros de lot', 'fa fa-barcode', ProductLot::class);
         yield MenuItem::linkToCrud('Catégories', 'fa fa-tags', Category::class);
 
         yield MenuItem::section('Contenu');
