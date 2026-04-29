@@ -28,6 +28,7 @@ use EasyCorp\Bundle\EasyAdminBundle\Field\FormField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\IntegerField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\MoneyField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextareaField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\Field;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
 use EasyCorp\Bundle\EasyAdminBundle\Filter\ChoiceFilter;
 use EasyCorp\Bundle\EasyAdminBundle\Filter\DateTimeFilter;
@@ -250,25 +251,11 @@ final class OrderCrudController extends AbstractCrudController
         $billingAddress = TextareaField::new('billingAddress', 'Adresse de facturation (snapshot)')
             ->setFormTypeOption('attr', ['rows' => 5]);
 
-        $itemsTotal = MoneyField::new('itemsTotalHtCents', 'Articles HT')
-            ->setStoredAsCents(true)
-            ->setCurrencyPropertyPath('currency');
-
-        $taxAmount = MoneyField::new('taxAmountCents', 'TVA')
-            ->setStoredAsCents(true)
-            ->setCurrencyPropertyPath('currency');
-
         $weight = TextField::new('totalWeightKgFormatted', 'Poids total');
-
-        $carrierPrice = MoneyField::new('carrierPriceSnapshotCents', 'Frais de port')
-            ->setStoredAsCents(true)
-            ->setCurrencyPropertyPath('currency');
 
         $orderTotal = MoneyField::new('orderTotalTtcCents', 'Total TTC')
             ->setStoredAsCents(true)
             ->setCurrencyPropertyPath('currency');
-
-        $currency = TextField::new('currency', 'Devise');
 
         $carrierName = TextField::new('carrierNameSnapshot', 'Transporteur (snapshot)');
         $paymentMethodName = TextField::new('paymentMethodNameSnapshot', 'Moyen de paiement (snapshot)');
@@ -302,6 +289,12 @@ final class OrderCrudController extends AbstractCrudController
 
         // DETAIL : tout afficher, organisé
         return [
+            FormField::addTab('Articles'),
+            Field::new('orderItemsPanel', 'Articles commandés')
+                ->setVirtual(true)
+                ->setTemplatePath('admin/fields/order_details.html.twig')
+                ->setLabel(false),
+
             FormField::addTab('Statuts'),
             $paymentStatus,
             $fulfillmentStatus,
@@ -311,21 +304,13 @@ final class OrderCrudController extends AbstractCrudController
             $shippingAddress,
             $billingAddress,
 
-            FormField::addTab('Montants'),
-            $itemsTotal,
-            $taxAmount,
-            $carrierPrice,
-            $orderTotal,
-            $currency,
-            $weight,
-
             FormField::addTab('Transport & paiement'),
             $carrierName,
             $paymentMethodName,
             $paymentReference,
             $orderReference,
             $paidAt,
-            
+            $weight,
 
             FormField::addTab('Tech'),
             $cartClearedAt,
@@ -339,6 +324,7 @@ final class OrderCrudController extends AbstractCrudController
             PaymentStatus::Paid->label() => PaymentStatus::Paid,
             PaymentStatus::Refunded->label() => PaymentStatus::Refunded,
             PaymentStatus::Failed->label() => PaymentStatus::Failed,
+            PaymentStatus::Disputed->label() => PaymentStatus::Disputed,
         ];
     }
 
@@ -360,6 +346,7 @@ final class OrderCrudController extends AbstractCrudController
             PaymentStatus::Paid->value => 'success',
             PaymentStatus::Refunded->value => 'danger',
             PaymentStatus::Failed->value => 'danger',
+            PaymentStatus::Disputed->value => 'warning',
         ];
     }
 

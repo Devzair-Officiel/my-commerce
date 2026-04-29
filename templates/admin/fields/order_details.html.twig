@@ -1,0 +1,101 @@
+{% set order = entity.instance %}
+{% set details = order.orderDetails %}
+
+<div style="border-radius:10px; overflow:hidden; border:1px solid #2d2d3a;">
+
+    {# ── Lignes articles ── #}
+    <table class="table table-sm mb-0" style="background:transparent;">
+        <thead>
+            <tr style="background:#1e1e2e; color:#9ca3af; font-size:11px; text-transform:uppercase; letter-spacing:.06em;">
+                <th style="width:56px; padding:10px 12px; font-weight:500; border:none;"></th>
+                <th style="padding:10px 12px; font-weight:500; border:none;">Produit</th>
+                <th class="text-center" style="width:70px; padding:10px 12px; font-weight:500; border:none;">Qté</th>
+                <th class="text-end" style="width:120px; padding:10px 12px; font-weight:500; border:none;">Prix unit.</th>
+                <th class="text-end" style="width:120px; padding:10px 12px; font-weight:500; border:none;">Total</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% if details is empty %}
+                <tr>
+                    <td colspan="5" class="text-center fst-italic py-4" style="color:#6b7280; border:none;">
+                        Aucun article enregistré.
+                    </td>
+                </tr>
+            {% else %}
+                {% for detail in details %}
+                <tr style="border-top:1px solid #2d2d3a;">
+                    <td style="padding:12px; border:none; vertical-align:middle;">
+                        {% if detail.productImageUrl %}
+                            <img src="{{ detail.productImageUrl }}"
+                                 alt="{{ detail.productImageAlt ?? detail.productName }}"
+                                 style="width:46px;height:46px;object-fit:cover;border-radius:8px;display:block;">
+                        {% else %}
+                            <div style="width:46px;height:46px;border-radius:8px;background:#2d2d3a;display:flex;align-items:center;justify-content:center;">
+                                <span style="font-size:18px;">📦</span>
+                            </div>
+                        {% endif %}
+                    </td>
+                    <td style="padding:12px; border:none; vertical-align:middle;">
+                        <div style="font-weight:600; color:#f3f4f6; font-size:14px;">{{ detail.productName }}</div>
+                        {% if detail.productId %}
+                            <div style="font-size:11px; color:#6b7280; margin-top:2px;">Réf. #{{ detail.productId }}</div>
+                        {% endif %}
+                    </td>
+                    <td class="text-center" style="padding:12px; border:none; vertical-align:middle;">
+                        <span style="display:inline-block; background:#2d2d3a; color:#e5e7eb; font-size:13px; font-weight:600; padding:3px 10px; border-radius:20px;">
+                            {{ detail.quantity }}
+                        </span>
+                    </td>
+                    <td class="text-end" style="padding:12px; border:none; vertical-align:middle; color:#9ca3af; font-size:13px;">
+                        {{ (detail.unitPriceCents / 100)|number_format(2, ',', ' ') }} €
+                    </td>
+                    <td class="text-end" style="padding:12px; border:none; vertical-align:middle; font-weight:700; color:#f3f4f6; font-size:14px;">
+                        {{ (detail.lineTotalCents / 100)|number_format(2, ',', ' ') }} €
+                    </td>
+                </tr>
+                {% endfor %}
+            {% endif %}
+        </tbody>
+    </table>
+
+    {# ── Récapitulatif montants ── #}
+    <div style="border-top:1px solid #2d2d3a; background:#1a1a2e; padding:16px 20px;">
+        <div style="max-width:320px; margin-left:auto; display:flex; flex-direction:column; gap:8px;">
+
+            {% if order.itemsTotalHtCents %}
+            <div style="display:flex; justify-content:space-between; font-size:13px; color:#9ca3af;">
+                <span>Sous-total HT</span>
+                <span>{{ (order.itemsTotalHtCents / 100)|number_format(2, ',', ' ') }} €</span>
+            </div>
+            {% endif %}
+
+            {% if order.taxAmountCents %}
+            <div style="display:flex; justify-content:space-between; font-size:13px; color:#9ca3af;">
+                <span>TVA</span>
+                <span>{{ (order.taxAmountCents / 100)|number_format(2, ',', ' ') }} €</span>
+            </div>
+            {% endif %}
+
+            <div style="display:flex; justify-content:space-between; font-size:13px; color:#9ca3af;">
+                <span>
+                    Frais de port
+                    {% if order.carrierNameSnapshot %}
+                        <span style="display:inline-block; background:#2d2d3a; color:#a78bfa; font-size:11px; padding:1px 8px; border-radius:20px; margin-left:6px;">
+                            {{ order.carrierNameSnapshot }}
+                        </span>
+                    {% endif %}
+                </span>
+                <span>{{ (order.carrierPriceSnapshotCents / 100)|number_format(2, ',', ' ') }} €</span>
+            </div>
+
+            <div style="border-top:1px solid #2d2d3a; margin-top:4px; padding-top:12px; display:flex; justify-content:space-between; align-items:center;">
+                <span style="font-size:14px; font-weight:700; color:#f3f4f6;">Total TTC</span>
+                <span style="font-size:20px; font-weight:800; color:#a78bfa;">
+                    {{ (order.orderTotalTtcCents / 100)|number_format(2, ',', ' ') }} €
+                </span>
+            </div>
+
+        </div>
+    </div>
+
+</div>
