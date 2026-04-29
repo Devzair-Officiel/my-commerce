@@ -6,20 +6,19 @@ namespace App\MessageHandler;
 
 use App\Message\SendDeliveredEmailMessage;
 use App\Repository\ShipmentRepository;
+use Psr\Log\LoggerInterface;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 use Symfony\Component\Mime\Address;
 
-/**
- * Gestionnaire Messenger qui envoie l'e-mail de confirmation de livraison au client.
- */
 #[AsMessageHandler]
 final readonly class SendDeliveredEmailMessageHandler
 {
     public function __construct(
         private ShipmentRepository $shipmentRepository,
         private MailerInterface    $mailer,
+        private LoggerInterface    $logger,
         private string $mailFromAddress,
         private string $mailFromName,
     ) {}
@@ -50,6 +49,14 @@ final readonly class SendDeliveredEmailMessageHandler
                 'shipment' => $shipment,
             ]);
 
-        $this->mailer->send($email);
+        try {
+            $this->mailer->send($email);
+        } catch (\Throwable $e) {
+            $this->logger->error('Échec envoi email livraison', [
+                'shipment_id' => $shipment->getId(),
+                'reason'      => $e->getMessage(),
+            ]);
+            throw $e;
+        }
     }
 }

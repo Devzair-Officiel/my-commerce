@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Finalisez votre paiement</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body { margin: 0; padding: 0; background-color: #f4f4f4; font-family: Arial, Helvetica, sans-serif; color: #1f2937; }
+        table { border-spacing: 0; }
+        .wrapper { width: 100%; background-color: #f4f4f4; padding: 24px 0; }
+        .container { width: 100%; max-width: 700px; background-color: #ffffff; border-radius: 12px; overflow: hidden; }
+        .section-padding { padding: 24px; }
+        .box { border: 1px solid #e5e7eb; border-radius: 10px; overflow: hidden; margin-top: 16px; }
+        .box-title { background-color: #f9fafb; padding: 14px 16px; font-size: 16px; font-weight: bold; color: #111827; border-bottom: 1px solid #e5e7eb; }
+        .cell { padding: 12px 16px; font-size: 14px; color: #111827; border-bottom: 1px solid #e5e7eb; }
+        .cell-muted { color: #6b7280; }
+        .text-right { text-align: right; }
+        .btn { display: inline-block; padding: 14px 32px; background-color: #4f46e5; color: #ffffff; text-decoration: none; border-radius: 8px; font-size: 16px; font-weight: bold; }
+    </style>
+</head>
+<body>
+<table role="presentation" width="100%" class="wrapper">
+    <tr>
+        <td align="center">
+            <table role="presentation" width="100%" class="container">
+                <tr>
+                    <td style="background-color:#1e1b4b; padding:32px 24px; text-align:center;">
+                        <h1 style="margin:0; font-size:26px; color:#ffffff;">Votre paiement nécessite une confirmation</h1>
+                        <p style="margin:12px 0 0; font-size:15px; color:#c7d2fe;">Votre banque demande une vérification supplémentaire (3D Secure).</p>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="section-padding">
+
+                        <p style="font-size:15px; color:#374151;">
+                            Bonjour {{ user.firstName ?? user.email }},
+                        </p>
+                        <p style="font-size:15px; color:#374151;">
+                            Votre commande <strong>{{ order.orderReference ?? '#' ~ order.id }}</strong> est en attente de confirmation.
+                            Votre banque requiert une authentification supplémentaire pour finaliser le paiement.
+                        </p>
+
+                        <div class="box">
+                            <div class="box-title">Récapitulatif</div>
+                            <table role="presentation" width="100%">
+                                <tr>
+                                    <td class="cell cell-muted" width="40%">Commande</td>
+                                    <td class="cell text-right">{{ order.orderReference ?? '#' ~ order.id }}</td>
+                                </tr>
+                                <tr>
+                                    <td class="cell cell-muted">Montant</td>
+                                    <td class="cell text-right"><strong>{{ (order.orderTotalTtcCents / 100)|number_format(2, ',', ' ') }} €</strong></td>
+                                </tr>
+                            </table>
+                        </div>
+
+                        <p style="text-align:center; margin-top:32px;">
+                            <a href="{{ url('app_checkout') }}" class="btn">Finaliser mon paiement</a>
+                        </p>
+
+                        <p style="margin-top:24px; font-size:13px; color:#9ca3af; text-align:center;">
+                            Si vous n'êtes pas à l'origine de cette commande, ignorez cet email.
+                        </p>
+
+                    </td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+</table>
+</body>
+</html>

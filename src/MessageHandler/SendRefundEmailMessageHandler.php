@@ -6,20 +6,19 @@ namespace App\MessageHandler;
 
 use App\Message\SendRefundEmailMessage;
 use App\Repository\OrderRepository;
+use Psr\Log\LoggerInterface;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 use Symfony\Component\Mime\Address;
 
-/**
- * Gestionnaire Messenger qui envoie l'e-mail de notification de remboursement au client.
- */
 #[AsMessageHandler]
 final readonly class SendRefundEmailMessageHandler
 {
     public function __construct(
         private OrderRepository $orderRepository,
         private MailerInterface $mailer,
+        private LoggerInterface $logger,
         private string $mailFromAddress,
         private string $mailFromName,
     ) {}
@@ -48,6 +47,14 @@ final readonly class SendRefundEmailMessageHandler
                 'user' => $user,
             ]);
 
-        $this->mailer->send($email);
+        try {
+            $this->mailer->send($email);
+        } catch (\Throwable $e) {
+            $this->logger->error('Échec envoi email remboursement', [
+                'order_id' => $order->getId(),
+                'reason'   => $e->getMessage(),
+            ]);
+            throw $e;
+        }
     }
 }

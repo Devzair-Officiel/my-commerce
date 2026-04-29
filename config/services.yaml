@@ -28,6 +28,7 @@ parameters:
     app.mail_from_address: '%env(MAILER_FROM_ADDRESS)%'
     app.mail_from_name: '%env(MAILER_FROM_NAME)%'
     app.site_name: '%env(APP_SITE_NAME)%'
+    app.admin_email: '%env(ADMIN_EMAIL)%'
 
 services:
     # default configuration for services in *this* file
@@ -38,6 +39,7 @@ services:
             string $publicDir: '%kernel.project_dir%/public'
             string $mailFromAddress: '%app.mail_from_address%'
             string $mailFromName: '%app.mail_from_name%'
+            string $adminEmail: '%app.admin_email%'
             string $brandName: '%app.site_name%'
             string $uploadDirProducts: '%upload_dir_products%'
             string $uploadDirCategories: '%upload_dir_categories%'

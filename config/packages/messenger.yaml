@@ -37,3 +37,9 @@ framework:
             App\Message\SendRefundEmailMessage: async
             App\Message\SendShippedEmailMessage: async
             App\Message\SendBackInStockAlertMessage: async
+            App\Message\NotifyAdminDisputeMessage: async
+            App\Message\NotifyAdminDisputeClosedMessage: async
+            App\Message\NotifyAdminFraudWarningMessage: async
+            App\Message\SendPaymentActionRequiredEmailMessage: async
+            App\Message\SendDeliveredEmailMessage: async
+            App\Message\SendNewReviewNotificationMessage: async

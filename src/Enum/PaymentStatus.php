@@ -11,14 +11,16 @@ enum PaymentStatus: string
     case Paid = 'paid';
     case Refunded = 'refunded';
     case Failed = 'failed';
+    case Disputed = 'disputed';
 
     public function label(): string
     {
         return match ($this) {
-            self::Pending => 'En attente',
-            self::Paid => 'Payé',
+            self::Pending  => 'En attente',
+            self::Paid     => 'Payé',
             self::Refunded => 'Remboursé',
-            self::Failed => 'Échec',
+            self::Failed   => 'Échec',
+            self::Disputed => 'Contesté',
         };
     }
 }

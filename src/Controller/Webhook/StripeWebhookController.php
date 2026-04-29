@@ -9,7 +9,11 @@ use App\Enum\PaymentStatus;
 use Doctrine\DBAL\LockMode;
 use Psr\Log\LoggerInterface;
 use App\Enum\FulfillmentStatus;
+use App\Message\NotifyAdminDisputeClosedMessage;
+use App\Message\NotifyAdminDisputeMessage;
+use App\Message\NotifyAdminFraudWarningMessage;
 use App\Message\SendOrderConfirmationEmailMessage;
+use App\Message\SendPaymentActionRequiredEmailMessage;
 use App\Repository\PaymentMethodRepository;
 use App\Service\StockAllocatorInterface;
 use App\Entity\StripeWebhookEvent;
@@ -71,7 +75,11 @@ final class StripeWebhookController extends AbstractController
             'payment_intent.succeeded',
             'payment_intent.payment_failed',
             'payment_intent.canceled',
+            'payment_intent.requires_action',
             'charge.refunded',
+            'charge.dispute.created',
+            'radar.early_fraud_warning.created',
+            'charge.dispute.closed',
         ];
 
         if (!\in_array($event->type, $handled, true)) {
@@ -80,8 +88,9 @@ final class StripeWebhookController extends AbstractController
 
         $obj = $event->data->object;
 
-        // charge.refunded → l'objet est un Charge, le payment_intent est dans ->payment_intent
-        if ($event->type === 'charge.refunded') {
+        // Ces événements ont l'objet Charge/Dispute/FraudWarning avec payment_intent en propriété
+        $eventWithPaymentIntentRef = ['charge.refunded', 'charge.dispute.created', 'charge.dispute.closed', 'radar.early_fraud_warning.created'];
+        if (\in_array($event->type, $eventWithPaymentIntentRef, true)) {
             $piId = (string) ($obj->payment_intent ?? '');
         } else {
             $piId = (string) ($obj->id ?? '');
@@ -94,10 +103,10 @@ final class StripeWebhookController extends AbstractController
         }
 
         try {
-            $this->em->wrapInTransaction(function () use ($event, $pi, $piId): void {
-                // Idempotence : si l'event est déjà en base, UniqueConstraintViolationException
+            $this->em->wrapInTransaction(function () use ($event, $pi, $piId, $obj): void {
+                // Idempotence : persist sans flush immédiat — la contrainte unique sera vérifiée
+                // au flush final. Cela évite de casser l'état de la transaction PostgreSQL.
                 $this->em->persist(new StripeWebhookEvent((string) $event->id, (string) $event->type));
-                $this->em->flush();
 
                 // Find order
                 $order = $this->orderRepository->findOneBy(['paymentReference' => $piId]);
@@ -115,9 +124,10 @@ final class StripeWebhookController extends AbstractController
 
                 $this->em->lock($order, LockMode::PESSIMISTIC_WRITE);
 
-                // Ne jamais rétrograder une commande payée, sauf pour un remboursement légitime
+                // Ne jamais rétrograder une commande payée, sauf pour les événements post-paiement légitimes
+                $allowedOnPaid = ['charge.refunded', 'charge.dispute.created', 'charge.dispute.closed', 'radar.early_fraud_warning.created'];
                 if ($order->getPaymentStatus() === PaymentStatus::Paid
-                    && $event->type !== 'charge.refunded'
+                    && !\in_array($event->type, $allowedOnPaid, true)
                 ) {
                     return;
                 }
@@ -156,7 +166,16 @@ final class StripeWebhookController extends AbstractController
                                 'payment_intent' => $piId,
                                 'reason'         => $e->getMessage(),
                             ]);
-                            Refund::create(['payment_intent' => $piId]);
+                            try {
+                                Refund::create(['payment_intent' => $piId]);
+                            } catch (\Throwable $refundEx) {
+                                $this->logger->critical('Impossible de créer le remboursement Stripe automatique', [
+                                    'order_id'       => $order->getId(),
+                                    'payment_intent' => $piId,
+                                    'reason'         => $refundEx->getMessage(),
+                                ]);
+                                throw $refundEx;
+                            }
                             $order->setPaymentStatus(PaymentStatus::Refunded);
                             $order->setPaymentFailureReason('Stock insuffisant — remboursement automatique : ' . $e->getMessage());
                             return;
@@ -250,6 +269,120 @@ final class StripeWebhookController extends AbstractController
                         'order_ref'      => $order->getOrderReference(),
                         'payment_intent' => $piId,
                     ]);
+                }
+
+                if ($event->type === 'payment_intent.requires_action') {
+                    // Le client doit compléter l'authentification 3DS — on le notifie par email
+                    // pour qu'il revienne finaliser son paiement.
+                    // On n'envoie l'email que si la commande est toujours en attente.
+                    if ($order->getPaymentStatus() === PaymentStatus::Pending) {
+                        $this->messageBus->dispatch(
+                            new SendPaymentActionRequiredEmailMessage(
+                                orderId:         (int) $order->getId(),
+                                paymentIntentId: $piId,
+                            )
+                        );
+
+                        $this->logger->info('Authentification 3DS requise, email de relance dispatché', [
+                            'order_id'       => $order->getId(),
+                            'order_ref'      => $order->getOrderReference(),
+                            'payment_intent' => $piId,
+                        ]);
+                    }
+                }
+
+                if ($event->type === 'charge.dispute.created') {
+                    $disputeId    = (string) ($obj->id ?? '');
+                    $reason       = (string) ($obj->reason ?? 'unknown');
+                    $amountCents  = isset($obj->amount) ? (int) $obj->amount : (int) $order->getOrderTotalTtcCents();
+
+                    $order->setPaymentStatus(PaymentStatus::Disputed);
+
+                    $this->logger->critical('Chargeback reçu — action requise sous 15 jours', [
+                        'order_id'       => $order->getId(),
+                        'order_ref'      => $order->getOrderReference(),
+                        'dispute_id'     => $disputeId,
+                        'reason'         => $reason,
+                        'amount_cents'   => $amountCents,
+                        'payment_intent' => $piId,
+                    ]);
+
+                    $this->messageBus->dispatch(
+                        new NotifyAdminDisputeMessage(
+                            orderId:      (int) $order->getId(),
+                            disputeId:    $disputeId,
+                            reason:       $reason,
+                            amountCents:  $amountCents,
+                        )
+                    );
+                }
+
+                if ($event->type === 'radar.early_fraud_warning.created') {
+                    $fraudWarningId = (string) ($obj->id ?? '');
+                    $fraudType      = (string) ($obj->fraud_type ?? 'unknown');
+                    $actionable     = (bool) ($obj->actionable ?? false);
+
+                    $this->logger->critical('Alerte fraude Stripe Radar', [
+                        'order_id'         => $order->getId(),
+                        'order_ref'        => $order->getOrderReference(),
+                        'fraud_warning_id' => $fraudWarningId,
+                        'fraud_type'       => $fraudType,
+                        'actionable'       => $actionable,
+                        'payment_intent'   => $piId,
+                    ]);
+
+                    $this->messageBus->dispatch(
+                        new NotifyAdminFraudWarningMessage(
+                            orderId:        (int) $order->getId(),
+                            fraudWarningId: $fraudWarningId,
+                            fraudType:      $fraudType,
+                            actionable:     $actionable,
+                        )
+                    );
+                }
+
+                if ($event->type === 'charge.dispute.closed') {
+                    $disputeId     = (string) ($obj->id ?? '');
+                    $disputeStatus = (string) ($obj->status ?? 'warning_closed');
+
+                    if ($disputeStatus === 'won') {
+                        // Dispute gagnée : on restaure la commande à Paid
+                        $order->setPaymentStatus(PaymentStatus::Paid);
+                        $order->setPaymentFailureReason(null);
+                        $this->logger->info('Dispute gagnée — commande restaurée à Paid', [
+                            'order_id'       => $order->getId(),
+                            'order_ref'      => $order->getOrderReference(),
+                            'dispute_id'     => $disputeId,
+                            'payment_intent' => $piId,
+                        ]);
+                    } elseif ($disputeStatus === 'lost') {
+                        // Dispute perdue : l'argent est débité par la banque
+                        $order->setPaymentStatus(PaymentStatus::Refunded);
+                        $order->setPaymentFailureReason('Dispute perdue — montant débité par la banque.');
+                        $this->logger->critical('Dispute perdue — montant débité', [
+                            'order_id'       => $order->getId(),
+                            'order_ref'      => $order->getOrderReference(),
+                            'dispute_id'     => $disputeId,
+                            'payment_intent' => $piId,
+                        ]);
+                    } else {
+                        // warning_closed : aucun impact financier
+                        $this->logger->info('Dispute clôturée sans impact financier', [
+                            'order_id'       => $order->getId(),
+                            'order_ref'      => $order->getOrderReference(),
+                            'dispute_id'     => $disputeId,
+                            'status'         => $disputeStatus,
+                            'payment_intent' => $piId,
+                        ]);
+                    }
+
+                    $this->messageBus->dispatch(
+                        new NotifyAdminDisputeClosedMessage(
+                            orderId:   (int) $order->getId(),
+                            disputeId: $disputeId,
+                            status:    $disputeStatus,
+                        )
+                    );
                 }
 
                 $this->em->flush();

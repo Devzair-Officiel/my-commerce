@@ -44,6 +44,15 @@ use Symfony\Component\RateLimiter\Storage\InMemoryStorage;
  * 13.  payment_intent.succeeded stock déjà décrémenté → early return, pas de double opération
  * 14.  charge.refunded commande déjà remboursée → restoreStock NOT appelé
  * 15.  payment_intent.succeeded stock insuffisant → remboursement auto, statut Refunded
+ * 16.  charge.dispute.created : statut Disputed, email admin dispatché
+ * 17.  charge.dispute.created commande déjà disputée → statut mis à jour, email dispatché quand même
+ * 18.  payment_intent.requires_action : commande Pending → email relance dispatché
+ * 19.  payment_intent.requires_action : commande déjà Paid → email NON dispatché
+ * 20.  radar.early_fraud_warning.created : email admin dispatché
+ * 21.  radar.early_fraud_warning.created actionable=false : email admin dispatché quand même
+ * 22.  charge.dispute.closed won : commande restaurée Paid, email admin dispatché
+ * 23.  charge.dispute.closed lost : commande Refunded, email admin dispatché
+ * 24.  charge.dispute.closed warning_closed : pas de changement statut, email admin dispatché
  */
 class StripeWebhookControllerTest extends TestCase
 {
@@ -141,11 +150,28 @@ class StripeWebhookControllerTest extends TestCase
 
     public function testPaymentSucceededIdempotenceWebhookRejouéRetourne200(): void
     {
+        $order = $this->createStub(Order::class);
+        $order->method('getId')->willReturn(42);
+        $order->method('getOrderReference')->willReturn('CMD-2026-TEST');
+        $order->method('getPaymentReference')->willReturn('pi_test');
+        $order->method('getPaymentStatus')->willReturn(PaymentStatus::Paid);
+        $order->method('getOrderTotalTtcCents')->willReturn(5000);
+        $order->method('isStockDecremented')->willReturn(true);
+
         $em = $this->createStub(EntityManagerInterface::class);
         $em->method('wrapInTransaction')->willReturnCallback(fn (callable $fn) => $fn());
+        // Le flush final lève UniqueConstraintViolationException → webhook déjà traité
         $em->method('flush')->willThrowException($this->createStub(UniqueConstraintViolationException::class));
 
-        $response = $this->makeController(em: $em)($this->makeRequest('payment_intent.succeeded', 'pi_test'));
+        $orderRepo = $this->createStub(OrderRepository::class);
+        $orderRepo->method('findOneBy')->willReturn($order);
+
+        $messageBus = $this->createStub(MessageBusInterface::class);
+        $messageBus->method('dispatch')->willReturn(new Envelope(new \stdClass()));
+
+        $response = $this->makeController(em: $em, orderRepo: $orderRepo, messageBus: $messageBus)(
+            $this->makeRequest('payment_intent.succeeded', 'pi_test')
+        );
 
         $this->assertSame(200, $response->getStatusCode());
         $this->assertSame('ok', $response->getContent());
@@ -331,6 +357,270 @@ class StripeWebhookControllerTest extends TestCase
         $this->assertSame(200, $response->getStatusCode());
     }
 
+    public function testDisputeCreatedMarqueDisputeEtDispatcheEmailAdmin(): void
+    {
+        $messageBus = $this->createMock(MessageBusInterface::class);
+
+        $order = $this->createStub(Order::class);
+        $order->method('getId')->willReturn(42);
+        $order->method('getOrderReference')->willReturn('CMD-2026-TEST');
+        $order->method('getPaymentReference')->willReturn('pi_test');
+        $order->method('getPaymentStatus')->willReturn(PaymentStatus::Paid);
+        $order->method('getOrderTotalTtcCents')->willReturn(5000);
+
+        $em = $this->createStub(EntityManagerInterface::class);
+        $em->method('wrapInTransaction')->willReturnCallback(fn (callable $fn) => $fn());
+
+        $orderRepo = $this->createStub(OrderRepository::class);
+        $orderRepo->method('findOneBy')->willReturn($order);
+
+        $messageBus->expects($this->once())
+            ->method('dispatch')
+            ->with($this->isInstanceOf(\App\Message\NotifyAdminDisputeMessage::class))
+            ->willReturn(new Envelope(new \stdClass()));
+
+        $response = $this->makeController(em: $em, orderRepo: $orderRepo, messageBus: $messageBus)(
+            $this->makeDisputeRequest('pi_test', 'dp_test', 'fraudulent', 5000)
+        );
+
+        $this->assertSame(200, $response->getStatusCode());
+    }
+
+    public function testDisputeCreatedNePasIgnorerMemeCommandeDejaDisputee(): void
+    {
+        $messageBus = $this->createMock(MessageBusInterface::class);
+
+        $order = $this->createStub(Order::class);
+        $order->method('getId')->willReturn(42);
+        $order->method('getOrderReference')->willReturn('CMD-2026-TEST');
+        $order->method('getPaymentReference')->willReturn('pi_test');
+        // Commande déjà au statut Disputed (webhook rejoué)
+        $order->method('getPaymentStatus')->willReturn(PaymentStatus::Disputed);
+        $order->method('getOrderTotalTtcCents')->willReturn(5000);
+
+        $em = $this->createStub(EntityManagerInterface::class);
+        $em->method('wrapInTransaction')->willReturnCallback(fn (callable $fn) => $fn());
+
+        $orderRepo = $this->createStub(OrderRepository::class);
+        $orderRepo->method('findOneBy')->willReturn($order);
+
+        // L'email admin doit être dispatché même si déjà Disputed
+        $messageBus->expects($this->once())
+            ->method('dispatch')
+            ->with($this->isInstanceOf(\App\Message\NotifyAdminDisputeMessage::class))
+            ->willReturn(new Envelope(new \stdClass()));
+
+        $response = $this->makeController(em: $em, orderRepo: $orderRepo, messageBus: $messageBus)(
+            $this->makeDisputeRequest('pi_test', 'dp_test', 'fraudulent', 5000)
+        );
+
+        $this->assertSame(200, $response->getStatusCode());
+    }
+
+    public function testRequiresActionCommandePendingDispatcheEmailRelance(): void
+    {
+        $messageBus = $this->createMock(MessageBusInterface::class);
+
+        $order = $this->createStub(Order::class);
+        $order->method('getId')->willReturn(42);
+        $order->method('getOrderReference')->willReturn('CMD-2026-TEST');
+        $order->method('getPaymentReference')->willReturn(null);
+        $order->method('getPaymentStatus')->willReturn(PaymentStatus::Pending);
+        $order->method('getOrderTotalTtcCents')->willReturn(5000);
+
+        $em = $this->createStub(EntityManagerInterface::class);
+        $em->method('wrapInTransaction')->willReturnCallback(fn (callable $fn) => $fn());
+
+        $orderRepo = $this->createStub(OrderRepository::class);
+        $orderRepo->method('findOneBy')->willReturn($order);
+
+        $messageBus->expects($this->once())
+            ->method('dispatch')
+            ->with($this->isInstanceOf(\App\Message\SendPaymentActionRequiredEmailMessage::class))
+            ->willReturn(new Envelope(new \stdClass()));
+
+        $response = $this->makeController(em: $em, orderRepo: $orderRepo, messageBus: $messageBus)(
+            $this->makeRequest('payment_intent.requires_action', 'pi_test')
+        );
+
+        $this->assertSame(200, $response->getStatusCode());
+    }
+
+    public function testRequiresActionCommandeDejaPayeeNePasDispatcherEmail(): void
+    {
+        $messageBus = $this->createMock(MessageBusInterface::class);
+
+        $order = $this->createStub(Order::class);
+        $order->method('getId')->willReturn(42);
+        $order->method('getOrderReference')->willReturn('CMD-2026-TEST');
+        $order->method('getPaymentReference')->willReturn('pi_test');
+        $order->method('getPaymentStatus')->willReturn(PaymentStatus::Paid);
+        $order->method('getOrderTotalTtcCents')->willReturn(5000);
+
+        $em = $this->createStub(EntityManagerInterface::class);
+        $em->method('wrapInTransaction')->willReturnCallback(fn (callable $fn) => $fn());
+
+        $orderRepo = $this->createStub(OrderRepository::class);
+        $orderRepo->method('findOneBy')->willReturn($order);
+
+        $messageBus->expects($this->never())->method('dispatch');
+
+        $response = $this->makeController(em: $em, orderRepo: $orderRepo, messageBus: $messageBus)(
+            $this->makeRequest('payment_intent.requires_action', 'pi_test')
+        );
+
+        $this->assertSame(200, $response->getStatusCode());
+    }
+
+    public function testFraudWarningDispatcheEmailAdmin(): void
+    {
+        $messageBus = $this->createMock(MessageBusInterface::class);
+
+        $order = $this->createStub(Order::class);
+        $order->method('getId')->willReturn(42);
+        $order->method('getOrderReference')->willReturn('CMD-2026-TEST');
+        $order->method('getPaymentReference')->willReturn('pi_test');
+        $order->method('getPaymentStatus')->willReturn(PaymentStatus::Paid);
+        $order->method('getOrderTotalTtcCents')->willReturn(5000);
+
+        $em = $this->createStub(EntityManagerInterface::class);
+        $em->method('wrapInTransaction')->willReturnCallback(fn (callable $fn) => $fn());
+
+        $orderRepo = $this->createStub(OrderRepository::class);
+        $orderRepo->method('findOneBy')->willReturn($order);
+
+        $messageBus->expects($this->once())
+            ->method('dispatch')
+            ->with($this->isInstanceOf(\App\Message\NotifyAdminFraudWarningMessage::class))
+            ->willReturn(new Envelope(new \stdClass()));
+
+        $response = $this->makeController(em: $em, orderRepo: $orderRepo, messageBus: $messageBus)(
+            $this->makeFraudWarningRequest('pi_test', 'issfr_test', 'unauthorized_use', true)
+        );
+
+        $this->assertSame(200, $response->getStatusCode());
+    }
+
+    public function testFraudWarningNonActionableDispatcheEmailAdmin(): void
+    {
+        $messageBus = $this->createMock(MessageBusInterface::class);
+
+        $order = $this->createStub(Order::class);
+        $order->method('getId')->willReturn(42);
+        $order->method('getOrderReference')->willReturn('CMD-2026-TEST');
+        $order->method('getPaymentReference')->willReturn('pi_test');
+        $order->method('getPaymentStatus')->willReturn(PaymentStatus::Paid);
+        $order->method('getOrderTotalTtcCents')->willReturn(5000);
+
+        $em = $this->createStub(EntityManagerInterface::class);
+        $em->method('wrapInTransaction')->willReturnCallback(fn (callable $fn) => $fn());
+
+        $orderRepo = $this->createStub(OrderRepository::class);
+        $orderRepo->method('findOneBy')->willReturn($order);
+
+        // Même non actionable → l'admin est toujours notifié
+        $messageBus->expects($this->once())
+            ->method('dispatch')
+            ->with($this->isInstanceOf(\App\Message\NotifyAdminFraudWarningMessage::class))
+            ->willReturn(new Envelope(new \stdClass()));
+
+        $response = $this->makeController(em: $em, orderRepo: $orderRepo, messageBus: $messageBus)(
+            $this->makeFraudWarningRequest('pi_test', 'issfr_test', 'card_never_received', false)
+        );
+
+        $this->assertSame(200, $response->getStatusCode());
+    }
+
+    public function testDisputeClosedWonRestaurerStatutPaidEtDispatcherEmail(): void
+    {
+        $messageBus = $this->createMock(MessageBusInterface::class);
+        $order      = $this->createMock(Order::class);
+        $order->method('getId')->willReturn(42);
+        $order->method('getOrderReference')->willReturn('CMD-2026-TEST');
+        $order->method('getPaymentReference')->willReturn('pi_test');
+        $order->method('getPaymentStatus')->willReturn(PaymentStatus::Disputed);
+        $order->method('getOrderTotalTtcCents')->willReturn(5000);
+
+        $order->expects($this->once())->method('setPaymentStatus')->with(PaymentStatus::Paid);
+
+        $em = $this->createStub(EntityManagerInterface::class);
+        $em->method('wrapInTransaction')->willReturnCallback(fn (callable $fn) => $fn());
+
+        $orderRepo = $this->createStub(OrderRepository::class);
+        $orderRepo->method('findOneBy')->willReturn($order);
+
+        $messageBus->expects($this->once())
+            ->method('dispatch')
+            ->with($this->isInstanceOf(\App\Message\NotifyAdminDisputeClosedMessage::class))
+            ->willReturn(new Envelope(new \stdClass()));
+
+        $response = $this->makeController(em: $em, orderRepo: $orderRepo, messageBus: $messageBus)(
+            $this->makeDisputeClosedRequest('pi_test', 'dp_test', 'won')
+        );
+
+        $this->assertSame(200, $response->getStatusCode());
+    }
+
+    public function testDisputeClosedLostMarqueRefundedEtDispatcherEmail(): void
+    {
+        $messageBus = $this->createMock(MessageBusInterface::class);
+        $order      = $this->createMock(Order::class);
+        $order->method('getId')->willReturn(42);
+        $order->method('getOrderReference')->willReturn('CMD-2026-TEST');
+        $order->method('getPaymentReference')->willReturn('pi_test');
+        $order->method('getPaymentStatus')->willReturn(PaymentStatus::Disputed);
+        $order->method('getOrderTotalTtcCents')->willReturn(5000);
+
+        $order->expects($this->once())->method('setPaymentStatus')->with(PaymentStatus::Refunded);
+
+        $em = $this->createStub(EntityManagerInterface::class);
+        $em->method('wrapInTransaction')->willReturnCallback(fn (callable $fn) => $fn());
+
+        $orderRepo = $this->createStub(OrderRepository::class);
+        $orderRepo->method('findOneBy')->willReturn($order);
+
+        $messageBus->expects($this->once())
+            ->method('dispatch')
+            ->with($this->isInstanceOf(\App\Message\NotifyAdminDisputeClosedMessage::class))
+            ->willReturn(new Envelope(new \stdClass()));
+
+        $response = $this->makeController(em: $em, orderRepo: $orderRepo, messageBus: $messageBus)(
+            $this->makeDisputeClosedRequest('pi_test', 'dp_test', 'lost')
+        );
+
+        $this->assertSame(200, $response->getStatusCode());
+    }
+
+    public function testDisputeClosedWarningClosedPasDeChangementStatutEmailDispatche(): void
+    {
+        $messageBus = $this->createMock(MessageBusInterface::class);
+        $order      = $this->createMock(Order::class);
+        $order->method('getId')->willReturn(42);
+        $order->method('getOrderReference')->willReturn('CMD-2026-TEST');
+        $order->method('getPaymentReference')->willReturn('pi_test');
+        $order->method('getPaymentStatus')->willReturn(PaymentStatus::Disputed);
+        $order->method('getOrderTotalTtcCents')->willReturn(5000);
+
+        $order->expects($this->never())->method('setPaymentStatus');
+
+        $em = $this->createStub(EntityManagerInterface::class);
+        $em->method('wrapInTransaction')->willReturnCallback(fn (callable $fn) => $fn());
+
+        $orderRepo = $this->createStub(OrderRepository::class);
+        $orderRepo->method('findOneBy')->willReturn($order);
+
+        $messageBus->expects($this->once())
+            ->method('dispatch')
+            ->with($this->isInstanceOf(\App\Message\NotifyAdminDisputeClosedMessage::class))
+            ->willReturn(new Envelope(new \stdClass()));
+
+        $response = $this->makeController(em: $em, orderRepo: $orderRepo, messageBus: $messageBus)(
+            $this->makeDisputeClosedRequest('pi_test', 'dp_test', 'warning_closed')
+        );
+
+        $this->assertSame(200, $response->getStatusCode());
+    }
+
     public function testPaymentSucceededStockInsuffisantDeclenchemboursementAuto(): void
     {
         $stockAllocator = $this->createStub(StockAllocatorInterface::class);
@@ -411,6 +701,59 @@ class StripeWebhookControllerTest extends TestCase
     private function makeRequest(string $type, string $piId, ?int $amountReceived = null): Request
     {
         $payload = $this->buildPayload($type, $piId, $amountReceived);
+        return $this->makeSignedRequest($payload);
+    }
+
+    private function makeDisputeClosedRequest(string $piId, string $disputeId, string $status): Request
+    {
+        $payload = json_encode([
+            'id'   => 'evt_' . uniqid(),
+            'type' => 'charge.dispute.closed',
+            'data' => [
+                'object' => [
+                    'id'             => $disputeId,
+                    'payment_intent' => $piId,
+                    'status'         => $status,
+                ],
+            ],
+        ]);
+
+        return $this->makeSignedRequest($payload);
+    }
+
+    private function makeFraudWarningRequest(string $piId, string $warningId, string $fraudType, bool $actionable): Request
+    {
+        $payload = json_encode([
+            'id'   => 'evt_' . uniqid(),
+            'type' => 'radar.early_fraud_warning.created',
+            'data' => [
+                'object' => [
+                    'id'             => $warningId,
+                    'payment_intent' => $piId,
+                    'fraud_type'     => $fraudType,
+                    'actionable'     => $actionable,
+                ],
+            ],
+        ]);
+
+        return $this->makeSignedRequest($payload);
+    }
+
+    private function makeDisputeRequest(string $piId, string $disputeId, string $reason, int $amount): Request
+    {
+        $payload = json_encode([
+            'id'   => 'evt_' . uniqid(),
+            'type' => 'charge.dispute.created',
+            'data' => [
+                'object' => [
+                    'id'             => $disputeId,
+                    'payment_intent' => $piId,
+                    'reason'         => $reason,
+                    'amount'         => $amount,
+                ],
+            ],
+        ]);
+
         return $this->makeSignedRequest($payload);
     }
 

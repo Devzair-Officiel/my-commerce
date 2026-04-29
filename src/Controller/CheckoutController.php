@@ -163,6 +163,13 @@ class CheckoutController extends AbstractController
 
     private function buildDraftOrder(User $user, array $cart): Order
     {
+        return $this->em->wrapInTransaction(function () use ($user, $cart): Order {
+            return $this->doBuildDraftOrder($user, $cart);
+        });
+    }
+
+    private function doBuildDraftOrder(User $user, array $cart): Order
+    {
         $draft = $this->orderRepo->findOneBy([
             'user' => $user,
             'fulfillmentStatus' => FulfillmentStatus::Draft,

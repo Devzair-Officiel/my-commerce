@@ -8,6 +8,7 @@ use App\Message\SendBackInStockAlertMessage;
 use App\Repository\ProductRepository;
 use App\Repository\StockAlertRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Psr\Log\LoggerInterface;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
@@ -21,6 +22,7 @@ final readonly class SendBackInStockAlertMessageHandler
         private StockAlertRepository $stockAlertRepository,
         private MailerInterface      $mailer,
         private EntityManagerInterface $em,
+        private LoggerInterface      $logger,
         private string $mailFromAddress,
         private string $mailFromName,
     ) {}
@@ -46,8 +48,16 @@ final readonly class SendBackInStockAlertMessageHandler
                     'recipientEmail' => $alert->getEmail(),
                 ]);
 
-            $this->mailer->send($email);
-            $alert->markNotified();
+            try {
+                $this->mailer->send($email);
+                $alert->markNotified();
+            } catch (\Throwable $e) {
+                $this->logger->error('Échec envoi alerte retour en stock', [
+                    'product_id' => $product->getId(),
+                    'email'      => $alert->getEmail(),
+                    'reason'     => $e->getMessage(),
+                ]);
+            }
         }
 
         $this->em->flush();

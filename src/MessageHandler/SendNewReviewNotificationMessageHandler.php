@@ -10,15 +10,12 @@ use App\Repository\ReviewRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGenerator;
+use Psr\Log\LoggerInterface;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 use Symfony\Component\Mime\Address;
 
-
-/**
- * Envoie un e-mail de notification à l'administrateur lorsqu'un nouvel avis est soumis.
- */
 #[AsMessageHandler]
 final readonly class SendNewReviewNotificationMessageHandler
 {
@@ -27,8 +24,10 @@ final readonly class SendNewReviewNotificationMessageHandler
         private EntityManagerInterface $em,
         private MailerInterface        $mailer,
         private AdminUrlGenerator      $adminUrlGenerator,
+        private LoggerInterface        $logger,
         private string $mailFromAddress,
         private string $mailFromName,
+        private string $adminEmail,
     ) {}
 
     public function __invoke(SendNewReviewNotificationMessage $message): void
@@ -46,7 +45,7 @@ final readonly class SendNewReviewNotificationMessageHandler
 
         $email = (new TemplatedEmail())
             ->from(new Address($this->mailFromAddress, $this->mailFromName))
-            ->to(new Address($this->mailFromAddress))
+            ->to(new Address($this->adminEmail))
             ->subject('Nouvel avis en attente de modération — ' . $review->getProduct()?->getTitle())
             ->htmlTemplate('emails/new_review_notification.html.twig')
             ->context([
@@ -57,6 +56,14 @@ final readonly class SendNewReviewNotificationMessageHandler
                 'brandName'  => $this->mailFromName,
             ]);
 
-        $this->mailer->send($email);
+        try {
+            $this->mailer->send($email);
+        } catch (\Throwable $e) {
+            $this->logger->error('Échec envoi notification nouvel avis', [
+                'review_id' => $review->getId(),
+                'reason'    => $e->getMessage(),
+            ]);
+            throw $e;
+        }
     }
 }
