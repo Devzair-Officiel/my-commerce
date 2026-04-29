@@ -32,29 +32,37 @@ services:
 
   netdata:
     image: netdata/netdata:stable
-    restart: unless-stopped
+    container_name: netdata
     pid: host
     network_mode: host
+    restart: unless-stopped
     cap_add:
       - SYS_PTRACE
       - SYS_ADMIN
     security_opt:
       - apparmor:unconfined
-    environment:
-      # Accès protégé par mot de passe — définir NETDATA_PASSWORD dans .env.prod.local
-      NETDATA_CLAIM_TOKEN: ""
     volumes:
-      - netdata_config:/etc/netdata
-      - netdata_lib:/var/lib/netdata
-      - netdata_cache:/var/cache/netdata
+      - netdataconfig:/etc/netdata
+      - netdatalib:/var/lib/netdata
+      - netdatacache:/var/cache/netdata
+      - /:/host/root:ro,rslave
+      - /etc/passwd:/host/etc/passwd:ro
+      - /etc/group:/host/etc/group:ro
+      - /etc/localtime:/etc/localtime:ro
       - /proc:/host/proc:ro
       - /sys:/host/sys:ro
       - /etc/os-release:/host/etc/os-release:ro
+      - /var/log:/host/var/log:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /run/dbus:/run/dbus:ro
+    environment:
+      - NETDATA_CLAIM_TOKEN=-j_qSFy2C3Vu2l1IokNksg7ESq8Kv1OqSKaFYMVj9YTNRN1VokEkN4Hikeue-gDKk4PuVcHZv6NdQvLNoo_nCfaVVQOYkUv0WcGaIcu4HA9gK_nW3sC-CurDhZ5uRoVzaFmMTw8
+      - NETDATA_CLAIM_URL=https://app.netdata.cloud
+      - NETDATA_CLAIM_ROOMS=e6716ca7-8ba0-471e-b448-c840fb0befa9
 
 volumes:
   uploads_data:
   videos_data:
-  netdata_config:
-  netdata_lib:
-  netdata_cache:
+  netdataconfig:
+  netdatalib:
+  netdatacache:
