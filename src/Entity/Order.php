@@ -160,6 +160,9 @@ class Order
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
     private ?\DateTimeImmutable $shippingEmailSentAt = null;
 
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
+    private ?\DateTimeImmutable $reviewRequestEmailSentAt = null;
+
     #[ORM\OneToMany(
         mappedBy: 'myOrder',
         targetEntity: OrderDetails::class,
@@ -487,6 +490,18 @@ class Order
     public function markShippingEmailSent(): static
     {
         $this->shippingEmailSentAt = new \DateTimeImmutable();
+
+        return $this;
+    }
+
+    public function hasReviewRequestEmailBeenSent(): bool
+    {
+        return null !== $this->reviewRequestEmailSentAt;
+    }
+
+    public function markReviewRequestEmailSent(): static
+    {
+        $this->reviewRequestEmailSentAt = new \DateTimeImmutable();
 
         return $this;
     }

@@ -19,6 +19,9 @@ use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 /**
  * Contrôleur EasyAdmin pour la gestion CRUD des pages statiques du site (mentions légales, CGV, etc.).
  */
+use Symfony\Component\Security\Http\Attribute\IsGranted;
+
+#[IsGranted('ROLE_ADMIN')]
 final class PageCrudController extends AbstractCrudController
 {
     public static function getEntityFqcn(): string

@@ -18,6 +18,9 @@ use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
 /**
  * Contrôleur EasyAdmin pour la gestion CRUD des moyens de paiement affichés sur le site (Stripe, virement, etc.).
  */
+use Symfony\Component\Security\Http\Attribute\IsGranted;
+
+#[IsGranted('ROLE_ADMIN')]
 class PaymentMethodCrudController extends AbstractCrudController
 {
     private const UPLOAD_DIR = 'public/assets/images/payment_methods_logos';

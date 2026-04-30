@@ -176,6 +176,7 @@ final class UserCrudController extends AbstractCrudController
             ->renderExpanded(false)
             ->setChoices([
                 'Utilisateur' => 'ROLE_USER',
+                'Opérateur (stock, commandes, expéditions, avis, messages)' => 'ROLE_OPERATOR',
                 'Admin' => 'ROLE_ADMIN',
             ])
             ->setHelp('Attention : les rôles donnent accès à des fonctionnalités sensibles.');

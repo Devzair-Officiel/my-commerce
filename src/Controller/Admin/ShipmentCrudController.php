@@ -90,7 +90,7 @@ final class ShipmentCrudController extends AbstractCrudController
             );
 
         return $actions
-            ->disable(Action::NEW)
+            ->disable(Action::NEW, Action::DELETE)
             ->add(Crud::PAGE_INDEX, Action::DETAIL)
             ->add(Crud::PAGE_INDEX, $createLabelAction)
             ->add(Crud::PAGE_DETAIL, $createLabelAction)

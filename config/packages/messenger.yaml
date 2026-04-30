@@ -43,3 +43,4 @@ framework:
             App\Message\SendPaymentActionRequiredEmailMessage: async
             App\Message\SendDeliveredEmailMessage: async
             App\Message\SendNewReviewNotificationMessage: async
+            App\Message\SendReviewRequestEmailMessage: async

@@ -108,21 +108,32 @@ final class OrderCrudController extends AbstractCrudController
             ])
             ->displayIf(static fn (Order $order): bool => $order->isRefundEmailSent());
 
-        return $actions
+        $actions
             ->disable(Action::NEW, Action::DELETE)
             ->add(Crud::PAGE_INDEX, Action::DETAIL)
             ->add(Crud::PAGE_INDEX, $shipAction)
-            ->add(Crud::PAGE_DETAIL, $shipAction)
-            ->add(Crud::PAGE_INDEX, $refundAction)
-            ->add(Crud::PAGE_DETAIL, $refundAction)
-            ->add(Crud::PAGE_INDEX, $sendRefundEmailAction)
-            ->add(Crud::PAGE_DETAIL, $sendRefundEmailAction)
-            ->add(Crud::PAGE_INDEX, $refundEmailSentAction)
-            ->add(Crud::PAGE_DETAIL, $refundEmailSentAction);
+            ->add(Crud::PAGE_DETAIL, $shipAction);
+
+        // Remboursement réservé aux admins
+        if ($this->isGranted('ROLE_ADMIN')) {
+            $actions
+                ->add(Crud::PAGE_INDEX, $refundAction)
+                ->add(Crud::PAGE_DETAIL, $refundAction)
+                ->add(Crud::PAGE_INDEX, $sendRefundEmailAction)
+                ->add(Crud::PAGE_DETAIL, $sendRefundEmailAction)
+                ->add(Crud::PAGE_INDEX, $refundEmailSentAction)
+                ->add(Crud::PAGE_DETAIL, $refundEmailSentAction);
+        }
+
+        return $actions;
     }
 
     public function processRefund(AdminContext $context, AdminUrlGenerator $urlGenerator): Response
     {
+        if (!$this->isGranted('ROLE_ADMIN')) {
+            throw $this->createAccessDeniedException('Remboursement réservé aux administrateurs.');
+        }
+
         $entityId = $context->getRequest()->query->getInt('entityId');
         $order = $this->orderRepository->find($entityId);
 

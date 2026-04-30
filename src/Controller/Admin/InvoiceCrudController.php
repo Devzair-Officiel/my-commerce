@@ -26,6 +26,9 @@ use Symfony\Component\HttpFoundation\Response;
 /**
  * Contrôleur EasyAdmin pour la consultation et le téléchargement PDF des factures générées automatiquement.
  */
+use Symfony\Component\Security\Http\Attribute\IsGranted;
+
+#[IsGranted('ROLE_ADMIN')]
 final class InvoiceCrudController extends AbstractCrudController
 {
     public function __construct(

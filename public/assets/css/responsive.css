@@ -2109,7 +2109,7 @@ footer .widget_title,
     .nide-card { margin-bottom: 14px; }
     .nide-card__body { padding: .8rem .9rem .9rem; }
     .nide-card__title { font-size: .875rem; }
-    .nide-card__tasting { font-size: .725rem; margin-bottom: .6rem; }
+    .nide-card__tasting { font-size: .725rem; margin-bottom: .6rem; height: calc(.725rem * 1.4 * 3); }
     .nide-card__price--current { font-size: .9rem; }
     .nide-card__footer { flex-wrap: wrap; gap: .3rem; }
     .nide-card__actions {

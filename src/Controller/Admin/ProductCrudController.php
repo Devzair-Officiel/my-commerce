@@ -65,14 +65,25 @@ final class ProductCrudController extends AbstractCrudController
 
     public function configureActions(Actions $actions): Actions
     {
-        return $actions
+        $actions
             ->add(Crud::PAGE_EDIT, Action::INDEX)
             ->add(Crud::PAGE_INDEX, Action::DETAIL)
             ->add(Crud::PAGE_EDIT, Action::DETAIL);
+
+        if (!$this->isGranted('ROLE_ADMIN')) {
+            $actions
+                ->disable(Action::NEW, Action::DELETE)
+                ->setPermission(Action::DETAIL, 'ROLE_OPERATOR')
+                ->setPermission(Action::EDIT, 'ROLE_OPERATOR');
+        }
+
+        return $actions;
     }
 
     public function configureFields(string $pageName): iterable
     {
+        $isOperatorOnly = !$this->isGranted('ROLE_ADMIN');
+
         // =========================
         // INDEX
         // =========================
@@ -106,6 +117,13 @@ final class ProductCrudController extends AbstractCrudController
         // FORMS
         // =========================
 
+        // Opérateur : uniquement le champ stock, en lecture contextuelle
+        if ($isOperatorOnly) {
+            yield TextField::new('title', 'Produit')->setFormTypeOption('disabled', true)->setColumns(12);
+            yield IntegerField::new('stock', 'Stock')->setColumns(4)->setHelp('Seul ce champ est modifiable.');
+            return;
+        }
+
         // ----- TAB Général
         yield FormField::addTab('Général')->setIcon('fa fa-box');
         yield FormField::addFieldset('Identité')->setIcon('fa fa-id-card')->collapsible();
@@ -128,7 +146,8 @@ final class ProductCrudController extends AbstractCrudController
         
         yield CountryField::new('originCountry', "Pays d'origine")->setColumns(4);
         yield TextField::new('tastingProfile', 'Profil gustatif')
-            ->setHelp("Ex. : Floral, boisé, caramélisé — une ligne courte")
+            ->setHelp("Max 120 caractères. Ex. : Un miel dense et aromatique, aux notes herbacées franches, avec une douceur chaude et une belle persistance en bouche.")
+            ->setMaxLength(120)
             ->setColumns(5);
 
 

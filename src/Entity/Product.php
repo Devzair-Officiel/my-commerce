@@ -71,7 +71,7 @@ class Product
     private ?string $originCountry = null;
 
     #[ORM\Column(length: 255, nullable: true)]
-    #[Assert\Length(max: 255)]
+    #[Assert\Length(max: 120, maxMessage: 'Le profil gustatif ne doit pas dépasser {{ limit }} caractères.')]
     private ?string $tastingProfile = null;
 
     #[ORM\Column(nullable: true)]

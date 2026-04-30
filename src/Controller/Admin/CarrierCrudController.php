@@ -19,6 +19,9 @@ use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
 /**
  * Contrôleur EasyAdmin pour la gestion CRUD des transporteurs (domicile, point relais, manuel).
  */
+use Symfony\Component\Security\Http\Attribute\IsGranted;
+
+#[IsGranted('ROLE_ADMIN')]
 final class CarrierCrudController extends AbstractCrudController
 {
     public static function getEntityFqcn(): string

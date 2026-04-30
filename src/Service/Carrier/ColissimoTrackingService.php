@@ -6,7 +6,9 @@ use App\Entity\Shipment;
 use App\Entity\ShipmentStatus;
 use App\Enum\FulfillmentStatus;
 use App\Message\SendDeliveredEmailMessage;
+use App\Message\SendReviewRequestEmailMessage;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\Messenger\Stamp\DelayStamp;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Messenger\MessageBusInterface;
 
@@ -100,6 +102,15 @@ final class ColissimoTrackingService
 
             // Envoyer l'email de livraison via Messenger (async)
             $this->bus->dispatch(new SendDeliveredEmailMessage($shipment->getId()));
+
+            // Demande d'avis différée de 24 h
+            $orderId = $order?->getId();
+            if ($orderId !== null) {
+                $this->bus->dispatch(
+                    new SendReviewRequestEmailMessage($orderId),
+                    [new DelayStamp(86_400_000)], // 24 h en millisecondes
+                );
+            }
         }
 
         $this->em->flush();

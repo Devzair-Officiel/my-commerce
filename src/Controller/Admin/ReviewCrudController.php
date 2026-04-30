@@ -27,7 +27,7 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 /**
  * Contrôleur EasyAdmin pour la modération des avis clients.
  */
-#[IsGranted('ROLE_ADMIN')]
+#[IsGranted('ROLE_OPERATOR')]
 class ReviewCrudController extends AbstractCrudController
 {
     public function __construct(
@@ -74,7 +74,7 @@ class ReviewCrudController extends AbstractCrudController
             ->displayIf(fn(Review $r) => $r->hasAdminReply());
 
         return $actions
-            ->disable(Action::NEW)
+            ->disable(Action::NEW, Action::DELETE)
             ->add(Crud::PAGE_INDEX, Action::DETAIL)
             ->add(Crud::PAGE_INDEX, $approve)
             ->add(Crud::PAGE_INDEX, $reject)

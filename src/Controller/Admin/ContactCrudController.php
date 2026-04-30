@@ -41,9 +41,14 @@ class ContactCrudController extends AbstractCrudController
 
     public function configureActions(Actions $actions): Actions
     {
-        return $actions
-            ->disable(Action::NEW, Action::EDIT)
+        $actions->disable(Action::NEW, Action::EDIT)
             ->add(Crud::PAGE_INDEX, Action::DETAIL);
+
+        if (!$this->isGranted('ROLE_ADMIN')) {
+            $actions->disable(Action::DELETE);
+        }
+
+        return $actions;
     }
 
     public function configureFields(string $pageName): iterable

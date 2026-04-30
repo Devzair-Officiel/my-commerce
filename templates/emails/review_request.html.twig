@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Votre avis nous intéresse</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body { margin: 0; padding: 0; background-color: #f4f1eb; font-family: Arial, Helvetica, sans-serif; color: #1f2937; }
+        table { border-spacing: 0; }
+        .wrapper { width: 100%; background-color: #f4f1eb; padding: 24px 0; }
+        .container { width: 100%; max-width: 680px; background-color: #ffffff; border-radius: 12px; overflow: hidden; }
+        .section-padding { padding: 28px 32px; }
+        .product-card { display: block; border: 1px solid #e5e0d5; border-radius: 10px; overflow: hidden; margin-bottom: 16px; text-decoration: none; color: inherit; }
+        .product-card td { vertical-align: middle; }
+        .btn-avis {
+            display: inline-block;
+            background-color: #c8963e;
+            color: #ffffff !important;
+            text-decoration: none;
+            padding: 14px 32px;
+            border-radius: 6px;
+            font-size: 15px;
+            font-weight: bold;
+        }
+        .stars { color: #c8963e; font-size: 22px; letter-spacing: 2px; }
+        .footer-text { font-size: 13px; color: #9ca3af; line-height: 1.6; }
+    </style>
+</head>
+<body>
+<table role="presentation" width="100%" class="wrapper">
+    <tr>
+        <td align="center">
+            <table role="presentation" width="100%" style="max-width:680px;" class="container">
+
+                {# ── Header ── #}
+                <tr>
+                    <td style="background-color:#c8963e; padding:36px 32px; text-align:center;">
+                        <p class="stars">★★★★★</p>
+                        <h1 style="margin:8px 0 0; font-size:26px; line-height:1.3; color:#ffffff;">
+                            Votre avis compte pour nous&nbsp;!
+                        </h1>
+                    </td>
+                </tr>
+
+                {# ── Intro ── #}
+                <tr>
+                    <td class="section-padding">
+                        <p style="margin:0 0 12px; font-size:16px; line-height:1.6;">
+                            Bonjour {{ user.firstname ?? user.email }},
+                        </p>
+                        <p style="margin:0; font-size:15px; line-height:1.75; color:#374151;">
+                            Nous espérons que votre commande <strong>{{ order.orderReference }}</strong>
+                            vous a conquis(e)&nbsp;! Chaque retour sincère nous aide à améliorer
+                            nos produits et guide d'autres amateurs de miels d'exception.
+                        </p>
+                        <p style="margin:16px 0 0; font-size:15px; line-height:1.75; color:#374151;">
+                            Cela ne prend que <strong>30 secondes</strong> — votre témoignage
+                            fait toute la différence.
+                        </p>
+                    </td>
+                </tr>
+
+                {# ── Produits achetés ── #}
+                {% if products %}
+                <tr>
+                    <td style="padding: 0 32px 24px;">
+                        <p style="margin:0 0 14px; font-size:14px; font-weight:bold; color:#6b7280; text-transform:uppercase; letter-spacing:.05em;">
+                            Laisser un avis sur&nbsp;:
+                        </p>
+
+                        {% for item in products %}
+                        <table role="presentation" width="100%" style="border:1px solid #e5e0d5; border-radius:10px; overflow:hidden; margin-bottom:12px;">
+                            <tr>
+                                {% if item.imageUrl %}
+                                <td style="width:72px; padding:10px;">
+                                    <img src="{{ item.imageUrl }}" alt="{{ item.name }}" width="60" height="60"
+                                         style="border-radius:6px; object-fit:cover; display:block;">
+                                </td>
+                                {% endif %}
+                                <td style="padding:12px 16px; font-size:15px; font-weight:bold; color:#1f2937;">
+                                    {{ item.name }}
+                                </td>
+                                <td style="padding:12px 16px; text-align:right; white-space:nowrap;">
+                                    <a href="{{ url('app_product_by_slug', { slug: item.slug }) }}#reviews"
+                                       style="display:inline-block; background-color:#c8963e; color:#ffffff; text-decoration:none; padding:9px 20px; border-radius:6px; font-size:13px; font-weight:bold;">
+                                        Donner mon avis
+                                    </a>
+                                </td>
+                            </tr>
+                        </table>
+                        {% endfor %}
+
+                    </td>
+                </tr>
+                {% endif %}
+
+                {# ── CTA fallback si pas de produits ── #}
+                {% if not products %}
+                <tr>
+                    <td class="section-padding" style="padding-top:0; text-align:center;">
+                        <a href="{{ url('app_home') }}" class="btn-avis">
+                            Découvrir nos miels
+                        </a>
+                    </td>
+                </tr>
+                {% endif %}
+
+                {# ── Note de confiance ── #}
+                <tr>
+                    <td style="padding:0 32px 28px;">
+                        <table role="presentation" width="100%" style="background-color:#fdf8f0; border-radius:8px; border:1px solid #f0e8d5;">
+                            <tr>
+                                <td style="padding:16px 20px;">
+                                    <p style="margin:0; font-size:13px; color:#92704a; line-height:1.6;">
+                                        🍯 <strong>Pourquoi votre avis est précieux&nbsp;?</strong><br>
+                                        Il aide d'autres amoureux du miel à choisir en confiance, et nous
+                                        encourage à sourcer des miels toujours plus qualitatifs.
+                                        Merci d'avance pour votre honnêteté.
+                                    </p>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+
+                {# ── Footer ── #}
+                <tr>
+                    <td style="background-color:#f9f6f0; padding:20px 32px; border-top:1px solid #e5e0d5;">
+                        <p class="footer-text" style="margin:0;">
+                            Merci pour votre confiance&nbsp;!<br>
+                            L'équipe {{ globalSetting.website_name }}
+                        </p>
+                        <p class="footer-text" style="margin:10px 0 0;">
+                            Vous recevez cet email car vous avez passé la commande {{ order.orderReference }}
+                            sur notre boutique.
+                        </p>
+                    </td>
+                </tr>
+
+            </table>
+        </td>
+    </tr>
+</table>
+</body>
+</html>

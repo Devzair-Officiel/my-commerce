@@ -15,6 +15,9 @@ use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
 /**
  * Contrôleur EasyAdmin pour la gestion CRUD des médias (images) associés aux produits et catégories.
  */
+use Symfony\Component\Security\Http\Attribute\IsGranted;
+
+#[IsGranted('ROLE_ADMIN')]
 class MediaCrudController extends AbstractCrudController
 {
     public static function getEntityFqcn(): string

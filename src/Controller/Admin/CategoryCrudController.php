@@ -20,6 +20,9 @@ use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
 /**
  * Contrôleur EasyAdmin pour la gestion CRUD des catégories de produits, avec upload d'image et champs SEO.
  */
+use Symfony\Component\Security\Http\Attribute\IsGranted;
+
+#[IsGranted('ROLE_ADMIN')]
 final class CategoryCrudController extends AbstractCrudController
 {
     private const UPLOAD_DIR = 'public/assets/images/categories';

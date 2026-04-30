@@ -142,53 +142,74 @@ final class DashboardController extends AbstractDashboardController
                 ->andWhere('p.stock > 0')->andWhere('p.stock <= 5')
                 ->getQuery()->getSingleScalarResult();
 
+        $isAdmin    = $this->isGranted('ROLE_ADMIN');
+        $isOperator = $this->isGranted('ROLE_OPERATOR');
+
         yield MenuItem::linkToDashboard('Dashboard', 'fa fa-home');
 
+        // ── Catalogue ──────────────────────────────────────────────────────────
         yield MenuItem::section('Catalogue');
-        $baseProductUrl = (clone $this->adminUrlGenerator)->setController(ProductCrudController::class)->generateUrl();
-        $sepP = str_contains($baseProductUrl, '?') ? '&' : '?';
-        $lowStockUrl = $baseProductUrl . $sepP . http_build_query(['filters' => ['stock' => ['comparison' => '<=', 'value' => 5]]]);
 
         $productsItem = MenuItem::linkToCrud('Produits', 'fa fa-box', Product::class);
         if ($lowStockCount > 0) {
             $productsItem->setBadge($lowStockCount, 'warning');
         }
         yield $productsItem;
-        yield MenuItem::linkToCrud('Numéros de lot', 'fa fa-barcode', ProductLot::class);
-        yield MenuItem::linkToCrud('Catégories', 'fa fa-tags', Category::class);
 
-        yield MenuItem::section('Contenu');
-        yield MenuItem::linkToCrud('Pages', 'fa fa-file', Page::class);
-        yield MenuItem::linkToCrud('Sliders', 'fa fa-image', Sliders::class);
-        yield MenuItem::linkToCrud('Blog', 'fas fa-code', Blog::class);
-        yield MenuItem::linkToCrud('FAQ', 'fa fa-circle-question', Faq::class);
-        yield MenuItem::linkToCrud('Liens utiles FAQ', 'fa fa-link', FaqLink::class);
+        if ($isAdmin) {
+            yield MenuItem::linkToCrud('Numéros de lot', 'fa fa-barcode', ProductLot::class);
+            yield MenuItem::linkToCrud('Catégories', 'fa fa-tags', Category::class);
+        }
 
+        // ── Contenu (admin uniquement) ─────────────────────────────────────────
+        if ($isAdmin) {
+            yield MenuItem::section('Contenu');
+            yield MenuItem::linkToCrud('Pages', 'fa fa-file', Page::class);
+            yield MenuItem::linkToCrud('Sliders', 'fa fa-image', Sliders::class);
+            yield MenuItem::linkToCrud('Blog', 'fas fa-code', Blog::class);
+            yield MenuItem::linkToCrud('FAQ', 'fa fa-circle-question', Faq::class);
+            yield MenuItem::linkToCrud('Liens utiles FAQ', 'fa fa-link', FaqLink::class);
+        }
+
+        // ── Vente ──────────────────────────────────────────────────────────────
         yield MenuItem::section('Vente');
+
         $ordersItem = MenuItem::linkToCrud('Commandes', 'fas fa-shopping-cart', Order::class);
         if ($pendingOrders > 0) {
             $ordersItem->setBadge($pendingOrders, 'danger');
         }
         yield $ordersItem;
         yield MenuItem::linkToCrud('Expéditions', 'fa fa-truck-fast', Shipment::class);
-        yield MenuItem::linkToCrud('Factures', 'fa fa-file-invoice', Invoice::class);
-        yield MenuItem::linkToCrud('Modes de paiement', 'fa fa-credit-card', PaymentMethod::class);
-        yield MenuItem::linkToCrud('Transporteurs', 'fa fa-truck', Carrier::class);
 
+        if ($isAdmin) {
+            yield MenuItem::linkToCrud('Factures', 'fa fa-file-invoice', Invoice::class);
+            yield MenuItem::linkToCrud('Modes de paiement', 'fa fa-credit-card', PaymentMethod::class);
+            yield MenuItem::linkToCrud('Transporteurs', 'fa fa-truck', Carrier::class);
+        }
+
+        // ── Avis ───────────────────────────────────────────────────────────────
         yield MenuItem::section('Avis');
+
         $reviewsItem = MenuItem::linkToCrud('Avis clients', 'fa fa-star', Review::class);
         if ($pendingReviews > 0) {
             $reviewsItem->setBadge($pendingReviews, 'warning');
         }
         yield $reviewsItem;
 
+        // ── Utilisateurs ───────────────────────────────────────────────────────
         yield MenuItem::section('Utilisateurs');
-        yield MenuItem::linkToCrud('Utilisateurs', 'fa fa-users', User::class);
-        yield MenuItem::linkToCrud('Adresses', 'fas fa-address-card', Address::class);
-        yield MenuItem::linkToCrud('Message', 'fas fa-envelope', Contact::class);
 
-        yield MenuItem::section('Configuration');
-        yield MenuItem::linkToCrud('Réglages', 'fa fa-gear', Setting::class);
+        if ($isAdmin) {
+            yield MenuItem::linkToCrud('Utilisateurs', 'fa fa-users', User::class);
+            yield MenuItem::linkToCrud('Adresses', 'fas fa-address-card', Address::class);
+        }
+        yield MenuItem::linkToCrud('Messages', 'fas fa-envelope', Contact::class);
+
+        // ── Configuration (admin uniquement) ──────────────────────────────────
+        if ($isAdmin) {
+            yield MenuItem::section('Configuration');
+            yield MenuItem::linkToCrud('Réglages', 'fa fa-gear', Setting::class);
+        }
 
         yield MenuItem::section('');
         yield MenuItem::linkToRoute('Guide d\'utilisation', 'fa fa-circle-question', 'admin_guide');

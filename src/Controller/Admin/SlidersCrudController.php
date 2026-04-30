@@ -19,6 +19,9 @@ use EasyCorp\Bundle\EasyAdminBundle\Field\UrlField;
 /**
  * Contrôleur EasyAdmin pour la gestion CRUD des sliders affichés sur la page d'accueil.
  */
+use Symfony\Component\Security\Http\Attribute\IsGranted;
+
+#[IsGranted('ROLE_ADMIN')]
 final class SlidersCrudController extends AbstractCrudController
 {
     public static function getEntityFqcn(): string
