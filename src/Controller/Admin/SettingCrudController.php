@@ -434,9 +434,8 @@ final class SettingCrudController extends AbstractCrudController
 
     public function updateEntity(EntityManagerInterface $entityManager, $entityInstance): void
     {
-        $instance = $this->getContext()->getEntity()->getInstance();
-        $this->handleHeroVideoUpload($instance);
-        $this->handleHeroPosterUpload($instance);
+        $this->handleHeroVideoUpload($entityInstance);
+        $this->handleHeroPosterUpload($entityInstance);
         parent::updateEntity($entityManager, $entityInstance);
         $this->globalsProvider->invalidateSetting();
     }

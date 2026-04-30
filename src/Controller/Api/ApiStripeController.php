@@ -45,7 +45,7 @@ final class ApiStripeController
             return new JsonResponse(['error' => 'Order not found'], 404);
         }
 
-        if ($order->getFulfillmentStatus() !== FulfillmentStatus::Draft) {
+        if ($order->getFulfillmentStatus() !== FulfillmentStatus::Brouillon) {
             return new JsonResponse(['error' => 'Order not payable'], 409);
         }
 

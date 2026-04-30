@@ -1,0 +1,10 @@
+{% set v = field.value %}
+{% if v is null %}
+    <span class="badge badge-secondary">—</span>
+{% elseif v == 0 %}
+    <span class="badge badge-danger">Rupture</span>
+{% elseif v <= 5 %}
+    <span class="badge badge-warning">{{ v }} unité{{ v > 1 ? 's' : '' }} ⚠</span>
+{% else %}
+    <span class="badge badge-success">{{ v }}</span>
+{% endif %}

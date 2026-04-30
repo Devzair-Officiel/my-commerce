@@ -63,10 +63,25 @@ class ReviewCrudController extends AbstractCrudController
             ->addCssClass('btn btn-sm btn-danger')
             ->displayIf(fn(Review $r) => $r->getStatus() !== ReviewStatus::Rejected);
 
+        $reply = Action::new('reply', 'Répondre', 'fa fa-reply')
+            ->linkToCrudAction(Action::EDIT)
+            ->addCssClass('btn btn-sm btn-outline-primary')
+            ->displayIf(fn(Review $r) => !$r->hasAdminReply());
+
+        $editReply = Action::new('editReply', 'Modifier la réponse', 'fa fa-pen')
+            ->linkToCrudAction(Action::EDIT)
+            ->addCssClass('btn btn-sm btn-outline-secondary')
+            ->displayIf(fn(Review $r) => $r->hasAdminReply());
+
         return $actions
             ->disable(Action::NEW)
+            ->add(Crud::PAGE_INDEX, Action::DETAIL)
             ->add(Crud::PAGE_INDEX, $approve)
-            ->add(Crud::PAGE_INDEX, $reject);
+            ->add(Crud::PAGE_INDEX, $reject)
+            ->add(Crud::PAGE_INDEX, $reply)
+            ->add(Crud::PAGE_INDEX, $editReply)
+            ->add(Crud::PAGE_DETAIL, $approve)
+            ->add(Crud::PAGE_DETAIL, $reject);
     }
 
     public function configureFilters(Filters $filters): Filters
@@ -115,9 +130,32 @@ class ReviewCrudController extends AbstractCrudController
             ])
             ->onlyOnIndex();
 
+        yield ChoiceField::new('status', 'Statut')
+            ->setChoices([
+                'En attente' => ReviewStatus::Pending,
+                'Approuvé'   => ReviewStatus::Approved,
+                'Rejeté'     => ReviewStatus::Rejected,
+            ])
+            ->renderAsBadges([
+                ReviewStatus::Pending->value  => 'warning',
+                ReviewStatus::Approved->value => 'success',
+                ReviewStatus::Rejected->value => 'danger',
+            ])
+            ->hideWhenCreating()
+            ->onlyOnDetail();
+
         yield DateTimeField::new('createdAt', 'Date')
             ->setFormat('dd/MM/yyyy HH:mm')
             ->onlyOnIndex();
+
+        yield TextareaField::new('adminReply', 'Réponse admin')
+            ->setHelp('Cette réponse sera visible publiquement sous l\'avis client.')
+            ->setFormTypeOption('attr', ['rows' => 5])
+            ->hideOnIndex();
+
+        yield DateTimeField::new('adminRepliedAt', 'Répondu le')
+            ->setFormat('dd/MM/yyyy HH:mm')
+            ->onlyOnDetail();
     }
 
     public function approveReview(AdminContext $context): RedirectResponse

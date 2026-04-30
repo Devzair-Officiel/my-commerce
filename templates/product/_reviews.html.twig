@@ -54,6 +54,15 @@
             {% if review.comment %}
             <p class="nide-review__comment">{{ review.comment }}</p>
             {% endif %}
+            {% if review.hasAdminReply %}
+            <div class="nide-review__reply">
+                <div class="nide-review__reply-header">
+                    <span class="nide-review__reply-label">Réponse de la boutique</span>
+                    <span class="nide-review__reply-date">{{ review.adminRepliedAt|date('d/m/Y', 'Europe/Paris') }}</span>
+                </div>
+                <p class="nide-review__reply-text">{{ review.adminReply }}</p>
+            </div>
+            {% endif %}
         </div>
         {% endfor %}
     </div>

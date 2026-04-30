@@ -1,379 +1,276 @@
 {% extends '@EasyAdmin/page/content.html.twig' %}
 
-{% block content_title %}Dashboard
-{% endblock %}
-
-
+{% block content_title %}Tableau de bord{% endblock %}
 
 {% block main %}
-  {# Chart.js (une seule fois) #}
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 
   <div class="container-fluid admin-dashboard">
 
-    {# ================= TOP KPIS ================= #}
-    <div class="row g-3 mb-3">
-      <div class="col-12 col-lg-3">
-		<a class="card kpi-card text-decoration-none" href="{{ urls.orders }}">
-			<div class="card-body kpi-body">
-				<div class="kpi-head">
-					<div class="kpi-icon">
-						<i class="fas fa-shopping-cart"></i>
-					</div>
-				</div>
+    {# ── ALERTE EXPÉDITION ─────────────────────────────────────── #}
+    {% if metrics.kpis.toShip > 0 %}
+    <div class="dash-alert mb-3">
+      <div class="dash-alert__icon"><i class="fas fa-truck"></i></div>
+      <div class="dash-alert__body">
+        <strong>{{ metrics.kpis.toShip }} commande{{ metrics.kpis.toShip > 1 ? 's' : '' }} à expédier</strong>
+        <span class="text-muted ms-2">— paiement validé, expédition en attente</span>
+      </div>
+      <a class="dash-alert__cta" href="{{ urls.orders_to_ship }}">Voir les commandes →</a>
+    </div>
+    {% endif %}
 
-				<div class="kpi-label">Commandes</div>
-				<div class="kpi-value">{{ counts.orders }}</div>
-				<div class="kpi-sub">Total</div>
-			</div>
-		</a>
+    {% if metrics.lowStockCount > 0 %}
+    <div class="dash-alert dash-alert--warning mb-4">
+      <div class="dash-alert__icon"><i class="fas fa-triangle-exclamation"></i></div>
+      <div class="dash-alert__body">
+        <strong>{{ metrics.lowStockCount }} produit{{ metrics.lowStockCount > 1 ? 's' : '' }} en stock bas</strong>
+        <span class="text-muted ms-2">— stock ≤ 5 unités</span>
+      </div>
+      <a class="dash-alert__cta" href="{{ urls.products_low_stock }}">Voir les produits →</a>
+    </div>
+    {% endif %}
+
+    {# ── KPIs ──────────────────────────────────────────────────── #}
+    <div class="row g-3 mb-4">
+
+      <div class="col-6 col-lg-3">
+        <a class="kpi2 text-decoration-none" href="{{ urls.orders }}">
+          <div class="kpi2__icon kpi2__icon--purple"><i class="fas fa-shopping-cart"></i></div>
+          <div class="kpi2__body">
+            <div class="kpi2__value">{{ counts.orders }}</div>
+            <div class="kpi2__label">Commandes totales</div>
+          </div>
+        </a>
       </div>
 
-		<div class="col-12 col-lg-3">
-			<a class="card kpi-card text-decoration-none" href="{{ urls.orders }}">
-				<div class="card-body kpi-body">
-					<div class="kpi-head">
-						<div class="kpi-icon">
-						<i class="fas fa-circle-check"></i>
-						</div>
+      <div class="col-6 col-lg-3">
+        <a class="kpi2 text-decoration-none" href="{{ urls.orders }}">
+          <div class="kpi2__icon kpi2__icon--green"><i class="fas fa-circle-check"></i></div>
+          <div class="kpi2__body">
+            <div class="kpi2__value">
+              {{ metrics.kpis.paid30 }}
+              {% if metrics.kpis.paid30Trend is defined and metrics.kpis.paid30Trend is not null %}
+                <span class="kpi2__chip {{ metrics.kpis.paid30Trend >= 0 ? 'up' : 'down' }}">
+                  {{ metrics.kpis.paid30Trend >= 0 ? '↑' : '↓' }}{{ metrics.kpis.paid30Trend|abs|number_format(1, ',') }}%
+                </span>
+              {% endif %}
+            </div>
+            <div class="kpi2__label">Payées (30 j)</div>
+          </div>
+        </a>
+      </div>
 
-						{% if metrics.kpis.paid30Trend is defined and metrics.kpis.paid30Trend is not null %}
-						<span class="kpi-chip {{ metrics.kpis.paid30Trend >= 0 ? 'kpi-chip-up' : 'kpi-chip-down' }}">
-							{{ metrics.kpis.paid30Trend >= 0 ? '↑' : '↓' }}
-							{{ (metrics.kpis.paid30Trend)|number_format(1, ',', ' ') }}%
-						</span>
-						{% endif %}
-					</div>
+      <div class="col-6 col-lg-3">
+        <a class="kpi2 text-decoration-none" href="{{ urls.orders }}">
+          <div class="kpi2__icon kpi2__icon--blue"><i class="fas fa-euro-sign"></i></div>
+          <div class="kpi2__body">
+            <div class="kpi2__value">
+              {{ (metrics.kpis.revenue30Cents / 100)|number_format(0, ',', ' ') }} €
+              {% set trend = metrics.kpis.revenue30Trend ?? null %}
+              {% if trend is not same as(null) %}
+                <span class="kpi2__chip {{ trend >= 0 ? 'up' : 'down' }}">
+                  {{ trend >= 0 ? '↑' : '↓' }}{{ trend|abs|number_format(1, ',') }}%
+                </span>
+              {% endif %}
+            </div>
+            <div class="kpi2__label">CA payé (30 j)</div>
+          </div>
+        </a>
+      </div>
 
-					<div class="kpi-label">Payées</div>
-					<div class="kpi-value">{{ metrics.kpis.paid30 }}</div>
-					<div class="kpi-sub">sur 30 jours</div>
-				</div>
-			</a>
-		</div>
-
-
-		<div class="col-12 col-lg-3">
-			<a class="card kpi-card text-decoration-none" href="{{ urls.orders }}">
-				<div class="card-body kpi-body">
-					<div class="kpi-head">
-						<div class="kpi-icon">
-							<i class="fas fa-euro-sign"></i>
-						</div>
-
-						{% set trend = metrics.kpis.revenue30Trend ?? null %}
-
-						{% if trend is same as(null) %}
-							<span class="kpi-chip">—</span>
-						{% else %}
-							<span class="kpi-chip {{ trend >= 0 ? 'kpi-chip-up' : 'kpi-chip-down' }}">
-								{{ trend >= 0 ? '↑' : '↓' }}
-								{{ trend|abs|number_format(1, ',', ' ') }}%
-							</span>
-						{% endif %}
-					</div>
-
-					<div class="kpi-label">CA payé</div>
-					<div class="kpi-value">
-						{{ (metrics.kpis.revenue30Cents / 100)|number_format(2, ',', ' ') }}
-						€
-					</div>
-					<div class="kpi-sub">sur 30 jours</div>
-				</div>
-			</a>
-		</div>
-
-		<div class="col-12 col-lg-3">
-			<div class="card kpi-card kpi-card-static">
-				<div class="card-body kpi-body">
-					<div class="kpi-head">
-						<div class="kpi-icon">
-							<i class="fas fa-basket-shopping"></i>
-						</div>
-
-						{% if metrics.kpis.avgBasket30Trend is defined and metrics.kpis.avgBasket30Trend is not null %}
-							<span class="kpi-chip {{ metrics.kpis.avgBasket30Trend >= 0 ? 'kpi-chip-up' : 'kpi-chip-down' }}">
-								{{ metrics.kpis.avgBasket30Trend >= 0 ? '↑' : '↓' }}
-								{{ (metrics.kpis.avgBasket30Trend)|number_format(1, ',', ' ') }}%
-							</span>
-						{% endif %}
-					</div>
-
-					<div class="kpi-label">Panier moyen</div>
-					<div class="kpi-value">
-						{{ (metrics.kpis.avgBasket30Cents / 100)|number_format(2, ',', ' ') }}
-						€
-					</div>
-					<div class="kpi-sub">sur 30 jours</div>
-				</div>
-			</div>
-		</div>
+      <div class="col-6 col-lg-3">
+        <a class="kpi2 text-decoration-none" href="{{ urls.users }}">
+          <div class="kpi2__icon kpi2__icon--orange"><i class="fas fa-users"></i></div>
+          <div class="kpi2__body">
+            <div class="kpi2__value">
+              {{ counts.users }}
+              {% if metrics.kpis.usersThisMonth is defined and metrics.kpis.usersThisMonth > 0 %}
+                <span class="kpi2__chip up">+{{ metrics.kpis.usersThisMonth }} ce mois</span>
+              {% endif %}
+            </div>
+            <div class="kpi2__label">Clients</div>
+          </div>
+        </a>
+      </div>
 
     </div>
 
-    {# ================= STATS (1 grosse card) ================= #}
-    <div class="row g-3 mb-3">
-      <div class="col-12">
-        <div class="card panel-card">
+    {# ── GRAPHIQUES ────────────────────────────────────────────── #}
+    <div class="row g-3 mb-4">
+      <div class="col-12 col-xl-8">
+        <div class="card panel-card h-100">
           <div class="card-body p-3">
             <div class="panel-title mb-3">
-              <div class="d-flex align-items-center gap-2">
-                <i class="fas fa-chart-line"></i>
-                <span>Statistiques (14 jours)</span>
-              </div>
-
-              {# (optionnel) petit rappel #}
-              <span class="text-muted small">
-                CA & commandes payées
-              </span>
+              <span>CA payé — 14 derniers jours</span>
+              <i class="fas fa-chart-line text-muted"></i>
             </div>
+            <canvas id="revenueChart" height="120"></canvas>
+          </div>
+        </div>
+      </div>
 
-            <div class="row g-3">
-              <div class="col-12 col-xl-7">
-                <div class="card h-100">
-                  <div class="card-body p-3">
-                    <div class="panel-title">
-                      <span>CA payé</span>
-                      <i class="fas fa-chart-line"></i>
-                    </div>
-                    <canvas id="revenueChart" height="140"></canvas>
+      <div class="col-12 col-xl-4">
+        <div class="card panel-card h-100">
+          <div class="card-body p-3">
+            <div class="panel-title mb-3">
+              <span>Statuts de livraison</span>
+              <i class="fas fa-circle-half-stroke text-muted"></i>
+            </div>
+            <div class="donut-wrap">
+              <canvas id="fulfillChart"></canvas>
+              <div class="donut-legend">
+                {% set fulfillLabels = {
+                  'draft':      {label: 'Brouillon',   color: '#6c757d'},
+                  'preparing':  {label: 'Préparation', color: '#0dcaf0'},
+                  'shipped':    {label: 'Expédiée',    color: '#7c6ffc'},
+                  'delivered':  {label: 'Livrée',      color: '#198754'},
+                  'cancelled':  {label: 'Annulée',     color: '#dc3545'}
+                } %}
+                {% for key, info in fulfillLabels %}
+                  {% set count = metrics.kpis.fulfillment[key] ?? 0 %}
+                  <div class="donut-legend__item">
+                    <span class="donut-legend__dot" style="background:{{ info.color }};"></span>
+                    <span class="donut-legend__lbl">{{ info.label }}</span>
+                    <span class="donut-legend__val">{{ count }}</span>
                   </div>
-                </div>
-              </div>
-
-              <div class="col-12 col-xl-5">
-                <div class="card h-100">
-                  <div class="card-body p-3">
-                    <div class="panel-title">
-                      <span>Commandes payées</span>
-                      <i class="fas fa-chart-column"></i>
-                    </div>
-                    <canvas id="ordersChart" height="140"></canvas>
-                  </div>
-                </div>
+                {% endfor %}
               </div>
             </div>
-
           </div>
         </div>
       </div>
     </div>
 
-    {# ================= ALERTS + CATALOGUE + SETTINGS + CONTACTS ================= #}
-    <div class="row g-3 mb-3">
-		<div class="col-12 col-lg-3">
-			<div class="card panel-card h-100">
-				<div class="card-body p-3">
-					<div class="panel-title">
-						<span>À surveiller</span>
-						<i class="fas fa-triangle-exclamation"></i>
-					</div>
-
-					<div class="watchlist">
-						<a class="watch-row" href="{{ urls.orders }}">
-							<span class="badge badge-warning">Pending</span>
-							<span class="watch-label">Paiements en attente</span>
-							<span class="watch-value">{{ metrics.kpis.pendingPayments }}</span>
-						</a>
-
-						<a class="watch-row" href="{{ urls.orders }}">
-							<span class="badge badge-danger">Failed</span>
-							<span class="watch-label">Paiements échoués</span>
-							<span class="watch-value">{{ metrics.kpis.failedPayments }}</span>
-						</a>
-
-						<a class="watch-row" href="{{ urls.orders }}">
-							<span class="badge badge-secondary">Refund</span>
-							<span class="watch-label">Remboursements</span>
-							<span class="watch-value">{{ metrics.kpis.refundedPayments }}</span>
-						</a>
-					</div>
-				</div>
-			</div>
-		</div>
-
-		<div class="col-12 col-lg-4">
-			<div class="card panel-card h-100">
-				<div class="card-body p-3">
-					<div class="panel-title">
-						<span>Messages importants</span>
-						<i class="fas fa-envelope"></i>
-					</div>
-
-					<div class="watchlist">
-						{% for contact in metrics.recentImportantContacts %}
-						<a class="watch-row" href="{{ urls.contacts }}/{{contact.id}}">
-							<span class="badge badge-warning">Urgent</span>
-							<span class="watch-label">{{ contact.email }} - {{ contact.subject }}</span><br>
-							<small class="text-muted">{{ contact.createdAt }}</small>
-						</a>
-						{% else %}
-							<div class="text-muted p-3">Aucun message urgent.</div>
-						{% endfor %}
-					</div>
-
-					{% if metrics.recentImportantContacts|length > 0 %}
-					<div class="panel-footer mt-3 d-flex justify-content-end">
-						<a class="btn btn-outline-secondary btn-sm" href="{{ urls.contacts }}">Voir tous les messages</a>
-					</div>
-					{% endif %}
-				</div>
-			</div>
-		</div>
-
-		<div class="col-12 col-lg-2">
-			<a class="card kpi-card h-100 text-decoration-none" href="{{ urls.users }}">
-				<div class="card-body kpi-body">
-					<div class="kpi-head">
-						<div class="kpi-icon">
-							<i class="fas fa-users"></i>
-						</div>
-
-						{# Chip: inscrits ce mois #}
-						{% if metrics.kpis.usersThisMonth is defined and metrics.kpis.usersThisMonth is not null %}
-							<span class="kpi-chip">
-								+{{ metrics.kpis.usersThisMonth }}
-							</span>
-						{% else %}
-							<span class="kpi-chip">—</span>
-						{% endif %}
-					</div>
-
-					<div class="kpi-label">Utilisateurs</div>
-					<div class="kpi-value">{{ counts.users }}</div>
-					<div class="kpi-sub">Total</div>
-				</div>
-			</a>
-		</div>
+    {# ── ALERTES + MESSAGES + RÉGLAGES ────────────────────────── #}
+    <div class="row g-3 mb-4">
 
       <div class="col-12 col-lg-3">
-		<div class="card panel-card h-100">
-			<div class="card-body p-3">
-				<div class="panel-title">
-					<span>Paramètres du site</span>
-					<i class="fas fa-gear"></i>
-				</div>
-
-				{% if setting %}
-					<div class="settings-header">
-						<div class="settings-main">
-							<div class="settings-name">{{ setting.websiteName }}</div>
-							<div class="settings-meta">
-								<span class="settings-pill">
-									<i class="fas fa-coins"></i>
-									{{ setting.currency }}
-								</span>
-
-								{% if setting.taxeRate is not null %}
-									<span class="settings-pill">
-										<i class="fas fa-receipt"></i>
-										TVA
-										{{ setting.taxeRate }}%
-									</span>
-								{% endif %}
-
-								{% if setting.freeShippingThresholdCents is not null %}
-									<span class="settings-pill">
-										<i class="fas fa-truck-fast"></i>
-										Livraison offerte dès
-										{{ (setting.freeShippingThresholdCents / 100)|number_format(2, ',', ' ') }}
-										€
-									</span>
-								{% endif %}
-							</div>
-						</div>
-
-						{% if setting.logoMedia and setting.logoMedia.filename %}
-							<div class="settings-logo img-fluid">
-								<img src="/assets/images/setting/{{ setting.logoMedia.filename }}" alt="Logo {{ setting.websiteName }}">
-							</div>
-						{% endif %}
-					</div>
-
-					<div class="settings-grid">
-						<div class="settings-item">
-							<div class="settings-item-label">
-								<i class="fas fa-map-marker-alt"></i>
-								Adresse</div>
-							<div class="settings-item-value">
-								{{ setting.street }},
-								{{ setting.codePostal }}
-								{{ setting.city }}
-								{% if setting.state %}
-									<span class="text-muted">
-										—
-										{{ setting.state }}</span>
-								{% endif %}
-							</div>
-						</div>
-
-						<div class="settings-item">
-							<div class="settings-item-label">
-								<i class="fas fa-address-book"></i>
-								Contact</div>
-							<div class="settings-item-value">
-								{% if setting.email %}
-									{{ setting.email }}
-								{% else %}
-									<span class="text-muted">—</span>
-								{% endif %}
-								{% if setting.phone %}
-									<span class="text-muted">
-										•
-									</span>
-									{{ setting.phone }}
-								{% endif %}
-							</div>
-						</div>
-					</div>
-
-					<div class="settings-social">
-						{% if setting.facebookLink %}
-							<span class="social-pill">
-								<i class="fab fa-facebook-f"></i>
-							</span>
-						{% endif %}
-						{% if setting.instaLink %}
-							<span class="social-pill">
-								<i class="fab fa-instagram"></i>
-							</span>
-						{% endif %}
-						{% if setting.youtubeLink %}
-							<span class="social-pill">
-								<i class="fab fa-youtube"></i>
-							</span>
-						{% endif %}
-					</div>
-				{% else %}
-					<div class="text-muted">Aucun réglage trouvé.</div>
-				{% endif %}
-
-				<div class="panel-actions">
-					<a class="btn btn-outline-secondary" href="{{ urls.settings_index }}">Voir</a>
-					{% if urls.settings_edit %}
-						<a class="btn btn-primary" href="{{ urls.settings_edit }}">Modifier</a>
-					{% endif %}
-				</div>
-			</div>
-		</div>
+        <div class="card panel-card h-100">
+          <div class="card-body p-3">
+            <div class="panel-title mb-3">
+              <span>À surveiller</span>
+              <i class="fas fa-triangle-exclamation text-muted"></i>
+            </div>
+            <div class="watchlist">
+              <a class="watch-row" href="{{ urls.orders_to_ship }}">
+                <span class="badge badge-primary">Expédier</span>
+                <span class="watch-label">À expédier</span>
+                <span class="watch-value {{ metrics.kpis.toShip > 0 ? 'text-primary fw-bold' : '' }}">{{ metrics.kpis.toShip }}</span>
+              </a>
+              <a class="watch-row" href="{{ urls.orders_pending }}">
+                <span class="badge badge-warning">En attente</span>
+                <span class="watch-label">Paiements en attente</span>
+                <span class="watch-value">{{ metrics.kpis.pendingPayments }}</span>
+              </a>
+              <a class="watch-row" href="{{ urls.orders_failed }}">
+                <span class="badge badge-danger">Échec</span>
+                <span class="watch-label">Paiements échoués</span>
+                <span class="watch-value">{{ metrics.kpis.failedPayments }}</span>
+              </a>
+              <a class="watch-row" href="{{ urls.orders_refunded }}">
+                <span class="badge badge-secondary">Remboursé</span>
+                <span class="watch-label">Remboursements</span>
+                <span class="watch-value">{{ metrics.kpis.refundedPayments }}</span>
+              </a>
+            </div>
+          </div>
+        </div>
       </div>
+
+      <div class="col-12 col-lg-4">
+        <div class="card panel-card h-100">
+          <div class="card-body p-3">
+            <div class="panel-title mb-3">
+              <span>Messages importants</span>
+              <i class="fas fa-envelope text-muted"></i>
+            </div>
+            <div class="watchlist">
+              {% for contact in metrics.recentImportantContacts %}
+              <a class="watch-row" href="{{ urls.contacts }}/{{contact.id}}">
+                <span class="badge badge-warning">Urgent</span>
+                <span class="watch-label">{{ contact.email }} — {{ contact.subject }}</span>
+                <small class="text-muted d-block mt-1">{{ contact.createdAt }}</small>
+              </a>
+              {% else %}
+                <div class="text-muted p-2 small">Aucun message urgent.</div>
+              {% endfor %}
+            </div>
+            {% if metrics.recentImportantContacts|length > 0 %}
+            <div class="panel-footer mt-3 d-flex justify-content-end">
+              <a class="btn btn-outline-secondary btn-sm" href="{{ urls.contacts }}">Tous les messages</a>
+            </div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+
+      <div class="col-12 col-lg-5">
+        <div class="card panel-card h-100">
+          <div class="card-body p-3">
+            <div class="panel-title mb-3">
+              <span>Paramètres du site</span>
+              <i class="fas fa-gear text-muted"></i>
+            </div>
+            {% if setting %}
+              <div class="settings-header">
+                <div class="settings-main">
+                  <div class="settings-name">{{ setting.websiteName }}</div>
+                  <div class="settings-meta">
+                    <span class="settings-pill"><i class="fas fa-coins"></i> {{ setting.currency }}</span>
+                    {% if setting.taxeRate is not null %}
+                      <span class="settings-pill"><i class="fas fa-receipt"></i> TVA {{ setting.taxeRate }}%</span>
+                    {% endif %}
+                    {% if setting.freeShippingThresholdCents is not null %}
+                      <span class="settings-pill"><i class="fas fa-truck-fast"></i> Offerte dès {{ (setting.freeShippingThresholdCents / 100)|number_format(0, ',') }} €</span>
+                    {% endif %}
+                  </div>
+                </div>
+                {% if setting.logoMedia and setting.logoMedia.filename %}
+                  <div class="settings-logo img-fluid">
+                    <img src="/assets/images/setting/{{ setting.logoMedia.filename }}" alt="Logo">
+                  </div>
+                {% endif %}
+              </div>
+              <div class="settings-grid mt-2">
+                <div class="settings-item">
+                  <div class="settings-item-label"><i class="fas fa-map-marker-alt"></i> Adresse</div>
+                  <div class="settings-item-value">{{ setting.street }}, {{ setting.codePostal }} {{ setting.city }}</div>
+                </div>
+                <div class="settings-item">
+                  <div class="settings-item-label"><i class="fas fa-address-book"></i> Contact</div>
+                  <div class="settings-item-value">{{ setting.email ?? '—' }}{% if setting.phone %} · {{ setting.phone }}{% endif %}</div>
+                </div>
+              </div>
+            {% else %}
+              <div class="text-muted small">Aucun réglage trouvé.</div>
+            {% endif %}
+            <div class="panel-actions mt-3">
+              <a class="btn btn-outline-secondary btn-sm" href="{{ urls.settings_index }}">Voir</a>
+              {% if urls.settings_edit %}
+                <a class="btn btn-primary btn-sm" href="{{ urls.settings_edit }}">Modifier</a>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
+
     </div>
 
-    {# ================= TABLE + STOCK ================= #}
+    {# ── DERNIÈRES COMMANDES + STOCK BAS ──────────────────────── #}
     <div class="row g-3">
+
       <div class="col-12 col-xl-8">
         <div class="card panel-card">
           <div class="card-body p-3">
-            <div class="panel-title">
+            <div class="panel-title mb-3">
               <span>Dernières commandes</span>
-              <i class="fas fa-clock"></i>
+              <i class="fas fa-clock text-muted"></i>
             </div>
-
             <div class="table-responsive">
               <table class="table table-sm align-middle mb-0">
                 <thead>
                   <tr>
-                    <th>#</th>
+                    <th>Réf.</th>
                     <th>Client</th>
                     <th>Total</th>
                     <th>Paiement</th>
@@ -383,25 +280,13 @@
                 </thead>
                 <tbody>
                   {% for o in metrics.recentOrders %}
-                    <tr>
-                      <td class="fw-semibold">#{{ o.id }}</td>
+                    <tr class="order-row" data-order-id="{{ o.id }}" data-detail-url="{{ o.detailUrl }}">
+                      <td class="fw-semibold">{{ o.orderReference ?? '#' ~ o.id }}</td>
                       <td>{{ o.email ?? '—' }}</td>
-                      <td class="fw-semibold">
-                        {{ (o.totalCents / 100)|number_format(2, ',', ' ') }} {{ o.currency ?? 'EUR' }}
-                      </td>
-                      <td>
-                        <span class="badge badge-status-{{ o.paymentStatus|lower }}">{{ o.paymentStatus }}</span>
-                      </td>
-                      <td>
-                        <span class="badge badge-fulfill-{{ o.fulfillmentStatus|lower }}">{{ o.fulfillmentStatus }}</span>
-                      </td>
-                      <td class="text-muted">
-                        {% if o.paidAt %}
-                          {{ o.paidAt|date('d/m/Y H:i', 'Europe/Paris') }}
-                        {% else %}
-                          —
-                        {% endif %}
-                      </td>
+                      <td class="fw-semibold">{{ (o.totalCents / 100)|number_format(2, ',', ' ') }} €</td>
+                      <td><span class="badge badge-status-{{ o.paymentStatus|lower }}">{{ o.paymentStatusLabel }}</span></td>
+                      <td><span class="badge badge-fulfill-{{ o.fulfillmentStatus|lower }}">{{ o.fulfillmentStatusLabel }}</span></td>
+                      <td class="text-muted">{{ o.paidAt ? o.paidAt|date('d/m/Y', 'Europe/Paris') : '—' }}</td>
                     </tr>
                   {% else %}
                     <tr><td colspan="6" class="text-muted">Aucune commande.</td></tr>
@@ -409,132 +294,154 @@
                 </tbody>
               </table>
             </div>
-
             <div class="panel-footer mt-3 d-flex justify-content-end">
-              <a class="btn btn-outline-secondary btn-sm" href="{{ urls.orders }}">Voir toutes les commandes</a>
+              <a class="btn btn-outline-secondary btn-sm" href="{{ urls.orders }}">Toutes les commandes</a>
             </div>
           </div>
         </div>
       </div>
 
       <div class="col-12 col-xl-4">
-		<div class="card panel-card">
-			<div class="card-body p-3">
-				<div class="panel-title">
-					<span>Stock bas</span>
-					<i class="fas fa-warehouse"></i>
-				</div>
-
-				{% if metrics.lowStock is not empty %}
-					<div class="stock-list">
-						{% for p in metrics.lowStock %}
-							<div class="stock-row">
-								<div class="stock-main">
-									<div class="stock-title">{{ p.title }}</div>
-									<div class="stock-meta">ID #{{ p.id }}</div>
-								</div>
-
-								<div class="stock-badge {{ p.stock == 0 ? 'is-out' : 'is-low' }}">
-									<span class="stock-badge-label">Stock</span>
-									<span class="stock-badge-value">{{ p.stock }}</span>
-								</div>
-							</div>
-						{% endfor %}
-					</div>
-				{% else %}
-					<div class="text-muted">Aucun produit en stock bas.</div>
-				{% endif %}
-
-				<div class="panel-footer stock-footer">
-					<a class="btn btn-outline-secondary btn-sm" href="{{ urls.products }}">Gérer le stock</a>
-				</div>
-			</div>
-		</div>
-
-
+        <div class="card panel-card">
+          <div class="card-body p-3">
+            <div class="panel-title mb-3">
+              <span>Stock bas</span>
+              <i class="fas fa-warehouse text-muted"></i>
+            </div>
+            {% if metrics.lowStock is not empty %}
+              <div class="stock-list">
+                {% for p in metrics.lowStock %}
+                  <div class="stock-row">
+                    <div class="stock-main">
+                      <div class="stock-title">{{ p.title }}</div>
+                      <div class="stock-meta">ID #{{ p.id }}</div>
+                    </div>
+                    <div class="stock-badge {{ p.stock == 0 ? 'is-out' : 'is-low' }}">
+                      <span class="stock-badge-label">Stock</span>
+                      <span class="stock-badge-value">{{ p.stock }}</span>
+                    </div>
+                  </div>
+                {% endfor %}
+              </div>
+            {% else %}
+              <div class="text-muted small">Aucun produit en stock bas.</div>
+            {% endif %}
+            <div class="panel-footer stock-footer mt-3">
+              <a class="btn btn-outline-secondary btn-sm" href="{{ urls.products_low_stock }}">Voir les produits en stock bas</a>
+            </div>
+          </div>
+        </div>
       </div>
-    </div>
 
+    </div>
   </div>
 
-  {# Data JSON #}
+  {# Données Chart.js #}
   <script>
     window.__DASHBOARD__ = {
       labels: {{ metrics.charts.labels|json_encode|raw }},
       paidCount: {{ metrics.charts.paidCount|json_encode|raw }},
       paidRevenueCents: {{ metrics.charts.paidRevenueCents|json_encode|raw }},
+      fulfillment: {{ metrics.kpis.fulfillment|json_encode|raw }},
     };
   </script>
 
-  {# Charts init #}
   <script>
-    (function () {
-      const data = window.__DASHBOARD__;
-      if (!data) return;
+  (function () {
+    const d = window.__DASHBOARD__;
+    if (!d) return;
 
-      const axisColor = "rgba(217,221,232,.55)";
-      const gridColor = "rgba(255,255,255,.06)";
+    function getChartColors() {
+      const cs = getComputedStyle(document.body);
+      return {
+        axis: cs.getPropertyValue('--chart-axis-color').trim() || 'rgba(217,221,232,.45)',
+        grid: cs.getPropertyValue('--chart-grid-color').trim() || 'rgba(255,255,255,.05)',
+      };
+    }
+    const accentPurple = '#7c6ffc';
+    const accentBlue   = '#4e8cff';
 
-      const labels = data.labels.map(d => {
-        const parts = d.split('-');
-        return parts.length === 3 ? (parts[2] + '/' + parts[1]) : d;
+    const labels = d.labels.map(s => {
+      const p = s.split('-');
+      return p.length === 3 ? p[2] + '/' + p[1] : s;
+    });
+
+    /* ── CA ligne ── */
+    const revCtx = document.getElementById('revenueChart');
+    let revChart = null;
+    if (revCtx) {
+      const euros = d.paidRevenueCents.map(v => v / 100);
+      const gradient = revCtx.getContext('2d').createLinearGradient(0, 0, 0, 180);
+      gradient.addColorStop(0, 'rgba(124,111,252,.35)');
+      gradient.addColorStop(1, 'rgba(124,111,252,.0)');
+      const { axis: axisColor, grid: gridColor } = getChartColors();
+      revChart = new Chart(revCtx, {
+        type: 'line',
+        data: {
+          labels,
+          datasets: [{
+            data: euros,
+            borderColor: accentPurple,
+            backgroundColor: gradient,
+            fill: true,
+            tension: 0.35,
+            pointRadius: 3,
+            pointBackgroundColor: accentPurple,
+            borderWidth: 2,
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => ' ' + ctx.parsed.y.toFixed(2) + ' €' } } },
+          scales: {
+            x: { ticks: { color: axisColor, maxTicksLimit: 7 }, grid: { color: gridColor } },
+            y: { ticks: { color: axisColor, callback: v => v + ' €' }, grid: { color: gridColor } }
+          }
+        }
       });
+    }
 
-      const revenueEuros = data.paidRevenueCents.map(v => v / 100);
-
-      const revenueCtx = document.getElementById('revenueChart');
-      const ordersCtx = document.getElementById('ordersChart');
-
-      if (revenueCtx) {
-        new Chart(revenueCtx, {
-          type: 'line',
-          data: {
-            labels,
-            datasets: [{
-              label: 'CA (€)',
-              data: revenueEuros,
-              tension: 0.25,
-              pointRadius: 2
-            }]
-          },
-          options: {
-            responsive: true,
-            plugins: { legend: { display: false } },
-            scales: {
-              x: { ticks: { color: axisColor }, grid: { color: gridColor } },
-              y: {
-                ticks: { color: axisColor, callback: (v) => v + ' €' },
-                grid: { color: gridColor }
-              }
-            }
+    /* ── Donut livraison ── */
+    const fCtx = document.getElementById('fulfillChart');
+    if (fCtx) {
+      const keys   = ['draft','preparing','shipped','delivered','cancelled'];
+      const colors = ['#6c757d','#0dcaf0','#7c6ffc','#198754','#dc3545'];
+      const values = keys.map(k => d.fulfillment[k] ?? 0);
+      new Chart(fCtx, {
+        type: 'doughnut',
+        data: {
+          labels: ['Brouillon','Préparation','Expédiée','Livrée','Annulée'],
+          datasets: [{ data: values, backgroundColor: colors, borderWidth: 0, hoverOffset: 6 }]
+        },
+        options: {
+          cutout: '68%',
+          responsive: true,
+          plugins: {
+            legend: { display: false },
+            tooltip: { callbacks: { label: ctx => ' ' + ctx.label + ' : ' + ctx.parsed } }
           }
-        });
-      }
+        }
+      });
+    }
 
-      if (ordersCtx) {
-        new Chart(ordersCtx, {
-          type: 'bar',
-          data: {
-            labels,
-            datasets: [{
-              label: 'Commandes',
-              data: data.paidCount
-            }]
-          },
-          options: {
-            responsive: true,
-            plugins: { legend: { display: false } },
-            scales: {
-              x: { ticks: { color: axisColor }, grid: { color: gridColor } },
-              y: {
-                beginAtZero: true,
-                ticks: { color: axisColor, precision: 0 },
-                grid: { color: gridColor }
-              }
-            }
-          }
-        });
-      }
-    })();
+    /* ── Mise à jour des charts au changement de thème ── */
+    new MutationObserver(() => {
+      if (!revChart) return;
+      const { axis, grid } = getChartColors();
+      ['x','y'].forEach(ax => {
+        revChart.options.scales[ax].ticks.color = axis;
+        revChart.options.scales[ax].grid.color  = grid;
+      });
+      revChart.update();
+    }).observe(document.body, { attributes: true, attributeFilter: ['class'] });
+
+    /* ── Lignes de commandes cliquables ── */
+    document.querySelectorAll('.order-row[data-detail-url]').forEach(row => {
+      row.style.cursor = 'pointer';
+      row.addEventListener('click', () => { window.location.href = row.dataset.detailUrl; });
+      row.addEventListener('mouseenter', () => row.classList.add('table-active'));
+      row.addEventListener('mouseleave', () => row.classList.remove('table-active'));
+    });
+  })();
   </script>
 {% endblock %}

@@ -25,7 +25,7 @@ final class RefundService
      */
     public function refundOrder(Order $order): void
     {
-        if ($order->getPaymentStatus() !== PaymentStatus::Paid) {
+        if ($order->getPaymentStatus() !== PaymentStatus::Paye) {
             throw new \LogicException(\sprintf(
                 'La commande #%d ne peut pas être remboursée (statut : %s).',
                 (int) $order->getId(),
@@ -46,6 +46,6 @@ final class RefundService
         // Remboursement complet du PaymentIntent
         Refund::create(['payment_intent' => $paymentReference]);
 
-        $order->setPaymentStatus(PaymentStatus::Refunded);
+        $order->setPaymentStatus(PaymentStatus::Rembourse);
     }
 }

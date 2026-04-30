@@ -61,13 +61,15 @@ final class DashboardMetricsProvider
 
             $avgBasket30 = $paid30 > 0 ? (int) round($revenue30 / $paid30) : 0;
 
-            $pending = $this->countByPaymentStatus(PaymentStatus::Pending);
-            $failed = $this->countByPaymentStatus(PaymentStatus::Failed);
-            $refunded = $this->countByPaymentStatus(PaymentStatus::Refunded);
+            $pending = $this->countByPaymentStatus(PaymentStatus::Attente);
+            $failed = $this->countByPaymentStatus(PaymentStatus::Echoue);
+            $refunded = $this->countByPaymentStatus(PaymentStatus::Rembourse);
 
             $fulfillmentBreakdown = $this->countByFulfillmentStatus();
+            $toShip = $this->countOrdersToShip();
             $recentOrders = $this->recentOrders(10);
             $lowStock = $this->lowStockProducts(8, 5);
+            $lowStockCount = $this->countLowStockProducts(5);
 
             $recentImportantContacts = $this->recentImportantContacts(5);
 
@@ -84,6 +86,7 @@ final class DashboardMetricsProvider
                     'pendingPayments' => $pending,
                     'failedPayments' => $failed,
                     'refundedPayments' => $refunded,
+                    'toShip' => $toShip,
                     'fulfillment' => $fulfillmentBreakdown,
                     'paid30Trend' => $paid30Trend,
                     'revenue30Trend' => $revenue30Trend,
@@ -92,6 +95,7 @@ final class DashboardMetricsProvider
                 ],
                 'recentOrders' => $recentOrders,
                 'lowStock' => $lowStock,
+                'lowStockCount' => $lowStockCount,
                 'recentImportantContacts' => $recentImportantContacts,
                 'charts' => $chart,
             ];
@@ -117,7 +121,7 @@ final class DashboardMetricsProvider
             $cursor = $cursor->modify('+1 day');
         }
 
-        $paidValue = PaymentStatus::Paid->value;
+        $paidValue = PaymentStatus::Paye->value;
 
         // PostgreSQL : date_trunc('day', paid_at)
         $sql = <<<SQL
@@ -180,7 +184,7 @@ final class DashboardMetricsProvider
             ->andWhere('o.paymentStatus = :paid')
             ->andWhere('o.paidAt >= :from')
             ->andWhere('o.paidAt < :to')
-            ->setParameter('paid', \App\Enum\PaymentStatus::Paid)
+            ->setParameter('paid', \App\Enum\PaymentStatus::Paye)
             ->setParameter('from', $from)
             ->setParameter('to', $to)
             ->getQuery()
@@ -195,7 +199,7 @@ final class DashboardMetricsProvider
             ->andWhere('o.paymentStatus = :paid')
             ->andWhere('o.paidAt >= :from')
             ->andWhere('o.paidAt < :to')
-            ->setParameter('paid', \App\Enum\PaymentStatus::Paid)
+            ->setParameter('paid', \App\Enum\PaymentStatus::Paye)
             ->setParameter('from', $from)
             ->setParameter('to', $to)
             ->getQuery()
@@ -210,7 +214,7 @@ final class DashboardMetricsProvider
             ->from(Order::class, 'o')
             ->andWhere('o.paymentStatus = :paid')
             ->andWhere('o.paidAt >= :since')
-            ->setParameter('paid', PaymentStatus::Paid)
+            ->setParameter('paid', PaymentStatus::Paye)
             ->setParameter('since', $since)
             ->getQuery()
             ->getSingleScalarResult();
@@ -223,7 +227,7 @@ final class DashboardMetricsProvider
             ->from(Order::class, 'o')
             ->andWhere('o.paymentStatus = :paid')
             ->andWhere('o.paidAt >= :since')
-            ->setParameter('paid', PaymentStatus::Paid)
+            ->setParameter('paid', PaymentStatus::Paye)
             ->setParameter('since', $since)
             ->getQuery()
             ->getSingleScalarResult();
@@ -302,6 +306,7 @@ final class DashboardMetricsProvider
         $rows = $this->em->createQueryBuilder()
             ->select('o.id AS id')
             ->addSelect('u.email AS email')
+            ->addSelect('o.orderReference AS orderReference')
             ->addSelect('o.orderTotalTtcCents AS totalCents')
             ->addSelect('o.currency AS currency')
             ->addSelect('o.paymentStatus AS paymentStatus')
@@ -318,13 +323,24 @@ final class DashboardMetricsProvider
             $r['id'] = (int) $r['id'];
             $r['totalCents'] = (int) $r['totalCents'];
 
-            // 🔒 NORMALISATION ENUM → STRING
-            if ($r['paymentStatus'] instanceof \BackedEnum) {
+            if ($r['paymentStatus'] instanceof PaymentStatus) {
+                $r['paymentStatusLabel'] = $r['paymentStatus']->label();
                 $r['paymentStatus'] = $r['paymentStatus']->value;
+            } elseif ($r['paymentStatus'] instanceof \BackedEnum) {
+                $r['paymentStatusLabel'] = $r['paymentStatus']->value;
+                $r['paymentStatus'] = $r['paymentStatus']->value;
+            } else {
+                $r['paymentStatusLabel'] = $r['paymentStatus'] ?? '—';
             }
 
-            if ($r['fulfillmentStatus'] instanceof \BackedEnum) {
+            if ($r['fulfillmentStatus'] instanceof FulfillmentStatus) {
+                $r['fulfillmentStatusLabel'] = $r['fulfillmentStatus']->label();
                 $r['fulfillmentStatus'] = $r['fulfillmentStatus']->value;
+            } elseif ($r['fulfillmentStatus'] instanceof \BackedEnum) {
+                $r['fulfillmentStatusLabel'] = $r['fulfillmentStatus']->value;
+                $r['fulfillmentStatus'] = $r['fulfillmentStatus']->value;
+            } else {
+                $r['fulfillmentStatusLabel'] = $r['fulfillmentStatus'] ?? '—';
             }
         }
 
@@ -354,6 +370,30 @@ final class DashboardMetricsProvider
         }
 
         return $rows;
+    }
+
+    private function countLowStockProducts(int $threshold): int
+    {
+        return (int) $this->em->createQueryBuilder()
+            ->select('COUNT(p.id)')
+            ->from(Product::class, 'p')
+            ->andWhere('p.stock <= :t')
+            ->setParameter('t', $threshold)
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+
+    private function countOrdersToShip(): int
+    {
+        return (int) $this->em->createQueryBuilder()
+            ->select('COUNT(o.id)')
+            ->from(Order::class, 'o')
+            ->andWhere('o.paymentStatus = :paid')
+            ->andWhere('o.fulfillmentStatus NOT IN (:excluded)')
+            ->setParameter('paid', PaymentStatus::Paye)
+            ->setParameter('excluded', [FulfillmentStatus::Expedie, FulfillmentStatus::Livre, FulfillmentStatus::Annule])
+            ->getQuery()
+            ->getSingleScalarResult();
     }
 
     private function trendPercent(int $current, int $previous): ?float

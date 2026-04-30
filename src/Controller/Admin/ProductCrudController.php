@@ -25,8 +25,10 @@ use EasyCorp\Bundle\EasyAdminBundle\Field\CollectionField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextEditorField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\AssociationField;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Assets;
+use EasyCorp\Bundle\EasyAdminBundle\Config\Filters;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextareaField;
+use EasyCorp\Bundle\EasyAdminBundle\Filter\NumericFilter;
 
 /**
  * Contrôleur EasyAdmin pour la gestion CRUD des produits (miels), incluant les médias, le stock, le prix et les champs SEO.
@@ -56,6 +58,11 @@ final class ProductCrudController extends AbstractCrudController
             ->setPaginatorPageSize(25);
     }
 
+    public function configureFilters(Filters $filters): Filters
+    {
+        return $filters->add(NumericFilter::new('stock', 'Stock'));
+    }
+
     public function configureActions(Actions $actions): Actions
     {
         return $actions
@@ -81,20 +88,8 @@ final class ProductCrudController extends AbstractCrudController
             yield MoneyField::new('regular_price', 'Prix normal')->setCurrency('EUR');
             yield MoneyField::new('solde_price', 'Prix promo')->setCurrency('EUR');
 
-            yield Field::new('stock', 'Stock')
-                ->formatValue(function ($value) {
-                    if ($value === null) {
-                        return '<span class="badge bg-secondary">—</span>';
-                    }
-                    $v = (int) $value;
-                    if ($v === 0) {
-                        return '<span class="badge bg-danger">Rupture</span>';
-                    }
-                    if ($v <= 5) {
-                        return sprintf('<span class="badge bg-warning text-dark">%d</span>', $v);
-                    }
-                    return sprintf('<span class="badge bg-success">%d</span>', $v);
-                })
+            yield IntegerField::new('stock', 'Stock')
+                ->setTemplatePath('admin/fields/stock_badge.html.twig')
                 ->setSortable(true);
 
             yield BooleanField::new('isAvailable', 'Disponible');

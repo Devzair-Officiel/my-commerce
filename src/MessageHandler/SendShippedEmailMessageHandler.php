@@ -6,6 +6,7 @@ namespace App\MessageHandler;
 
 use App\Message\SendShippedEmailMessage;
 use App\Repository\OrderRepository;
+use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Component\Mailer\MailerInterface;
@@ -19,6 +20,7 @@ final readonly class SendShippedEmailMessageHandler
         private OrderRepository $orderRepository,
         private MailerInterface $mailer,
         private LoggerInterface $logger,
+        private EntityManagerInterface $em,
         private string $mailFromAddress,
         private string $mailFromName,
     ) {}
@@ -52,6 +54,8 @@ final readonly class SendShippedEmailMessageHandler
 
         try {
             $this->mailer->send($email);
+            $order->markShippingEmailSent();
+            $this->em->flush();
         } catch (\Throwable $e) {
             $this->logger->error('Échec envoi email expédition', [
                 'order_id' => $order->getId(),

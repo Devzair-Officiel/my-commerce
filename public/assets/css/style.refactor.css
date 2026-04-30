@@ -14017,8 +14017,42 @@ hr,
     font-size: .9rem;
     line-height: 1.7;
     color: #3d2f1e;
-    margin: 0;
+    margin: 0 0 .5rem;
     padding-left: 3.25rem;
+}
+
+/* ── Réponse admin ── */
+.nide-review__reply {
+    margin: 1rem 0 0 3.25rem;
+    padding: .85rem 1.1rem;
+    background: #faf6f1;
+    border-left: 3px solid #c8a97e;
+    border-radius: 0 8px 8px 0;
+    display: flex;
+    flex-direction: column;
+    gap: .4rem;
+}
+.nide-review__reply-header {
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+}
+.nide-review__reply-label {
+    font-size: .75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    color: #8a6a3a;
+}
+.nide-review__reply-date {
+    font-size: .73rem;
+    color: #b09070;
+}
+.nide-review__reply-text {
+    font-size: .88rem;
+    line-height: 1.7;
+    color: #3d2f1e;
+    margin: 0;
 }
 
 /* ── Formulaire avis ── */

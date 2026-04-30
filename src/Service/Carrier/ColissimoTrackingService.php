@@ -89,8 +89,8 @@ final class ColissimoTrackingService
 
             // Mettre à jour le FulfillmentStatus de la commande
             $order = $shipment->getCustomerOrder();
-            if ($order !== null && $order->getFulfillmentStatus() !== FulfillmentStatus::Delivered) {
-                $order->setFulfillmentStatus(FulfillmentStatus::Delivered);
+            if ($order !== null && $order->getFulfillmentStatus() !== FulfillmentStatus::Livre) {
+                $order->setFulfillmentStatus(FulfillmentStatus::Livre);
             }
 
             $this->logger->info('[ColissimoTracking] Colis livré', [

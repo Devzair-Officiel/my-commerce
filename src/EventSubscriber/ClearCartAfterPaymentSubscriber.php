@@ -46,7 +46,7 @@ final class ClearCartAfterPaymentSubscriber implements EventSubscriberInterface
         $order = $this->orderRepository->findOneBy(
             [
                 'user' => $user,
-                'paymentStatus' => PaymentStatus::Paid,
+                'paymentStatus' => PaymentStatus::Paye,
                 'cartClearedAt' => null,
             ],
             ['id' => 'DESC']

@@ -50,6 +50,12 @@ class Review
     #[ORM\JoinColumn(nullable: false)]
     private ?User $user = null;
 
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    private ?string $adminReply = null;
+
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
+    private ?\DateTimeImmutable $adminRepliedAt = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -113,5 +119,28 @@ class Review
         $this->user = $user;
 
         return $this;
+    }
+
+    public function getAdminReply(): ?string
+    {
+        return $this->adminReply;
+    }
+
+    public function setAdminReply(?string $adminReply): static
+    {
+        $this->adminReply = $adminReply;
+        $this->adminRepliedAt = $adminReply !== null ? new \DateTimeImmutable() : null;
+
+        return $this;
+    }
+
+    public function getAdminRepliedAt(): ?\DateTimeImmutable
+    {
+        return $this->adminRepliedAt;
+    }
+
+    public function hasAdminReply(): bool
+    {
+        return $this->adminReply !== null && $this->adminReply !== '';
     }
 }

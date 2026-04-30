@@ -126,7 +126,7 @@ final class StripeWebhookController extends AbstractController
 
                 // Ne jamais rétrograder une commande payée, sauf pour les événements post-paiement légitimes
                 $allowedOnPaid = ['charge.refunded', 'charge.dispute.created', 'charge.dispute.closed', 'radar.early_fraud_warning.created'];
-                if ($order->getPaymentStatus() === PaymentStatus::Paid
+                if ($order->getPaymentStatus() === PaymentStatus::Paye
                     && !\in_array($event->type, $allowedOnPaid, true)
                 ) {
                     return;
@@ -176,14 +176,14 @@ final class StripeWebhookController extends AbstractController
                                 ]);
                                 throw $refundEx;
                             }
-                            $order->setPaymentStatus(PaymentStatus::Refunded);
+                            $order->setPaymentStatus(PaymentStatus::Rembourse);
                             $order->setPaymentFailureReason('Stock insuffisant — remboursement automatique : ' . $e->getMessage());
                             return;
                         }
                     }
 
-                    $order->setPaymentStatus(PaymentStatus::Paid);
-                    $order->setFulfillmentStatus(FulfillmentStatus::Preparing);
+                    $order->setPaymentStatus(PaymentStatus::Paye);
+                    $order->setFulfillmentStatus(FulfillmentStatus::Preparation);
                     $order->setPaidAt(new \DateTimeImmutable());
                     $order->setPaymentFailureReason(null);
 
@@ -219,7 +219,7 @@ final class StripeWebhookController extends AbstractController
                     if (isset($pi->last_payment_error) && isset($pi->last_payment_error->message)) {
                         $reason = (string) $pi->last_payment_error->message;
                     }
-                    $order->setPaymentStatus(PaymentStatus::Failed);
+                    $order->setPaymentStatus(PaymentStatus::Echoue);
                     $order->setPaymentFailureReason($reason);
                     $this->stockAllocator->releaseStockReservation($order);
 
@@ -236,7 +236,7 @@ final class StripeWebhookController extends AbstractController
                         ? 'Canceled: ' . (string) $pi->cancellation_reason
                         : 'Canceled';
 
-                    $order->setPaymentStatus(PaymentStatus::Failed);
+                    $order->setPaymentStatus(PaymentStatus::Echoue);
                     $order->setPaymentFailureReason($reason);
                     $this->stockAllocator->releaseStockReservation($order);
 
@@ -249,10 +249,10 @@ final class StripeWebhookController extends AbstractController
                 }
 
                 if ($event->type === 'charge.refunded') {
-                    $wasAlreadyRefunded = $order->getPaymentStatus() === PaymentStatus::Refunded;
+                    $wasAlreadyRefunded = $order->getPaymentStatus() === PaymentStatus::Rembourse;
 
-                    $order->setPaymentStatus(PaymentStatus::Refunded);
-                    $order->setFulfillmentStatus(FulfillmentStatus::Cancelled);
+                    $order->setPaymentStatus(PaymentStatus::Rembourse);
+                    $order->setFulfillmentStatus(FulfillmentStatus::Annule);
 
                     // Restaurer le stock uniquement si ce n'est pas un double remboursement
                     if (!$wasAlreadyRefunded) {
@@ -275,7 +275,7 @@ final class StripeWebhookController extends AbstractController
                     // Le client doit compléter l'authentification 3DS — on le notifie par email
                     // pour qu'il revienne finaliser son paiement.
                     // On n'envoie l'email que si la commande est toujours en attente.
-                    if ($order->getPaymentStatus() === PaymentStatus::Pending) {
+                    if ($order->getPaymentStatus() === PaymentStatus::Attente) {
                         $this->messageBus->dispatch(
                             new SendPaymentActionRequiredEmailMessage(
                                 orderId:         (int) $order->getId(),
@@ -296,7 +296,7 @@ final class StripeWebhookController extends AbstractController
                     $reason       = (string) ($obj->reason ?? 'unknown');
                     $amountCents  = isset($obj->amount) ? (int) $obj->amount : (int) $order->getOrderTotalTtcCents();
 
-                    $order->setPaymentStatus(PaymentStatus::Disputed);
+                    $order->setPaymentStatus(PaymentStatus::Conteste);
 
                     $this->logger->critical('Chargeback reçu — action requise sous 15 jours', [
                         'order_id'       => $order->getId(),
@@ -347,7 +347,7 @@ final class StripeWebhookController extends AbstractController
 
                     if ($disputeStatus === 'won') {
                         // Dispute gagnée : on restaure la commande à Paid
-                        $order->setPaymentStatus(PaymentStatus::Paid);
+                        $order->setPaymentStatus(PaymentStatus::Paye);
                         $order->setPaymentFailureReason(null);
                         $this->logger->info('Dispute gagnée — commande restaurée à Paid', [
                             'order_id'       => $order->getId(),
@@ -357,7 +357,7 @@ final class StripeWebhookController extends AbstractController
                         ]);
                     } elseif ($disputeStatus === 'lost') {
                         // Dispute perdue : l'argent est débité par la banque
-                        $order->setPaymentStatus(PaymentStatus::Refunded);
+                        $order->setPaymentStatus(PaymentStatus::Rembourse);
                         $order->setPaymentFailureReason('Dispute perdue — montant débité par la banque.');
                         $this->logger->critical('Dispute perdue — montant débité', [
                             'order_id'       => $order->getId(),

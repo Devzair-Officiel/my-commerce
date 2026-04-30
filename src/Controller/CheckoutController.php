@@ -172,11 +172,11 @@ class CheckoutController extends AbstractController
     {
         $draft = $this->orderRepo->findOneBy([
             'user' => $user,
-            'fulfillmentStatus' => FulfillmentStatus::Draft,
-            'paymentStatus' => PaymentStatus::Pending,
+            'fulfillmentStatus' => FulfillmentStatus::Brouillon,
+            'paymentStatus' => PaymentStatus::Attente,
         ]);
 
-        if ($draft && $draft->getPaymentStatus() !== PaymentStatus::Pending) {
+        if ($draft && $draft->getPaymentStatus() !== PaymentStatus::Attente) {
             $draft = null;
         }
 
@@ -189,7 +189,7 @@ class CheckoutController extends AbstractController
         }
 
         $order->setUser($user);
-        $order->setFulfillmentStatus(FulfillmentStatus::Draft);
+        $order->setFulfillmentStatus(FulfillmentStatus::Brouillon);
         $order->generateOrderReferenceIfMissing();
 
         $itemsTotalHtCents = (int) ($cart['sub_total_ht'] ?? 0);

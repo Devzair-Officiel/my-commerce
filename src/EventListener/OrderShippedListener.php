@@ -39,10 +39,14 @@ final class OrderShippedListener
         }
 
         $newValue = $args->getNewValue('fulfillmentStatus');
-        $isShipped = $newValue === FulfillmentStatus::Shipped
-            || $newValue === FulfillmentStatus::Shipped->value;
+        $isShipped = $newValue === FulfillmentStatus::Expedie
+            || $newValue === FulfillmentStatus::Expedie->value;
 
         if (!$isShipped) {
+            return;
+        }
+
+        if ($order->isShippingEmailSent()) {
             return;
         }
 

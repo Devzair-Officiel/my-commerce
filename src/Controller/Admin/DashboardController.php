@@ -62,7 +62,7 @@ final class DashboardController extends AbstractDashboardController
         $setting = $this->em->getRepository(Setting::class)->findOneBy([], ['id' => 'DESC']);
 
         $urls = [
-            'products' => (clone $this->adminUrlGenerator)->setController(ProductCrudController::class)->generateUrl(),
+            'products'          => (clone $this->adminUrlGenerator)->setController(ProductCrudController::class)->generateUrl(),
             'users' => (clone $this->adminUrlGenerator)->setController(UserCrudController::class)->generateUrl(),
             'orders' => (clone $this->adminUrlGenerator)->setController(OrderCrudController::class)->generateUrl(),
             'categories' => (clone $this->adminUrlGenerator)->setController(CategoryCrudController::class)->generateUrl(),
@@ -84,6 +84,31 @@ final class DashboardController extends AbstractDashboardController
 
         $metrics = $this->metrics->getMetrics();
 
+        $baseOrderUrl = (clone $this->adminUrlGenerator)->setController(OrderCrudController::class)->generateUrl();
+        $sep = str_contains($baseOrderUrl, '?') ? '&' : '?';
+        $urls['orders_to_ship']  = $baseOrderUrl . $sep . http_build_query(['filters' => [
+            'paymentStatus'     => ['comparison' => '=', 'value' => \App\Enum\PaymentStatus::Paye->value],
+            'fulfillmentStatus' => ['comparison' => '=', 'value' => [\App\Enum\FulfillmentStatus::Brouillon->value, \App\Enum\FulfillmentStatus::Preparation->value]],
+        ]]);
+        $urls['orders_pending']  = $baseOrderUrl . $sep . http_build_query(['filters' => ['paymentStatus' => ['comparison' => '=', 'value' => \App\Enum\PaymentStatus::Attente->value]]]);
+        $urls['orders_failed']   = $baseOrderUrl . $sep . http_build_query(['filters' => ['paymentStatus' => ['comparison' => '=', 'value' => \App\Enum\PaymentStatus::Echoue->value]]]);
+        $urls['orders_refunded'] = $baseOrderUrl . $sep . http_build_query(['filters' => ['paymentStatus' => ['comparison' => '=', 'value' => \App\Enum\PaymentStatus::Rembourse->value]]]);
+
+        $baseProductUrl = (clone $this->adminUrlGenerator)->setController(ProductCrudController::class)->generateUrl();
+        $sepP = str_contains($baseProductUrl, '?') ? '&' : '?';
+        $urls['products_low_stock'] = $baseProductUrl . $sepP . http_build_query(['filters' => [
+            'stock' => ['comparison' => '<=', 'value' => 5],
+        ]]);
+
+        foreach ($metrics['recentOrders'] as &$order) {
+            $order['detailUrl'] = (clone $this->adminUrlGenerator)
+                ->setController(OrderCrudController::class)
+                ->setAction(\EasyCorp\Bundle\EasyAdminBundle\Config\Action::DETAIL)
+                ->setEntityId($order['id'])
+                ->generateUrl();
+        }
+        unset($order);
+
         return $this->render('admin/dashboard.html.twig', [
             'counts' => $counts,
             'setting' => $setting,
@@ -95,7 +120,10 @@ final class DashboardController extends AbstractDashboardController
     public function configureAssets(): Assets
     {
         return Assets::new()
-            ->addCssFile('assets/css/admin.css');
+            ->addCssFile('assets/css/admin.css')
+            ->addCssFile('https://cdn.jsdelivr.net/npm/shepherd.js@11/dist/css/shepherd.css')
+            ->addJsFile('https://cdn.jsdelivr.net/npm/shepherd.js@11/dist/js/shepherd.min.js')
+            ->addJsFile('assets/js/admin-tour.js');
     }
 
     public function configureDashboard(): Dashboard
@@ -106,12 +134,26 @@ final class DashboardController extends AbstractDashboardController
     public function configureMenuItems(): iterable
     {
         $pendingReviews = $this->em->getRepository(Review::class)->count(['status' => ReviewStatus::Pending]);
-        $pendingOrders  = $this->em->getRepository(Order::class)->count(['paymentStatus' => PaymentStatus::Pending]);
+        $pendingOrders  = $this->em->getRepository(Order::class)->count(['paymentStatus' => PaymentStatus::Attente]);
+        $lowStockCount  = $this->em->getRepository(Product::class)->count(['stock' => 0])
+            + (int) $this->em->createQueryBuilder()
+                ->select('COUNT(p.id)')
+                ->from(Product::class, 'p')
+                ->andWhere('p.stock > 0')->andWhere('p.stock <= 5')
+                ->getQuery()->getSingleScalarResult();
 
         yield MenuItem::linkToDashboard('Dashboard', 'fa fa-home');
 
         yield MenuItem::section('Catalogue');
-        yield MenuItem::linkToCrud('Produits', 'fa fa-box', Product::class);
+        $baseProductUrl = (clone $this->adminUrlGenerator)->setController(ProductCrudController::class)->generateUrl();
+        $sepP = str_contains($baseProductUrl, '?') ? '&' : '?';
+        $lowStockUrl = $baseProductUrl . $sepP . http_build_query(['filters' => ['stock' => ['comparison' => '<=', 'value' => 5]]]);
+
+        $productsItem = MenuItem::linkToCrud('Produits', 'fa fa-box', Product::class);
+        if ($lowStockCount > 0) {
+            $productsItem->setBadge($lowStockCount, 'warning');
+        }
+        yield $productsItem;
         yield MenuItem::linkToCrud('Numéros de lot', 'fa fa-barcode', ProductLot::class);
         yield MenuItem::linkToCrud('Catégories', 'fa fa-tags', Category::class);
 
@@ -147,5 +189,8 @@ final class DashboardController extends AbstractDashboardController
 
         yield MenuItem::section('Configuration');
         yield MenuItem::linkToCrud('Réglages', 'fa fa-gear', Setting::class);
+
+        yield MenuItem::section('');
+        yield MenuItem::linkToRoute('Guide d\'utilisation', 'fa fa-circle-question', 'admin_guide');
     }
 }

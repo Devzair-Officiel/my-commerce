@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Guide d'utilisation — Admin</title>
+    <link rel="stylesheet" href="{{ asset('assets/css/admin.css') }}">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/shepherd.js@11/dist/css/shepherd.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6/css/all.min.css">
+    <style>
+        body { background: var(--body-bg, #0f0f1a); margin: 0; padding: 0; font-family: system-ui, sans-serif; }
+        .guide-wrapper { max-width: 900px; margin: 0 auto; padding: 32px 24px 64px; }
+        .guide-topbar {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 14px 24px; background: #1e1e2e; border-bottom: 1px solid #2d2d3a;
+            margin-bottom: 0;
+        }
+        .guide-topbar a { color: #a5b4fc; text-decoration: none; font-size: 13px; display: flex; align-items: center; gap: 6px; }
+        .guide-topbar a:hover { color: #c4b5fd; }
+        .guide-topbar-title { color: #f3f4f6; font-weight: 700; font-size: 15px; }
+    </style>
+</head>
+<body>
+
+<div class="guide-topbar">
+    <a href="/admin"><i class="fa fa-arrow-left"></i> Retour au tableau de bord</a>
+    <span class="guide-topbar-title"><i class="fa fa-circle-question me-2"></i>Guide d'utilisation</span>
+    <span></span>
+</div>
+
+<div class="guide-wrapper">
+<style>
+    .guide-hero {
+        background: linear-gradient(135deg, #1e1b4b 0%, #312e81 60%, #4c1d95 100%);
+        border-radius: 14px;
+        padding: 36px 40px;
+        margin-bottom: 32px;
+        display: flex;
+        align-items: center;
+        gap: 24px;
+    }
+    .guide-hero-icon { font-size: 52px; flex-shrink: 0; }
+    .guide-hero h1 { color: #fff; font-size: 26px; font-weight: 800; margin: 0 0 8px; }
+    .guide-hero p  { color: #c4b5fd; font-size: 15px; margin: 0; line-height: 1.6; }
+
+    .guide-section {
+        background: #1e1e2e;
+        border: 1px solid #2d2d3a;
+        border-radius: 12px;
+        margin-bottom: 24px;
+        overflow: hidden;
+    }
+    .guide-section-header {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 20px 24px;
+        border-bottom: 1px solid #2d2d3a;
+        cursor: pointer;
+        user-select: none;
+    }
+    .guide-section-header:hover { background: #252535; }
+    .guide-section-icon {
+        width: 42px; height: 42px;
+        border-radius: 10px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 20px; flex-shrink: 0;
+    }
+    .guide-section-title { flex: 1; }
+    .guide-section-title h2 { color: #f3f4f6; font-size: 17px; font-weight: 700; margin: 0 0 2px; }
+    .guide-section-title p  { color: #6b7280; font-size: 13px; margin: 0; }
+    .guide-chevron { color: #6b7280; transition: transform .2s; font-size: 14px; }
+    .guide-section.open .guide-chevron { transform: rotate(180deg); }
+
+    .guide-body { padding: 24px; display: none; }
+    .guide-section.open .guide-body { display: block; }
+
+    /* Step list */
+    .guide-steps { display: flex; flex-direction: column; gap: 12px; }
+    .guide-step {
+        display: flex; gap: 14px; align-items: flex-start;
+        background: #252535; border-radius: 10px; padding: 14px 16px;
+    }
+    .guide-step-num {
+        width: 28px; height: 28px; border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 12px; font-weight: 800; flex-shrink: 0; margin-top: 1px;
+    }
+    .guide-step-content h4 { color: #f3f4f6; font-size: 14px; font-weight: 600; margin: 0 0 4px; }
+    .guide-step-content p  { color: #9ca3af; font-size: 13px; margin: 0; line-height: 1.5; }
+
+    /* Status badges */
+    .status-flow {
+        display: flex; align-items: center; gap: 8px;
+        flex-wrap: wrap; margin: 16px 0;
+    }
+    .status-badge {
+        padding: 5px 14px; border-radius: 20px;
+        font-size: 12px; font-weight: 700; white-space: nowrap;
+    }
+    .status-arrow { color: #4b5563; font-size: 16px; }
+
+    /* Info boxes */
+    .guide-info {
+        border-radius: 8px; padding: 12px 16px;
+        font-size: 13px; line-height: 1.6;
+        margin-top: 16px; display: flex; gap: 10px; align-items: flex-start;
+    }
+    .guide-info-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+    .guide-info.tip   { background: #1a2e1a; border-left: 3px solid #22c55e; color: #86efac; }
+    .guide-info.warn  { background: #2e1f1a; border-left: 3px solid #f59e0b; color: #fcd34d; }
+    .guide-info.info  { background: #1a1f2e; border-left: 3px solid #6366f1; color: #a5b4fc; }
+
+    /* Two-col grid */
+    .guide-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px; }
+    @media (max-width: 700px) { .guide-grid { grid-template-columns: 1fr; } }
+    .guide-card {
+        background: #252535; border-radius: 10px; padding: 14px 16px;
+    }
+    .guide-card h4 { color: #f3f4f6; font-size: 13px; font-weight: 700; margin: 0 0 6px; }
+    .guide-card p  { color: #9ca3af; font-size: 12px; margin: 0; line-height: 1.5; }
+    .guide-card ul { color: #9ca3af; font-size: 12px; margin: 4px 0 0; padding-left: 16px; line-height: 1.7; }
+
+    /* Table simple */
+    .guide-table { width: 100%; border-collapse: collapse; margin-top: 12px; font-size: 13px; }
+    .guide-table th { color: #6b7280; font-weight: 600; font-size: 11px; text-transform: uppercase;
+                      letter-spacing: .05em; padding: 8px 12px; border-bottom: 1px solid #2d2d3a; text-align: left; }
+    .guide-table td { padding: 10px 12px; border-bottom: 1px solid #252535; color: #d1d5db; vertical-align: top; }
+    .guide-table tr:last-child td { border-bottom: none; }
+
+    /* Tour buttons */
+    .guide-tour-btn {
+        background: #7c3aed; color: #fff; border: none; border-radius: 8px;
+        padding: 9px 18px; font-size: 13px; font-weight: 600; cursor: pointer;
+        transition: background .15s;
+    }
+    .guide-tour-btn:hover { background: #6d28d9; }
+    .guide-tour-btn-outline {
+        background: transparent; border: 1px solid #7c3aed; color: #c4b5fd;
+    }
+    .guide-tour-btn-outline:hover { background: #2d1f4e; }
+
+    /* Shepherd.js — thème sombre */
+    .shepherd-element { --shepherd-bg: #1e1e2e; }
+    .shepherd-has-title .shepherd-content .shepherd-header { background: #252535; border-radius: 10px 10px 0 0; }
+    .shepherd-text { background: #1e1e2e; color: #d1d5db; font-size: 14px; line-height: 1.6; padding: 16px 20px; }
+    .shepherd-text strong { color: #f3f4f6; }
+    .shepherd-footer { background: #1e1e2e; border-top: 1px solid #2d2d3a; padding: 12px 20px; border-radius: 0 0 10px 10px; gap: 8px; }
+    .shepherd-element { border: 1px solid #2d2d3a !important; border-radius: 10px !important; box-shadow: 0 20px 60px rgba(0,0,0,.5) !important; }
+    .shepherd-arrow::before { background: #1e1e2e !important; border-color: #2d2d3a !important; }
+    .shepherd-cancel-icon { color: #6b7280 !important; }
+    .shepherd-cancel-icon:hover { color: #f3f4f6 !important; }
+    .shepherd-btn-primary { background: #7c3aed !important; border: none !important; color: #fff !important; border-radius: 6px; padding: 7px 14px; font-size: 13px; font-weight: 600; cursor: pointer; }
+    .shepherd-btn-primary:hover { background: #6d28d9 !important; }
+    .shepherd-btn-secondary { background: transparent !important; border: 1px solid #374151 !important; color: #9ca3af !important; border-radius: 6px; padding: 7px 14px; font-size: 13px; cursor: pointer; }
+    .shepherd-btn-secondary:hover { border-color: #6b7280 !important; color: #d1d5db !important; }
+    .shepherd-modal-overlay-container { opacity: .6 !important; }
+</style>
+
+{# ── Hero ── #}
+<div class="guide-hero">
+    <div class="guide-hero-icon">📖</div>
+    <div style="flex:1;">
+        <h1>Guide d'utilisation de l'administration</h1>
+        <p>Bienvenue ! Ce guide vous accompagne pas à pas pour gérer votre boutique en toute autonomie.<br>
+           Cliquez sur une section pour la déplier et découvrir les explications.</p>
+
+        <div style="margin-top:20px; background:rgba(255,255,255,.06); border-radius:10px; padding:14px 18px; border-left:3px solid #a78bfa;">
+            <div style="color:#e9d5ff; font-size:14px; font-weight:700; margin-bottom:6px;">🎯 Tour interactif disponible</div>
+            <p style="color:#c4b5fd; font-size:13px; margin:0 0 12px; line-height:1.6;">
+                Le tour interactif vous montre les zones importantes de chaque page en les mettant en évidence, avec une bulle d'explication à côté. Il se lance <strong>automatiquement la première fois</strong> que vous visitez une page. Vous pouvez l'arrêter à tout moment en cliquant sur le <strong>✕</strong> en haut à droite de la bulle.
+            </p>
+            <button onclick="resetAndStartTour()" class="guide-tour-btn">
+                🚀 Relancer le tour depuis le tableau de bord
+            </button>
+        </div>
+    </div>
+</div>
+
+{# ══════════════════════════════════════════════
+   SECTION 0 — Démarrage rapide
+══════════════════════════════════════════════ #}
+<div class="guide-section open" id="section-setup">
+    <div class="guide-section-header" onclick="toggleSection('section-setup')">
+        <div class="guide-section-icon" style="background:#1a2e1a;">🚀</div>
+        <div class="guide-section-title">
+            <h2>Démarrage rapide — première prise en main</h2>
+            <p>Ce qu'il faut configurer en priorité pour que la boutique fonctionne</p>
+        </div>
+        <i class="fa fa-chevron-down guide-chevron"></i>
+    </div>
+    <div class="guide-body">
+
+        <div class="guide-info warn" style="margin-top:0; margin-bottom:20px;">
+            <span class="guide-info-icon">⚠️</span>
+            <div>Si ces étapes ne sont pas faites, certaines parties de la boutique ne fonctionneront pas : les clients ne pourront pas passer commande, les paiements échoueront, et les emails ne seront pas envoyés.</div>
+        </div>
+
+        <h3 style="color:#a5b4fc; font-size:14px; font-weight:700; margin:0 0 12px;">Les 4 étapes obligatoires, dans l'ordre</h3>
+
+        {# Étape 1 #}
+        <div style="display:flex; gap:16px; margin-bottom:20px; align-items:flex-start;">
+            <div style="background:#312e81; color:#c4b5fd; border-radius:50%; width:32px; height:32px; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:14px;">1</div>
+            <div style="flex:1;">
+                <div style="color:#f3f4f6; font-weight:700; font-size:14px; margin-bottom:4px;">Remplir les réglages de la boutique</div>
+                <div style="color:#9ca3af; font-size:13px; line-height:1.6; margin-bottom:8px;">
+                    Allez dans <strong style="color:#e5e7eb;">Configuration → Réglages</strong> et remplissez au minimum : le nom du site, votre adresse complète (utilisée sur les factures), le téléphone et la devise.
+                </div>
+                <div class="guide-info tip" style="margin-top:0;">
+                    <span class="guide-info-icon">💡</span>
+                    <div>S'il n'y a aucun réglage, créez-en un. Il ne doit y en avoir qu'un seul.</div>
+                </div>
+            </div>
+        </div>
+
+        {# Étape 2 #}
+        <div style="display:flex; gap:16px; margin-bottom:20px; align-items:flex-start;">
+            <div style="background:#312e81; color:#c4b5fd; border-radius:50%; width:32px; height:32px; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:14px;">2</div>
+            <div style="flex:1;">
+                <div style="color:#f3f4f6; font-weight:700; font-size:14px; margin-bottom:4px;">Créer au moins un transporteur</div>
+                <div style="color:#9ca3af; font-size:13px; line-height:1.6; margin-bottom:8px;">
+                    Allez dans <strong style="color:#e5e7eb;">Vente → Transporteurs</strong> et créez votre premier transporteur (ex : Colissimo, Mondial Relay, retrait en main propre…). Sans transporteur, les clients ne peuvent pas finaliser leur commande — ils arrivent à la dernière étape et voient une liste vide.
+                </div>
+                <table class="guide-table" style="margin-top:8px;">
+                    <thead><tr><th>Champ</th><th>Exemple</th></tr></thead>
+                    <tbody>
+                        <tr><td>Nom</td><td>Colissimo</td></tr>
+                        <tr><td>Prix</td><td>5.90</td></tr>
+                        <tr><td>Délai estimé</td><td>3 à 5 jours ouvrés</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        {# Étape 3 #}
+        <div style="display:flex; gap:16px; margin-bottom:20px; align-items:flex-start;">
+            <div style="background:#312e81; color:#c4b5fd; border-radius:50%; width:32px; height:32px; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:14px;">3</div>
+            <div style="flex:1;">
+                <div style="color:#f3f4f6; font-weight:700; font-size:14px; margin-bottom:4px;">Configurer le mode de paiement Stripe <span style="font-size:11px; font-weight:600; background:#1a2e1a; color:#86efac; border-radius:4px; padding:2px 7px; vertical-align:middle;">à faire par le prestataire</span></div>
+                <div style="color:#9ca3af; font-size:13px; line-height:1.6; margin-bottom:8px;">
+                    Cette étape est à confier à votre prestataire / développeur. Elle consiste à renseigner les clés API Stripe dans <strong style="color:#e5e7eb;">Vente → Modes de paiement</strong>. Sans ça, aucun paiement ne peut aboutir sur la boutique.
+                </div>
+                <div class="guide-info info" style="margin-top:0;">
+                    <span class="guide-info-icon">ℹ️</span>
+                    <div>Les clés Stripe sont disponibles dans le tableau de bord Stripe de votre compte. Votre prestataire saura quoi faire avec. Ne partagez jamais vos clés avec quelqu'un en qui vous n'avez pas confiance.</div>
+                </div>
+            </div>
+        </div>
+
+        {# Étape 4 #}
+        <div style="display:flex; gap:16px; margin-bottom:8px; align-items:flex-start;">
+            <div style="background:#312e81; color:#c4b5fd; border-radius:50%; width:32px; height:32px; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:14px;">4</div>
+            <div style="flex:1;">
+                <div style="color:#f3f4f6; font-weight:700; font-size:14px; margin-bottom:4px;">Variables d'environnement <span style="font-size:11px; font-weight:600; background:#1a2e1a; color:#86efac; border-radius:4px; padding:2px 7px; vertical-align:middle;">à faire par le prestataire</span></div>
+                <div style="color:#9ca3af; font-size:13px; line-height:1.6; margin-bottom:8px;">
+                    Ces paramètres sont dans un fichier technique sur le serveur. Transmettez cette liste à votre développeur s'ils ne sont pas encore configurés :
+                </div>
+                <table class="guide-table">
+                    <thead><tr><th>Paramètre</th><th>Pourquoi c'est obligatoire</th></tr></thead>
+                    <tbody>
+                        <tr><td><code style="color:#c4b5fd;">DATABASE_URL</code></td><td>Connexion à la base de données</td></tr>
+                        <tr><td><code style="color:#c4b5fd;">APP_SECRET</code></td><td>Sécurité des sessions et des formulaires</td></tr>
+                        <tr><td><code style="color:#c4b5fd;">MAILER_DSN</code></td><td>Envoi des emails (confirmations de commande, expéditions…)</td></tr>
+                        <tr><td><code style="color:#c4b5fd;">STRIPE_SECRET_KEY</code></td><td>Paiements en production</td></tr>
+                        <tr><td><code style="color:#c4b5fd;">STRIPE_WEBHOOK_SECRET</code></td><td>Confirmation automatique des paiements par Stripe</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="guide-info tip">
+            <span class="guide-info-icon">✅</span>
+            <div>Une fois ces 4 étapes faites, votre boutique est opérationnelle. Vous pouvez ensuite ajouter vos produits et personnaliser le contenu à votre rythme.</div>
+        </div>
+
+    </div>
+</div>
+
+{# ══════════════════════════════════════════════
+   SECTION 1 — Traiter les commandes
+══════════════════════════════════════════════ #}
+<div class="guide-section open" id="section-orders">
+    <div class="guide-section-header" onclick="toggleSection('section-orders')">
+        <div class="guide-section-icon" style="background:#1e3a5f;">🛒</div>
+        <div class="guide-section-title">
+            <h2>Traiter les commandes</h2>
+            <p>Comprendre les statuts, expédier, rembourser — usage quotidien</p>
+        </div>
+        <i class="fa fa-chevron-down guide-chevron"></i>
+    </div>
+    <div class="guide-body">
+
+        <p style="color:#9ca3af; font-size:13px; margin:0 0 18px; line-height:1.7;">
+            Chaque commande passe par différentes étapes, de la mise au panier jusqu'à la livraison. <strong style="color:#e5e7eb;">La bonne nouvelle : la plupart des changements de statut se font automatiquement.</strong> Vous n'avez à intervenir que lorsqu'une commande est payée et prête à être expédiée.
+        </p>
+
+        <h3 style="color:#a5b4fc; font-size:14px; font-weight:700; margin:0 0 10px;">Les étapes d'une commande — de gauche à droite</h3>
+        <div class="status-flow">
+            <span class="status-badge" style="background:#374151; color:#d1d5db;">Brouillon</span>
+            <span class="status-arrow">→</span>
+            <span class="status-badge" style="background:#78350f; color:#fde68a;">En attente</span>
+            <span class="status-arrow">→</span>
+            <span class="status-badge" style="background:#14532d; color:#bbf7d0;">Payée ✅</span>
+            <span class="status-arrow">→</span>
+            <span class="status-badge" style="background:#1e3a5f; color:#bfdbfe;">En préparation</span>
+            <span class="status-arrow">→</span>
+            <span class="status-badge" style="background:#312e81; color:#c4b5fd;">Expédiée</span>
+            <span class="status-arrow">→</span>
+            <span class="status-badge" style="background:#14532d; color:#bbf7d0;">Livrée</span>
+        </div>
+
+        <div class="guide-grid" style="margin-top:12px; margin-bottom:20px;">
+            <div class="guide-card">
+                <h4>🛒 Brouillon → En attente</h4>
+                <p>Le client a rempli son panier et cliqué sur "Payer". Son paiement est en cours de traitement par sa banque. <strong>Vous ne faites rien</strong> — la boutique attend la confirmation automatiquement.</p>
+            </div>
+            <div class="guide-card">
+                <h4>✅ Payée → En préparation</h4>
+                <p>L'argent a bien été reçu. La commande passe automatiquement en "En préparation". <strong>C'est maintenant que vous devez agir</strong> : préparer le colis et l'expédier.</p>
+            </div>
+            <div class="guide-card">
+                <h4>🚚 En préparation → Expédiée</h4>
+                <p>Vous avez cliqué sur "Expédier" depuis le détail de la commande. Un email est envoyé automatiquement au client avec son numéro de suivi.</p>
+            </div>
+            <div class="guide-card">
+                <h4>📦 Expédiée → Livrée</h4>
+                <p>La livraison est confirmée. Vous pouvez passer manuellement en "Livrée" si vous souhaitez le noter, mais ce n'est pas obligatoire.</p>
+            </div>
+        </div>
+
+        <h3 style="color:#a5b4fc; font-size:14px; font-weight:700; margin:16px 0 10px;">Que signifie chaque statut de paiement ?</h3>
+        <table class="guide-table">
+            <thead><tr><th>Ce que vous voyez</th><th>Ce que ça veut dire en pratique</th><th>Que faire ?</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td><span class="status-badge" style="background:#78350f; color:#fde68a;">En attente</span></td>
+                    <td>Le client a cliqué sur "Payer" mais sa banque n'a pas encore répondu. C'est normal, ça dure rarement plus de quelques minutes.</td>
+                    <td><strong>Rien.</strong> Attendre la confirmation automatique.</td>
+                </tr>
+                <tr>
+                    <td><span class="status-badge" style="background:#14532d; color:#bbf7d0;">Payée</span></td>
+                    <td>Le paiement est confirmé. L'argent est bien reçu. La commande attend d'être préparée.</td>
+                    <td><strong>Préparer et expédier</strong> la commande dès que possible.</td>
+                </tr>
+                <tr>
+                    <td><span class="status-badge" style="background:#7f1d1d; color:#fca5a5;">Remboursée</span></td>
+                    <td>Vous avez effectué un remboursement depuis l'admin. L'argent a été rendu au client via sa carte bancaire.</td>
+                    <td>Envoyer l'email de confirmation de remboursement au client si ce n'est pas déjà fait.</td>
+                </tr>
+                <tr>
+                    <td><span class="status-badge" style="background:#7f1d1d; color:#fca5a5;">Échouée</span></td>
+                    <td>La banque du client a refusé le paiement (carte expirée, fonds insuffisants…). Aucun argent n'a été débité.</td>
+                    <td><strong>Rien.</strong> Le client doit recommander avec une autre carte.</td>
+                </tr>
+                <tr>
+                    <td><span class="status-badge" style="background:#78350f; color:#fde68a;">Contestée</span></td>
+                    <td>Le client a contesté le paiement auprès de sa banque (ce qu'on appelle un "chargeback"). C'est rare mais cela nécessite votre attention.</td>
+                    <td>⚠️ Vous avez <strong>15 jours</strong> pour répondre via votre espace Stripe. Contactez votre prestataire si besoin.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 style="color:#a5b4fc; font-size:14px; font-weight:700; margin:24px 0 10px;">Comment expédier une commande ?</h3>
+        <div class="guide-steps">
+            <div class="guide-step">
+                <div class="guide-step-num" style="background:#1e3a5f; color:#93c5fd;">1</div>
+                <div class="guide-step-content">
+                    <h4>Aller dans Vente → Commandes</h4>
+                    <p>Vous voyez la liste de toutes les commandes. Repérez celles dont le statut de livraison est <em>En préparation</em> — ce sont celles qui attendent d'être expédiées. Cliquez sur l'icône 👁 pour ouvrir le détail.</p>
+                </div>
+            </div>
+            <div class="guide-step">
+                <div class="guide-step-num" style="background:#1e3a5f; color:#93c5fd;">2</div>
+                <div class="guide-step-content">
+                    <h4>Cliquer sur le bouton "Expédier"</h4>
+                    <p>Ce bouton apparaît en haut à droite de la page de détail. En cliquant dessus, la commande passe automatiquement en "Expédiée" et un email avec le numéro de suivi est envoyé au client. Si vous utilisez <strong>Colissimo</strong>, l'étiquette d'envoi est créée automatiquement.</p>
+                </div>
+            </div>
+            <div class="guide-step">
+                <div class="guide-step-num" style="background:#1e3a5f; color:#93c5fd;">3</div>
+                <div class="guide-step-content">
+                    <h4>Retrouver l'étiquette dans Vente → Expéditions</h4>
+                    <p>Chaque expédition créée apparaît dans cette section. Vous pouvez y imprimer l'étiquette Colissimo ou, si vous utilisez un autre transporteur, saisir manuellement le numéro de suivi fourni par votre transporteur.</p>
+                </div>
+            </div>
+        </div>
+
+        <h3 style="color:#a5b4fc; font-size:14px; font-weight:700; margin:24px 0 10px;">Comment rembourser un client ?</h3>
+        <div class="guide-steps">
+            <div class="guide-step">
+                <div class="guide-step-num" style="background:#4c0519; color:#fda4af;">1</div>
+                <div class="guide-step-content">
+                    <h4>Ouvrir la commande et cliquer sur "Rembourser"</h4>
+                    <p>Ce bouton est disponible uniquement sur les commandes dont le statut est <em>Payée</em>. En cliquant, le remboursement est effectué automatiquement — le client récupère l'intégralité du montant sur sa carte bancaire dans un délai de 5 à 10 jours ouvrés selon sa banque.</p>
+                </div>
+            </div>
+            <div class="guide-step">
+                <div class="guide-step-num" style="background:#4c0519; color:#fda4af;">2</div>
+                <div class="guide-step-content">
+                    <h4>Envoyer l'email de confirmation au client</h4>
+                    <p>Une fois le remboursement effectué, le bouton <strong>"Envoyer email remboursement"</strong> devient disponible. Cliquez dessus pour informer le client par email. Ce bouton disparaît une fois l'email envoyé, pour éviter les envois en double.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="guide-info warn">
+            <span class="guide-info-icon">⚠️</span>
+            <span>Un remboursement est <strong>définitif et irréversible</strong>. Vérifiez bien qu'il s'agit de la bonne commande avant de cliquer. Si vous avez besoin d'un remboursement partiel (rembourser seulement un article), passez directement par votre espace Stripe.</span>
+        </div>
+    </div>
+</div>
+
+{# ══════════════════════════════════════════════
+   SECTION 2 — Gérer le catalogue
+══════════════════════════════════════════════ #}
+<div class="guide-section" id="section-catalogue">
+    <div class="guide-section-header" onclick="toggleSection('section-catalogue')">
+        <div class="guide-section-icon" style="background:#1a2e1a;">📦</div>
+        <div class="guide-section-title">
+            <h2>Gérer le catalogue</h2>
+            <p>Produits, catégories, stock et images</p>
+        </div>
+        <i class="fa fa-chevron-down guide-chevron"></i>
+    </div>
+    <div class="guide-body">
+
+        <p style="color:#9ca3af; font-size:13px; margin:0 0 18px; line-height:1.7;">
+            Pour ajouter un produit, allez dans <strong style="color:#e5e7eb;">Catalogue → Produits → + Ajouter</strong>. Ci-dessous, ce qui est indispensable et ce qui est optionnel.
+        </p>
+
+        <h3 style="color:#a5b4fc; font-size:14px; font-weight:700; margin:0 0 12px;">Que renseigner lors de la création d'un produit ?</h3>
+        <table class="guide-table">
+            <thead><tr><th>Champ</th><th>Obligatoire ?</th><th>À quoi ça sert ?</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td><strong>Titre</strong></td>
+                    <td><span class="status-badge" style="background:#7f1d1d; color:#fca5a5; font-size:11px;">Obligatoire</span></td>
+                    <td>Le nom du produit affiché en boutique et sur les factures.</td>
+                </tr>
+                <tr>
+                    <td><strong>Prix TTC</strong></td>
+                    <td><span class="status-badge" style="background:#7f1d1d; color:#fca5a5; font-size:11px;">Obligatoire</span></td>
+                    <td>Le prix affiché au client, toutes taxes comprises. Si vous avez un prix promotionnel, renseignez le "Prix promo" en plus.</td>
+                </tr>
+                <tr>
+                    <td><strong>Stock</strong></td>
+                    <td><span class="status-badge" style="background:#7f1d1d; color:#fca5a5; font-size:11px;">Obligatoire</span></td>
+                    <td>Nombre d'articles disponibles. Si vous mettez 0, le produit apparaît "Rupture de stock" sur la boutique et ne peut plus être commandé.</td>
+                </tr>
+                <tr>
+                    <td><strong>Description</strong></td>
+                    <td><span class="status-badge" style="background:#1e3a5f; color:#93c5fd; font-size:11px;">Recommandé</span></td>
+                    <td>Le texte qui présente le produit sur sa page. Plus elle est détaillée, mieux c'est pour les clients et pour le référencement Google.</td>
+                </tr>
+                <tr>
+                    <td><strong>Image(s)</strong></td>
+                    <td><span class="status-badge" style="background:#1e3a5f; color:#93c5fd; font-size:11px;">Recommandé</span></td>
+                    <td>La première image ajoutée devient l'image principale du produit. Formats acceptés : JPG, PNG, WebP. Taille idéale : 800×800 pixels ou plus.</td>
+                </tr>
+                <tr>
+                    <td><strong>Catégorie</strong></td>
+                    <td><span class="status-badge" style="background:#14532d; color:#bbf7d0; font-size:11px;">Facultatif</span></td>
+                    <td>Permet de classer le produit dans un groupe (ex : "Miels floraux", "Miels de montagne"…). Un produit peut très bien exister sans catégorie. Les catégories apparaissent dans le menu de navigation de la boutique.</td>
+                </tr>
+                <tr>
+                    <td><strong>Poids</strong></td>
+                    <td><span class="status-badge" style="background:#14532d; color:#bbf7d0; font-size:11px;">Facultatif</span></td>
+                    <td>Utilisé pour le calcul automatique du poids total d'une commande (utile pour Colissimo).</td>
+                </tr>
+                <tr>
+                    <td><strong>Disponible / Incontournable / Nouveauté</strong></td>
+                    <td><span class="status-badge" style="background:#14532d; color:#bbf7d0; font-size:11px;">Facultatif</span></td>
+                    <td>Cases à cocher pour mettre en avant certains produits sur la page d'accueil ou les masquer sans les supprimer.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="guide-info tip" style="margin-top:16px;">
+            <span class="guide-info-icon">💡</span>
+            <span>Le stock se gère tout seul : il diminue automatiquement à chaque commande payée et remonte en cas de remboursement. Vous n'avez pas besoin de le modifier manuellement après chaque vente.</span>
+        </div>
+
+        <div class="guide-info info" style="margin-top:12px;">
+            <span class="guide-info-icon">ℹ️</span>
+            <span>Si vous modifiez le prix d'un produit, les commandes déjà passées <strong>ne sont pas affectées</strong> — le prix au moment de l'achat est conservé sur chaque commande.</span>
+        </div>
+
+        <h3 style="color:#a5b4fc; font-size:14px; font-weight:700; margin:24px 0 10px;">Les catégories — facultatives mais utiles</h3>
+        <div class="guide-steps">
+            <div class="guide-step">
+                <div class="guide-step-num" style="background:#1a2e1a; color:#86efac;">✓</div>
+                <div class="guide-step-content">
+                    <h4>Vous n'en avez pas besoin pour commencer</h4>
+                    <p>Vous pouvez créer et vendre des produits sans aucune catégorie. Les catégories sont utiles si vous voulez organiser votre boutique par famille de produits et proposer un menu de navigation à vos clients.</p>
+                </div>
+            </div>
+            <div class="guide-step">
+                <div class="guide-step-num" style="background:#1a2e1a; color:#86efac;">+</div>
+                <div class="guide-step-content">
+                    <h4>Créer une catégorie</h4>
+                    <p>Allez dans <strong>Catalogue → Catégories → + Ajouter</strong>. Donnez-lui un nom (ex : "Miels bio") et une description si vous le souhaitez. Elle apparaîtra ensuite dans le menu de navigation de la boutique.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{# ══════════════════════════════════════════════
+   SECTION 3 — Modérer les avis clients
+══════════════════════════════════════════════ #}
+<div class="guide-section" id="section-reviews">
+    <div class="guide-section-header" onclick="toggleSection('section-reviews')">
+        <div class="guide-section-icon" style="background:#2e2a0e;">⭐</div>
+        <div class="guide-section-title">
+            <h2>Modérer les avis clients</h2>
+            <p>Approuver ou rejeter les avis avant publication</p>
+        </div>
+        <i class="fa fa-chevron-down guide-chevron"></i>
+    </div>
+    <div class="guide-body">
+
+        <p style="color:#9ca3af; font-size:13px; margin:0 0 16px; line-height:1.7;">
+            Les clients peuvent laisser un avis sur les produits qu'ils ont achetés. Ces avis ne sont <strong style="color:#e5e7eb;">pas publiés automatiquement</strong> — vous devez d'abord les valider pour éviter les contenus inappropriés.
+        </p>
+
+        <div class="guide-steps">
+            <div class="guide-step">
+                <div class="guide-step-num" style="background:#2e2a0e; color:#fde68a;">1</div>
+                <div class="guide-step-content">
+                    <h4>Vous êtes alerté par email et par badge</h4>
+                    <p>Dès qu'un client soumet un avis, vous recevez un email de notification. Dans le menu de gauche, un <strong>badge orange</strong> apparaît sur "Avis clients" pour indiquer combien d'avis attendent votre décision.</p>
+                </div>
+            </div>
+            <div class="guide-step">
+                <div class="guide-step-num" style="background:#2e2a0e; color:#fde68a;">2</div>
+                <div class="guide-step-content">
+                    <h4>Approuver ou rejeter les avis</h4>
+                    <p>Allez dans <strong>Avis → Avis clients</strong>. Vous voyez le texte de l'avis, la note et le nom du client. Cliquez sur <strong>Approuver</strong> pour que l'avis apparaisse sur la fiche produit en boutique, ou <strong>Rejeter</strong> pour le masquer sans le supprimer.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="guide-info tip">
+            <span class="guide-info-icon">💡</span>
+            <span>Répondre aux avis, même négatifs, montre à vos futurs clients que vous êtes à l'écoute. Un avis négatif bien géré peut renforcer la confiance.</span>
+        </div>
+    </div>
+</div>
+
+{# ══════════════════════════════════════════════
+   SECTION 4 — Badges d'alerte du menu
+══════════════════════════════════════════════ #}
+<div class="guide-section" id="section-badges">
+    <div class="guide-section-header" onclick="toggleSection('section-badges')">
+        <div class="guide-section-icon" style="background:#2e1f1a;">🔔</div>
+        <div class="guide-section-title">
+            <h2>Comprendre les badges d'alerte</h2>
+            <p>Ce que signifient les indicateurs dans le menu latéral</p>
+        </div>
+        <i class="fa fa-chevron-down guide-chevron"></i>
+    </div>
+    <div class="guide-body">
+
+        <p style="color:#9ca3af; font-size:13px; margin:0 0 16px; line-height:1.7;">
+            Dans le menu de gauche, des petits cercles colorés apparaissent parfois à côté de certaines rubriques. Ce sont des alertes pour attirer votre attention — voici ce qu'elles signifient.
+        </p>
+
+        <table class="guide-table">
+            <thead><tr><th>Badge</th><th>Où le voir ?</th><th>Ce que ça veut dire</th><th>Que faire ?</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td><span class="status-badge" style="background:#7f1d1d; color:#fca5a5;">3</span></td>
+                    <td><strong>Commandes</strong></td>
+                    <td>Il y a 3 commandes dont le paiement est en cours de confirmation. C'est temporaire et normal — ça se résout tout seul en quelques minutes.</td>
+                    <td>Rien à faire. Si le chiffre reste élevé pendant plus d'une heure, contactez votre support technique.</td>
+                </tr>
+                <tr>
+                    <td><span class="status-badge" style="background:#78350f; color:#fde68a;">2</span></td>
+                    <td><strong>Avis clients</strong></td>
+                    <td>2 avis de clients attendent votre décision avant d'être publiés sur la boutique.</td>
+                    <td>Allez dans Avis → Avis clients et approuvez ou rejetez les avis en attente.</td>
+                </tr>
+                <tr>
+                    <td><span class="status-badge" style="background:#78350f; color:#fde68a;">5</span></td>
+                    <td><strong>Produits</strong></td>
+                    <td>5 produits ont un stock faible (5 unités ou moins) ou sont en rupture de stock.</td>
+                    <td>Allez dans Catalogue → Produits et mettez à jour le stock des produits concernés.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="guide-info info" style="margin-top:16px;">
+            <span class="guide-info-icon">ℹ️</span>
+            <span>Ces badges se mettent à jour automatiquement à chaque chargement de page. Si vous venez de traiter des avis ou des commandes, actualisez la page pour voir le badge disparaître.</span>
+        </div>
+    </div>
+</div>
+
+{# ══════════════════════════════════════════════
+   SECTION 5 — Gérer le contenu
+══════════════════════════════════════════════ #}
+<div class="guide-section" id="section-content">
+    <div class="guide-section-header" onclick="toggleSection('section-content')">
+        <div class="guide-section-icon" style="background:#1a2035;">✏️</div>
+        <div class="guide-section-title">
+            <h2>Gérer le contenu</h2>
+            <p>Pages, sliders, blog et FAQ</p>
+        </div>
+        <i class="fa fa-chevron-down guide-chevron"></i>
+    </div>
+    <div class="guide-body">
+
+        <div class="guide-grid">
+            <div class="guide-card">
+                <h4>📄 Pages statiques</h4>
+                <p>Contenu → Pages. Modifiez les pages comme <em>Mentions légales</em>, <em>CGV</em>, <em>À propos</em>. L'URL de chaque page est définie par son slug.</p>
+            </div>
+            <div class="guide-card">
+                <h4>🖼️ Sliders (bannières)</h4>
+                <p>Contenu → Sliders. Chaque entrée correspond à une diapositive de la bannière d'accueil. Définissez le titre, le sous-titre, l'image de fond et le lien du bouton.</p>
+            </div>
+            <div class="guide-card">
+                <h4>📝 Blog</h4>
+                <p>Contenu → Blog. Rédigez des articles pour le SEO et votre communauté. Chaque article a un slug, une catégorie et peut être publié ou gardé en brouillon.</p>
+            </div>
+            <div class="guide-card">
+                <h4>❓ FAQ</h4>
+                <p>Contenu → FAQ. Organisez les questions par section. Les <em>Liens utiles FAQ</em> permettent d'ajouter des ressources externes en bas de la page FAQ.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+{# ══════════════════════════════════════════════
+   SECTION 6 — Configuration initiale
+══════════════════════════════════════════════ #}
+<div class="guide-section" id="section-config">
+    <div class="guide-section-header" onclick="toggleSection('section-config')">
+        <div class="guide-section-icon" style="background:#1a1a2e;">⚙️</div>
+        <div class="guide-section-title">
+            <h2>Configuration initiale</h2>
+            <p>Réglages, transporteurs et modes de paiement</p>
+        </div>
+        <i class="fa fa-chevron-down guide-chevron"></i>
+    </div>
+    <div class="guide-body">
+
+        <div class="guide-steps">
+            <div class="guide-step">
+                <div class="guide-step-num" style="background:#1a1a2e; color:#a5b4fc;">1</div>
+                <div class="guide-step-content">
+                    <h4>Réglages généraux</h4>
+                    <p>Configuration → Réglages. Définissez le nom de la boutique, l'email de contact, la devise et les informations affichées sur les factures.</p>
+                </div>
+            </div>
+            <div class="guide-step">
+                <div class="guide-step-num" style="background:#1a1a2e; color:#a5b4fc;">2</div>
+                <div class="guide-step-content">
+                    <h4>Transporteurs</h4>
+                    <p>Vente → Transporteurs. Configurez vos modes de livraison (Colissimo, Manuel…) avec leur tarif et seuil de livraison gratuite. Le transporteur est sélectionné par le client au checkout.</p>
+                </div>
+            </div>
+            <div class="guide-step">
+                <div class="guide-step-num" style="background:#1a1a2e; color:#a5b4fc;">3</div>
+                <div class="guide-step-content">
+                    <h4>Modes de paiement</h4>
+                    <p>Vente → Modes de paiement. Activez ou désactivez les méthodes proposées au checkout (carte bancaire via Stripe, etc.).</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="guide-info warn">
+            <span class="guide-info-icon">⚠️</span>
+            <span>La clé secrète Stripe, le secret webhook et les identifiants Colissimo se configurent dans le fichier <code>.env.prod.local</code> sur le serveur — pas depuis cet admin.</span>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/shepherd.js@11/dist/js/shepherd.min.js"></script>
+<script src="{{ asset('assets/js/admin-tour.js') }}"></script>
+<script>
+function toggleSection(id) {
+    document.getElementById(id).classList.toggle('open');
+}
+
+function resetAndStartTour(page) {
+    window.resetAllTours && window.resetAllTours();
+    window.location.href = '/admin';
+}
+
+</script>
+</div>{# /guide-wrapper #}
+</body>
+</html>

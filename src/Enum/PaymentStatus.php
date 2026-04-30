@@ -2,25 +2,22 @@
 
 namespace App\Enum;
 
-/**
- * Enumération des statuts de paiement d'une commande (en attente, payé, remboursé, échec).
- */
 enum PaymentStatus: string
 {
-    case Pending = 'pending';
-    case Paid = 'paid';
-    case Refunded = 'refunded';
-    case Failed = 'failed';
-    case Disputed = 'disputed';
+    case Attente = 'pending';
+    case Paye      = 'paid';
+    case Rembourse = 'refunded';
+    case Echoue    = 'failed';
+    case Conteste  = 'disputed';
 
     public function label(): string
     {
         return match ($this) {
-            self::Pending  => 'En attente',
-            self::Paid     => 'Payé',
-            self::Refunded => 'Remboursé',
-            self::Failed   => 'Échec',
-            self::Disputed => 'Contesté',
+            self::Attente => 'En attente',
+            self::Paye      => 'Payé',
+            self::Rembourse => 'Remboursé',
+            self::Echoue    => 'Échec',
+            self::Conteste  => 'Contesté',
         };
     }
 }

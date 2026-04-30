@@ -80,15 +80,15 @@ final class OrderCrudController extends AbstractCrudController
             ->linkToCrudAction('shipOrder')
             ->addCssClass('btn btn-sm btn-primary')
             ->displayIf(static fn (Order $order): bool =>
-                $order->getPaymentStatus() === PaymentStatus::Paid
-                && !\in_array($order->getFulfillmentStatus(), [FulfillmentStatus::Shipped, FulfillmentStatus::Delivered, FulfillmentStatus::Cancelled], true)
+                $order->getPaymentStatus() === PaymentStatus::Paye
+                && !\in_array($order->getFulfillmentStatus(), [FulfillmentStatus::Expedie, FulfillmentStatus::Livre, FulfillmentStatus::Annule], true)
                 && $order->getCarrier() !== null
             );
 
         $refundAction = Action::new('refund', 'Rembourser', 'fa fa-sync-left')
             ->linkToCrudAction('processRefund')
             ->addCssClass('btn btn-sm btn-danger')
-            ->displayIf(static fn (Order $order): bool => $order->getPaymentStatus() === PaymentStatus::Paid);
+            ->displayIf(static fn (Order $order): bool => $order->getPaymentStatus() === PaymentStatus::Paye);
 
         $sendRefundEmailAction = Action::new('sendRefundEmail', 'Envoyer email remboursement', 'fa fa-envelope')
             ->linkToCrudAction('sendRefundEmail')
@@ -96,7 +96,7 @@ final class OrderCrudController extends AbstractCrudController
             ->setHtmlAttributes([
                 'onclick' => 'return confirm("Envoyer un email de confirmation de remboursement au client ?")',
             ])
-            ->displayIf(static fn (Order $order): bool => $order->getPaymentStatus() === PaymentStatus::Refunded && !$order->isRefundEmailSent());
+            ->displayIf(static fn (Order $order): bool => $order->getPaymentStatus() === PaymentStatus::Rembourse && !$order->isRefundEmailSent());
 
         $refundEmailSentAction = Action::new('refundEmailSent', 'Email remboursement envoyé ✓', 'fa fa-check')
             ->linkToCrudAction('sendRefundEmail')
@@ -226,8 +226,8 @@ final class OrderCrudController extends AbstractCrudController
     {
         return $filters
             ->add(EntityFilter::new('user'))
-            ->add(ChoiceFilter::new('paymentStatus')->setChoices($this->paymentChoices()))
-            ->add(ChoiceFilter::new('fulfillmentStatus')->setChoices($this->fulfillmentChoices()))
+            ->add(ChoiceFilter::new('paymentStatus')->setChoices($this->paymentChoices())->setFormTypeOption('value_type_options.choice_value', static fn ($v) => $v instanceof \BackedEnum ? $v->value : $v))
+            ->add(ChoiceFilter::new('fulfillmentStatus')->setChoices($this->fulfillmentChoices())->canSelectMultiple()->setFormTypeOption('value_type_options.choice_value', static fn ($v) => $v instanceof \BackedEnum ? $v->value : $v))
             ->add(DateTimeFilter::new('paidAt'));
     }
 
@@ -320,44 +320,44 @@ final class OrderCrudController extends AbstractCrudController
     private function paymentChoices(): array
     {
         return [
-            PaymentStatus::Pending->label() => PaymentStatus::Pending,
-            PaymentStatus::Paid->label() => PaymentStatus::Paid,
-            PaymentStatus::Refunded->label() => PaymentStatus::Refunded,
-            PaymentStatus::Failed->label() => PaymentStatus::Failed,
-            PaymentStatus::Disputed->label() => PaymentStatus::Disputed,
+            PaymentStatus::Attente->label() => PaymentStatus::Attente,
+            PaymentStatus::Paye->label() => PaymentStatus::Paye,
+            PaymentStatus::Rembourse->label() => PaymentStatus::Rembourse,
+            PaymentStatus::Echoue->label() => PaymentStatus::Echoue,
+            PaymentStatus::Conteste->label() => PaymentStatus::Conteste,
         ];
     }
 
     private function fulfillmentChoices(): array
     {
         return [
-            FulfillmentStatus::Draft->label() => FulfillmentStatus::Draft,
-            FulfillmentStatus::Preparing->label() => FulfillmentStatus::Preparing,
-            FulfillmentStatus::Shipped->label() => FulfillmentStatus::Shipped,
-            FulfillmentStatus::Delivered->label() => FulfillmentStatus::Delivered,
-            FulfillmentStatus::Cancelled->label() => FulfillmentStatus::Cancelled,
+            FulfillmentStatus::Brouillon->label() => FulfillmentStatus::Brouillon,
+            FulfillmentStatus::Preparation->label() => FulfillmentStatus::Preparation,
+            FulfillmentStatus::Expedie->label() => FulfillmentStatus::Expedie,
+            FulfillmentStatus::Livre->label() => FulfillmentStatus::Livre,
+            FulfillmentStatus::Annule->label() => FulfillmentStatus::Annule,
         ];
     }
 
     private function paymentBadges(): array
     {
         return [
-            PaymentStatus::Pending->value => 'warning',
-            PaymentStatus::Paid->value => 'success',
-            PaymentStatus::Refunded->value => 'danger',
-            PaymentStatus::Failed->value => 'danger',
-            PaymentStatus::Disputed->value => 'warning',
+            PaymentStatus::Attente->value => 'warning',
+            PaymentStatus::Paye->value => 'success',
+            PaymentStatus::Rembourse->value => 'danger',
+            PaymentStatus::Echoue->value => 'danger',
+            PaymentStatus::Conteste->value => 'warning',
         ];
     }
 
     private function fulfillmentBadges(): array
     {
         return [
-            FulfillmentStatus::Draft->value => 'secondary',
-            FulfillmentStatus::Preparing->value => 'info',
-            FulfillmentStatus::Shipped->value => 'primary',
-            FulfillmentStatus::Delivered->value => 'success',
-            FulfillmentStatus::Cancelled->value => 'danger',
+            FulfillmentStatus::Brouillon->value => 'secondary',
+            FulfillmentStatus::Preparation->value => 'info',
+            FulfillmentStatus::Expedie->value => 'primary',
+            FulfillmentStatus::Livre->value => 'success',
+            FulfillmentStatus::Annule->value => 'danger',
         ];
     }
 
@@ -380,22 +380,29 @@ final class OrderCrudController extends AbstractCrudController
 
         try {
             $carrier = $order->getCarrier();
+            $existingShipment = $order->getShipments()->first() ?: null;
+
             if ($carrier?->getType() === CarrierType::Manual) {
-                // Pour un transporteur manuel on crée juste le Shipment sans appel API
-                $shipment = new Shipment();
-                $shipment->setCustomerOrder($order);
-                $shipment->setCarrier($carrier);
-                $shipment->setWeightGrams($weightGrams);
-                $shipment->setTrackingNumber('À renseigner');
-                $shipment->setTrackingUrl('');
-                $shipment->setCreatedAt(new \DateTimeImmutable());
-                $shipment->setShippedAt(new \DateTimeImmutable());
-                $this->em->persist($shipment);
+                if ($existingShipment instanceof Shipment) {
+                    $existingShipment->setShippedAt(new \DateTimeImmutable());
+                } else {
+                    $shipment = new Shipment();
+                    $shipment->setCustomerOrder($order);
+                    $shipment->setCarrier($carrier);
+                    $shipment->setWeightGrams($weightGrams);
+                    $shipment->setTrackingNumber('À renseigner');
+                    $shipment->setTrackingUrl('');
+                    $shipment->setCreatedAt(new \DateTimeImmutable());
+                    $shipment->setShippedAt(new \DateTimeImmutable());
+                    $this->em->persist($shipment);
+                }
             } else {
-                $this->shipmentService->createLabel($order, $weightGrams);
+                if (!$existingShipment instanceof Shipment) {
+                    $this->shipmentService->createLabel($order, $weightGrams);
+                }
             }
 
-            $order->setFulfillmentStatus(FulfillmentStatus::Shipped);
+            $order->setFulfillmentStatus(FulfillmentStatus::Expedie);
             $this->em->flush();
 
             $this->addFlash('success', \sprintf(

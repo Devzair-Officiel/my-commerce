@@ -60,7 +60,7 @@ class OrderRepository extends ServiceEntityRepository
             ->andWhere('o.user = :user')
             ->andWhere('o.fulfillmentStatus = :draft')
             ->setParameter('user', $user)
-            ->setParameter('draft', FulfillmentStatus::Draft)
+            ->setParameter('draft', FulfillmentStatus::Brouillon)
             ->orderBy('o.id', 'DESC')
             ->setMaxResults(1)
             ->getQuery()

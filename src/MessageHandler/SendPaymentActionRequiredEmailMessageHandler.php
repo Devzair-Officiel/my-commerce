@@ -33,7 +33,7 @@ final readonly class SendPaymentActionRequiredEmailMessageHandler
         }
 
         // Si la commande est déjà payée entre-temps, inutile de relancer
-        if ($order->getPaymentStatus() !== PaymentStatus::Pending) {
+        if ($order->getPaymentStatus() !== PaymentStatus::Attente) {
             return;
         }
 

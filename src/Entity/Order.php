@@ -81,11 +81,11 @@ class Order
 
     #[ORM\Column(type: Types::STRING, length: 20, enumType: PaymentStatus::class)]
     #[Assert\NotNull]
-    private PaymentStatus $paymentStatus = PaymentStatus::Pending;
+    private PaymentStatus $paymentStatus = PaymentStatus::Attente;
 
     #[ORM\Column(type: Types::STRING, length: 20, enumType: FulfillmentStatus::class)]
     #[Assert\NotNull]
-    private FulfillmentStatus $fulfillmentStatus = FulfillmentStatus::Draft;
+    private FulfillmentStatus $fulfillmentStatus = FulfillmentStatus::Brouillon;
 
     /**
      * Carrier : relation + snapshot.
@@ -156,6 +156,9 @@ class Order
 
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
     private ?\DateTimeImmutable $refundEmailSentAt = null;
+
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
+    private ?\DateTimeImmutable $shippingEmailSentAt = null;
 
     #[ORM\OneToMany(
         mappedBy: 'myOrder',
@@ -472,6 +475,18 @@ class Order
     public function markRefundEmailSent(): static
     {
         $this->refundEmailSentAt = new \DateTimeImmutable();
+
+        return $this;
+    }
+
+    public function isShippingEmailSent(): bool
+    {
+        return null !== $this->shippingEmailSentAt;
+    }
+
+    public function markShippingEmailSent(): static
+    {
+        $this->shippingEmailSentAt = new \DateTimeImmutable();
 
         return $this;
     }
