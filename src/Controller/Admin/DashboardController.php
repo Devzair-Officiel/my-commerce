@@ -23,6 +23,7 @@ use App\Entity\Faq;
 use App\Entity\FaqLink;
 use App\Entity\Invoice;
 use App\Entity\Review;
+use App\Entity\AuditLog;
 use App\Entity\Shipment;
 use App\Enum\PaymentStatus;
 use App\Enum\ReviewStatus;
@@ -209,6 +210,12 @@ final class DashboardController extends AbstractDashboardController
         if ($isAdmin) {
             yield MenuItem::section('Configuration');
             yield MenuItem::linkToCrud('Réglages', 'fa fa-gear', Setting::class);
+        }
+
+        // ── Audit (admin uniquement) ───────────────────────────────────────────
+        if ($isAdmin) {
+            yield MenuItem::section('Audit');
+            yield MenuItem::linkToCrud('Journal d\'audit', 'fa fa-shield-halved', AuditLog::class);
         }
 
         yield MenuItem::section('');

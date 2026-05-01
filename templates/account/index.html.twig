@@ -191,9 +191,9 @@
 										<div id="address_details">
 											{% if addresses is empty %}
 												<p class="nide-account__empty">Aucune adresse enregistrée.</p>
-											{% else %}
-												<div class="nide-addr-grid" id="address-tbody">
-													{% for address in addresses %}
+											{% endif %}
+											<div class="nide-addr-grid" id="address-tbody">
+												{% for address in addresses %}
 														<div class="nide-addr-card" data-id="{{ address.id }}">
 															<div class="nide-addr-card__head">
 																<span class="nide-addr-card__type nide-addr-card__type--{{ address.addressType }}">
@@ -235,8 +235,7 @@
 															</div>
 														</div>
 													{% endfor %}
-												</div>
-											{% endif %}
+											</div>
 										</div>
 
 										<div class="nide-account__addr-actions">
