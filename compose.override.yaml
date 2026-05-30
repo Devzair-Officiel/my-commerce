@@ -26,6 +26,19 @@ services:
     build:
       context: .
       target: frankenphp_dev
+    ports:
+      - name: http
+        target: 80
+        published: ${HTTP_PORT:-80}
+        protocol: tcp
+      - name: https
+        target: 443
+        published: ${HTTPS_PORT:-443}
+        protocol: tcp
+      - name: http3
+        target: 443
+        published: ${HTTP3_PORT:-443}
+        protocol: udp
     volumes:
       # indispensables pour FrankenPHP/Caddy (sinon unhealthy/restart)
       - caddy_data:/data

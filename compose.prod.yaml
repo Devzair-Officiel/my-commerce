@@ -10,10 +10,15 @@ services:
         required: false
     environment:
       APP_ENV: prod
-      SERVER_NAME: "nidemiel.com"
+      SERVER_NAME: ":80"
     volumes:
       - uploads_data:/app/public/assets/images
       - videos_data:/app/public/assets/videos
+    networks:
+      default:
+      web:
+        aliases:
+          - nidemiel_php
 
   messenger-worker:
     env_file:
@@ -41,6 +46,9 @@ services:
       - SYS_ADMIN
     security_opt:
       - apparmor:unconfined
+    env_file:
+      - path: .env.prod.local
+        required: false
     volumes:
       - netdataconfig:/etc/netdata
       - netdatalib:/var/lib/netdata
@@ -56,9 +64,9 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - /run/dbus:/run/dbus:ro
     environment:
-      - NETDATA_CLAIM_TOKEN=-j_qSFy2C3Vu2l1IokNksg7ESq8Kv1OqSKaFYMVj9YTNRN1VokEkN4Hikeue-gDKk4PuVcHZv6NdQvLNoo_nCfaVVQOYkUv0WcGaIcu4HA9gK_nW3sC-CurDhZ5uRoVzaFmMTw8
+      - NETDATA_CLAIM_TOKEN=${NETDATA_CLAIM_TOKEN}
       - NETDATA_CLAIM_URL=https://app.netdata.cloud
-      - NETDATA_CLAIM_ROOMS=e6716ca7-8ba0-471e-b448-c840fb0befa9
+      - NETDATA_CLAIM_ROOMS=${NETDATA_CLAIM_ROOMS}
 
 volumes:
   uploads_data:
@@ -66,3 +74,7 @@ volumes:
   netdataconfig:
   netdatalib:
   netdatacache:
+
+networks:
+  web:
+    external: true
