@@ -26,6 +26,9 @@ services:
     build:
       context: .
       target: frankenphp_dev
+    env_file:
+      - path: .env.dev.local
+        required: false
     ports:
       - name: http
         target: 80
@@ -66,6 +69,9 @@ services:
     build:
       context: .
       target: frankenphp_dev
+    env_file:
+      - path: .env.dev.local
+        required: false
     volumes:
       - ./:/app
       - app_var:/app/var
@@ -73,8 +79,11 @@ services:
       APP_ENV: "${APP_ENV:-dev}"
 
   database:
+    env_file:
+      - path: .env.dev.local
+        required: false
     ports:
-      - "5432:5432"
+      - "${POSTGRES_PORT:-5433}:5432"
 
   mailer:
     image: axllent/mailpit

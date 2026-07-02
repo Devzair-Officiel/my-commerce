@@ -5,10 +5,6 @@ services:
     restart: unless-stopped
     env_file:
       - .env
-      - path: .env.dev.local
-        required: false
-      - path: .env.prod.local
-        required: false
     environment:
       SERVER_NAME: ${SERVER_NAME:-localhost}, php:80
       DEFAULT_URI: https://${SERVER_NAME:-localhost}:${HTTPS_PORT:-443}
@@ -24,10 +20,6 @@ services:
     restart: unless-stopped
     env_file:
       - .env
-      - path: .env.dev.local
-        required: false
-      - path: .env.prod.local
-        required: false
     command: bin/console messenger:consume async failed --time-limit=3600 --memory-limit=128M -vv
     healthcheck:
       disable: true
@@ -38,12 +30,8 @@ services:
 ###> doctrine/doctrine-bundle ###
   database:
     image: postgres:${POSTGRES_VERSION:-16}-alpine
-    environment:
-      POSTGRES_DB: ${POSTGRES_DB:-app}
-      POSTGRES_USER: ${POSTGRES_USER:-app}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-app}
     healthcheck:
-      test: ["CMD", "pg_isready", "-d", "${POSTGRES_DB:-app}", "-U", "${POSTGRES_USER:-app}"]
+      test: ["CMD-SHELL", "pg_isready -U \"$$POSTGRES_USER\" -d \"$$POSTGRES_DB\""]
       timeout: 5s
       retries: 5
       start_period: 60s

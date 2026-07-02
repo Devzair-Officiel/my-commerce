@@ -333,5 +333,30 @@ final class ProductCrudController extends AbstractCrudController
                 }
             }
         }
+
+        // Normalisation des positions : MySQL trie NULL en premier en ASC,
+        // ce qui rend l'ordre incohérent quand une ancienne image sans position
+        // cohabite avec une nouvelle image positionnée. On remplit les NULL
+        // avec la valeur suivante (max explicite + 1), sans écraser les positions
+        // choisies par l'utilisateur.
+        $explicitPositions   = [];
+        $mediasWithoutPos    = [];
+        foreach ($product->getMedias() as $media) {
+            $name = $media->getFilename();
+            if (!is_string($name) || $name === '') {
+                continue;
+            }
+            $pos = $media->getPosition();
+            if ($pos !== null) {
+                $explicitPositions[] = $pos;
+            } else {
+                $mediasWithoutPos[] = $media;
+            }
+        }
+
+        $next = $explicitPositions === [] ? 1 : (max($explicitPositions) + 1);
+        foreach ($mediasWithoutPos as $media) {
+            $media->setPosition($next++);
+        }
     }
 }
