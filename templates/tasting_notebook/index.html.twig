@@ -1,0 +1,576 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Carnet de dégustation de miel | {{ globalSetting.website_name }}{% endblock %}
+
+{% block stylesheets %}
+<style>
+	:root {
+		--tn-bg: #fbfaf6;
+		--tn-surface: #ffffff;
+		--tn-ink: #1c1a15;
+		--tn-muted: #6b6459;
+		--tn-line: #e6e1d5;
+		--tn-accent: #b6862c;
+		--tn-accent-soft: #f5ecd6;
+		--tn-radius: 10px;
+	}
+
+	.tn-page {
+		background: var(--tn-bg);
+		color: var(--tn-ink);
+		font-family: 'Poppins', system-ui, -apple-system, "Segoe UI", sans-serif;
+		padding: 2.5rem 0 4rem;
+		min-height: 100vh;
+	}
+
+	.tn-container {
+		max-width: 1080px;
+		margin: 0 auto;
+		padding: 0 1.25rem;
+	}
+
+	.tn-header {
+		margin-bottom: 2rem;
+		padding-bottom: 1.25rem;
+		border-bottom: 1px solid var(--tn-line);
+	}
+
+	.tn-kicker {
+		display: inline-block;
+		font-size: .72rem;
+		letter-spacing: .18em;
+		text-transform: uppercase;
+		color: var(--tn-accent);
+		font-weight: 600;
+		margin-bottom: .35rem;
+	}
+
+	.tn-title {
+		font-family: 'Roboto', Georgia, serif;
+		font-size: clamp(1.6rem, 3vw, 2.2rem);
+		font-weight: 700;
+		margin: 0 0 .25rem;
+		letter-spacing: -0.01em;
+	}
+
+	.tn-subtitle {
+		color: var(--tn-muted);
+		font-size: .95rem;
+		margin: 0;
+		max-width: 65ch;
+	}
+
+	.tn-identity {
+		background: var(--tn-surface);
+		border: 1px solid var(--tn-line);
+		border-radius: var(--tn-radius);
+		padding: 1.15rem 1.25rem;
+		margin-bottom: 1.5rem;
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 1rem;
+	}
+	.tn-identity__label {
+		font-size: .82rem;
+		font-weight: 600;
+		text-transform: uppercase;
+		letter-spacing: .08em;
+		color: var(--tn-muted);
+	}
+	.tn-identity__input {
+		flex: 1 1 260px;
+		min-width: 0;
+		padding: .6rem .85rem;
+		font: inherit;
+		font-size: 1rem;
+		border: 1px solid var(--tn-line);
+		border-radius: var(--tn-radius);
+		background: #fff;
+	}
+	.tn-identity__input:focus {
+		outline: none;
+		border-color: var(--tn-accent);
+		box-shadow: 0 0 0 3px var(--tn-accent-soft);
+	}
+
+	.tn-flash, .tn-errors {
+		border-radius: var(--tn-radius);
+		padding: .85rem 1.1rem;
+		margin-bottom: 1.5rem;
+		font-size: .92rem;
+	}
+	.tn-flash--success {
+		background: #ecf7ec;
+		border: 1px solid #7ab77a;
+		color: #2f6b2f;
+	}
+	.tn-flash--info {
+		background: #eef4fb;
+		border: 1px solid #7ea9d4;
+		color: #2a5f97;
+	}
+	.tn-errors {
+		background: #fdecec;
+		border: 1px solid #d68686;
+		color: #a63636;
+	}
+	.tn-errors ul { margin: .35rem 0 0 1.1rem; padding: 0; }
+
+	.tn-resume {
+		background: #fff;
+		border: 1px dashed var(--tn-line);
+		border-radius: var(--tn-radius);
+		padding: .9rem 1.1rem;
+		margin-bottom: 1.25rem;
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: .6rem;
+	}
+	.tn-resume__label {
+		font-size: .85rem;
+		color: var(--tn-muted);
+	}
+	.tn-resume__input {
+		flex: 1 1 220px;
+		min-width: 0;
+		padding: .5rem .75rem;
+		font: inherit;
+		font-size: .92rem;
+		border: 1px solid var(--tn-line);
+		border-radius: var(--tn-radius);
+		background: #fff;
+	}
+	.tn-resume__input:focus {
+		outline: none;
+		border-color: var(--tn-accent);
+		box-shadow: 0 0 0 3px var(--tn-accent-soft);
+	}
+
+	/* Navigation miel — barre horizontale scrollable */
+	.tn-nav {
+		display: flex;
+		gap: .4rem;
+		overflow-x: auto;
+		padding: .5rem 0;
+		margin-bottom: 1.5rem;
+		border-bottom: 1px solid var(--tn-line);
+		scrollbar-width: thin;
+	}
+	.tn-nav__btn {
+		flex: 0 0 auto;
+		background: transparent;
+		border: 1px solid transparent;
+		color: var(--tn-muted);
+		padding: .55rem .95rem;
+		font-size: .9rem;
+		font-weight: 500;
+		border-radius: 999px;
+		cursor: pointer;
+		white-space: nowrap;
+		transition: all .15s;
+		position: relative;
+	}
+	.tn-nav__btn:hover { color: var(--tn-ink); background: var(--tn-accent-soft); }
+	.tn-nav__btn.is-active { background: var(--tn-ink); color: #fff; }
+	.tn-nav__btn.has-data::after {
+		content: "";
+		position: absolute;
+		top: 6px;
+		right: 8px;
+		width: 6px;
+		height: 6px;
+		background: var(--tn-accent);
+		border-radius: 50%;
+	}
+	.tn-nav__btn.is-active.has-data::after { background: #fff; }
+
+	.tn-honey { display: none; }
+	.tn-honey.is-active { display: block; }
+
+	.tn-honey__head {
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: space-between;
+		align-items: center;
+		gap: 1rem;
+		margin-bottom: 2rem;
+	}
+	.tn-honey__name {
+		font-family: 'Roboto', Georgia, serif;
+		font-size: clamp(1.4rem, 2.5vw, 1.8rem);
+		font-weight: 700;
+		margin: 0;
+	}
+	.tn-progress {
+		font-size: .82rem;
+		color: var(--tn-muted);
+	}
+
+	.tn-section {
+		background: var(--tn-surface);
+		border: 1px solid var(--tn-line);
+		border-radius: var(--tn-radius);
+		padding: 1.5rem 1.5rem 1.25rem;
+		margin-bottom: 1.25rem;
+	}
+	.tn-section__title {
+		font-family: 'Roboto', Georgia, serif;
+		font-size: 1.15rem;
+		font-weight: 700;
+		margin: 0 0 1.25rem;
+		padding-bottom: .6rem;
+		border-bottom: 1px solid var(--tn-line);
+		display: flex;
+		align-items: baseline;
+		gap: .6rem;
+	}
+	.tn-section__title-num {
+		color: var(--tn-accent);
+		font-size: .82rem;
+		font-weight: 600;
+		letter-spacing: .08em;
+	}
+
+	.tn-field { margin-bottom: 1.1rem; }
+	.tn-field:last-child { margin-bottom: 0; }
+	.tn-field__label {
+		display: block;
+		font-size: .82rem;
+		font-weight: 600;
+		text-transform: uppercase;
+		letter-spacing: .08em;
+		color: var(--tn-muted);
+		margin-bottom: .55rem;
+	}
+	.tn-options {
+		display: flex;
+		flex-wrap: wrap;
+		gap: .4rem;
+	}
+	.tn-chip {
+		display: inline-flex;
+		align-items: center;
+		cursor: pointer;
+		user-select: none;
+	}
+	.tn-chip input {
+		position: absolute;
+		opacity: 0;
+		pointer-events: none;
+	}
+	.tn-chip__label {
+		display: inline-block;
+		padding: .38rem .85rem;
+		font-size: .87rem;
+		border: 1px solid var(--tn-line);
+		background: #fff;
+		border-radius: 999px;
+		color: var(--tn-ink);
+		transition: all .12s ease-in-out;
+	}
+	.tn-chip input:checked + .tn-chip__label {
+		background: var(--tn-ink);
+		border-color: var(--tn-ink);
+		color: #fff;
+	}
+	.tn-chip input:focus-visible + .tn-chip__label {
+		outline: 2px solid var(--tn-accent);
+		outline-offset: 2px;
+	}
+	.tn-chip:hover .tn-chip__label { border-color: var(--tn-accent); }
+
+	.tn-textarea {
+		width: 100%;
+		min-height: 90px;
+		padding: .75rem .9rem;
+		border: 1px solid var(--tn-line);
+		border-radius: var(--tn-radius);
+		background: #fff;
+		font: inherit;
+		color: var(--tn-ink);
+		resize: vertical;
+	}
+	.tn-textarea:focus {
+		outline: none;
+		border-color: var(--tn-accent);
+		box-shadow: 0 0 0 3px var(--tn-accent-soft);
+	}
+
+	.tn-honey-nav {
+		display: flex;
+		justify-content: space-between;
+		gap: .75rem;
+		margin-top: 2rem;
+		padding-top: 1.5rem;
+		border-top: 1px solid var(--tn-line);
+	}
+
+	.tn-btn {
+		font: inherit;
+		background: #fff;
+		color: var(--tn-ink);
+		border: 1px solid var(--tn-line);
+		border-radius: var(--tn-radius);
+		padding: .55rem 1rem;
+		cursor: pointer;
+		font-size: .88rem;
+		font-weight: 500;
+		transition: background-color .15s, border-color .15s;
+	}
+	.tn-btn:hover { background: var(--tn-accent-soft); border-color: var(--tn-accent); }
+	.tn-btn--primary { background: var(--tn-ink); color: #fff; border-color: var(--tn-ink); }
+	.tn-btn--primary:hover { background: var(--tn-accent); border-color: var(--tn-accent); color: #fff; }
+
+	.tn-submit-bar {
+		background: var(--tn-surface);
+		border: 1px solid var(--tn-line);
+		border-radius: var(--tn-radius);
+		padding: 1.25rem 1.5rem;
+		margin-top: 1.5rem;
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: space-between;
+		align-items: center;
+		gap: 1rem;
+	}
+	.tn-submit-bar__hint { color: var(--tn-muted); font-size: .88rem; }
+	.tn-btn--submit {
+		padding: .8rem 1.6rem;
+		font-size: .95rem;
+		font-weight: 600;
+	}
+
+	@media (max-width: 640px) {
+		.tn-page { padding: 1.5rem 0 3rem; }
+		.tn-section { padding: 1.15rem 1rem 1rem; }
+		.tn-honey__head { flex-direction: column; align-items: flex-start; }
+	}
+
+	@media print {
+		.header_wrap, .header_sticky_bar, footer, .tn-nav, .tn-honey-nav, .tn-submit-bar { display: none !important; }
+		.tn-page { background: #fff; padding: 0; }
+		.tn-honey { display: block !important; page-break-after: always; }
+		.tn-honey:last-child { page-break-after: auto; }
+		.tn-section { border: 1px solid #ccc; break-inside: avoid; box-shadow: none; }
+		.tn-chip__label { border-color: #999; }
+		.tn-chip input:not(:checked) + .tn-chip__label { display: none; }
+		.tn-chip input:checked + .tn-chip__label { background: #000 !important; color: #fff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+		.tn-textarea { border: 1px solid #ccc; min-height: 60px; }
+		.tn-honey__head { border-bottom: 2px solid #000; padding-bottom: .5rem; }
+	}
+</style>
+{% endblock %}
+
+{% block body %}
+{% set formData = formData|default({}) %}
+{% set isExisting = isExisting|default(false) %}
+{% set successFlash = app.flashes('success')|first|default(null) %}
+{% set infoFlash    = app.flashes('info')|first|default(null) %}
+
+<main id="main-content">
+<div class="tn-page">
+	<div class="tn-container">
+
+		<header class="tn-header">
+			<span class="tn-kicker">Carnet de dégustation</span>
+			<h1 class="tn-title">Fiche sensorielle des miels</h1>
+			<p class="tn-subtitle">Renseignez votre nom, cochez les descripteurs qui correspondent à votre perception pour chaque miel, puis enregistrez votre fiche. Vous pourrez la compléter plus tard en revenant avec le même nom.</p>
+		</header>
+
+		{% if successFlash %}
+			<div class="tn-flash tn-flash--success" role="status">{{ successFlash }}</div>
+		{% endif %}
+		{% if infoFlash %}
+			<div class="tn-flash tn-flash--info" role="status">{{ infoFlash }}</div>
+		{% endif %}
+
+		{% if errors is defined and errors is not empty %}
+			<div class="tn-errors" role="alert">
+				<strong>Impossible d'enregistrer la fiche&nbsp;:</strong>
+				<ul>
+					{% for e in errors %}<li>{{ e }}</li>{% endfor %}
+				</ul>
+			</div>
+		{% endif %}
+
+		<form method="get" action="{{ path('app_tasting_notebook') }}" class="tn-resume" role="search">
+			<label for="tn-resume-nom" class="tn-resume__label">Reprendre ma fiche</label>
+			<input type="text" id="tn-resume-nom" name="nom" class="tn-resume__input" placeholder="Votre nom" value="{{ isExisting ? tasterName : '' }}" autocomplete="name">
+			<button type="submit" class="tn-btn">Charger</button>
+		</form>
+
+		<form method="post" action="{{ path('app_tasting_notebook') }}" novalidate>
+			<input type="hidden" name="_token" value="{{ csrf_token('tasting_notebook') }}">
+
+			<div class="tn-identity">
+				<label for="taster_name" class="tn-identity__label">Votre nom</label>
+				<input
+					type="text"
+					id="taster_name"
+					name="taster_name"
+					class="tn-identity__input"
+					value="{{ tasterName|default('') }}"
+					required
+					minlength="2"
+					maxlength="120"
+					placeholder="Ex. Marie Dupont"
+					autocomplete="name">
+			</div>
+
+			<nav class="tn-nav" role="tablist" aria-label="Sélection du miel">
+				{% for slug, name in honeys %}
+					<button type="button" class="tn-nav__btn{% if loop.first %} is-active{% endif %}" role="tab" data-honey-nav="{{ slug }}" aria-selected="{{ loop.first ? 'true' : 'false' }}">{{ name }}</button>
+				{% endfor %}
+			</nav>
+
+			<div class="tn-honeys">
+				{% for slug, name in honeys %}
+					<article class="tn-honey{% if loop.first %} is-active{% endif %}" data-honey="{{ slug }}" id="honey-{{ slug }}">
+
+						<div class="tn-honey__head">
+							<h2 class="tn-honey__name">{{ name }}</h2>
+							<span class="tn-progress" data-progress="{{ slug }}"></span>
+						</div>
+
+						{% for section in sections %}
+							<section class="tn-section" aria-labelledby="{{ slug }}-{{ section.slug }}-title">
+								<h3 class="tn-section__title" id="{{ slug }}-{{ section.slug }}-title">
+									<span class="tn-section__title-num">{{ loop.index }}.</span>
+									<span>{{ section.title }}</span>
+								</h3>
+
+								{% for field in section.fields %}
+									{% set fieldName = slug ~ '__' ~ section.slug ~ '__' ~ field.slug %}
+									{% set exclusive = field.exclusive|default(false) %}
+									{% set current = formData[fieldName]|default(exclusive ? '' : []) %}
+									<div class="tn-field">
+										<span class="tn-field__label">{{ field.label }}</span>
+										<div class="tn-options" role="{{ exclusive ? 'radiogroup' : 'group' }}" aria-label="{{ field.label }}">
+											{% for opt in field.options %}
+												{% set checked = exclusive ? (current == opt) : (opt in current) %}
+												<label class="tn-chip">
+													<input
+														type="{{ exclusive ? 'radio' : 'checkbox' }}"
+														name="{{ fieldName }}{{ exclusive ? '' : '[]' }}"
+														value="{{ opt }}"
+														data-field="{{ fieldName }}"
+														{% if checked %}checked{% endif %}>
+													<span class="tn-chip__label">{{ opt }}</span>
+												</label>
+											{% endfor %}
+										</div>
+									</div>
+								{% endfor %}
+
+								{% for area in section.textareas|default([]) %}
+									{% set areaName = slug ~ '__' ~ section.slug ~ '__' ~ area.slug %}
+									<div class="tn-field">
+										<label class="tn-field__label" for="{{ areaName }}">{{ area.label }}</label>
+										<textarea class="tn-textarea" id="{{ areaName }}" name="{{ areaName }}" data-field="{{ areaName }}" rows="3" maxlength="2000" placeholder="…">{{ formData[areaName]|default('') }}</textarea>
+									</div>
+								{% endfor %}
+							</section>
+						{% endfor %}
+
+						<div class="tn-honey-nav">
+							<button type="button" class="tn-btn" data-honey-prev>← Précédent</button>
+							<button type="button" class="tn-btn tn-btn--primary" data-honey-next>Suivant →</button>
+						</div>
+
+					</article>
+				{% endfor %}
+			</div>
+
+			<div class="tn-submit-bar">
+				<p class="tn-submit-bar__hint">
+					{% if isExisting %}
+						Vous mettez à jour la fiche existante de <strong>{{ tasterName }}</strong>. Vos anciennes réponses ont été rechargées.
+					{% else %}
+						La fiche sera enregistrée avec votre nom. Revenez avec le même nom pour la compléter plus tard.
+					{% endif %}
+				</p>
+				<button type="submit" class="tn-btn tn-btn--primary tn-btn--submit">
+					{{ isExisting ? 'Mettre à jour la fiche' : 'Enregistrer la fiche' }}
+				</button>
+			</div>
+		</form>
+
+	</div>
+</div>
+</main>
+{% endblock %}
+
+{% block page_scripts %}
+<script>
+(function () {
+	'use strict';
+
+	// Navigation entre miels (client uniquement — aucune persistance ici)
+	const honeys = Array.from(document.querySelectorAll('[data-honey]')).map(function (n) { return n.dataset.honey; });
+
+	function showHoney(slug) {
+		document.querySelectorAll('[data-honey]').forEach(function (el) {
+			el.classList.toggle('is-active', el.dataset.honey === slug);
+		});
+		document.querySelectorAll('[data-honey-nav]').forEach(function (btn) {
+			const active = btn.dataset.honeyNav === slug;
+			btn.classList.toggle('is-active', active);
+			btn.setAttribute('aria-selected', active ? 'true' : 'false');
+		});
+		window.scrollTo({ top: 0, behavior: 'smooth' });
+	}
+
+	function currentHoneySlug() {
+		const el = document.querySelector('.tn-honey.is-active');
+		return el ? el.dataset.honey : honeys[0];
+	}
+
+	// Compteur de descripteurs cochés par miel + indicateur sur la nav
+	function fieldsFilledForHoney(slug) {
+		let count = 0;
+		const marked = new Set();
+		document.querySelectorAll('[data-honey="' + slug + '"] [data-field]').forEach(function (el) {
+			const key = el.dataset.field;
+			if (marked.has(key)) return;
+			if (el.type === 'checkbox' || el.type === 'radio') {
+				if (el.checked) { count++; marked.add(key); }
+			} else if (el.value && el.value.trim()) {
+				count++; marked.add(key);
+			}
+		});
+		return count;
+	}
+
+	function refreshProgress() {
+		document.querySelectorAll('[data-progress]').forEach(function (el) {
+			const slug = el.dataset.progress;
+			const n = fieldsFilledForHoney(slug);
+			el.textContent = n ? n + ' descripteur' + (n > 1 ? 's' : '') + ' renseigné' + (n > 1 ? 's' : '') : 'Aucune note';
+		});
+		document.querySelectorAll('[data-honey-nav]').forEach(function (btn) {
+			btn.classList.toggle('has-data', fieldsFilledForHoney(btn.dataset.honeyNav) > 0);
+		});
+	}
+
+	document.addEventListener('click', function (e) {
+		const t = e.target.closest('[data-honey-nav],[data-honey-prev],[data-honey-next]');
+		if (!t) return;
+		if (t.dataset.honeyNav) return showHoney(t.dataset.honeyNav);
+		const idx = honeys.indexOf(currentHoneySlug());
+		const next = t.hasAttribute('data-honey-next') ? idx + 1 : idx - 1;
+		if (next >= 0 && next < honeys.length) showHoney(honeys[next]);
+	});
+
+	document.addEventListener('change', refreshProgress);
+	document.addEventListener('input', function (e) {
+		if (e.target && e.target.tagName === 'TEXTAREA') refreshProgress();
+	});
+
+	// Sur la soumission, replier tous les miels visibles pour éviter que le premier reste "actif"
+	// (navigation purement visuelle : les inputs restent tous dans le DOM et sont envoyés).
+	refreshProgress();
+})();
+</script>
+{% endblock %}

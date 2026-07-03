@@ -1,0 +1,3 @@
+{# Rendu de la valeur du champ `data` d'une fiche de dégustation dans EasyAdmin. #}
+{% set grouped = honey_tasting_group(entity.instance.data) %}
+{% include 'admin/honey_tasting/_detail.html.twig' with { grouped: grouped } only %}

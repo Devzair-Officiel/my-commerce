@@ -21,6 +21,7 @@ use App\Controller\Admin\Dashboard\DashboardMetricsProvider;
 use App\Entity\Blog;
 use App\Entity\Faq;
 use App\Entity\FaqLink;
+use App\Entity\HoneyTasting;
 use App\Entity\Invoice;
 use App\Entity\Review;
 use App\Entity\AuditLog;
@@ -205,6 +206,7 @@ final class DashboardController extends AbstractDashboardController
             yield MenuItem::linkToCrud('Adresses', 'fas fa-address-card', Address::class);
         }
         yield MenuItem::linkToCrud('Messages', 'fas fa-envelope', Contact::class);
+        yield MenuItem::linkToCrud('Fiches de dégustation', 'fa fa-clipboard-list', HoneyTasting::class);
 
         // ── Configuration (admin uniquement) ──────────────────────────────────
         if ($isAdmin) {
