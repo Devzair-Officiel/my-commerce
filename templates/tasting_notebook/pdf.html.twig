@@ -79,6 +79,16 @@
 			border-left: 2pt solid #b6862c;
 			white-space: pre-wrap;
 		}
+		.entry__note {
+			display: block;
+			margin-top: 2pt;
+			padding: 3pt 5pt;
+			font-size: 9pt;
+			font-style: italic;
+			color: #555;
+			background: #fff;
+			border-left: 1.5pt solid #b6862c;
+		}
 		.empty {
 			font-style: italic;
 			color: #888;
@@ -121,6 +131,9 @@
 						<div class="entry{% if entry.isText %} entry--text{% endif %}">
 							<span class="entry__label">{{ entry.label }} :</span>
 							<span class="entry__values">{{ entry.values|join(', ') }}</span>
+							{% if entry.note is defined and entry.note %}
+								<div class="entry__note">{{ entry.note }}</div>
+							{% endif %}
 						</div>
 					{% endfor %}
 				</div>

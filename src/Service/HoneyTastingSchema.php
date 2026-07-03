@@ -97,11 +97,12 @@ final class HoneyTastingSchema
     }
 
     /**
-     * Regroupe les données brutes d'une fiche (clés `honey__section__field`)
-     * en une structure hiérarchique prête à afficher : miel → section → champ → valeurs libellées.
+     * Regroupe les données brutes d'une fiche (clés `honey__section__field`
+     * et notes libres `…__note`) en une structure hiérarchique prête à afficher :
+     * miel → section → champ → valeurs libellées + note libre.
      *
      * @param array<string, mixed> $data
-     * @return list<array{honeySlug: string, honeyName: string, sections: list<array{title: string, entries: list<array{label: string, values: list<string>, isText: bool}>}>}>
+     * @return list<array{honeySlug: string, honeyName: string, sections: list<array{title: string, entries: list<array{label: string, values: list<string>, note: string, isText: bool}>}>}>
      */
     public function groupForDisplay(array $data): array
     {
@@ -116,15 +117,24 @@ final class HoneyTastingSchema
                 $entries = [];
 
                 foreach ($section['fields'] as $field) {
-                    $key = $honeySlug . '__' . $section['slug'] . '__' . $field['slug'];
-                    if (!isset($data[$key])) {
+                    $key  = $honeySlug . '__' . $section['slug'] . '__' . $field['slug'];
+                    $note = trim((string) ($data[$key . '__note'] ?? ''));
+
+                    if (!isset($data[$key]) && $note === '') {
                         continue;
                     }
-                    $value = $data[$key];
-                    $values = \is_array($value) ? array_values(array_map('strval', $value)) : [(string) $value];
+
+                    if (isset($data[$key])) {
+                        $value  = $data[$key];
+                        $values = \is_array($value) ? array_values(array_map('strval', $value)) : [(string) $value];
+                    } else {
+                        $values = [];
+                    }
+
                     $entries[] = [
                         'label'  => $field['label'],
                         'values' => $values,
+                        'note'   => $note,
                         'isText' => false,
                     ];
                 }
@@ -137,6 +147,7 @@ final class HoneyTastingSchema
                     $entries[] = [
                         'label'  => $area['label'],
                         'values' => [(string) $data[$key]],
+                        'note'   => '',
                         'isText' => true,
                     ];
                 }

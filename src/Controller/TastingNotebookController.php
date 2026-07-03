@@ -7,6 +7,7 @@ use App\Repository\HoneyTastingRepository;
 use App\Service\HoneyTastingSchema;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -97,6 +98,52 @@ final class TastingNotebookController extends AbstractController
     }
 
     /**
+     * Enregistrement automatique déclenché en tâche de fond par le JS (clic Suivant/Précédent
+     * ou fermeture de la page via `navigator.sendBeacon`). Upsert idempotent par nom.
+     * Retourne un JSON minimal pour ne pas surcharger la réponse d'un beacon.
+     */
+    #[Route('/carnet-degustation-miel/enregistrement-auto', name: 'app_tasting_notebook_autosave', methods: ['POST'])]
+    public function autosave(
+        Request $request,
+        EntityManagerInterface $em,
+        ValidatorInterface $validator,
+    ): JsonResponse {
+        $token = (string) $request->request->get('_token', '');
+        if (!$this->isCsrfTokenValid('tasting_notebook', $token)) {
+            return new JsonResponse(['ok' => false, 'error' => 'invalid_csrf'], 400);
+        }
+
+        $tasterName = trim((string) $request->request->get('taster_name', ''));
+        if ($tasterName === '') {
+            return new JsonResponse(['ok' => false, 'error' => 'missing_name'], 422);
+        }
+
+        $formData = $this->extractSubmittedData($request, $this->schema->honeys(), $this->schema->sections());
+
+        $tasting  = $this->repository->findOneByNameCaseInsensitive($tasterName);
+        $isUpdate = $tasting !== null;
+        $tasting ??= new HoneyTasting();
+        $tasting->setTasterName($tasterName)->setData($formData);
+
+        $violations = $validator->validate($tasting);
+        if (\count($violations) > 0) {
+            $messages = [];
+            foreach ($violations as $v) {
+                $messages[] = $v->getMessage();
+            }
+
+            return new JsonResponse(['ok' => false, 'errors' => $messages], 422);
+        }
+
+        if (!$isUpdate) {
+            $em->persist($tasting);
+        }
+        $em->flush();
+
+        return new JsonResponse(['ok' => true, 'isUpdate' => $isUpdate]);
+    }
+
+    /**
      * Reconstruit la structure { "<honey>__<section>__<field>": string|string[] } à partir
      * de la requête, en filtrant les valeurs sur les options connues pour éviter toute injection.
      *
@@ -131,6 +178,13 @@ final class TastingNotebookController extends AbstractController
                         if ($kept) {
                             $out[$key] = $kept;
                         }
+                    }
+
+                    // Note libre associée à ce descripteur (Couleur, Aspect, …)
+                    $noteKey  = $key . '__note';
+                    $noteText = trim((string) $request->request->get($noteKey, ''));
+                    if ($noteText !== '') {
+                        $out[$noteKey] = mb_substr($noteText, 0, 500);
                     }
                 }
 

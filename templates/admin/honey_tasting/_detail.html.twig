@@ -28,6 +28,16 @@
 	.ht-entry { margin: .25rem 0 .25rem .35rem; }
 	.ht-entry__label { font-weight: 600; }
 	.ht-entry__values { color: #333; }
+	.ht-entry__note {
+		display: block;
+		margin: .25rem 0 0 .1rem;
+		padding: .25rem .5rem;
+		font-size: .82rem;
+		font-style: italic;
+		color: #555;
+		background: #fff;
+		border-left: 2px solid #b6862c;
+	}
 	.ht-entry--text .ht-entry__values {
 		display: block;
 		margin-top: .2rem;
@@ -66,6 +76,9 @@
 									<span class="ht-entry__values">
 										{% for v in entry.values %}<span class="ht-chip">{{ v }}</span>{% endfor %}
 									</span>
+								{% endif %}
+								{% if entry.note is defined and entry.note %}
+									<div class="ht-entry__note">{{ entry.note }}</div>
 								{% endif %}
 							</div>
 						{% endfor %}

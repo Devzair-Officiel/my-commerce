@@ -94,6 +94,30 @@
 		box-shadow: 0 0 0 3px var(--tn-accent-soft);
 	}
 
+	.tn-autosave {
+		position: fixed;
+		right: 1rem;
+		bottom: 1rem;
+		z-index: 40;
+		background: var(--tn-ink);
+		color: #fff;
+		font-size: .85rem;
+		padding: .5rem .85rem;
+		border-radius: var(--tn-radius);
+		box-shadow: 0 6px 20px rgba(0,0,0,.15);
+		opacity: 0;
+		transform: translateY(6px);
+		transition: opacity .18s ease, transform .18s ease;
+		pointer-events: none;
+	}
+	.tn-autosave.is-visible {
+		opacity: 1;
+		transform: translateY(0);
+	}
+	.tn-autosave.is-error {
+		background: #b23a3a;
+	}
+
 	.tn-flash, .tn-errors {
 		border-radius: var(--tn-radius);
 		padding: .85rem 1.1rem;
@@ -298,6 +322,26 @@
 		box-shadow: 0 0 0 3px var(--tn-accent-soft);
 	}
 
+	.tn-field__note {
+		display: block;
+		width: 100%;
+		margin-top: .55rem;
+		padding: .5rem .75rem;
+		font: inherit;
+		font-size: .9rem;
+		color: var(--tn-ink);
+		background: #fff;
+		border: 1px dashed var(--tn-line);
+		border-radius: var(--tn-radius);
+	}
+	.tn-field__note:focus {
+		outline: none;
+		border-style: solid;
+		border-color: var(--tn-accent);
+		box-shadow: 0 0 0 3px var(--tn-accent-soft);
+	}
+	.tn-field__note::placeholder { color: #b7ad9d; font-style: italic; }
+
 	.tn-honey-nav {
 		display: flex;
 		justify-content: space-between;
@@ -401,8 +445,10 @@
 			<button type="submit" class="tn-btn">Charger</button>
 		</form>
 
-		<form method="post" action="{{ path('app_tasting_notebook') }}" novalidate>
+		<form method="post" action="{{ path('app_tasting_notebook') }}" id="tn-form" data-autosave-url="{{ path('app_tasting_notebook_autosave') }}" novalidate>
 			<input type="hidden" name="_token" value="{{ csrf_token('tasting_notebook') }}">
+
+			<div class="tn-autosave" data-autosave-indicator aria-live="polite" hidden></div>
 
 			<div class="tn-identity">
 				<label for="taster_name" class="tn-identity__label">Votre nom</label>
@@ -443,6 +489,7 @@
 
 								{% for field in section.fields %}
 									{% set fieldName = slug ~ '__' ~ section.slug ~ '__' ~ field.slug %}
+									{% set noteName  = fieldName ~ '__note' %}
 									{% set exclusive = field.exclusive|default(false) %}
 									{% set current = formData[fieldName]|default(exclusive ? '' : []) %}
 									<div class="tn-field">
@@ -461,6 +508,15 @@
 												</label>
 											{% endfor %}
 										</div>
+										<input
+											type="text"
+											class="tn-field__note"
+											id="{{ noteName }}"
+											name="{{ noteName }}"
+											data-field="{{ noteName }}"
+											maxlength="500"
+											value="{{ formData[noteName]|default('') }}"
+											placeholder="Note libre pour {{ field.label|lower }}…">
 									</div>
 								{% endfor %}
 
@@ -557,10 +613,15 @@
 	document.addEventListener('click', function (e) {
 		const t = e.target.closest('[data-honey-nav],[data-honey-prev],[data-honey-next]');
 		if (!t) return;
-		if (t.dataset.honeyNav) return showHoney(t.dataset.honeyNav);
+		if (t.dataset.honeyNav) {
+			autosave().finally(function () { showHoney(t.dataset.honeyNav); });
+			return;
+		}
 		const idx = honeys.indexOf(currentHoneySlug());
 		const next = t.hasAttribute('data-honey-next') ? idx + 1 : idx - 1;
-		if (next >= 0 && next < honeys.length) showHoney(honeys[next]);
+		if (next >= 0 && next < honeys.length) {
+			autosave().finally(function () { showHoney(honeys[next]); });
+		}
 	});
 
 	document.addEventListener('change', refreshProgress);
@@ -568,8 +629,68 @@
 		if (e.target && e.target.tagName === 'TEXTAREA') refreshProgress();
 	});
 
-	// Sur la soumission, replier tous les miels visibles pour éviter que le premier reste "actif"
-	// (navigation purement visuelle : les inputs restent tous dans le DOM et sont envoyés).
+	// --- Enregistrement automatique ---
+	// Objectif : ne rien perdre si l'utilisateur navigue entre miels ou quitte la page.
+	// - Clic Suivant/Précédent/onglet miel  → fetch async (attend la réponse serveur).
+	// - Fermeture d'onglet / navigation     → navigator.sendBeacon (fire-and-forget).
+	// Sans nom saisi, on ne tente rien (le serveur rejetterait de toute façon).
+	const form = document.getElementById('tn-form');
+	const autosaveUrl = form ? form.dataset.autosaveUrl : null;
+	const indicator = document.querySelector('[data-autosave-indicator]');
+	let inFlight = false;
+	let indicatorTimeout;
+
+	function tasterFilled() {
+		const v = form ? (form.querySelector('[name="taster_name"]').value || '').trim() : '';
+		return v.length >= 2;
+	}
+
+	function showIndicator(text, isError) {
+		if (!indicator) return;
+		indicator.textContent = text;
+		indicator.hidden = false;
+		indicator.classList.toggle('is-error', !!isError);
+		indicator.classList.add('is-visible');
+		clearTimeout(indicatorTimeout);
+		indicatorTimeout = setTimeout(function () {
+			indicator.classList.remove('is-visible');
+			setTimeout(function () { indicator.hidden = true; }, 200);
+		}, 1800);
+	}
+
+	function autosave() {
+		if (!form || !autosaveUrl || !tasterFilled() || inFlight) {
+			return Promise.resolve();
+		}
+		inFlight = true;
+		const data = new FormData(form);
+		return fetch(autosaveUrl, {
+			method: 'POST',
+			body: data,
+			credentials: 'same-origin',
+			headers: { 'X-Requested-With': 'XMLHttpRequest' },
+		}).then(function (r) {
+			if (!r.ok) throw new Error('http ' + r.status);
+			return r.json();
+		}).then(function (json) {
+			if (json && json.ok) showIndicator('Fiche enregistrée', false);
+		}).catch(function () {
+			showIndicator('Sauvegarde impossible', true);
+		}).finally(function () {
+			inFlight = false;
+		});
+	}
+
+	// Fermeture / navigation : sendBeacon est le seul mécanisme fiable au déchargement.
+	function beacon() {
+		if (!form || !autosaveUrl || !tasterFilled()) return;
+		try { navigator.sendBeacon(autosaveUrl, new FormData(form)); } catch (e) { /* ignore */ }
+	}
+	window.addEventListener('pagehide', beacon);
+	document.addEventListener('visibilitychange', function () {
+		if (document.visibilityState === 'hidden') beacon();
+	});
+
 	refreshProgress();
 })();
 </script>
