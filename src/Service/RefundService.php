@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Service;
 
 use App\Entity\Order;
+use App\Enum\FulfillmentStatus;
 use App\Enum\PaymentStatus;
 use Stripe\Exception\ApiErrorException;
 use Stripe\Refund;
@@ -16,7 +17,10 @@ use Stripe\Stripe;
  */
 final class RefundService
 {
-    public function __construct(private readonly StripeService $stripeService) {}
+    public function __construct(
+        private readonly StripeService $stripeService,
+        private readonly StockAllocatorInterface $stockAllocator,
+    ) {}
 
     /**
      * @throws \LogicException     si la commande n'est pas dans un état remboursable
@@ -46,6 +50,11 @@ final class RefundService
         // Remboursement complet du PaymentIntent
         Refund::create(['payment_intent' => $paymentReference]);
 
+        // Le statut passe à Rembourse AVANT l'arrivée du webhook charge.refunded :
+        // celui-ci verra la commande déjà remboursée et ne touchera pas au stock.
+        // La restauration du stock doit donc être faite ici.
         $order->setPaymentStatus(PaymentStatus::Rembourse);
+        $order->setFulfillmentStatus(FulfillmentStatus::Annule);
+        $this->stockAllocator->restoreStockForCancelledOrder($order);
     }
 }

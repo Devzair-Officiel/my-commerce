@@ -566,10 +566,12 @@ body:not(.ea-content-width-full) .content-wrapper {
 }
 /* Textarea description détaillée — redimensionnable avec scroll */
 textarea[name*="more_description"] {
-    resize: vertical !important;
+    resize: both !important;
+    overflow-x: auto !important;
     overflow-y: auto !important;
     min-height: 300px;
     max-height: 700px;
+    white-space: pre;
     font-family: 'Courier New', monospace !important;
     font-size: 13px !important;
     line-height: 1.6;
@@ -578,17 +580,26 @@ textarea[name*="more_description"] {
 /* Textarea HTML resizable + scrollable — casse le wrapper auto-grow d'EasyAdmin */
 .form-widget:has(textarea.ea-textarea-resizable) {
     display: block !important;
+    overflow: visible !important;
 }
 .form-widget:has(textarea.ea-textarea-resizable)::after {
     display: none !important;
 }
+.form-widget:has(textarea.ea-textarea-resizable) .col-12,
+.form-widget:has(textarea.ea-textarea-resizable) .col {
+    overflow: visible !important;
+}
 textarea.ea-textarea-resizable {
     display: block !important;
+    box-sizing: border-box !important;
     width: 100% !important;
+    min-width: 0 !important;
     min-height: 320px !important;
     max-height: 650px !important;
     resize: vertical !important;
+    overflow-x: scroll !important;
     overflow-y: scroll !important;
+    white-space: pre !important;
     font-family: 'Courier New', monospace !important;
     font-size: 13px !important;
     line-height: 1.6 !important;

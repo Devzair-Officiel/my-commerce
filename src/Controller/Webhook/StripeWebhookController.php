@@ -249,26 +249,44 @@ final class StripeWebhookController extends AbstractController
                 }
 
                 if ($event->type === 'charge.refunded') {
-                    $wasAlreadyRefunded = $order->getPaymentStatus() === PaymentStatus::Rembourse;
+                    // Stripe envoie charge.refunded aussi pour un remboursement PARTIEL :
+                    // dans ce cas la commande reste payée/expédiable, on ne touche ni au
+                    // statut ni au stock — on trace pour suivi manuel.
+                    // Champs absents (payload inattendu) → traité comme total, comme avant.
+                    $chargeAmount   = isset($obj->amount) ? (int) $obj->amount : 0;
+                    $amountRefunded = isset($obj->amount_refunded) ? (int) $obj->amount_refunded : 0;
+                    $isFullRefund   = $chargeAmount <= 0 || $amountRefunded >= $chargeAmount;
 
-                    $order->setPaymentStatus(PaymentStatus::Rembourse);
-                    $order->setFulfillmentStatus(FulfillmentStatus::Annule);
+                    if (!$isFullRefund) {
+                        $this->logger->warning('Remboursement partiel reçu — statut et stock inchangés', [
+                            'order_id'        => $order->getId(),
+                            'order_ref'       => $order->getOrderReference(),
+                            'amount_cents'    => $chargeAmount,
+                            'refunded_cents'  => $amountRefunded,
+                            'payment_intent'  => $piId,
+                        ]);
+                    } else {
+                        $wasAlreadyRefunded = $order->getPaymentStatus() === PaymentStatus::Rembourse;
 
-                    // Restaurer le stock uniquement si ce n'est pas un double remboursement
-                    if (!$wasAlreadyRefunded) {
-                        $this->stockAllocator->restoreStockForCancelledOrder($order);
-                        $this->logger->info('Stock restauré suite au remboursement', [
+                        $order->setPaymentStatus(PaymentStatus::Rembourse);
+                        $order->setFulfillmentStatus(FulfillmentStatus::Annule);
+
+                        // Restaurer le stock uniquement si ce n'est pas un double remboursement
+                        if (!$wasAlreadyRefunded) {
+                            $this->stockAllocator->restoreStockForCancelledOrder($order);
+                            $this->logger->info('Stock restauré suite au remboursement', [
+                                'order_id'       => $order->getId(),
+                                'order_ref'      => $order->getOrderReference(),
+                                'payment_intent' => $piId,
+                            ]);
+                        }
+
+                        $this->logger->info('Commande remboursée', [
                             'order_id'       => $order->getId(),
                             'order_ref'      => $order->getOrderReference(),
                             'payment_intent' => $piId,
                         ]);
                     }
-
-                    $this->logger->info('Commande remboursée', [
-                        'order_id'       => $order->getId(),
-                        'order_ref'      => $order->getOrderReference(),
-                        'payment_intent' => $piId,
-                    ]);
                 }
 
                 if ($event->type === 'payment_intent.requires_action') {

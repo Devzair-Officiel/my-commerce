@@ -8,7 +8,6 @@ use App\Enum\CarrierType;
 use App\Repository\ShipmentRepository;
 use App\Service\Carrier\ColissimoTrackingService;
 use App\Service\Carrier\ShipmentService;
-use Doctrine\ORM\EntityManagerInterface;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
@@ -49,7 +48,6 @@ final class ShipmentCrudController extends AbstractCrudController
         private readonly ShipmentService          $shipmentService,
         private readonly ShipmentRepository       $shipmentRepository,
         private readonly ColissimoTrackingService  $trackingService,
-        private readonly EntityManagerInterface   $em,
     ) {}
 
     public static function getEntityFqcn(): string

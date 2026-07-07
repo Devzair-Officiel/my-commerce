@@ -214,8 +214,10 @@ class ApiAddressController extends AbstractController
             ], Response::HTTP_FORBIDDEN);
         }
 
+        // Comparaison stricte : str_starts_with laisserait passer
+        // https://site.com.evil.com quand le site est https://site.com
         $origin = $request->headers->get('Origin');
-        if ($origin && !str_starts_with($origin, $request->getSchemeAndHttpHost())) {
+        if ($origin && $origin !== $request->getSchemeAndHttpHost()) {
             return $this->json([
                 'isSuccess' => false,
                 'message' => 'Origin invalide',

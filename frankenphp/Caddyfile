@@ -80,4 +80,9 @@
 	file_server {
 		hide *.php
 	}
+
+}
+
+mizan-commerce.com {
+    reverse_proxy mizan-commerce-frontend-1:3000
 }

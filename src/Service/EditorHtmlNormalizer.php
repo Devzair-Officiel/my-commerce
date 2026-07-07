@@ -17,7 +17,8 @@ namespace App\Service;
  *
  * Important :
  * cette classe ne gère pas la sécurité HTML.
- * La sécurité est assurée en amont par le HtmlSanitizer Symfony.
+ * La sécurité est assurée en aval, dans EditorHtmlExtension, qui applique
+ * le sanitizer `app.editor_content_sanitizer` sur la sortie de ce service.
  */
 final class EditorHtmlNormalizer
 {
@@ -51,7 +52,7 @@ final class EditorHtmlNormalizer
 
         // Si le contenu ne commence pas déjà par un bloc structurant,
         // on encapsule l'ensemble dans un paragraphe.
-        if (!preg_match('~^\s*<(p|ul|ol|h2|h3|h4)\b~i', $content)) {
+        if (!preg_match('~^\s*<(p|ul|ol|h2|h3|h4|section|div|article|figure|blockquote)\b~i', $content)) {
             $content = '<p>' . $content . '</p>';
         }
 

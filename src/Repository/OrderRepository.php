@@ -5,6 +5,7 @@ namespace App\Repository;
 use App\Entity\User;
 use App\Entity\Order;
 use App\Enum\FulfillmentStatus;
+use App\Enum\PaymentStatus;
 use Doctrine\Persistence\ManagerRegistry;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 
@@ -65,6 +66,32 @@ class OrderRepository extends ServiceEntityRepository
             ->setMaxResults(1)
             ->getQuery()
             ->getOneOrNullResult();
+    }
+
+    /**
+     * Commandes brouillon dont la réservation de stock a expiré (checkout abandonné).
+     * La revalidation finale (paiement confirmé entre-temps…) est faite sous verrou
+     * pessimiste par l'appelant.
+     *
+     * @return list<int> ids des commandes concernées
+     */
+    public function findExpiredStockReservationIds(\DateTimeImmutable $before, int $limit = 100): array
+    {
+        $rows = $this->createQueryBuilder('o')
+            ->select('o.id')
+            ->andWhere('o.stockReservedAt IS NOT NULL')
+            ->andWhere('o.stockReservedAt < :before')
+            ->andWhere('o.fulfillmentStatus = :draft')
+            ->andWhere('o.paymentStatus = :pending')
+            ->setParameter('before', $before)
+            ->setParameter('draft', FulfillmentStatus::Brouillon)
+            ->setParameter('pending', PaymentStatus::Attente)
+            ->orderBy('o.stockReservedAt', 'ASC')
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getSingleColumnResult();
+
+        return array_map(intval(...), $rows);
     }
 
     //    /**

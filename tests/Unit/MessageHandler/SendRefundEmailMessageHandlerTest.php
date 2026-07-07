@@ -10,6 +10,7 @@ use App\Message\SendRefundEmailMessage;
 use App\MessageHandler\SendRefundEmailMessageHandler;
 use App\Repository\OrderRepository;
 use PHPUnit\Framework\TestCase;
+use Psr\Log\NullLogger;
 use Symfony\Component\Mailer\MailerInterface;
 
 /**
@@ -38,6 +39,17 @@ class SendRefundEmailMessageHandlerTest extends TestCase
         return $order;
     }
 
+    private function makeHandler(OrderRepository $repo, MailerInterface $mailer): SendRefundEmailMessageHandler
+    {
+        return new SendRefundEmailMessageHandler(
+            $repo,
+            $mailer,
+            new NullLogger(),
+            'contact@example.com',
+            'Nidemiel',
+        );
+    }
+
     public function testDoesNothingWhenOrderNotFound(): void
     {
         $repo = $this->createStub(OrderRepository::class);
@@ -46,7 +58,7 @@ class SendRefundEmailMessageHandlerTest extends TestCase
         $mailer = $this->createMock(MailerInterface::class);
         $mailer->expects($this->never())->method('send');
 
-        $handler = new SendRefundEmailMessageHandler($repo, $mailer);
+        $handler = $this->makeHandler($repo, $mailer);
         ($handler)(new SendRefundEmailMessage(999));
     }
 
@@ -60,7 +72,7 @@ class SendRefundEmailMessageHandlerTest extends TestCase
         $mailer = $this->createMock(MailerInterface::class);
         $mailer->expects($this->never())->method('send');
 
-        $handler = new SendRefundEmailMessageHandler($repo, $mailer);
+        $handler = $this->makeHandler($repo, $mailer);
         ($handler)(new SendRefundEmailMessage(1));
     }
 
@@ -74,7 +86,7 @@ class SendRefundEmailMessageHandlerTest extends TestCase
         $mailer = $this->createMock(MailerInterface::class);
         $mailer->expects($this->once())->method('send');
 
-        $handler = new SendRefundEmailMessageHandler($repo, $mailer);
+        $handler = $this->makeHandler($repo, $mailer);
         ($handler)(new SendRefundEmailMessage(1));
     }
 
@@ -88,7 +100,7 @@ class SendRefundEmailMessageHandlerTest extends TestCase
         $mailer = $this->createMock(MailerInterface::class);
         $mailer->expects($this->once())->method('send');
 
-        $handler = new SendRefundEmailMessageHandler($repo, $mailer);
+        $handler = $this->makeHandler($repo, $mailer);
         ($handler)(new SendRefundEmailMessage(1));
     }
 }

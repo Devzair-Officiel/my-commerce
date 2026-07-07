@@ -98,7 +98,7 @@ class StripeWebhookControllerTest extends TestCase
         $stockAllocator = $this->createMock(StockAllocatorInterface::class);
         $messageBus     = $this->createMock(MessageBusInterface::class);
 
-        $order = $this->makeOrder(PaymentStatus::Pending, FulfillmentStatus::Draft);
+        $order = $this->makeOrder(PaymentStatus::Attente, FulfillmentStatus::Brouillon);
         $order->method('isStockDecremented')->willReturn(false);
         $order->method('isStockReserved')->willReturn(false);
         $order->method('isConfirmationEmailSent')->willReturn(false);
@@ -112,7 +112,7 @@ class StripeWebhookControllerTest extends TestCase
 
         $stockAllocator->expects($this->once())->method('decrementStockForPaidOrder');
         $messageBus->expects($this->once())->method('dispatch')->willReturn(new Envelope(new \stdClass()));
-        $order->expects($this->once())->method('setPaymentStatus')->with(PaymentStatus::Paid);
+        $order->expects($this->once())->method('setPaymentStatus')->with(PaymentStatus::Paye);
         $order->expects($this->once())->method('markStockDecremented');
 
         $controller = $this->makeController(em: $em, orderRepo: $orderRepo, stockAllocator: $stockAllocator, messageBus: $messageBus);
@@ -125,7 +125,7 @@ class StripeWebhookControllerTest extends TestCase
     {
         $stockAllocator = $this->createMock(StockAllocatorInterface::class);
 
-        $order = $this->makeOrder(PaymentStatus::Pending, FulfillmentStatus::Draft);
+        $order = $this->makeOrder(PaymentStatus::Attente, FulfillmentStatus::Brouillon);
         $order->method('isStockDecremented')->willReturn(false);
         $order->method('isStockReserved')->willReturn(true);
         $order->method('isConfirmationEmailSent')->willReturn(false);
@@ -154,7 +154,7 @@ class StripeWebhookControllerTest extends TestCase
         $order->method('getId')->willReturn(42);
         $order->method('getOrderReference')->willReturn('CMD-2026-TEST');
         $order->method('getPaymentReference')->willReturn('pi_test');
-        $order->method('getPaymentStatus')->willReturn(PaymentStatus::Paid);
+        $order->method('getPaymentStatus')->willReturn(PaymentStatus::Paye);
         $order->method('getOrderTotalTtcCents')->willReturn(5000);
         $order->method('isStockDecremented')->willReturn(true);
 
@@ -181,7 +181,7 @@ class StripeWebhookControllerTest extends TestCase
     {
         $stockAllocator = $this->createMock(StockAllocatorInterface::class);
 
-        $order = $this->makeOrder(PaymentStatus::Pending, FulfillmentStatus::Draft);
+        $order = $this->makeOrder(PaymentStatus::Attente, FulfillmentStatus::Brouillon);
         $order->method('isStockReserved')->willReturn(true);
 
         $em = $this->createStub(EntityManagerInterface::class);
@@ -191,7 +191,7 @@ class StripeWebhookControllerTest extends TestCase
         $orderRepo->method('findOneBy')->willReturn($order);
 
         $stockAllocator->expects($this->once())->method('releaseStockReservation')->with($order);
-        $order->expects($this->once())->method('setPaymentStatus')->with(PaymentStatus::Failed);
+        $order->expects($this->once())->method('setPaymentStatus')->with(PaymentStatus::Echoue);
 
         $response = $this->makeController(em: $em, orderRepo: $orderRepo, stockAllocator: $stockAllocator)(
             $this->makeRequest('payment_intent.payment_failed', 'pi_test')
@@ -204,7 +204,7 @@ class StripeWebhookControllerTest extends TestCase
     {
         $stockAllocator = $this->createMock(StockAllocatorInterface::class);
 
-        $order = $this->makeOrder(PaymentStatus::Pending, FulfillmentStatus::Draft);
+        $order = $this->makeOrder(PaymentStatus::Attente, FulfillmentStatus::Brouillon);
         $order->method('isStockReserved')->willReturn(true);
 
         $em = $this->createStub(EntityManagerInterface::class);
@@ -214,7 +214,7 @@ class StripeWebhookControllerTest extends TestCase
         $orderRepo->method('findOneBy')->willReturn($order);
 
         $stockAllocator->expects($this->once())->method('releaseStockReservation')->with($order);
-        $order->expects($this->once())->method('setPaymentStatus')->with(PaymentStatus::Failed);
+        $order->expects($this->once())->method('setPaymentStatus')->with(PaymentStatus::Echoue);
 
         $response = $this->makeController(em: $em, orderRepo: $orderRepo, stockAllocator: $stockAllocator)(
             $this->makeRequest('payment_intent.canceled', 'pi_test')
@@ -231,7 +231,7 @@ class StripeWebhookControllerTest extends TestCase
         $order->method('getId')->willReturn(42);
         $order->method('getOrderReference')->willReturn('CMD-2026-TEST');
         $order->method('getPaymentReference')->willReturn(null);
-        $order->method('getPaymentStatus')->willReturn(PaymentStatus::Paid);
+        $order->method('getPaymentStatus')->willReturn(PaymentStatus::Paye);
         $order->method('getOrderTotalTtcCents')->willReturn(5000);
 
         $em = $this->createStub(EntityManagerInterface::class);
@@ -244,6 +244,35 @@ class StripeWebhookControllerTest extends TestCase
 
         $response = $this->makeController(em: $em, orderRepo: $orderRepo, stockAllocator: $stockAllocator)(
             $this->makeChargeRefundedRequest('pi_test')
+        );
+
+        $this->assertSame(200, $response->getStatusCode());
+    }
+
+    public function testChargeRefundedPartielNeChangeNiStatutNiStock(): void
+    {
+        $stockAllocator = $this->createMock(StockAllocatorInterface::class);
+
+        $order = $this->createMock(Order::class);
+        $order->method('getId')->willReturn(42);
+        $order->method('getOrderReference')->willReturn('CMD-2026-TEST');
+        $order->method('getPaymentReference')->willReturn(null);
+        $order->method('getPaymentStatus')->willReturn(PaymentStatus::Paye);
+        $order->method('getOrderTotalTtcCents')->willReturn(5000);
+
+        // Remboursement partiel : la commande reste payée, rien ne bouge
+        $order->expects($this->never())->method('setPaymentStatus');
+        $order->expects($this->never())->method('setFulfillmentStatus');
+        $stockAllocator->expects($this->never())->method('restoreStockForCancelledOrder');
+
+        $em = $this->createStub(EntityManagerInterface::class);
+        $em->method('wrapInTransaction')->willReturnCallback(fn (callable $fn) => $fn());
+
+        $orderRepo = $this->createStub(OrderRepository::class);
+        $orderRepo->method('findOneBy')->willReturn($order);
+
+        $response = $this->makeController(em: $em, orderRepo: $orderRepo, stockAllocator: $stockAllocator)(
+            $this->makeChargeRefundedRequest('pi_test', amount: 5000, amountRefunded: 2000)
         );
 
         $this->assertSame(200, $response->getStatusCode());
@@ -281,7 +310,7 @@ class StripeWebhookControllerTest extends TestCase
         $order->method('getId')->willReturn(42);
         $order->method('getOrderReference')->willReturn('CMD-2026-TEST');
         $order->method('getPaymentReference')->willReturn(null);
-        $order->method('getPaymentStatus')->willReturn(PaymentStatus::Pending);
+        $order->method('getPaymentStatus')->willReturn(PaymentStatus::Attente);
         $order->method('getOrderTotalTtcCents')->willReturn(5000);
         $order->method('isStockDecremented')->willReturn(false);
         $order->method('isStockReserved')->willReturn(false);
@@ -308,7 +337,7 @@ class StripeWebhookControllerTest extends TestCase
         $order->method('getId')->willReturn(42);
         $order->method('getOrderReference')->willReturn('CMD-2026-TEST');
         $order->method('getPaymentReference')->willReturn(null);
-        $order->method('getPaymentStatus')->willReturn(PaymentStatus::Pending);
+        $order->method('getPaymentStatus')->willReturn(PaymentStatus::Attente);
         $order->method('getOrderTotalTtcCents')->willReturn(5000);
         $order->method('isStockDecremented')->willReturn(true); // déjà fait
         $order->method('isConfirmationEmailSent')->willReturn(false);
@@ -339,7 +368,7 @@ class StripeWebhookControllerTest extends TestCase
         $order->method('getOrderReference')->willReturn('CMD-2026-TEST');
         $order->method('getPaymentReference')->willReturn(null);
         // Commande déjà au statut Refunded
-        $order->method('getPaymentStatus')->willReturn(PaymentStatus::Refunded);
+        $order->method('getPaymentStatus')->willReturn(PaymentStatus::Rembourse);
         $order->method('getOrderTotalTtcCents')->willReturn(5000);
 
         $em = $this->createStub(EntityManagerInterface::class);
@@ -365,7 +394,7 @@ class StripeWebhookControllerTest extends TestCase
         $order->method('getId')->willReturn(42);
         $order->method('getOrderReference')->willReturn('CMD-2026-TEST');
         $order->method('getPaymentReference')->willReturn('pi_test');
-        $order->method('getPaymentStatus')->willReturn(PaymentStatus::Paid);
+        $order->method('getPaymentStatus')->willReturn(PaymentStatus::Paye);
         $order->method('getOrderTotalTtcCents')->willReturn(5000);
 
         $em = $this->createStub(EntityManagerInterface::class);
@@ -395,7 +424,7 @@ class StripeWebhookControllerTest extends TestCase
         $order->method('getOrderReference')->willReturn('CMD-2026-TEST');
         $order->method('getPaymentReference')->willReturn('pi_test');
         // Commande déjà au statut Disputed (webhook rejoué)
-        $order->method('getPaymentStatus')->willReturn(PaymentStatus::Disputed);
+        $order->method('getPaymentStatus')->willReturn(PaymentStatus::Conteste);
         $order->method('getOrderTotalTtcCents')->willReturn(5000);
 
         $em = $this->createStub(EntityManagerInterface::class);
@@ -425,7 +454,7 @@ class StripeWebhookControllerTest extends TestCase
         $order->method('getId')->willReturn(42);
         $order->method('getOrderReference')->willReturn('CMD-2026-TEST');
         $order->method('getPaymentReference')->willReturn(null);
-        $order->method('getPaymentStatus')->willReturn(PaymentStatus::Pending);
+        $order->method('getPaymentStatus')->willReturn(PaymentStatus::Attente);
         $order->method('getOrderTotalTtcCents')->willReturn(5000);
 
         $em = $this->createStub(EntityManagerInterface::class);
@@ -454,7 +483,7 @@ class StripeWebhookControllerTest extends TestCase
         $order->method('getId')->willReturn(42);
         $order->method('getOrderReference')->willReturn('CMD-2026-TEST');
         $order->method('getPaymentReference')->willReturn('pi_test');
-        $order->method('getPaymentStatus')->willReturn(PaymentStatus::Paid);
+        $order->method('getPaymentStatus')->willReturn(PaymentStatus::Paye);
         $order->method('getOrderTotalTtcCents')->willReturn(5000);
 
         $em = $this->createStub(EntityManagerInterface::class);
@@ -480,7 +509,7 @@ class StripeWebhookControllerTest extends TestCase
         $order->method('getId')->willReturn(42);
         $order->method('getOrderReference')->willReturn('CMD-2026-TEST');
         $order->method('getPaymentReference')->willReturn('pi_test');
-        $order->method('getPaymentStatus')->willReturn(PaymentStatus::Paid);
+        $order->method('getPaymentStatus')->willReturn(PaymentStatus::Paye);
         $order->method('getOrderTotalTtcCents')->willReturn(5000);
 
         $em = $this->createStub(EntityManagerInterface::class);
@@ -509,7 +538,7 @@ class StripeWebhookControllerTest extends TestCase
         $order->method('getId')->willReturn(42);
         $order->method('getOrderReference')->willReturn('CMD-2026-TEST');
         $order->method('getPaymentReference')->willReturn('pi_test');
-        $order->method('getPaymentStatus')->willReturn(PaymentStatus::Paid);
+        $order->method('getPaymentStatus')->willReturn(PaymentStatus::Paye);
         $order->method('getOrderTotalTtcCents')->willReturn(5000);
 
         $em = $this->createStub(EntityManagerInterface::class);
@@ -538,10 +567,10 @@ class StripeWebhookControllerTest extends TestCase
         $order->method('getId')->willReturn(42);
         $order->method('getOrderReference')->willReturn('CMD-2026-TEST');
         $order->method('getPaymentReference')->willReturn('pi_test');
-        $order->method('getPaymentStatus')->willReturn(PaymentStatus::Disputed);
+        $order->method('getPaymentStatus')->willReturn(PaymentStatus::Conteste);
         $order->method('getOrderTotalTtcCents')->willReturn(5000);
 
-        $order->expects($this->once())->method('setPaymentStatus')->with(PaymentStatus::Paid);
+        $order->expects($this->once())->method('setPaymentStatus')->with(PaymentStatus::Paye);
 
         $em = $this->createStub(EntityManagerInterface::class);
         $em->method('wrapInTransaction')->willReturnCallback(fn (callable $fn) => $fn());
@@ -568,10 +597,10 @@ class StripeWebhookControllerTest extends TestCase
         $order->method('getId')->willReturn(42);
         $order->method('getOrderReference')->willReturn('CMD-2026-TEST');
         $order->method('getPaymentReference')->willReturn('pi_test');
-        $order->method('getPaymentStatus')->willReturn(PaymentStatus::Disputed);
+        $order->method('getPaymentStatus')->willReturn(PaymentStatus::Conteste);
         $order->method('getOrderTotalTtcCents')->willReturn(5000);
 
-        $order->expects($this->once())->method('setPaymentStatus')->with(PaymentStatus::Refunded);
+        $order->expects($this->once())->method('setPaymentStatus')->with(PaymentStatus::Rembourse);
 
         $em = $this->createStub(EntityManagerInterface::class);
         $em->method('wrapInTransaction')->willReturnCallback(fn (callable $fn) => $fn());
@@ -598,7 +627,7 @@ class StripeWebhookControllerTest extends TestCase
         $order->method('getId')->willReturn(42);
         $order->method('getOrderReference')->willReturn('CMD-2026-TEST');
         $order->method('getPaymentReference')->willReturn('pi_test');
-        $order->method('getPaymentStatus')->willReturn(PaymentStatus::Disputed);
+        $order->method('getPaymentStatus')->willReturn(PaymentStatus::Conteste);
         $order->method('getOrderTotalTtcCents')->willReturn(5000);
 
         $order->expects($this->never())->method('setPaymentStatus');
@@ -629,7 +658,7 @@ class StripeWebhookControllerTest extends TestCase
         $order->method('getId')->willReturn(42);
         $order->method('getOrderReference')->willReturn('CMD-2026-TEST');
         $order->method('getPaymentReference')->willReturn(null);
-        $order->method('getPaymentStatus')->willReturn(PaymentStatus::Pending);
+        $order->method('getPaymentStatus')->willReturn(PaymentStatus::Attente);
         $order->method('getOrderTotalTtcCents')->willReturn(5000);
         $order->method('isStockDecremented')->willReturn(false);
         $order->method('isStockReserved')->willReturn(false);
@@ -757,16 +786,24 @@ class StripeWebhookControllerTest extends TestCase
         return $this->makeSignedRequest($payload);
     }
 
-    private function makeChargeRefundedRequest(string $piId): Request
+    private function makeChargeRefundedRequest(string $piId, ?int $amount = null, ?int $amountRefunded = null): Request
     {
+        $object = [
+            'id'             => 'ch_test',
+            'payment_intent' => $piId,
+        ];
+        if ($amount !== null) {
+            $object['amount'] = $amount;
+        }
+        if ($amountRefunded !== null) {
+            $object['amount_refunded'] = $amountRefunded;
+        }
+
         $payload = json_encode([
             'id'   => 'evt_' . uniqid(),
             'type' => 'charge.refunded',
             'data' => [
-                'object' => [
-                    'id'             => 'ch_test',
-                    'payment_intent' => $piId,
-                ],
+                'object' => $object,
             ],
         ]);
 

@@ -38,6 +38,13 @@ final class ClearCartAfterPaymentSubscriber implements EventSubscriberInterface
             return;
         }
 
+        // Rien à nettoyer si la session n'a pas de panier : évite une requête
+        // SQL sur chaque hit de chaque utilisateur connecté.
+        $request = $event->getRequest();
+        if (!$request->hasPreviousSession() || empty($request->getSession()->get('cart'))) {
+            return;
+        }
+
         $user = $this->security->getUser();
         if (!$user instanceof User) {
             return;

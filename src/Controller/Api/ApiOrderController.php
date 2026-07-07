@@ -3,12 +3,15 @@
 namespace App\Controller\Api;
 
 use App\Entity\User;
+use App\Enum\FulfillmentStatus;
+use App\Enum\PaymentStatus;
 use App\Repository\AddressRepository;
 use App\Repository\CarrierRepository;
 use App\Repository\OrderRepository;
 use App\Service\CartService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Exception\JsonException;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Attribute\Route;
@@ -46,7 +49,19 @@ final class ApiOrderController extends AbstractController
             return $this->json(['error' => 'Order not found'], 404);
         }
 
-        $payload = $request->toArray();
+        // Une commande n'est modifiable que tant qu'elle est en brouillon non payé :
+        // adresses, transporteur et total sont figés dès que le paiement démarre.
+        if ($order->getFulfillmentStatus() !== FulfillmentStatus::Brouillon
+            || $order->getPaymentStatus() !== PaymentStatus::Attente
+        ) {
+            return $this->json(['error' => 'Order is no longer editable'], 409);
+        }
+
+        try {
+            $payload = $request->toArray();
+        } catch (JsonException) {
+            return $this->json(['error' => 'Invalid JSON payload'], 400);
+        }
 
         $shippingRaw = $payload['shipping_address'] ?? null;
         $billingRaw = $payload['billing_address'] ?? null;

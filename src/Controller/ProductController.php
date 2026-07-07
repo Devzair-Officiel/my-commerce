@@ -49,7 +49,9 @@ final class ProductController extends AbstractController
         $product = $this->productRepo->findOneBySlugWithRelations($slug);
 
         if (!$product) {
-            return $this->render('page/not-fount.html.twig');
+            // Statut 404 réel : un 200 sur une URL inexistante crée des
+            // soft-404 côté moteurs de recherche.
+            return $this->render('page/not-fount.html.twig', [], new Response('', Response::HTTP_NOT_FOUND));
         }
 
         $seo = $seoResolver->forProduct($product, $request);
@@ -242,8 +244,8 @@ final class ProductController extends AbstractController
     }
 
     #[Route('/error', name: 'app_error')]
-    public function errorPage()
+    public function errorPage(): Response
     {
-        return $this->render('page/not-fount.html.twig');
+        return $this->render('page/not-fount.html.twig', [], new Response('', Response::HTTP_NOT_FOUND));
     }
 }

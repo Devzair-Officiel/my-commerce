@@ -88,13 +88,29 @@ class ProductRepository extends ServiceEntityRepository
 
         $safeTerm = str_replace(['\\', '%', '_'], ['\\\\', '\\%', '\\_'], $term);
 
-        return $this->createQueryBuilder('p')
-            ->leftJoin('p.medias', 'm')->addSelect('m')
+        // 1) ids limités SANS fetch-join : combiner setMaxResults avec un join
+        //    de collection tronque en lignes SQL, pas en entités (galeries
+        //    incomplètes, moins de produits que demandé).
+        $ids = $this->createQueryBuilder('p')
+            ->select('p.id')
             ->where('p.title LIKE :term OR p.description LIKE :term')
             ->andWhere('p.isAvailable = true')
             ->setParameter('term', '%' . $safeTerm . '%')
             ->orderBy('p.title', 'ASC')
             ->setMaxResults($limit)
+            ->getQuery()
+            ->getSingleColumnResult();
+
+        if ($ids === []) {
+            return [];
+        }
+
+        // 2) hydratation complète avec médias sur les ids retenus
+        return $this->createQueryBuilder('p')
+            ->leftJoin('p.medias', 'm')->addSelect('m')
+            ->where('p.id IN (:ids)')
+            ->setParameter('ids', $ids)
+            ->orderBy('p.title', 'ASC')
             ->getQuery()
             ->getResult();
     }

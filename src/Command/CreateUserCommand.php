@@ -79,7 +79,6 @@ class CreateUserCommand extends Command
             UserRole::User->label(),
         );
 
-        /** @var UserRole $selectedRole */
         $selectedRole = $roleChoices[$roleLabel];
 
         // ── Nom complet (optionnel) ───────────────────────────────────────────

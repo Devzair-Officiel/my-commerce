@@ -119,11 +119,30 @@ class CheckoutController extends AbstractController
             ]);
         }
 
+        // Le webhook Stripe est la source de vérité du statut : cette URL est
+        // forgeable (payment_intent en query), on ne présente le succès et on
+        // ne touche à la commande que si le paiement est réellement confirmé.
+        switch ($order->getPaymentStatus()) {
+            case PaymentStatus::Paye:
+                break; // suite du traitement ci-dessous
+
+            case PaymentStatus::Attente:
+                // Webhook pas encore arrivé (ou 3DS en cours) : on attend.
+                return $this->render('payment/pending.html.twig', [
+                    'page_name' => '⏳ Confirmation du paiement',
+                    'auto_refresh' => true,
+                ]);
+
+            default:
+                // Échoué, annulé, remboursé… : pas de page succès.
+                $this->addFlash('danger', 'Le paiement n\'a pas abouti. Votre panier a été conservé, vous pouvez réessayer.');
+                return $this->redirectToRoute('app_cart');
+        }
+
         if (null === $order->getOrderReference()) {
             $order->generateOrderReferenceIfMissing();
         }
 
-        // Toujours vider la session, quelle que soit la situation en base
         $this->cartService->clearCart();
 
         // Fallback : garantir que paidAt est toujours renseigné dès que le paiement est confirmé
@@ -175,10 +194,6 @@ class CheckoutController extends AbstractController
             'fulfillmentStatus' => FulfillmentStatus::Brouillon,
             'paymentStatus' => PaymentStatus::Attente,
         ]);
-
-        if ($draft && $draft->getPaymentStatus() !== PaymentStatus::Attente) {
-            $draft = null;
-        }
 
         $order = $draft ?? new Order();
 

@@ -234,7 +234,9 @@ final class SeoResolver
      *     robots?: string,
      *     ogImage?: string|array|null,
      *     ogType?: string,
-     *     breadcrumbs?: array<int, array{name: string, url: string}>
+     *     breadcrumbs?: array<int, array{name: string, url: string}>,
+     *     organization?: array{name: string, url: string, logo?: string, email?: string, phone?: string, address?: string, sameAs?: list<string>},
+     *     faq?: array<int, array{question: string, answer: string}>
      * } $data
      */
     public function forStaticPage(array $data, Request $request): SeoPayload
@@ -575,7 +577,7 @@ final class SeoResolver
     /**
      * Génère les données structurées d'une organisation.
      *
-     * @param array{name: string, url: string, logo?: string, email?: string, phone?: string, address?: string} $data
+     * @param array{name: string, url: string, logo?: string, email?: string, phone?: string, address?: string, sameAs?: list<string>} $data
      */
     private function organizationJsonLd(array $data): array
     {

@@ -24,8 +24,10 @@ final class ColissimoClient
 {
     private const SOAP_URL = 'https://ws.colissimo.fr/sls-ws/SlsServiceWS';
 
+    private readonly HttpClientInterface $httpClient;
+
     public function __construct(
-        private readonly HttpClientInterface $httpClient,
+        HttpClientInterface $httpClient,
         private readonly LoggerInterface $logger,
         private readonly CacheInterface $cache,
         private readonly string $login,
@@ -34,7 +36,15 @@ final class ColissimoClient
         private readonly string $senderStreet = '',
         private readonly string $senderZip    = '',
         private readonly string $senderCity   = '',
-    ) {}
+    ) {
+        // Le token widget est récupéré en synchrone pendant le checkout :
+        // sans borne, une API Colissimo dégradée bloque la page jusqu'au
+        // timeout socket (~60 s). timeout = inactivité, max_duration = total.
+        $this->httpClient = $httpClient->withOptions([
+            'timeout' => 5,
+            'max_duration' => 15,
+        ]);
+    }
 
     // ── Label generation ─────────────────────────────────────────────────────
 

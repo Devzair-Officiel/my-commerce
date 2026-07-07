@@ -7,7 +7,6 @@ namespace App\MessageHandler;
 use App\Controller\Admin\ReviewCrudController;
 use App\Message\SendNewReviewNotificationMessage;
 use App\Repository\ReviewRepository;
-use Doctrine\ORM\EntityManagerInterface;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGenerator;
 use Psr\Log\LoggerInterface;
@@ -21,7 +20,6 @@ final readonly class SendNewReviewNotificationMessageHandler
 {
     public function __construct(
         private ReviewRepository       $reviewRepository,
-        private EntityManagerInterface $em,
         private MailerInterface        $mailer,
         private AdminUrlGenerator      $adminUrlGenerator,
         private LoggerInterface        $logger,

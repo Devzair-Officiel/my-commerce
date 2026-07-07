@@ -37,6 +37,9 @@ final class AuditSubscriber
     /** Champs exclus de l'audit (sensibles ou techniques) */
     private const EXCLUDED_FIELDS = [
         'password', 'googleId', 'pendingEmailToken',
+        // Panier sauvegardé : modifié à chaque changement de panier,
+        // sans valeur d'audit — pollue la table et le diff des updates User.
+        'savedCart',
     ];
 
     /** Logs UPDATE/DELETE en attente (collectés dans onFlush) */
@@ -237,7 +240,7 @@ final class AuditSubscriber
         return (string) $value;
     }
 
-    private function currentUserEmail(): ?string
+    private function currentUserEmail(): string
     {
         $user = $this->security->getUser();
         return $user?->getUserIdentifier() ?? 'system';

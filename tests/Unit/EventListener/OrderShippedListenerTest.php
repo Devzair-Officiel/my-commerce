@@ -67,7 +67,7 @@ class OrderShippedListenerTest extends TestCase
         $bus = $this->createMock(MessageBusInterface::class);
         $bus->expects($this->never())->method('dispatch');
 
-        $args = $this->makeArgs($this->makeOrder(1), true, FulfillmentStatus::Preparing);
+        $args = $this->makeArgs($this->makeOrder(1), true, FulfillmentStatus::Preparation);
 
         (new OrderShippedListener($bus))->preUpdate($args);
     }
@@ -87,7 +87,7 @@ class OrderShippedListenerTest extends TestCase
         $bus = $this->createMock(MessageBusInterface::class);
         $bus->expects($this->never())->method('dispatch');
 
-        $args = $this->makeArgs($this->makeOrder(null), true, FulfillmentStatus::Shipped);
+        $args = $this->makeArgs($this->makeOrder(null), true, FulfillmentStatus::Expedie);
 
         (new OrderShippedListener($bus))->preUpdate($args);
     }
@@ -100,7 +100,7 @@ class OrderShippedListenerTest extends TestCase
             ->with($this->isInstanceOf(SendShippedEmailMessage::class))
             ->willReturn(new Envelope(new SendShippedEmailMessage(42)));
 
-        $args = $this->makeArgs($this->makeOrder(42), true, FulfillmentStatus::Shipped);
+        $args = $this->makeArgs($this->makeOrder(42), true, FulfillmentStatus::Expedie);
 
         (new OrderShippedListener($bus))->preUpdate($args);
     }

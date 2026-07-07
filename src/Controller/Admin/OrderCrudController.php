@@ -40,6 +40,9 @@ use EasyCorp\Bundle\EasyAdminBundle\Filter\EntityFilter;
  */
 final class OrderCrudController extends AbstractCrudController
 {
+    /** Id du token CSRF protégeant les actions sensibles (refund, expédition…). */
+    private const ACTION_CSRF_ID = 'admin_order_action';
+
     public function __construct(
         private readonly RefundService $refundService,
         private readonly EntityManagerInterface $em,
@@ -47,7 +50,35 @@ final class OrderCrudController extends AbstractCrudController
         private readonly MessageBusInterface $bus,
         private readonly ShipmentService $shipmentService,
         private readonly LockFactory $lockFactory,
+        private readonly AdminUrlGenerator $adminUrlGenerator,
     ) {}
+
+    /**
+     * URL d'action custom signée d'un token CSRF : les actions EasyAdmin custom
+     * sont des liens GET, sans token un admin connecté peut être piégé par un
+     * simple lien externe (SameSite=Lax n'arrête pas les GET top-level).
+     */
+    private function actionUrl(string $action, Order $order): string
+    {
+        $token = $this->container->get('security.csrf.token_manager')
+            ->getToken(self::ACTION_CSRF_ID)->getValue();
+
+        return $this->adminUrlGenerator
+            ->setController(self::class)
+            ->setAction($action)
+            ->setEntityId($order->getId())
+            ->set('token', $token)
+            ->generateUrl();
+    }
+
+    /** Rejette la requête si le token CSRF de l'action est absent ou invalide. */
+    private function denyUnlessValidActionToken(AdminContext $context): void
+    {
+        $token = (string) $context->getRequest()->query->get('token', '');
+        if (!$this->isCsrfTokenValid(self::ACTION_CSRF_ID, $token)) {
+            throw $this->createAccessDeniedException('Jeton CSRF invalide.');
+        }
+    }
 
     public static function getEntityFqcn(): string
     {
@@ -77,7 +108,7 @@ final class OrderCrudController extends AbstractCrudController
     public function configureActions(Actions $actions): Actions
     {
         $shipAction = Action::new('shipOrder', 'Expédier', 'fa fa-truck')
-            ->linkToCrudAction('shipOrder')
+            ->linkToUrl(fn (Order $order): string => $this->actionUrl('shipOrder', $order))
             ->addCssClass('btn btn-sm btn-primary')
             ->displayIf(static fn (Order $order): bool =>
                 $order->getPaymentStatus() === PaymentStatus::Paye
@@ -86,12 +117,15 @@ final class OrderCrudController extends AbstractCrudController
             );
 
         $refundAction = Action::new('refund', 'Rembourser', 'fa fa-sync-left')
-            ->linkToCrudAction('processRefund')
+            ->linkToUrl(fn (Order $order): string => $this->actionUrl('processRefund', $order))
             ->addCssClass('btn btn-sm btn-danger')
+            ->setHtmlAttributes([
+                'onclick' => 'return confirm("Rembourser intégralement cette commande via Stripe ?")',
+            ])
             ->displayIf(static fn (Order $order): bool => $order->getPaymentStatus() === PaymentStatus::Paye);
 
         $sendRefundEmailAction = Action::new('sendRefundEmail', 'Envoyer email remboursement', 'fa fa-envelope')
-            ->linkToCrudAction('sendRefundEmail')
+            ->linkToUrl(fn (Order $order): string => $this->actionUrl('sendRefundEmail', $order))
             ->addCssClass('btn btn-sm btn-outline-danger')
             ->setHtmlAttributes([
                 'onclick' => 'return confirm("Envoyer un email de confirmation de remboursement au client ?")',
@@ -133,6 +167,7 @@ final class OrderCrudController extends AbstractCrudController
         if (!$this->isGranted('ROLE_ADMIN')) {
             throw $this->createAccessDeniedException('Remboursement réservé aux administrateurs.');
         }
+        $this->denyUnlessValidActionToken($context);
 
         $entityId = $context->getRequest()->query->getInt('entityId');
         $order = $this->orderRepository->find($entityId);
@@ -154,8 +189,11 @@ final class OrderCrudController extends AbstractCrudController
         }
 
         try {
-            $this->refundService->refundOrder($order);
-            $this->em->flush();
+            // Transaction requise : la restauration du stock verrouille les produits
+            // (PESSIMISTIC_WRITE) et doit être atomique avec le changement de statut.
+            $this->em->wrapInTransaction(function () use ($order): void {
+                $this->refundService->refundOrder($order);
+            });
             $this->addFlash('success', \sprintf(
                 'Commande #%d remboursée avec succès.',
                 (int) $order->getId(),
@@ -180,6 +218,8 @@ final class OrderCrudController extends AbstractCrudController
 
     public function sendRefundEmail(AdminContext $context, AdminUrlGenerator $urlGenerator): Response
     {
+        $this->denyUnlessValidActionToken($context);
+
         $entityId = $context->getRequest()->query->getInt('entityId');
         $order = $this->orderRepository->find($entityId);
 
@@ -378,6 +418,8 @@ final class OrderCrudController extends AbstractCrudController
      */
     public function shipOrder(AdminContext $context, AdminUrlGenerator $urlGenerator): Response
     {
+        $this->denyUnlessValidActionToken($context);
+
         $entityId = $context->getRequest()->query->getInt('entityId');
         $order = $this->orderRepository->find($entityId);
 

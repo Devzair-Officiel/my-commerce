@@ -123,7 +123,6 @@ final class CartService
 
     /**
      * Persiste le panier en BDD pour l'utilisateur connecté.
-     * Utilise une référence Doctrine (sans SELECT) pour éviter une requête inutile.
      */
     private function persistCartForCurrentUser(?array $cart): void
     {
@@ -132,9 +131,14 @@ final class CartService
             return;
         }
 
-        /** @var User $managedUser */
-        $managedUser = $this->em->getReference(User::class, $user->getId());
-        $managedUser->setSavedCart($cart);
+        // getCartDetails() repasse par ici à chaque affichage : ne déclencher
+        // ni écriture ni flush global si le panier sauvegardé est déjà à jour.
+        // (== : même contenu clés/valeurs, indépendamment de l'ordre)
+        if ($user->getSavedCart() == $cart) {
+            return;
+        }
+
+        $user->setSavedCart($cart);
         $this->em->flush();
     }
 
@@ -392,7 +396,10 @@ final class CartService
             return false;
         }
 
-        return (int) $product->getStock() >= $quantity;
+        // null = stock non géré → illimité (même convention qu'addToCart)
+        $stock = $product->getStock();
+
+        return $stock === null || $stock >= $quantity;
     }
 
     private function resolveCarrierFromSessionOrDefault(): array
@@ -430,8 +437,6 @@ final class CartService
 
     /**
      * Applique la livraison offerte si le total TTC des produits atteint le seuil.
-     *
-     * @param array{name?:string, price?:int} $carrier
      */
     public function applyFreeShippingThreshold(int $carrierPriceCents, int $itemsTotalTtcCents): int
     {

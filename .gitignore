@@ -30,3 +30,4 @@
 
 # robots.txt généré selon l'environnement
 /public/robots.txt
+backup_*.sql

@@ -2,20 +2,29 @@
  * Compteur de caractères pour les champs texte du formulaire produit (EasyAdmin).
  *
  * Champs couverts :
- *   - Product_description       (Trix, min 10)
- *   - Product_more_description  (Textarea, max 5000)
- *   - Product_additional_infos  (Trix, max 5000)
+ *   - Product_description       (CodeMirror, min 10)
+ *   - Product_more_description  (CodeMirror, max 10000)
+ *   - Product_additional_infos  (Trix, max 10000)
  */
 
-const TRIX_FIELDS = {
+const CODEMIRROR_FIELDS = {
     'Product_description':      { min: 10 },
-    'Product_additional_infos': { max: 5000 },
+    'Product_more_description': { max: 10000 },
+};
+
+const TRIX_FIELDS = {
+    'Product_additional_infos': { max: 10000 },
 };
 
 document.addEventListener('DOMContentLoaded', () => {
-    initTextareaCounter('Product_more_description', { max: 5000 });
+    // EasyAdmin initialise CodeMirror aussi sur DOMContentLoaded.
+    // On diffère légèrement pour être sûr que les instances existent.
+    setTimeout(() => {
+        Object.entries(CODEMIRROR_FIELDS).forEach(([id, limits]) => {
+            initCodeMirrorCounter(id, limits);
+        });
+    }, 200);
 
-    // Trix déjà initialisé : on parcourt les éditeurs présents dans le DOM
     document.querySelectorAll('trix-editor').forEach((editor) => {
         const inputId = editor.getAttribute('input');
         if (inputId && TRIX_FIELDS[inputId]) {
@@ -34,15 +43,22 @@ document.addEventListener('trix-initialize', (e) => {
 
 // ---------------------------------------------------------------------------
 
-function initTextareaCounter(id, limits) {
+function initCodeMirrorCounter(id, limits) {
     const textarea = document.getElementById(id);
     if (!textarea) return;
 
-    const counter = createCounter();
-    textarea.parentNode.insertBefore(counter, textarea.nextSibling);
+    // CodeMirror 5 insère un div.CodeMirror juste après le textarea dans le DOM
+    // et stocke l'instance sur ce div : wrapperDiv.CodeMirror === cmInstance
+    const wrapper = textarea.nextElementSibling;
+    if (!wrapper || !wrapper.CodeMirror) return;
 
-    renderCounter(counter, textarea.value.length, limits);
-    textarea.addEventListener('input', () => renderCounter(counter, textarea.value.length, limits));
+    const cm = wrapper.CodeMirror;
+
+    const counter = createCounter();
+    wrapper.parentNode.insertBefore(counter, wrapper.nextSibling);
+
+    renderCounter(counter, cm.getValue().length, limits);
+    cm.on('change', () => renderCounter(counter, cm.getValue().length, limits));
 }
 
 function initTrixCounter(trixEditor, limits) {

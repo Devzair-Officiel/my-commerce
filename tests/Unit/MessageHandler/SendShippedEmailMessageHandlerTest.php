@@ -9,7 +9,9 @@ use App\Entity\User;
 use App\Message\SendShippedEmailMessage;
 use App\MessageHandler\SendShippedEmailMessageHandler;
 use App\Repository\OrderRepository;
+use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\TestCase;
+use Psr\Log\NullLogger;
 use Symfony\Component\Mailer\MailerInterface;
 
 /**
@@ -40,6 +42,18 @@ class SendShippedEmailMessageHandlerTest extends TestCase
         return $order;
     }
 
+    private function makeHandler(OrderRepository $repo, MailerInterface $mailer): SendShippedEmailMessageHandler
+    {
+        return new SendShippedEmailMessageHandler(
+            $repo,
+            $mailer,
+            new NullLogger(),
+            $this->createStub(EntityManagerInterface::class),
+            'contact@example.com',
+            'Nidemiel',
+        );
+    }
+
     public function testDoesNothingWhenOrderNotFound(): void
     {
         $repo = $this->createStub(OrderRepository::class);
@@ -48,7 +62,7 @@ class SendShippedEmailMessageHandlerTest extends TestCase
         $mailer = $this->createMock(MailerInterface::class);
         $mailer->expects($this->never())->method('send');
 
-        $handler = new SendShippedEmailMessageHandler($repo, $mailer);
+        $handler = $this->makeHandler($repo, $mailer);
         ($handler)(new SendShippedEmailMessage(999));
     }
 
@@ -62,7 +76,7 @@ class SendShippedEmailMessageHandlerTest extends TestCase
         $mailer = $this->createMock(MailerInterface::class);
         $mailer->expects($this->never())->method('send');
 
-        $handler = new SendShippedEmailMessageHandler($repo, $mailer);
+        $handler = $this->makeHandler($repo, $mailer);
         ($handler)(new SendShippedEmailMessage(1));
     }
 
@@ -76,7 +90,7 @@ class SendShippedEmailMessageHandlerTest extends TestCase
         $mailer = $this->createMock(MailerInterface::class);
         $mailer->expects($this->once())->method('send');
 
-        $handler = new SendShippedEmailMessageHandler($repo, $mailer);
+        $handler = $this->makeHandler($repo, $mailer);
         ($handler)(new SendShippedEmailMessage(1));
     }
 }

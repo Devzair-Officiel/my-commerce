@@ -10,7 +10,9 @@ use App\Repository\CarrierRepository;
 use App\Repository\ProductRepository;
 use App\Repository\SettingRepository;
 use App\Service\CartService;
+use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\TestCase;
+use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Session\Session;
@@ -53,11 +55,17 @@ class CartServiceTest extends TestCase
         // Par défaut : pas de transporteur en session → fallback null
         $this->carrierRepo->method('findOneBy')->willReturn(null);
 
+        // Utilisateur anonyme : la persistance BDD du panier est court-circuitée
+        $security = $this->createStub(Security::class);
+        $security->method('getUser')->willReturn(null);
+
         $this->cart = new CartService(
             $requestStack,
             $this->settingRepo,
             $this->productRepo,
             $this->carrierRepo,
+            $security,
+            $this->createStub(EntityManagerInterface::class),
             freeShippingThresholdCents: 5000, // 50 EUR
         );
     }

@@ -31,3 +31,54 @@ framework:
                     a:
                         rel: 'noopener noreferrer'
                 force_https_urls: true
+
+            # Sanitizer du contenu éditorial rendu en |raw sur le front
+            # (descriptions produit, articles de blog, pages CMS).
+            #
+            # Le HTML est saisi en admin (CodeEditorField / éditeur riche) :
+            # ce filtre est la barrière XSS au rendu — il neutralise scripts,
+            # gestionnaires d'événements et URLs dangereuses, y compris pour
+            # le contenu déjà présent en base.
+            app.editor_content_sanitizer:
+                allow_safe_elements: false
+                allow_elements:
+                    p: ['class']
+                    br: '*'
+                    hr: '*'
+                    strong: '*'
+                    b: '*'
+                    em: '*'
+                    i: '*'
+                    u: '*'
+                    s: '*'
+                    small: '*'
+                    sup: '*'
+                    sub: '*'
+                    span: ['class']
+                    ul: ['class']
+                    ol: ['class']
+                    li: ['class']
+                    h2: ['class', 'id']
+                    h3: ['class', 'id']
+                    h4: ['class', 'id']
+                    h5: ['class', 'id']
+                    a: ['href', 'title', 'target', 'rel', 'class']
+                    section: ['class', 'id']
+                    article: ['class']
+                    div: ['class']
+                    figure: ['class']
+                    figcaption: ['class']
+                    blockquote: ['class', 'cite']
+                    img: ['src', 'alt', 'title', 'width', 'height', 'loading', 'class']
+                    table: ['class']
+                    thead: '*'
+                    tbody: '*'
+                    tr: '*'
+                    th: ['scope', 'colspan', 'rowspan']
+                    td: ['colspan', 'rowspan']
+                force_attributes:
+                    a:
+                        rel: 'noopener noreferrer'
+                # Contenus longs (articles de blog) : la limite par défaut du
+                # sanitizer est trop basse et tronquerait silencieusement.
+                max_input_length: 200000

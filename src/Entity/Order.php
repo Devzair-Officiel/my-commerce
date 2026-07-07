@@ -18,6 +18,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  */
 #[ORM\Entity(repositoryClass: OrderRepository::class)]
 #[ORM\Table(name: '`order`')]
+#[ORM\Index(name: 'idx_order_payment_reference', columns: ['payment_reference'])]
 #[ORM\HasLifecycleCallbacks]
 class Order
 {

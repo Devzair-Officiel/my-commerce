@@ -19,6 +19,7 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
  */
 #[ORM\HasLifecycleCallbacks]
 #[ORM\Entity(repositoryClass: ProductRepository::class)]
+#[ORM\UniqueConstraint(name: 'uniq_product_slug', columns: ['slug'])]
 #[Assert\Callback('validatePricing')]
 class Product
 {
@@ -55,14 +56,14 @@ class Product
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     #[Assert\Length(
-        max: 5000,
+        max: 10000,
         maxMessage: 'La description détaillée ne doit pas dépasser {{ limit }} caractères.'
     )]
     private ?string $more_description = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     #[Assert\Length(
-        max: 5000,
+        max: 10000,
         maxMessage: 'Les infos additionnelles ne doivent pas dépasser {{ limit }} caractères.'
     )]
     private ?string $additional_infos = null;
