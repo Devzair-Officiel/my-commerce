@@ -532,13 +532,17 @@
 		});
 
 		// ── Initialisation elevateZoom ────────────────────────────────────
-		if ($.fn.elevateZoom) {
-			$image.elevateZoom({
-				cursor: 'crosshair',
-				easing: true,
-				zoomType: 'inner',
-			});
-		}
+		// Le plugin est chargé dans {% block page_scripts %} (après scripts.js dans le DOM),
+		// donc on attend window.load pour être sûr qu'il est disponible.
+		$win.on('load', function () {
+			if ($.fn.elevateZoom) {
+				$image.elevateZoom({
+					cursor: 'crosshair',
+					easing: true,
+					zoomType: 'inner',
+				});
+			}
+		});
 
 		// ── Lightbox custom (simple, fiable, sans dépendance) ────────────
 		var $lightbox = null;
@@ -570,6 +574,9 @@
 			lightboxImages = $('#pr_item_gallery .product_gallery_item').map(function () {
 				return { src: $(this).attr('data-zoom-image'), alt: $(this).find('img').attr('alt') || '' };
 			}).get();
+			if (!lightboxImages.length) {
+				lightboxImages = [{ src: $image.attr('data-zoom-image') || $image.attr('src'), alt: $image.attr('alt') || '' }];
+			}
 			lightboxIndex = index ?? 0;
 			renderLightbox();
 			$lightbox.addClass('nm-lightbox--open');
@@ -607,7 +614,8 @@
 
 		$doc.on('click', '.product_img_zoom', function (e) {
 			e.preventDefault();
-			var activeIndex = $('#pr_item_gallery .product_gallery_item.active').closest('.item').index();
+			var $items = $('#pr_item_gallery .product_gallery_item');
+			var activeIndex = $items.index($items.filter('.active'));
 			openLightbox(Math.max(0, activeIndex));
 		});
 	})();

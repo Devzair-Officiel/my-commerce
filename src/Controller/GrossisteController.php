@@ -43,12 +43,9 @@ final class GrossisteController extends AbstractController
         }
 
         // Images dédiées grossiste ; fallback sur toutes les images si aucune marquée
-        $wholesaleMedia = array_values(array_filter(
-            $product->getMediaData(),
-            fn(array $m) => ($m['isWholesale'] ?? false) === true,
-        ));
-
-        $media = \count($wholesaleMedia) > 0 ? $wholesaleMedia : $product->getMediaData();
+        $allMedias       = $product->getMedias()->filter(fn($m) => is_string($m->getFilename()) && $m->getFilename() !== '');
+        $wholesaleMedias = $allMedias->filter(fn($m) => $m->isWholesale() === true);
+        $media           = array_values(($wholesaleMedias->count() > 0 ? $wholesaleMedias : $allMedias)->toArray());
 
         return $this->render('grossiste/show.html.twig', [
             'product'         => $product,

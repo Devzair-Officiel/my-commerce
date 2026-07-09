@@ -76,6 +76,31 @@ class Product
     private ?string $tastingProfile = null;
 
     #[ORM\Column(nullable: true)]
+    #[Assert\Range(min: 0, max: 100)]
+    private ?int $tastingIntensity = null;
+
+    #[ORM\Column(nullable: true)]
+    #[Assert\Range(min: 0, max: 100)]
+    private ?int $tastingAromatic = null;
+
+    #[ORM\Column(nullable: true)]
+    #[Assert\Range(min: 0, max: 100)]
+    private ?int $tastingSweetness = null;
+
+    #[ORM\Column(nullable: true)]
+    #[Assert\Range(min: 0, max: 100)]
+    private ?int $tastingFluidity = null;
+
+    #[ORM\Column(length: 500, nullable: true)]
+    private ?string $tastingTags = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?bool $hasLabAnalysis = null;
+
+    #[ORM\Column(type: 'text', nullable: true)]
+    private ?string $labAnalysis = null;
+
+    #[ORM\Column(nullable: true)]
     #[Assert\PositiveOrZero(message: 'Le stock ne peut pas être négatif.')]
     private ?int $stock = null;
 
@@ -122,6 +147,9 @@ class Product
     #[ORM\Column(nullable: true)]
     #[Assert\Positive(message: 'La quantité minimale doit être positive.')]
     private ?int $wholesaleMinQtyKg = null;
+
+    #[ORM\Column(length: 100, nullable: true)]
+    private ?string $wholesaleFormats = null;
 
     /**
      * @var Collection<int, WholesaleTier>
@@ -310,6 +338,31 @@ class Product
         return $this;
     }
 
+    public function getTastingIntensity(): ?int { return $this->tastingIntensity; }
+    public function setTastingIntensity(?int $v): static { $this->tastingIntensity = $v; return $this; }
+
+    public function getTastingAromatic(): ?int { return $this->tastingAromatic; }
+    public function setTastingAromatic(?int $v): static { $this->tastingAromatic = $v; return $this; }
+
+    public function getTastingSweetness(): ?int { return $this->tastingSweetness; }
+    public function setTastingSweetness(?int $v): static { $this->tastingSweetness = $v; return $this; }
+
+    public function getTastingFluidity(): ?int { return $this->tastingFluidity; }
+    public function setTastingFluidity(?int $v): static { $this->tastingFluidity = $v; return $this; }
+
+    public function getTastingTags(): ?string { return $this->tastingTags; }
+    public function setTastingTags(?string $v): static { $this->tastingTags = $v; return $this; }
+
+    public function isHasLabAnalysis(): ?bool { return $this->hasLabAnalysis; }
+    public function setHasLabAnalysis(?bool $v): static { $this->hasLabAnalysis = $v; return $this; }
+
+    public function getLabAnalysis(): ?string { return $this->labAnalysis; }
+    public function setLabAnalysis(?string $v): static { $this->labAnalysis = $v; return $this; }
+    public function getLabAnalysisDecoded(): ?array
+    {
+        if ($this->labAnalysis === null || $this->labAnalysis === '') return null;
+        return json_decode($this->labAnalysis, true) ?: null;
+    }
 
     public function getStock(): ?int
     {
@@ -583,6 +636,9 @@ class Product
 
     public function getWholesaleMinQtyKg(): ?int { return $this->wholesaleMinQtyKg; }
     public function setWholesaleMinQtyKg(?int $v): static { $this->wholesaleMinQtyKg = $v; return $this; }
+
+    public function getWholesaleFormats(): ?string { return $this->wholesaleFormats; }
+    public function setWholesaleFormats(?string $v): static { $this->wholesaleFormats = $v; return $this; }
 
     /** @return Collection<int, WholesaleTier> */
     public function getWholesaleTiers(): Collection { return $this->wholesaleTiers; }

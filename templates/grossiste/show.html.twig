@@ -1,6 +1,27 @@
 {% extends 'base.html.twig' %}
 
+{% block body_attrs %} data-theme="pro"{% endblock %}
+
 {% block title %}{{ product.title }} en gros — Achat professionnel | {{ globalSetting.website_name }}{% endblock %}
+
+{% block stylesheets %}
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=Libre+Franklin:wght@400;500;600;700&display=swap" rel="stylesheet">
+	{% if media|length > 0 %}
+	<link rel="preload" as="image" href="/assets/images/products/{{ media[0].mediumFilename }}" fetchpriority="high">
+	{% endif %}
+	<link rel="stylesheet" href="/assets/css/slick.css" media="print" onload="this.media='all'">
+	<link rel="stylesheet" href="/assets/css/slick-theme.css" media="print" onload="this.media='all'">
+	<noscript>
+		<link rel="stylesheet" href="/assets/css/slick.css">
+		<link rel="stylesheet" href="/assets/css/slick-theme.css">
+	</noscript>
+{% endblock %}
+
+{% block page_scripts %}
+	<script src="/assets/js/slick.min.js" defer></script>
+	<script src="/assets/js/jquery.elevatezoom.js" defer></script>
+{% endblock %}
 
 {% block body %}
 
@@ -12,236 +33,404 @@
 	]
 } %}
 
-{# ── Fiche produit grossiste ── #}
-<section class="nide-gros__show">
-	<div class="container">
-		<div class="nide-gros__show-grid">
+<div class="nide-gw">
+<div class="nide-gw__container">
 
-			{# ── Galerie ── #}
-			<div class="nide-gros__show-gallery">
-				{% if media|length > 0 %}
-					<div class="nide-gros__show-main-img">
-						<img src="/assets/images/products/{{ media[0].filename }}"
-							 alt="{{ media[0].alt ?? product.title }}"
-							 width="520" height="520" loading="eager" fetchpriority="high"
-							 class="nide-gros__show-img">
-					</div>
-					{% if media|length > 1 %}
-					<div class="nide-gros__show-thumbs">
-						{% for img in media %}
-							<img src="/assets/images/products/{{ img.filename }}"
-								 alt="{{ img.alt ?? product.title }}"
-								 width="80" height="80" loading="lazy"
-								 class="nide-gros__show-thumb">
-						{% endfor %}
-					</div>
-					{% endif %}
-				{% endif %}
-				<div class="nide-gros__show-badge-pro">
-					<svg class="icon" aria-hidden="true"><use href="#icon-check-circle"></use></svg>
-					Offre professionnelle
-				</div>
-			</div>
+{# ════════════════════════════════════════
+   HERO — image (gauche) + info pro (droite)
+   ════════════════════════════════════════ #}
+<div class="nide-gw__hero">
 
-			{# ── Infos produit ── #}
-			<div class="nide-gros__show-info">
-
-				<div class="nide-gros__show-header">
-					<span class="nide-gros__show-label">Vente en gros</span>
-					<h1 class="nide-gros__show-title">{{ product.title }}</h1>
-					{% if product.accroche %}
-						<p class="nide-gros__show-accroche">{{ product.accroche }}</p>
-					{% endif %}
-				</div>
-
-				{% if product.originCountry %}
-				<div class="nide-gros__show-origin">
-					<svg class="icon" aria-hidden="true"><use href="#icon-location"></use></svg>
-					Origine : <strong>{{ product.originCountry }}</strong>
-				</div>
-				{% endif %}
-
-				{# Prix dégressifs #}
-				<div class="nide-gros__show-pricing">
-					<h2 class="nide-gros__show-pricing-title">Tarifs dégressifs</h2>
-					{% if product.wholesaleTiers|length > 0 %}
-					<table class="nide-gros__pricing-table">
-						<thead>
-							<tr>
-								<th>Quantité</th>
-								<th>Prix unitaire</th>
-								<th>Remise</th>
-							</tr>
-						</thead>
-						<tbody>
-							{% set basePrice = product.regularPrice %}
-							{% for tier in product.wholesaleTiers %}
-							{% set discount = basePrice > 0 ? (((basePrice - tier.unitPriceCents) / basePrice) * 100)|round : 0 %}
-							<tr{% if tier.unitPriceCents < basePrice %} class="nide-gros__pricing-row--highlight"{% endif %}>
-								<td>{{ tier.label ?? ('À partir de ' ~ tier.minQtyKg ~ ' kg') }}</td>
-								<td>{{ (tier.unitPriceCents / 100)|format_currency('EUR') }}</td>
-								<td>
-									{% if discount > 0 %}
-										<span class="nide-gros__pricing-discount">−{{ discount }} %</span>
-									{% else %}
-										—
-									{% endif %}
-								</td>
-							</tr>
-							{% endfor %}
-						</tbody>
-					</table>
-					{% else %}
-					<p class="nide-gros__pricing-empty">
-						Tarifs sur devis — <a href="/contact">contactez-nous</a>
-					</p>
-					{% endif %}
-				</div>
-
-				{# Formats #}
-				<div class="nide-gros__show-formats">
-					<h2 class="nide-gros__show-section-title">
-						<svg class="icon" aria-hidden="true"><use href="#icon-package"></use></svg>
-						Formats & conditionnements
-					</h2>
-					<div class="nide-gros__formats-grid">
-						<div class="nide-gros__format-item">
-							<strong>Pots verre</strong>
-							<span>250 g · 500 g · 1 kg</span>
-						</div>
-						<div class="nide-gros__format-item">
-							<strong>Seaux alimentaires</strong>
-							<span>5 kg · 10 kg · 15 kg</span>
-						</div>
-						<div class="nide-gros__format-item">
-							<strong>Vrac / Fûts</strong>
-							<span>25 kg — sur devis</span>
-						</div>
-						<div class="nide-gros__format-item">
-							<strong>Quantité minimale</strong>
-							<span>5 kg par référence</span>
-						</div>
-					</div>
-				</div>
-
-				{# CTA #}
-				<div class="nide-gros__show-actions">
-					<a href="/checkout" class="btn btn-fill-out nide-gros__show-btn-primary">
-						<svg class="icon" aria-hidden="true"><use href="#icon-cart"></use></svg>
-						Commander en ligne
-					</a>
-					<a href="/contact" class="nide-gros__show-btn-secondary">
-						<svg class="icon" aria-hidden="true"><use href="#icon-mail"></use></svg>
-						Demander un devis
-					</a>
-				</div>
-
-				{# Réassurances #}
-				<div class="nide-gros__show-trust">
-					<div class="nide-gros__show-trust-item">
-						<svg class="icon" aria-hidden="true"><use href="#icon-check-circle"></use></svg>
-						Analyse labo disponible sur demande
-					</div>
-					<div class="nide-gros__show-trust-item">
-						<svg class="icon" aria-hidden="true"><use href="#icon-truck"></use></svg>
-						Livraison offerte dès 200 € HT
-					</div>
-					<div class="nide-gros__show-trust-item">
-						<svg class="icon" aria-hidden="true"><use href="#icon-file"></use></svg>
-						Facture professionnelle fournie
-					</div>
-				</div>
-
-			</div>{# fin show-info #}
-		</div>{# fin show-grid #}
-	</div>
-</section>
-
-{# ── Description détaillée — collapsibles ── #}
-{% if product.description or product.wholesaleDescription %}
-<section class="nide-gros__show-desc">
-	<div class="container">
-
-		{% if product.description %}
-		<details class="nide-gros__collapse" open>
-			<summary class="nide-gros__collapse-toggle">
-				<svg class="icon" aria-hidden="true"><use href="#icon-info"></use></svg>
-				À propos de ce miel
-				<svg class="icon nide-gros__collapse-chevron" aria-hidden="true"><use href="#icon-chevron-down"></use></svg>
-			</summary>
-			<div class="nide-gros__collapse-body">
-				<div class="nide-gros__show-desc-grid">
-					<div class="nide-gros__show-desc-text">{{ product.description|normalize_editor_html|raw }}</div>
-					{% if product.tastingProfile %}
-					<div class="nide-gros__show-tasting">
-						<svg class="icon" aria-hidden="true"><use href="#icon-star"></use></svg>
-						<strong>Profil gustatif :</strong> {{ product.tastingProfile }}
-					</div>
-					{% endif %}
-				</div>
-			</div>
-		</details>
-		{% endif %}
-
-		{% if product.wholesaleDescription %}
-		<details class="nide-gros__collapse" open>
-			<summary class="nide-gros__collapse-toggle nide-gros__collapse-toggle--pro">
-				<svg class="icon" aria-hidden="true"><use href="#icon-truck"></use></svg>
-				Informations professionnelles
-				<svg class="icon nide-gros__collapse-chevron" aria-hidden="true"><use href="#icon-chevron-down"></use></svg>
-			</summary>
-			<div class="nide-gros__collapse-body">
-				<div class="nide-gros__show-desc-text">{{ product.wholesaleDescription|normalize_editor_html|raw }}</div>
-			</div>
-		</details>
-		{% endif %}
-
-	</div>
-</section>
-{% endif %}
-
-{# ── Autres miels en gros ── #}
-{% if relatedProducts|length > 0 %}
-<section class="nide-gros__related">
-	<div class="container">
-		<h2 class="nide-gros__section-title">Autres miels disponibles en gros</h2>
-		<div class="nide-gros__related-grid">
-			{% for related in relatedProducts %}
-			{% set cover = related.coverFilename %}
-			<a href="/grossiste-miel/{{ related.slug }}-en-gros" class="nide-gros__related-card">
-				{% if cover %}
-					<img src="/assets/images/products/{{ cover }}"
-						 alt="{{ related.title }}" width="180" height="140" loading="lazy">
-				{% endif %}
-				<div class="nide-gros__related-info">
-					<strong>{{ related.title }}</strong>
-					<span>À partir de {{ (related.regularPrice / 100)|format_currency('EUR') }}</span>
-				</div>
+	{# ── Panneau gauche : image ── #}
+	<div class="nide-gw__img-panel">
+		{% set mainMedia = media|first %}
+		<div class="nide-gw__img-wrap" id="nide-gw-img-wrap">
+			<img
+				id="product_img"
+				alt="{{ mainMedia ? mainMedia.alt : product.title }}"
+				src="{{ mainMedia ? '/assets/images/products/' ~ mainMedia.mediumFilename : '/assets/images/placeholder.png' }}"
+				data-zoom-image="{{ mainMedia ? '/assets/images/products/' ~ mainMedia.filename : '' }}"
+				fetchpriority="high" loading="eager" decoding="async"
+			>
+			{% if mainMedia %}
+			<a href="/assets/images/products/{{ mainMedia.filename }}" title="Agrandir" class="nide-gw__zoom-btn product_img_zoom" aria-label="Agrandir l'image">
+				<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
+			</a>
+			{% endif %}
+		</div>
+		{% if media|length > 1 %}
+		<div class="nide-gw__thumbs" id="pr_item_gallery">
+			{% for image in media %}
+			<a href="javascript:void(0)"
+			   class="nide-gw__thumb-link product_gallery_item {% if loop.first %}active{% endif %}"
+			   data-image="/assets/images/products/{{ image.mediumFilename }}"
+			   data-zoom-image="/assets/images/products/{{ image.filename }}"
+			   aria-label="Image {{ loop.index }}">
+				<img src="/assets/images/products/{{ image.thumbnailFilename }}"
+				     alt="" width="68" height="62" loading="lazy">
 			</a>
 			{% endfor %}
 		</div>
+		{% endif %}
 	</div>
-</section>
-{% endif %}
 
-{# ── CTA bas de page ── #}
-<section class="nide-gros__cta">
-	<div class="container">
-		<div class="nide-gros__cta-inner">
-			<h2>Besoin d'un volume important ou d'un format spécifique ?</h2>
-			<p>Nous étudions toutes les demandes professionnelles. Réponse sous 24 h.</p>
-			<div class="nide-gros__cta-actions">
-				<a href="/contact" class="btn btn-fill-out">
-					<svg class="icon" aria-hidden="true"><use href="#icon-mail"></use></svg>
-					Demander un devis
-				</a>
-				<a href="/grossiste-miel" class="nide-gros__cta-back">
-					<svg class="icon" aria-hidden="true"><use href="#icon-arrow-left"></use></svg>
-					Retour au catalogue grossiste
-				</a>
+	{# ── Panneau droit : infos pro ── #}
+	<div class="nide-gw__info-panel">
+
+		<div class="nide-gw__badge-row">
+			<span class="nide-gw__badge">VENTE EN GROS · PRO</span>
+			<span class="nide-gw__meta">HT · facture professionnelle</span>
+		</div>
+
+		<h1 class="nide-gw__title">{{ product.title }}</h1>
+
+		{% if product.accroche %}
+		<p class="nide-gw__accroche">{{ product.accroche }}</p>
+		{% endif %}
+
+		{% if product.originCountry or product.wholesaleFormats %}
+		<div class="nide-gw__origin">
+			{% if product.originCountry %}
+			<span class="nide-gw__origin-dot"></span>
+			Origine&nbsp;: <strong>{{ product.originCountry }}</strong>
+			{% endif %}
+			{% if product.wholesaleFormats %}
+			{% if product.originCountry %}<span class="nide-gw__origin-sep">·</span>{% endif %}
+			Formats&nbsp;: <strong>{{ product.wholesaleFormats }}</strong>
+			{% endif %}
+		</div>
+		{% endif %}
+
+		{# ── Tableau paliers ── #}
+		{% if product.wholesaleTiers|length > 0 %}
+		{% set firstTier = product.wholesaleTiers|first %}
+		{% set firstTierCents = firstTier ? firstTier.unitPriceCents : 0 %}
+		{% set firstMinQty = firstTier ? firstTier.minQtyKg : (product.wholesaleMinQtyKg ?? 1) %}
+		<div class="nide-gw__tiers">
+			<div class="nide-gw__tiers-head">
+				<span>QUANTITÉ</span>
+				<span>PRIX / KG</span>
+				<span>PRIX TOTAL</span>
+				<span>REMISE</span>
+			</div>
+			{% for tier in product.wholesaleTiers %}
+			{% set discount = (firstTierCents > 0 and not loop.first) ? (((firstTierCents - tier.unitPriceCents) / firstTierCents) * 100)|round : 0 %}
+			{% set tierTotal = tier.unitPriceCents * tier.minQtyKg / 100 %}
+			<div class="nide-gw__tier-row{% if loop.first %} nide-gw__tier-row--selected{% endif %}"
+			     data-price="{{ (tier.unitPriceCents / 100)|number_format(2, '.', '') }}"
+			     data-min-qty="{{ tier.minQtyKg }}"
+			     role="button" tabindex="0"
+			     aria-pressed="{{ loop.first ? 'true' : 'false' }}">
+				<span class="nide-gw__tier-name">
+					<span class="nide-gw__tier-dot"></span>
+					{{ tier.label ?? (tier.minQtyKg ~ ' kg et +') }}
+				</span>
+				<span class="nide-gw__tier-price">{{ (tier.unitPriceCents / 100)|number_format(2, ',', ' ') }}&nbsp;€</span>
+				<span class="nide-gw__tier-total">{{ tierTotal|number_format(2, ',', ' ') }}&nbsp;€</span>
+				<span class="nide-gw__tier-remise">{% if discount > 0 %}−{{ discount }}&nbsp;%{% else %}—{% endif %}</span>
+			</div>
+			{% endfor %}
+		</div>
+
+		{# ── Estimateur ── #}
+		<div class="nide-gw__estimator">
+			<div class="nide-gw__est-qty">
+				<span class="nide-gw__est-label">QUANTITÉ (kg)</span>
+				<input type="number" id="gros-qty" class="nide-gw__est-input"
+				       value="{{ firstMinQty }}" min="{{ firstMinQty }}" step="{{ firstMinQty }}">
+			</div>
+			<div class="nide-gw__est-result">
+				<span class="nide-gw__est-label">ESTIMATION</span>
+				<div class="nide-gw__est-value" id="gros-estimate">—</div>
 			</div>
 		</div>
-	</div>
-</section>
+		{% endif %}
 
+		{# ── Boutons ── #}
+		<div class="nide-gw__ctas">
+			<a href="{{ path('app_contact') }}" class="nide-gw__btn-devis">Demander un devis</a>
+			<a href="{{ path('app_checkout') }}" class="nide-gw__btn-order">Commander en ligne</a>
+		</div>
+
+		{# ── Réassurances ── #}
+		<div class="nide-gw__reassurance">
+			<span><span class="nide-gw__ri">✓</span>Analyse labo disponible sur demande</span>
+			<span><span class="nide-gw__ri">♥</span>Livraison offerte dès 200&nbsp;€&nbsp;HT</span>
+			<span><span class="nide-gw__ri">≡</span>Facture professionnelle fournie</span>
+		</div>
+
+	</div>{# fin info-panel #}
+</div>{# fin hero #}
+
+{# ════════════════════════════════════════
+   À PROPOS + PROFIL GUSTATIF + ANALYSE LABO
+   ════════════════════════════════════════ #}
+{% set lab = product.labAnalysisDecoded %}
+{% set hasTasting = product.tastingSweetness or product.tastingIntensity or product.tastingAromatic or product.tastingFluidity %}
+{% if product.description or hasTasting or (product.isHasLabAnalysis and lab) %}
+<div class="nide-gw__about">
+	<div class="nide-gw__about-card">
+
+		<div class="nide-gw__about-left">
+			<div class="nide-gw__about-sup">À PROPOS DE CE MIEL</div>
+			<h2 class="nide-gw__about-title">{{ product.title }}</h2>
+			{% if product.description %}
+			<div class="nide-gw__about-body">{{ product.description|normalize_editor_html|raw }}</div>
+			{% endif %}
+			{% if product.isHasLabAnalysis and lab %}
+			<div class="nide-gw__about-body nide-gw__about-lab-mention">
+				<strong>Une analyse de laboratoire</strong> confirme la qualité et l'authenticité de ce lot :
+				{% if lab.parameters.humidity is defined %}humidité <strong>{{ lab.parameters.humidity.value }}</strong>{% endif %}{% if lab.parameters.conductivity is defined %}, conductivité <strong>{{ lab.parameters.conductivity.value }}</strong>{% endif %}{% if lab.pollenAnalysis.available is defined and lab.pollenAnalysis.available and lab.pollenAnalysis.pollenPercentages|length > 0 %}, {{ lab.pollenAnalysis.pollenPercentages[0].name ?? '' }}{% endif %}.
+			</div>
+			{% endif %}
+		</div>
+
+		<div class="nide-gw__about-right">
+			{% if hasTasting %}
+			<div class="nide-gw__tasting-card">
+				<div class="nide-gw__tasting-sup">PROFIL GUSTATIF</div>
+				{% if product.tastingSweetness %}
+				<div class="nide-gw__bar-row">
+					<span class="nide-gw__bar-lbl">Douceur</span>
+					<div class="nide-gw__bar-track"><div class="nide-gw__bar-fill" style="width:{{ product.tastingSweetness }}%"></div></div>
+				</div>
+				{% endif %}
+				{% if product.tastingIntensity %}
+				<div class="nide-gw__bar-row">
+					<span class="nide-gw__bar-lbl">Intensité</span>
+					<div class="nide-gw__bar-track"><div class="nide-gw__bar-fill" style="width:{{ product.tastingIntensity }}%"></div></div>
+				</div>
+				{% endif %}
+				{% if product.tastingAromatic %}
+				<div class="nide-gw__bar-row">
+					<span class="nide-gw__bar-lbl">Aromatique</span>
+					<div class="nide-gw__bar-track"><div class="nide-gw__bar-fill" style="width:{{ product.tastingAromatic }}%"></div></div>
+				</div>
+				{% endif %}
+				{% if product.tastingFluidity %}
+				<div class="nide-gw__bar-row">
+					<span class="nide-gw__bar-lbl">Fluidité</span>
+					<div class="nide-gw__bar-track"><div class="nide-gw__bar-fill" style="width:{{ product.tastingFluidity }}%"></div></div>
+				</div>
+				{% endif %}
+			</div>
+			{% endif %}
+
+			{% if product.isHasLabAnalysis and lab %}
+			<div class="nide-pd__lab-widget">
+				<div class="nide-pd__lab-widget-hd">
+					<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2v-4M9 21H5a2 2 0 0 1-2-2v-4m0 0h18"/></svg>
+					ANALYSE LABORATOIRE
+				</div>
+				<div class="nide-pd__lab-widget-grid">
+					{% if lab.parameters.humidity is defined %}
+					<div class="nide-pd__lab-widget-cell">
+						<span class="nide-pd__lab-widget-lbl">Humidité</span>
+						<span class="nide-pd__lab-widget-val">{{ lab.parameters.humidity.value }}{% if lab.parameters.humidity.value is not null %}&nbsp;%{% endif %}</span>
+						{% if lab.parameters.humidity.note is defined and lab.parameters.humidity.note %}<span class="nide-pd__lab-widget-note">{{ lab.parameters.humidity.note }}</span>{% endif %}
+					</div>
+					{% endif %}
+					{% if lab.parameters.conductivity is defined %}
+					<div class="nide-pd__lab-widget-cell">
+						<span class="nide-pd__lab-widget-lbl">Conductivité</span>
+						<span class="nide-pd__lab-widget-val">{{ lab.parameters.conductivity.value }}{% if lab.parameters.conductivity.value is not null %}&nbsp;mS/cm{% endif %}</span>
+						{% if lab.parameters.conductivity.classification is defined and lab.parameters.conductivity.classification %}<span class="nide-pd__lab-widget-note">{{ lab.parameters.conductivity.classification }}</span>{% endif %}
+					</div>
+					{% endif %}
+					{% if lab.parameters.hmf is defined %}
+					<div class="nide-pd__lab-widget-cell">
+						<span class="nide-pd__lab-widget-lbl">HMF</span>
+						<span class="nide-pd__lab-widget-val">{{ lab.parameters.hmf.value }}{% if lab.parameters.hmf.value is not null %}&nbsp;mg/kg{% endif %}</span>
+					</div>
+					{% endif %}
+					{% if lab.parameters.mgo is defined %}
+					<div class="nide-pd__lab-widget-cell">
+						<span class="nide-pd__lab-widget-lbl">MGO</span>
+						<span class="nide-pd__lab-widget-val">{{ lab.parameters.mgo.value|number_format(0, ',', '') }}+</span>
+					</div>
+					{% endif %}
+					{% if lab.parameters.npa is defined %}
+					<div class="nide-pd__lab-widget-cell">
+						<span class="nide-pd__lab-widget-lbl">NPA</span>
+						<span class="nide-pd__lab-widget-val">{{ lab.parameters.npa.value }}+</span>
+					</div>
+					{% endif %}
+					{% if lab.parameters.dha is defined %}
+					<div class="nide-pd__lab-widget-cell">
+						<span class="nide-pd__lab-widget-lbl">DHA</span>
+						<span class="nide-pd__lab-widget-val">{{ lab.parameters.dha.value|number_format(0, ',', '') }}&nbsp;mg/kg</span>
+					</div>
+					{% endif %}
+				</div>
+				{% if lab.pollenAnalysis is defined and lab.pollenAnalysis.available and lab.pollenAnalysis.pollenPercentages|length > 0 %}
+				<div class="nide-pd__lab-widget-disclaimer">
+					Pollens dominants :
+					{% for pollen in lab.pollenAnalysis.pollenPercentages %}
+					<strong>{{ pollen.name }}</strong>{% if pollen.percentage is defined %}&nbsp;({{ pollen.percentage }}&nbsp;%){% endif %}{% if not loop.last %}, {% endif %}
+					{% endfor %}
+				</div>
+				{% endif %}
+				{% if lab.labName is defined or lab.reportDate is defined %}
+				<div class="nide-pd__lab-widget-footer">
+					{% if lab.labName is defined %}<span class="nide-pd__lab-widget-labname">{{ lab.labName }}</span>{% endif %}
+					{% if lab.reportDate is defined %}<span class="nide-pd__lab-widget-labdate">{{ lab.reportDate }}</span>{% endif %}
+				</div>
+				{% endif %}
+			</div>
+			{% endif %}
+		</div>
+
+	</div>
+</div>
+{% endif %}
+
+{# ════════════════════════════════════════
+   AUTRES MIELS EN GROS
+   ════════════════════════════════════════ #}
+{% if relatedProducts|length > 0 %}
+<div class="nide-gw__related">
+	<div class="nide-gw__related-title">Autres miels disponibles en gros</div>
+	<div class="nide-gw__related-grid">
+		{% for related in relatedProducts %}
+		{% set relThumb = related.medias|first %}
+		<div class="nide-card">
+			<div class="nide-card__media">
+				<a href="/grossiste-miel/{{ related.slug }}-en-gros" class="nide-card__img-link" tabindex="-1" aria-hidden="true">
+					<img class="nide-card__img"
+					     alt="{{ related.title }}"
+					     src="{{ relThumb ? '/assets/images/products/' ~ relThumb.thumbnailFilename : '/assets/images/placeholder.png' }}"
+					     loading="lazy" decoding="async">
+				</a>
+			</div>
+			<a href="/grossiste-miel/{{ related.slug }}-en-gros" class="nide-card__body">
+				{% if related.originCountry %}
+				<span class="nide-card__origin">{{ related.originCountry|country_name('fr') }}</span>
+				{% endif %}
+				<h3 class="nide-card__title">{{ related.title }}</h3>
+				{% if related.tastingProfile %}
+				<p class="nide-card__tasting">{{ related.tastingProfile }}</p>
+				{% endif %}
+				<div class="nide-card__footer">
+					<div class="nide-card__price">
+						<span class="nide-card__price--current">À partir de {{ (related.regularPrice / 100)|number_format(2, ',', ' ') }}&nbsp;€</span>
+					</div>
+				</div>
+			</a>
+		</div>
+		{% endfor %}
+	</div>
+</div>
+{% endif %}
+
+</div>{# fin container #}
+
+{# ════════════════════════════════════════
+   CTA BANNER (pleine largeur)
+   ════════════════════════════════════════ #}
+<div class="nide-gw__cta-banner">
+	<div class="nide-gw__cta-inner">
+		<h3 class="nide-gw__cta-title">Besoin d'un volume important ou d'un format spécifique&nbsp;?</h3>
+		<p class="nide-gw__cta-sub">Nous étudions toutes les demandes professionnelles. Réponse sous 24&nbsp;h.</p>
+		<div class="nide-gw__cta-actions">
+			<a href="{{ path('app_contact') }}" class="nide-gw__cta-btn-primary">Demander un devis</a>
+			<a href="{{ path('app_grossiste_index') }}" class="nide-gw__cta-btn-secondary">Retour au catalogue grossiste</a>
+		</div>
+	</div>
+</div>
+
+</div>{# fin nide-gw #}
+
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+
+	/* ── Changement image via thumbs ── */
+	document.querySelectorAll('.product_gallery_item').forEach(function (link) {
+		link.addEventListener('click', function (e) {
+			e.preventDefault();
+			var newSrc  = this.dataset.image;
+			var newZoom = this.dataset.zoomImage;
+			var mainImg = document.getElementById('product_img');
+			if (mainImg && newSrc) {
+				mainImg.src = newSrc;
+				mainImg.dataset.zoomImage = newZoom;
+			}
+			document.querySelectorAll('.nide-gw__thumb-link').forEach(function (l) { l.classList.remove('active'); });
+			this.classList.add('active');
+		});
+	});
+
+	/* ── Sélection palier + estimateur ── */
+	var rows  = document.querySelectorAll('.nide-gw__tier-row');
+	var qtyEl = document.getElementById('gros-qty');
+	var estEl = document.getElementById('gros-estimate');
+	if (!rows.length) return;
+
+	var currentPrice = parseFloat(rows[0].dataset.price) || 0;
+
+	function fmt(n) {
+		return n.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+	}
+
+	function updateEstimate() {
+		if (!qtyEl || !estEl) return;
+		var qty   = Math.max(0, parseFloat(qtyEl.value) || 0);
+		var total = qty * currentPrice;
+		estEl.textContent = fmt(total) + ' € HT · ' + fmt(currentPrice) + ' €/kg';
+	}
+
+	/* Trouve le meilleur palier pour une quantité donnée (le palier le plus
+	   élevé dont la quantité min est <= qty). */
+	function tierForQty(qty) {
+		var best = rows[0];
+		rows.forEach(function (r) {
+			if (qty >= (parseInt(r.dataset.minQty, 10) || 1)) best = r;
+		});
+		return best;
+	}
+
+	/* Active un palier visuellement, sans toucher à l'input quantité. */
+	function highlightTier(row) {
+		rows.forEach(function (r) {
+			r.classList.remove('nide-gw__tier-row--selected');
+			r.setAttribute('aria-pressed', 'false');
+		});
+		row.classList.add('nide-gw__tier-row--selected');
+		row.setAttribute('aria-pressed', 'true');
+		currentPrice = parseFloat(row.dataset.price) || 0;
+	}
+
+	/* Clic sur un palier → sauter directement à sa quantité minimale. */
+	rows.forEach(function (row) {
+		function onSelect() {
+			var minQty = parseInt(row.dataset.minQty, 10) || 1;
+			highlightTier(row);
+			if (qtyEl) {
+				qtyEl.step  = minQty;
+				qtyEl.min   = minQty;
+				qtyEl.value = minQty;
+			}
+			updateEstimate();
+		}
+		row.addEventListener('click', onSelect);
+		row.addEventListener('keydown', function (e) {
+			if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onSelect(); }
+		});
+	});
+
+	/* Saisie manuelle → mettre à jour le palier actif selon la quantité. */
+	if (qtyEl) {
+		qtyEl.addEventListener('input', function () {
+			var qty = parseFloat(qtyEl.value) || 0;
+			highlightTier(tierForQty(qty));
+			updateEstimate();
+		});
+	}
+
+	updateEstimate();
+});
+</script>
 {% endblock %}

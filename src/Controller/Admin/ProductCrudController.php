@@ -173,12 +173,36 @@ final class ProductCrudController extends AbstractCrudController
             ->setColumns(12)
             ->setLanguage('xml');
 
+        yield FormField::addFieldset('Profil gustatif')
+            ->setIcon('fa fa-chart-bar')
+            ->collapsible()
+            ->renderCollapsed();
+
+        yield IntegerField::new('tastingIntensity', 'Intensité')->setColumns(3)->setHelp('0 – 100');
+        yield IntegerField::new('tastingAromatic', 'Aromatique')->setColumns(3)->setHelp('0 – 100');
+        yield IntegerField::new('tastingSweetness', 'Douceur')->setColumns(3)->setHelp('0 – 100');
+        yield IntegerField::new('tastingFluidity', 'Fluidité')->setColumns(3)->setHelp('0 – 100');
+        yield TextField::new('tastingTags', 'Notes aromatiques')
+            ->setColumns(12)
+            ->setHelp('Tags séparés par des virgules — ex : Réglisse, Anis, Épices douces, Finale longue');
+
         yield FormField::addFieldset('Infos additionnelles')
             ->setIcon('fa fa-circle-info')
             ->collapsible()
             ->renderCollapsed();
 
         yield TextEditorField::new('additional_infos', '')->setColumns(12);
+
+        yield FormField::addFieldset('Analyse laboratoire')
+            ->setIcon('fa fa-flask')
+            ->collapsible()
+            ->renderCollapsed();
+
+        yield BooleanField::new('hasLabAnalysis', 'Analyse disponible')->setColumns(4);
+        yield CodeEditorField::new('labAnalysis', "Données d'analyse (JSON)")
+            ->setColumns(12)
+            ->setLanguage('yaml')
+            ->setHelp('Exemple : {"labName":"Michel Bocquet","humidity":{"value":"14,1 %","note":"très basse"},"ph":{"value":"4,38","note":"acide"},"conductivity":{"value":"0,42 mS/cm"},"pollenDominant":"Nigelle 10 %","ref":"11 046","method":"réfractométrie / pHmètre","reportUrl":"/assets/pdf/rapport.pdf"}');
 
         // ----- TAB Prix & Stock
         yield FormField::addTab('Prix & Stock')->setIcon('fa fa-euro-sign');
@@ -232,6 +256,8 @@ final class ProductCrudController extends AbstractCrudController
             ->setHelp('Active ce produit dans la section "Miels en gros".');
         yield IntegerField::new('wholesaleMinQtyKg', 'Quantité minimale (kg)')->setColumns(4)
             ->setHelp('Ex : 5 pour 5 kg minimum par commande.');
+        yield TextField::new('wholesaleFormats', 'Formats disponibles')->setColumns(4)
+            ->setHelp('Ex : 3 / 6 / 12 kg  ou  5 / 10 / 25 kg');
 
         yield FormField::addFieldset('Paliers de prix')->setIcon('fa fa-tags')->collapsible();
         yield CollectionField::new('wholesaleTiers', 'Paliers de prix')
