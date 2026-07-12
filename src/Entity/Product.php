@@ -94,6 +94,22 @@ class Product
     #[ORM\Column(length: 500, nullable: true)]
     private ?string $tastingTags = null;
 
+    #[ORM\Column(length: 150, nullable: true)]
+    #[Assert\Length(max: 150, maxMessage: 'La texture ne doit pas dépasser {{ limit }} caractères.')]
+    private ?string $textureLabel = null;
+
+    #[ORM\Column(length: 80, nullable: true)]
+    #[Assert\Length(max: 80, maxMessage: 'La couleur ne doit pas dépasser {{ limit }} caractères.')]
+    private ?string $colorLabel = null;
+
+    #[ORM\Column(length: 500, nullable: true)]
+    #[Assert\Length(max: 500, maxMessage: 'Les notes aromatiques ne doivent pas dépasser {{ limit }} caractères.')]
+    private ?string $aromaticNotes = null;
+
+    #[ORM\Column(length: 500, nullable: true)]
+    #[Assert\Length(max: 500, maxMessage: 'Les suggestions de dégustation ne doivent pas dépasser {{ limit }} caractères.')]
+    private ?string $tastingSuggestion = null;
+
     #[ORM\Column(nullable: true)]
     private ?bool $hasLabAnalysis = null;
 
@@ -352,6 +368,34 @@ class Product
 
     public function getTastingTags(): ?string { return $this->tastingTags; }
     public function setTastingTags(?string $v): static { $this->tastingTags = $v; return $this; }
+
+    public function getTextureLabel(): ?string { return $this->textureLabel; }
+    public function setTextureLabel(?string $v): static { $this->textureLabel = $v; return $this; }
+
+    public function getColorLabel(): ?string { return $this->colorLabel; }
+    public function setColorLabel(?string $v): static { $this->colorLabel = $v; return $this; }
+
+    public function getAromaticNotes(): ?string { return $this->aromaticNotes; }
+    public function setAromaticNotes(?string $v): static { $this->aromaticNotes = $v; return $this; }
+
+    public function getTastingSuggestion(): ?string { return $this->tastingSuggestion; }
+    public function setTastingSuggestion(?string $v): static { $this->tastingSuggestion = $v; return $this; }
+
+    /**
+     * Convertit tastingIntensity (0-100) en label textuel pour affichage tabulaire
+     * (comparateur, fiches synthèse). Renvoie null si le score n'est pas renseigné.
+     */
+    public function getTastingIntensityLabel(): ?string
+    {
+        if ($this->tastingIntensity === null) return null;
+        return match (true) {
+            $this->tastingIntensity <= 30 => 'Douce',
+            $this->tastingIntensity <= 50 => 'Douce à moyenne',
+            $this->tastingIntensity <= 70 => 'Moyenne',
+            $this->tastingIntensity <= 85 => 'Moyenne à corsée',
+            default                        => 'Corsée',
+        };
+    }
 
     public function isHasLabAnalysis(): ?bool { return $this->hasLabAnalysis; }
     public function setHasLabAnalysis(?bool $v): static { $this->hasLabAnalysis = $v; return $this; }

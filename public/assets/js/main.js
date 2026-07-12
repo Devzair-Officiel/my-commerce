@@ -1,4 +1,4 @@
-import { displayCompare, initCompare } from "./modules/compare.js";
+import { initCompare } from "./modules/compare.js";
 import { displayWishlist, initWishlist } from "./modules/wishlist.js";
 import { initCart, displayCart, updateHeaderCart } from "./modules/cart.js";
 import { initSearch } from "./modules/search.js";
@@ -74,13 +74,6 @@ window.addEventListener("load", async () => {
   initWishlist();
   initSearch();
   initCookieConsent();
-
-  // Compare dataset
-  const compareContainer = document.querySelector(".compare_container");
-  if (compareContainer) {
-    const compare = safeJsonParse(compareContainer.dataset?.compare, []);
-    await displayCompare(Array.isArray(compare) ? compare : []);
-  }
 
   // Wishlist dataset
   const wishlistContainer = document.querySelector(".wishlist_content");

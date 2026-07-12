@@ -1,18 +1,302 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}{{ globalSetting.website_name }} | Comparaison{% endblock %}
+{% block title %}{{ globalSetting.website_name }} | Comparateur de miels{% endblock %}
+
+{% block stylesheets %}
+	<link rel="stylesheet" href="/assets/css/pages/compare.css">
+{% endblock %}
 
 {% block body %}
 
-	{% include "page_head/index.html.twig" with {'page_name': 'Comparaison'} %}
+	{% include 'page_head/index.html.twig' with {
+		'page_name': 'Comparateur',
+		breadcrumbs: [{ label: 'Comparateur' }]
+	} %}
 
-	<div class="section compare_container" data-compare="{{ compare|json_encode|e('html_attr') }}">
+	<section class="nide-compare" data-compare-count="{{ products|length }}">
 		<div class="container">
-			<div class="compare-grid">
-				{# Injecté par compare.js #}
-			</div>
+
+			{% if products is empty %}
+
+				<div class="nide-compare__empty">
+					<svg class="icon" aria-hidden="true"><use href="#icon-shuffle"></use></svg>
+					<h2 class="nide-compare__empty-title">Votre comparateur est vide</h2>
+					<p class="nide-compare__empty-lead">Ajoutez des miels depuis la boutique pour les comparer côte à côte : caractéristiques, dégustation, analyse laboratoire.</p>
+					<a href="{{ path('app_home') }}" class="btn btn-fill-out">Découvrir nos miels</a>
+				</div>
+
+			{% else %}
+
+				<div class="nide-compare__intro">
+					<p class="nide-compare__kicker">Comparaison</p>
+					<h2 class="nide-compare__title">Vue d'ensemble de {{ products|length }} miel{{ products|length > 1 ? 's' }}</h2>
+					<p class="nide-compare__lead">Caractéristiques produit, notes de dégustation et données d'analyse laboratoire — tout est aligné pour choisir en connaissance de cause.</p>
+				</div>
+
+				<div class="nide-compare__table-wrap">
+					<table class="nide-compare__table nide-compare__table--cols-{{ products|length }}">
+						<caption class="visually-hidden">Comparaison des miels sélectionnés</caption>
+
+						{# ── En-tête produit (image, titre, prix, actions) ── #}
+						<thead>
+							<tr>
+								<th scope="col" class="nide-compare__corner"></th>
+								{% for p in products %}
+									<th scope="col" class="nide-compare__product">
+										<a href="/miels/{{ p.slug }}" class="nide-compare__product-media" aria-label="Voir {{ p.title }}">
+											<img
+												src="{{ p.coverThumb ? '/assets/images/products/' ~ p.coverThumb : '/assets/images/placeholder.png' }}"
+												alt="{{ p.title }}"
+												width="260" height="260"
+												loading="lazy" decoding="async">
+											{% if p.isOnSale %}<span class="nide-compare__badge nide-compare__badge--sale">Promo</span>{% endif %}
+										</a>
+
+										<h3 class="nide-compare__product-title">
+											<a href="/miels/{{ p.slug }}">{{ p.title }}</a>
+										</h3>
+
+										<div class="nide-compare__price-row">
+											<span class="nide-compare__price">
+												{{ (p.effectivePrice / 100)|number_format(2, ',', ' ') }}&nbsp;€
+											</span>
+											{% if p.isOnSale %}
+												<span class="nide-compare__price-old">
+													{{ (p.regularPrice / 100)|number_format(2, ',', ' ') }}&nbsp;€
+												</span>
+											{% endif %}
+										</div>
+
+										<div class="nide-compare__actions">
+											{% if p.isInStock %}
+												<a href="/cart/add/{{ p.id }}/1"
+												   data-product-id="{{ p.id }}"
+												   class="btn btn-fill-out btn-sm add-to-cart">
+													Ajouter au panier
+												</a>
+											{% else %}
+												<span class="btn btn-fill-out btn-sm is-disabled" aria-disabled="true">Rupture de stock</span>
+											{% endif %}
+
+											<a href="/compare/remove/{{ p.id }}"
+											   class="nide-compare__remove compare-card__remove"
+											   aria-label="Retirer {{ p.title }} du comparateur">
+												Retirer
+											</a>
+										</div>
+									</th>
+								{% endfor %}
+							</tr>
+						</thead>
+
+						<tbody>
+							{# ── Disponibilité ── #}
+							<tr class="nide-compare__row nide-compare__row--availability">
+								<th scope="row" class="nide-compare__label">Disponibilité</th>
+								{% for p in products %}
+									<td class="nide-compare__cell">
+										{% if p.isInStock %}
+											<span class="nide-compare__pill nide-compare__pill--stock">En stock</span>
+										{% else %}
+											<span class="nide-compare__pill nide-compare__pill--out">Rupture</span>
+										{% endif %}
+									</td>
+								{% endfor %}
+							</tr>
+
+							{# ── Section : Caractéristiques produit ── #}
+							<tr class="nide-compare__section">
+								<th colspan="{{ products|length + 1 }}" scope="colgroup">Caractéristiques produit</th>
+							</tr>
+
+							<tr class="nide-compare__row">
+								<th scope="row" class="nide-compare__label">Poids net</th>
+								{% for p in products %}
+									<td class="nide-compare__cell">{{ p.weightGrams ? p.weightGrams ~ ' g' : '—' }}</td>
+								{% endfor %}
+							</tr>
+
+							<tr class="nide-compare__row">
+								<th scope="row" class="nide-compare__label">Origine</th>
+								{% for p in products %}
+									<td class="nide-compare__cell">{{ p.originCountry ? p.originCountry|country_name('fr') : '—' }}</td>
+								{% endfor %}
+							</tr>
+
+							<tr class="nide-compare__row">
+								<th scope="row" class="nide-compare__label">Texture</th>
+								{% for p in products %}
+									<td class="nide-compare__cell">{{ p.textureLabel ?: '—' }}</td>
+								{% endfor %}
+							</tr>
+
+							<tr class="nide-compare__row">
+								<th scope="row" class="nide-compare__label">Intensité gustative</th>
+								{% for p in products %}
+									<td class="nide-compare__cell">{{ p.intensityLabel ?: '—' }}</td>
+								{% endfor %}
+							</tr>
+
+							<tr class="nide-compare__row">
+								<th scope="row" class="nide-compare__label">Couleur</th>
+								{% for p in products %}
+									<td class="nide-compare__cell">{{ p.colorLabel ?: '—' }}</td>
+								{% endfor %}
+							</tr>
+
+							<tr class="nide-compare__row">
+								<th scope="row" class="nide-compare__label">Notes aromatiques</th>
+								{% for p in products %}
+									<td class="nide-compare__cell nide-compare__cell--text">{{ p.aromaticNotes ?: '—' }}</td>
+								{% endfor %}
+							</tr>
+
+							<tr class="nide-compare__row">
+								<th scope="row" class="nide-compare__label">Dégustation</th>
+								{% for p in products %}
+									<td class="nide-compare__cell nide-compare__cell--text">{{ p.tastingSuggestion ?: '—' }}</td>
+								{% endfor %}
+							</tr>
+
+							{# ── Section : Analyse laboratoire ── #}
+							<tr class="nide-compare__section">
+								<th colspan="{{ products|length + 1 }}" scope="colgroup">Analyse laboratoire</th>
+							</tr>
+
+							<tr class="nide-compare__row">
+								<th scope="row" class="nide-compare__label">Réf. / Date</th>
+								{% for p in products %}
+									<td class="nide-compare__cell nide-compare__cell--meta">
+										{% if p.lab and (p.lab.reference or p.lab.reportDate) %}
+											{% if p.lab.reference %}réf.&nbsp;{{ p.lab.reference }}{% endif %}
+											{% if p.lab.reference and p.lab.reportDate %} · {% endif %}
+											{% if p.lab.reportDate %}{{ p.lab.reportDate|date('d/m/Y') }}{% endif %}
+										{% else %}—{% endif %}
+									</td>
+								{% endfor %}
+							</tr>
+
+							<tr class="nide-compare__row">
+								<th scope="row" class="nide-compare__label">Humidité</th>
+								{% for p in products %}
+									<td class="nide-compare__cell">
+										{% if p.lab and p.lab.humidity %}
+											<strong>{{ p.lab.humidity.value }}</strong>
+											{% if p.lab.humidity.note %}<span class="nide-compare__cell-note">{{ p.lab.humidity.note }}</span>{% endif %}
+										{% else %}—{% endif %}
+									</td>
+								{% endfor %}
+							</tr>
+
+							<tr class="nide-compare__row">
+								<th scope="row" class="nide-compare__label">Conductivité</th>
+								{% for p in products %}
+									<td class="nide-compare__cell">
+										{% if p.lab and p.lab.conductivity %}
+											<strong>{{ p.lab.conductivity.value }}</strong>
+											{% if p.lab.conductivity.note %}<span class="nide-compare__cell-note">{{ p.lab.conductivity.note }}</span>{% endif %}
+										{% else %}—{% endif %}
+									</td>
+								{% endfor %}
+							</tr>
+
+							<tr class="nide-compare__row">
+								<th scope="row" class="nide-compare__label">pH</th>
+								{% for p in products %}
+									<td class="nide-compare__cell">
+										{% if p.lab and p.lab.ph %}
+											<strong>{{ p.lab.ph.value }}</strong>
+											{% if p.lab.ph.note %}<span class="nide-compare__cell-note">{{ p.lab.ph.note }}</span>{% endif %}
+										{% else %}—{% endif %}
+									</td>
+								{% endfor %}
+							</tr>
+
+							{% if labRows.pollen %}
+							<tr class="nide-compare__row">
+								<th scope="row" class="nide-compare__label">Pollen dominant</th>
+								{% for p in products %}
+									<td class="nide-compare__cell">
+										{{ p.lab.pollenDominant ?: '—' }}
+									</td>
+								{% endfor %}
+							</tr>
+							{% endif %}
+
+							{% if labRows.classification %}
+							<tr class="nide-compare__row">
+								<th scope="row" class="nide-compare__label">Classification</th>
+								{% for p in products %}
+									<td class="nide-compare__cell">
+										{{ p.lab.classification ?: '—' }}
+									</td>
+								{% endfor %}
+							</tr>
+							{% endif %}
+
+							{% if labRows.mgo %}
+							<tr class="nide-compare__row">
+								<th scope="row" class="nide-compare__label">MGO (méthylglyoxal)</th>
+								{% for p in products %}
+									<td class="nide-compare__cell">
+										{% if p.lab and p.lab.mgo %}
+											<strong>{{ p.lab.mgo.value }}</strong>
+										{% else %}—{% endif %}
+									</td>
+								{% endfor %}
+							</tr>
+							{% endif %}
+
+							{% if labRows.npa %}
+							<tr class="nide-compare__row">
+								<th scope="row" class="nide-compare__label">NPA (activité non peroxydique)</th>
+								{% for p in products %}
+									<td class="nide-compare__cell">
+										{% if p.lab and p.lab.npa %}
+											<strong>{{ p.lab.npa.value }}</strong>
+										{% else %}—{% endif %}
+									</td>
+								{% endfor %}
+							</tr>
+							{% endif %}
+
+							{% if labRows.dha %}
+							<tr class="nide-compare__row">
+								<th scope="row" class="nide-compare__label">DHA (dihydroxyacétone)</th>
+								{% for p in products %}
+									<td class="nide-compare__cell">
+										{% if p.lab and p.lab.dha %}
+											<strong>{{ p.lab.dha.value }}</strong>
+										{% else %}—{% endif %}
+									</td>
+								{% endfor %}
+							</tr>
+							{% endif %}
+
+							{% if labRows.hmf %}
+							<tr class="nide-compare__row">
+								<th scope="row" class="nide-compare__label">HMF</th>
+								{% for p in products %}
+									<td class="nide-compare__cell">
+										{% if p.lab and p.lab.hmf %}
+											<strong>{{ p.lab.hmf.value }}</strong>
+										{% else %}—{% endif %}
+									</td>
+								{% endfor %}
+							</tr>
+							{% endif %}
+						</tbody>
+					</table>
+				</div>
+
+				<p class="nide-compare__disclaimer">
+					Le pourcentage de pollen ne doit pas être présenté comme un pourcentage exact de nectar.
+					Analyses réalisées par Michel Bocquet — Le Laboratoire.
+				</p>
+
+			{% endif %}
+
 		</div>
-	</div>
+	</section>
 
 {% endblock %}
-

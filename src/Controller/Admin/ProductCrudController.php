@@ -182,9 +182,30 @@ final class ProductCrudController extends AbstractCrudController
         yield IntegerField::new('tastingAromatic', 'Aromatique')->setColumns(3)->setHelp('0 – 100');
         yield IntegerField::new('tastingSweetness', 'Douceur')->setColumns(3)->setHelp('0 – 100');
         yield IntegerField::new('tastingFluidity', 'Fluidité')->setColumns(3)->setHelp('0 – 100');
-        yield TextField::new('tastingTags', 'Notes aromatiques')
+        yield TextField::new('tastingTags', 'Tags aromatiques')
             ->setColumns(12)
             ->setHelp('Tags séparés par des virgules — ex : Réglisse, Anis, Épices douces, Finale longue');
+
+        yield FormField::addFieldset('Fiche descriptive (comparateur)')
+            ->setIcon('fa fa-table-list')
+            ->collapsible()
+            ->renderCollapsed()
+            ->setHelp('Ces champs sont affichés dans le comparateur produit et sur la fiche.');
+
+        yield TextField::new('textureLabel', 'Texture')
+            ->setColumns(6)
+            ->setHelp('Ex. : Crémeuse, douce et fondante');
+        yield TextField::new('colorLabel', 'Couleur')
+            ->setColumns(6)
+            ->setHelp('Ex. : Blanc ivoire, Ambré foncé, Doré à ambré');
+        yield TextareaField::new('aromaticNotes', 'Notes aromatiques (phrase)')
+            ->setColumns(12)
+            ->setNumOfRows(2)
+            ->setHelp('Phrase courte descriptive — ex : Douceur florale, note lactée, arrière-goût léger de vanille');
+        yield TextareaField::new('tastingSuggestion', 'Suggestions de dégustation')
+            ->setColumns(12)
+            ->setNumOfRows(2)
+            ->setHelp('Comment consommer ce miel — ex : À la cuillère, dans un lait chaud ou sur des tartines');
 
         yield FormField::addFieldset('Infos additionnelles')
             ->setIcon('fa fa-circle-info')

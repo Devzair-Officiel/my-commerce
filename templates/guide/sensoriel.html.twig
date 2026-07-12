@@ -1,0 +1,397 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Guide Sensoriel Nidemiel — Déguster, comprendre et choisir un miel{% endblock %}
+
+{% block stylesheets %}
+	<link rel="stylesheet"
+		href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Pinyon+Script&display=swap"
+		media="print" onload="this.media='all'">
+	<noscript>
+		<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Pinyon+Script&display=swap">
+	</noscript>
+	<link rel="stylesheet" href="/assets/css/pages/guide-sensoriel.css?v=1.0.0">
+{% endblock %}
+
+{% block body %}
+	{% include 'page_head/index.html.twig' with {
+		page_name: 'Le Guide Sensoriel Nidemiel',
+		breadcrumbs: [{ label: 'Le Guide Sensoriel Nidemiel', url: path('app_guide_sensoriel') }]
+	} %}
+
+	<div class="nide-guide">
+		<div class="nide-guide__progress" data-guide-progress><span data-guide-progress-bar></span></div>
+
+		{# ================== HERO ================== #}
+		<section class="nide-guide__hero">
+			<div class="nide-guide__container nide-guide__hero-grid">
+				<div class="nide-guide__hero-text">
+					<p class="nide-guide__eyebrow">GUIDE SENSORIEL · NIDEMIEL</p>
+					<h2 class="nide-guide__hero-title">Le Guide Sensoriel Nidemiel</h2>
+					<p class="nide-guide__hero-lede">Comprendre, déguster et choisir les miels selon leur goût, leur texture et leur caractère.</p>
+					<p class="nide-guide__hero-desc">Un miel se lit comme un paysage. Ce guide vous apprend à repérer les textures, les couleurs et les arômes qui distinguent chacune de nos références — sans jargon, avec plaisir.</p>
+					<div class="nide-guide__cta-row">
+						<a href="#degustation" class="nide-guide__btn nide-guide__btn--dark">DÉCOUVRIR LE GUIDE</a>
+						<a href="#miels" class="nide-guide__btn nide-guide__btn--outline">VOIR LES MIELS NIDEMIEL</a>
+					</div>
+				</div>
+				<div class="nide-guide__hero-media">
+					<img src="{{ asset('assets/images/placeholder.png') }}" alt="Cuillère de miel et texture dorée à la lumière naturelle" loading="lazy" width="440" height="550">
+				</div>
+			</div>
+		</section>
+
+		{# ================== SOMMAIRE ================== #}
+		<section class="nide-guide__toc-wrap">
+			<div class="nide-guide__container">
+				<p class="nide-guide__eyebrow">SOMMAIRE</p>
+				<nav class="nide-guide__toc" aria-label="Sommaire de la page">
+					{% for t in toc %}
+						<a href="#{{ t.id }}" class="nide-guide__toc-item">
+							<span class="nide-guide__toc-num">{{ t.num }}</span>
+							<span>{{ t.label }}</span>
+						</a>
+					{% endfor %}
+				</nav>
+			</div>
+		</section>
+
+		{# ================== INTRODUCTION ================== #}
+		<section id="introduction" class="nide-guide__section">
+			<div class="nide-guide__container nide-guide__intro-grid">
+				<div>
+					<p class="nide-guide__eyebrow">INTRODUCTION</p>
+					<h2 class="nide-guide__h2">Lire un miel, un plaisir qui s’apprend</h2>
+					<p class="nide-guide__p">Chaque miel raconte un territoire, une saison, une fleur. Derrière une même appellation se cachent des textures, des couleurs et des arômes très différents. Apprendre à les reconnaître, c’est choisir en connaissance — et redécouvrir un aliment que l’on croyait connaître.</p>
+					<p class="nide-guide__p">Ce guide se veut simple et concret. Pas de promesse, pas de jargon : des repères sensoriels clairs pour déguster, comparer et trouver le miel qui vous ressemble.</p>
+					<p class="nide-guide__p">C’est la référence officielle Nidemiel pour comprendre notre sélection : il vous aide à comparer les miels entre eux, à lire nos fiches produit avec les bons repères, et à choisir selon vos goûts plutôt qu’au hasard.</p>
+				</div>
+				<aside class="nide-guide__learn-card">
+					<p class="nide-guide__eyebrow">CE QUE VOUS ALLEZ APPRENDRE</p>
+					<ul class="nide-guide__learn-list">
+						{% for l in learn %}
+							<li><span class="nide-guide__learn-dot" aria-hidden="true"></span>{{ l }}</li>
+						{% endfor %}
+					</ul>
+				</aside>
+			</div>
+		</section>
+
+		{# ================== COMMENT DÉGUSTER ================== #}
+		<section id="degustation" class="nide-guide__section nide-guide__section--panel">
+			<div class="nide-guide__container">
+				<header class="nide-guide__section-head">
+					<p class="nide-guide__eyebrow">MÉTHODE</p>
+					<h2 class="nide-guide__h2">Comment déguster un miel</h2>
+					<p class="nide-guide__section-lede">Six gestes simples pour révéler ce qu’un miel a vraiment à dire.</p>
+				</header>
+				<div class="nide-guide__grid nide-guide__grid--steps">
+					{% for s in steps %}
+						<article class="nide-guide__step">
+							<div class="nide-guide__step-head">
+								<span class="nide-guide__step-num">{{ s.num }}</span>
+								<span class="nide-guide__step-icon" aria-hidden="true">{{ s.icon|raw }}</span>
+							</div>
+							<h3 class="nide-guide__h3">{{ s.title }}</h3>
+							<p class="nide-guide__muted">{{ s.text }}</p>
+						</article>
+					{% endfor %}
+				</div>
+			</div>
+		</section>
+
+		{# ================== ERREURS ================== #}
+		<section id="erreurs" class="nide-guide__section">
+			<div class="nide-guide__container">
+				<header class="nide-guide__section-head nide-guide__section-head--center">
+					<p class="nide-guide__eyebrow">À GARDER EN TÊTE</p>
+					<h2 class="nide-guide__h2">Les erreurs à éviter</h2>
+				</header>
+				<div class="nide-guide__grid nide-guide__grid--erreurs">
+					{% for e in erreurs %}
+						<article class="nide-guide__card">
+							<span class="nide-guide__badge">{{ e.num }}</span>
+							<h3 class="nide-guide__h3">{{ e.title }}</h3>
+							<p class="nide-guide__muted">{{ e.text }}</p>
+						</article>
+					{% endfor %}
+				</div>
+			</div>
+		</section>
+
+		{# ================== CRITÈRES ================== #}
+		<section id="criteres" class="nide-guide__section nide-guide__section--panel">
+			<div class="nide-guide__container">
+				<header class="nide-guide__section-head nide-guide__section-head--center">
+					<p class="nide-guide__eyebrow">LA GRILLE DE LECTURE</p>
+					<h2 class="nide-guide__h2">Les critères de dégustation</h2>
+					<p class="nide-guide__section-lede">Dix repères pour décrire un miel avec justesse — le cœur pédagogique de ce guide, à utiliser pour mieux choisir.</p>
+				</header>
+				<div class="nide-guide__grid nide-guide__grid--criteres">
+					{% for c in criteres %}
+						<article class="nide-guide__critere">
+							<h3 class="nide-guide__h3 nide-guide__h3--serif">{{ c.title }}</h3>
+							<p class="nide-guide__muted">{{ c.text }}</p>
+						</article>
+					{% endfor %}
+				</div>
+			</div>
+		</section>
+
+		{# ================== TEXTURES ================== #}
+		<section id="textures" class="nide-guide__section">
+			<div class="nide-guide__container">
+				<header class="nide-guide__section-head nide-guide__section-head--center">
+					<p class="nide-guide__eyebrow">ÉCHELLE SENSORIELLE</p>
+					<h2 class="nide-guide__h2">Les textures</h2>
+					<p class="nide-guide__section-lede">Du plus liquide au plus dense. La texture dépend de la cristallisation — elle ne dit rien de la qualité, tout du plaisir en bouche.</p>
+				</header>
+				<div class="nide-guide__grid nide-guide__grid--textures">
+					{% for t in textures %}
+						<article class="nide-guide__card">
+							<h3 class="nide-guide__h3 nide-guide__h3--serif">{{ t.name }}</h3>
+							<div class="nide-guide__gauge" role="img" aria-label="Densité relative : {{ t.level }} %">
+								<span style="width:{{ t.level }}%"></span>
+							</div>
+							<p class="nide-guide__muted">{{ t.text }}</p>
+						</article>
+					{% endfor %}
+				</div>
+			</div>
+		</section>
+
+		{# ================== COULEURS ================== #}
+		<section id="couleurs" class="nide-guide__section nide-guide__section--panel">
+			<div class="nide-guide__container">
+				<header class="nide-guide__section-head nide-guide__section-head--center">
+					<p class="nide-guide__eyebrow">NUANCIER</p>
+					<h2 class="nide-guide__h2">Les couleurs du miel</h2>
+					<p class="nide-guide__section-lede">Du blanc nacré au brun foncé. La couleur donne une tendance d’intensité — elle aide à anticiper un profil, mais n’est pas une preuve de qualité : certains miels très clairs, comme l’Euphorbe, sont pourtant parmi les plus intenses de la sélection.</p>
+				</header>
+				<div class="nide-guide__swatches">
+					{% for c in couleurs %}
+						<div class="nide-guide__swatch" style="background:{{ c.hex }}" aria-label="{{ c.name }}"></div>
+					{% endfor %}
+				</div>
+				<div class="nide-guide__swatches-labels">
+					{% for c in couleurs %}
+						<div>{{ c.name }}</div>
+					{% endfor %}
+				</div>
+			</div>
+		</section>
+
+		{# ================== FAMILLES AROMATIQUES ================== #}
+		<section id="familles" class="nide-guide__section">
+			<div class="nide-guide__container">
+				<header class="nide-guide__section-head nide-guide__section-head--center">
+					<p class="nide-guide__eyebrow">LE VOCABULAIRE DU GOÛT</p>
+					<h2 class="nide-guide__h2">Les familles aromatiques</h2>
+					<p class="nide-guide__section-lede">Dix grandes familles pour situer un arôme, chacune déclinée en descripteurs plus fins.</p>
+				</header>
+				<div class="nide-guide__grid nide-guide__grid--familles">
+					{% for f in familles %}
+						<article class="nide-guide__card">
+							<div class="nide-guide__famille-head">
+								<span class="nide-guide__color-dot" style="background:{{ f.hex }}" aria-hidden="true"></span>
+								<h3 class="nide-guide__h3 nide-guide__h3--serif">{{ f.name }}</h3>
+							</div>
+							<p class="nide-guide__muted">{{ f.desc }}</p>
+						</article>
+					{% endfor %}
+				</div>
+			</div>
+		</section>
+
+		{# ================== ROUE DES ARÔMES ================== #}
+		<section id="roue" class="nide-guide__section nide-guide__section--dark">
+			<div class="nide-guide__container">
+				<header class="nide-guide__section-head nide-guide__section-head--center nide-guide__section-head--dark">
+					<p class="nide-guide__eyebrow nide-guide__eyebrow--gold">INFOGRAPHIE</p>
+					<h2 class="nide-guide__h2 nide-guide__h2--light">La roue des arômes Nidemiel</h2>
+					<p class="nide-guide__section-lede nide-guide__section-lede--dark">Un repère visuel pour nommer ce que l’on goûte : dix familles autour d’un même cœur.</p>
+				</header>
+				<div class="nide-guide__wheel-grid">
+					{% include 'guide/_aroma_wheel.html.twig' with { familles: familles } %}
+					<div class="nide-guide__wheel-legend">
+						{% for f in familles %}
+							<div class="nide-guide__legend-item">
+								<span class="nide-guide__color-dot" style="background:{{ f.hex }}" aria-hidden="true"></span>
+								<div>
+									<b>{{ f.name }}</b>
+									<div class="nide-guide__legend-desc">{{ f.desc }}</div>
+								</div>
+							</div>
+						{% endfor %}
+					</div>
+				</div>
+			</div>
+		</section>
+
+		{# ================== SENSATIONS ================== #}
+		<section id="sensations" class="nide-guide__section">
+			<div class="nide-guide__container">
+				<header class="nide-guide__section-head nide-guide__section-head--center">
+					<p class="nide-guide__eyebrow">EN BOUCHE</p>
+					<h2 class="nide-guide__h2">Les sensations en bouche</h2>
+					<p class="nide-guide__section-lede">Au-delà du goût, un miel se ressent : attaque, rondeur, chaleur, longueur.</p>
+				</header>
+				<div class="nide-guide__grid nide-guide__grid--sensations">
+					{% for s in sensations %}
+						<article class="nide-guide__card">
+							<h3 class="nide-guide__h3">{{ s.title }}</h3>
+							<p class="nide-guide__muted">{{ s.text }}</p>
+						</article>
+					{% endfor %}
+				</div>
+			</div>
+		</section>
+
+		{# ================== ACCORDS ================== #}
+		<section id="accords" class="nide-guide__section nide-guide__section--panel">
+			<div class="nide-guide__container">
+				<header class="nide-guide__section-head nide-guide__section-head--center">
+					<p class="nide-guide__eyebrow">À TABLE</p>
+					<h2 class="nide-guide__h2">Les accords gourmands</h2>
+					<p class="nide-guide__section-lede">Des associations simples pour révéler ou prolonger un miel, au petit-déjeuner comme au goûter.</p>
+				</header>
+				<ul class="nide-guide__chips">
+					{% for a in accords %}
+						<li class="nide-guide__chip">{{ a }}</li>
+					{% endfor %}
+				</ul>
+			</div>
+		</section>
+
+		{# ================== LIRE UNE ANALYSE ================== #}
+		<section id="analyses" class="nide-guide__section">
+			<div class="nide-guide__container">
+				<header class="nide-guide__section-head nide-guide__section-head--center">
+					<p class="nide-guide__eyebrow">TRANSPARENCE</p>
+					<h2 class="nide-guide__h2">Lire une analyse de miel simplement</h2>
+					<p class="nide-guide__section-lede">Une analyse ne remplace pas la dégustation, mais elle apporte des repères utiles pour comprendre un miel : son humidité, sa conductivité, son pH, son profil pollinique ou certains marqueurs spécifiques comme le MGO pour le Manuka.</p>
+				</header>
+				<div class="nide-guide__grid nide-guide__grid--analyses">
+					<article class="nide-guide__card">
+						<h3 class="nide-guide__h3 nide-guide__h3--serif">Humidité</h3>
+						<p class="nide-guide__muted">L’humidité indique la quantité d’eau présente dans le miel. Un taux bas est généralement rassurant pour la stabilité et la conservation, à condition de garder le pot à l’abri de l’humidité et de la chaleur excessive.</p>
+					</article>
+					<article class="nide-guide__card">
+						<h3 class="nide-guide__h3 nide-guide__h3--serif">Conductivité</h3>
+						<p class="nide-guide__muted">La conductivité aide à distinguer certains types de miels. Une conductivité basse correspond souvent à un miel de fleurs. Une conductivité élevée peut être cohérente avec un miel de miellat, comme certains miels de jujubier.</p>
+					</article>
+					<article class="nide-guide__card">
+						<h3 class="nide-guide__h3 nide-guide__h3--serif">pH</h3>
+						<p class="nide-guide__muted">Le pH donne une indication sur l’acidité du miel. Certains miels, comme les miels de jujubier, peuvent présenter un pH plus élevé que d’autres profils floraux. Cette donnée se lit toujours avec le contexte du miel analysé.</p>
+					</article>
+					<article class="nide-guide__card">
+						<h3 class="nide-guide__h3 nide-guide__h3--serif">Analyse pollinique</h3>
+						<p class="nide-guide__muted">L’analyse pollinique observe les pollens présents dans le miel. Elle aide à mieux comprendre son origine botanique. Un pourcentage de pollen ne doit jamais être présenté comme un pourcentage exact de nectar.</p>
+					</article>
+					<article class="nide-guide__card">
+						<h3 class="nide-guide__h3 nide-guide__h3--serif">MGO, NPA et DHA</h3>
+						<p class="nide-guide__muted">Ces marqueurs sont surtout utilisés pour les miels de Manuka. Chez Nidemiel, ils sont présentés comme des données mesurées, utiles pour comparer et acheter avec plus de confiance, sans promesse médicale.</p>
+					</article>
+					<article class="nide-guide__card">
+						<h3 class="nide-guide__h3 nide-guide__h3--serif">Ce que l’analyse apporte</h3>
+						<p class="nide-guide__muted">L’analyse apporte de la transparence. Elle ne transforme pas un miel en produit médical, mais elle permet de mieux comprendre sa cohérence, son origine, son profil et certains points de qualité observables.</p>
+					</article>
+				</div>
+				<aside class="nide-guide__note">
+					<strong>À retenir :</strong> les chiffres d’analyse présentés dans ce guide concernent les lots analysés. Ils apportent des repères de transparence, mais doivent toujours être lus avec précision. Un pourcentage de pollen n’est pas un pourcentage de nectar.
+				</aside>
+			</div>
+		</section>
+
+		{# ================== 10 MIELS ================== #}
+		<section id="miels" class="nide-guide__section nide-guide__section--panel">
+			<div class="nide-guide__container nide-guide__container--wide">
+				<header class="nide-guide__section-head nide-guide__section-head--center">
+					<p class="nide-guide__eyebrow">LA SÉLECTION</p>
+					<h2 class="nide-guide__h2">Les profils des 10 miels Nidemiel</h2>
+					<p class="nide-guide__section-lede">Dix références, dix caractères. Chaque fiche résume l’essentiel pour choisir en confiance.</p>
+				</header>
+				<div class="nide-guide__grid nide-guide__grid--miels">
+					{% for m in miels %}
+						<article class="nide-guide__miel">
+							<div class="nide-guide__miel-media">
+								<img src="{{ asset(m.image) }}" alt="{{ m.alt }}" loading="lazy" width="360" height="240">
+							</div>
+							<div class="nide-guide__miel-body">
+								<p class="nide-guide__eyebrow nide-guide__eyebrow--sm">{{ m.origin }}</p>
+								<h3 class="nide-guide__h3 nide-guide__h3--serif nide-guide__h3--lg">{{ m.name }}</h3>
+								<div class="nide-guide__miel-meta">
+									<div>
+										<span>Texture</span><br><b>{{ m.texture }}</b>
+									</div>
+									<div>
+										<span>Intensité</span><br>
+										<b class="nide-guide__stars" aria-label="Intensité {{ m.intensity }} sur 5">
+											{%- for i in 1..5 -%}{{ i <= m.intensity ? '●' : '○' }}{%- endfor -%}
+										</b>
+									</div>
+									<div>
+										<span>Couleur</span><br>
+										<span class="nide-guide__miel-color">
+											<span class="nide-guide__color-dot" style="background:{{ m.hex }}" aria-hidden="true"></span>
+											<b>{{ m.colorName }}</b>
+										</span>
+									</div>
+								</div>
+								<div class="nide-guide__notes">
+									{% for note in m.notes %}
+										<span class="nide-guide__note-tag">{{ note }}</span>
+									{% endfor %}
+								</div>
+								{% if m.analysis is defined and m.analysis|length > 0 %}
+									<div class="nide-guide__analysis">
+										{% for an in m.analysis %}
+											<div>{{ an }}</div>
+										{% endfor %}
+									</div>
+								{% endif %}
+								<p class="nide-guide__miel-sig">« {{ m.sig }} »</p>
+								<a href="{{ m.url }}" class="nide-guide__miel-link">VOIR LE MIEL →</a>
+							</div>
+						</article>
+					{% endfor %}
+				</div>
+			</div>
+		</section>
+
+		{# ================== FAQ ================== #}
+		<section id="faq" class="nide-guide__section">
+			<div class="nide-guide__container nide-guide__container--narrow">
+				<header class="nide-guide__section-head nide-guide__section-head--center">
+					<p class="nide-guide__eyebrow">FAQ</p>
+					<h2 class="nide-guide__h2">Questions fréquentes</h2>
+				</header>
+				{% for q in faqs %}
+					<details class="nide-guide__faq">
+						<summary>
+							{{ q.question }}
+							<span class="nide-guide__faq-mark" aria-hidden="true">+</span>
+						</summary>
+						<p>{{ q.answer }}</p>
+					</details>
+				{% endfor %}
+			</div>
+		</section>
+
+		{# ================== CTA FINAL ================== #}
+		<section class="nide-guide__section nide-guide__section--cta">
+			<div class="nide-guide__container nide-guide__cta">
+				<p class="nide-guide__eyebrow">PASSER À LA DÉGUSTATION</p>
+				<h2 class="nide-guide__h2 nide-guide__cta-title">Découvrez la sélection Nidemiel</h2>
+				<p class="nide-guide__cta-desc">Dix miels sélectionnés avec attention, chacun avec son origine, sa texture, son profil gustatif et, lorsque disponible, des analyses pour acheter avec plus de confiance.</p>
+				<div class="nide-guide__cta-row nide-guide__cta-row--center">
+					<a href="{{ path('app_home') }}" class="nide-guide__btn nide-guide__btn--dark">DÉCOUVRIR LA SÉLECTION</a>
+					<a href="#miels" class="nide-guide__btn nide-guide__btn--outline">COMPARER LES 10 MIELS</a>
+				</div>
+			</div>
+		</section>
+	</div>
+{% endblock %}
+
+{% block page_scripts %}
+	<script src="/assets/js/pages/guide-sensoriel.js?v=1.0.0" defer></script>
+{% endblock %}

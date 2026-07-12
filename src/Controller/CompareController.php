@@ -18,35 +18,41 @@ class CompareController extends AbstractController
     #[Route('/compare', name: 'app_compare')]
     public function index(): Response
     {
-        $compare = $this->compareService->getCompareDetails();
+        $data = $this->compareService->getCompareDetails();
 
         return $this->render('compare/index.html.twig', [
-            'compare' => $compare,
+            'products' => $data['products'],
+            'labRows'  => $data['labRows'],
         ]);
     }
 
-    #[Route('/compare/add/{productId}', name: 'app_add_to_compare')]
+    #[Route('/compare/add/{productId}', name: 'app_add_to_compare', methods: ['GET', 'POST'])]
     public function addToCompare(int $productId): Response
     {
         $this->compareService->addToCompare($productId);
-        $compare = $this->compareService->getCompareDetails();
 
-        // return $this->redirectToRoute('app_compare');
-        return $this->json($compare);
+        return $this->json([
+            'ok'    => true,
+            'count' => $this->compareService->getCompareDetails()['count'],
+        ]);
     }
 
-    #[Route('/compare/remove/{productId}', name: 'app_remove_compare')]
-    public function reomoveToCompare(int $productId): Response
+    #[Route('/compare/remove/{productId}', name: 'app_remove_compare', methods: ['GET', 'POST'])]
+    public function removeToCompare(int $productId): Response
     {
         $this->compareService->removeToCompare($productId);
-        $compare = $this->compareService->getCompareDetails();
-        return $this->json($compare);
+
+        return $this->json([
+            'ok'    => true,
+            'count' => $this->compareService->getCompareDetails()['count'],
+        ]);
     }
 
     #[Route('/compare/get', name: 'app_get_compare')]
     public function getCompare(): Response
     {
-        $compare = $this->compareService->getCompareDetails();
-        return $this->json($compare);
+        return $this->json([
+            'count' => $this->compareService->getCompareDetails()['count'],
+        ]);
     }
 }

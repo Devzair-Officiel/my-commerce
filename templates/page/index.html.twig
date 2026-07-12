@@ -14,6 +14,13 @@
 			<div class="nide-page-content">
 				{{ page.content|normalize_editor_html|raw }}
 			</div>
+
+			{% if page.slug == 'qualite-et-analyses' %}
+				<p class="nide-page-guide-link">
+					Pour comprendre comment lire ces analyses au quotidien,
+					<a href="{{ path('app_guide_sensoriel') }}#analyses">consultez notre guide sensoriel</a>.
+				</p>
+			{% endif %}
 		</div>
 	</div>
 

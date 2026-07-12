@@ -11,6 +11,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 /**
@@ -19,6 +20,7 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
  * Une même personne peut revenir compléter/mettre à jour sa fiche : le nom
  * agit comme clé de reprise (upsert insensible à la casse).
  */
+#[IsGranted('ROLE_ADMIN')]
 final class TastingNotebookController extends AbstractController
 {
     public function __construct(

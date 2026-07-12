@@ -1,0 +1,18 @@
+{# Roue des arômes en SVG donut : une "part" par famille via stroke-dasharray.
+   r=80 → circonférence ≈ 502.655 ; 10 familles → part = 50.2655. #}
+<div class="nide-guide__wheel" role="img" aria-label="Roue des arômes Nidemiel — dix familles">
+	<svg viewBox="0 0 200 200" width="300" height="300" aria-hidden="true">
+		<g transform="rotate(-90 100 100)" fill="none" stroke-width="34">
+			{% for f in familles %}
+				<circle cx="100" cy="100" r="80"
+					stroke="{{ f.hex }}"
+					stroke-dasharray="50.2655 452.3893"
+					stroke-dashoffset="{{ (loop.index0 * -50.2655) }}">
+				</circle>
+			{% endfor %}
+		</g>
+		<circle cx="100" cy="100" r="42" fill="#241A11"></circle>
+		<text x="100" y="94" text-anchor="middle" fill="#F7EFDF" font-family="'Cormorant Garamond', serif" font-size="14" font-weight="600">Roue des</text>
+		<text x="100" y="112" text-anchor="middle" fill="#E0B45A" font-family="'Cormorant Garamond', serif" font-size="14" font-weight="600">arômes</text>
+	</svg>
+</div>
